@@ -323,6 +323,10 @@ ipcMain.handle("window:maximize", () => {
   if (win) win.maximize();
 });
 
+ipcMain.handle("app:getVersion", () => {
+  return app.getVersion();
+});
+
 // Helper: Append entry to persistent IPC trace log
 function appendIpcTrace(entry) {
   const fs = require('fs');

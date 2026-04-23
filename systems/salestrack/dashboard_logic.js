@@ -52,6 +52,14 @@ window.OmnisDashboardV6 = class OmnisDashboardV6 {
             this.initNavigationIntelligence();
             await this.fetchData();
             this.render();
+
+            // ✅ Dynamic Versioning from Electron
+            if (window.electron && window.electron.getVersion) {
+                window.electron.getVersion().then(v => {
+                    const label = document.getElementById('app-version-label');
+                    if (label) label.innerText = `V${v}-STABLE`;
+                });
+            }
         } catch (e) {
             console.error("Dashboard init failed:", e);
             const el = document.querySelector('.dash-grid');

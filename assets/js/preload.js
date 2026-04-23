@@ -62,6 +62,7 @@ contextBridge.exposeInMainWorld("syncAPI", {
 contextBridge.exposeInMainWorld("electron", {
   invoke: (channel, data) => ipcRenderer.invoke(channel, data),
   send: (channel, data) => ipcRenderer.send(channel, data),
+  getVersion: () => ipcRenderer.invoke("app:getVersion"),
   on: (channel, func) => ipcRenderer.on(channel, (event, ...args) => func(event, ...args)),
   removeAllListeners: (channel) => ipcRenderer.removeAllListeners(channel)
 });

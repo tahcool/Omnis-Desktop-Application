@@ -684,6 +684,7 @@
       <div class="login-right-panel">
         <form id="omnis-login" class="login-card">
           <div class="login-title">Sign in</div>
+          <div id="login-version" style="font-size:10px; color:#6b7280; font-weight:700; margin-bottom:10px; text-transform: uppercase;">V1.0.1-STABLE</div>
           <div class="login-sub">
             Enter your normal system credentials. Omnis will check each connected system for you.
           </div>
@@ -841,6 +842,14 @@
           el.style.background = '#059669'; // Green for success
         }
       });
+    }
+
+    // ✅ Dynamic Version Update
+    if (window.electron && window.electron.getVersion) {
+        window.electron.getVersion().then(v => {
+            const vLabel = document.getElementById('login-version');
+            if (vLabel) vLabel.innerText = `V${v}-STABLE`;
+        });
     }
 
     const TECHNICAL_JARGON = [
