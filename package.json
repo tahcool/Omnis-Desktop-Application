@@ -27,6 +27,11 @@
       "!node_modules/electron/**",
       "!node_modules/electron-builder/**"
     ],
+    "publish": {
+      "provider": "github",
+      "owner": "tahcool",
+      "repo": "Omnis-Desktop-Application"
+    },
     "win": {
       "target": [
         "nsis"
@@ -39,12 +44,7 @@
       "createDesktopShortcut": "always",
       "createStartMenuShortcut": true,
       "shortcutName": "Omnis Salestrack",
-      "artifactName": "Omnis_Setup_${version}.exe",
-      "publish": {
-        "provider": "github",
-        "owner": "tahcool",
-        "repo": "Omnis-Desktop-Application"
-      }
+      "artifactName": "Omnis_Setup_${version}.exe"
     }
   },
   "author": "",
