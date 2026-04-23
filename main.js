@@ -335,9 +335,9 @@ ipcMain.handle("app:checkForUpdates", () => {
 // Helper: Append entry to persistent IPC trace log
 function appendIpcTrace(entry) {
   const fs = require('fs');
-  const tracePath = path.join(process.cwd(), 'ipc_trace.log');
+  const tracePath = path.join(app.getPath('userData'), 'ipc_trace.log');
   const timestamp = new Date().toISOString();
-  const line = `[${timestamp}] ${entry}\n`;
+  const line = `[${timestamp}] ${typeof entry === 'object' ? JSON.stringify(entry) : entry}\n`;
   try {
     fs.appendFileSync(tracePath, line);
   } catch (err) {
