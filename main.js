@@ -758,6 +758,20 @@ app.whenReady().then(async () => {
     }, 3000);
   });
 
+  autoUpdater.on('update-not-available', () => {
+    console.log('[Omnis] No updates found.');
+    BrowserWindow.getAllWindows().forEach(win => {
+      win.webContents.send('update-message', { type: 'uptodate', text: 'You are on the latest version.' });
+    });
+  });
+
+  autoUpdater.on('error', (err) => {
+    console.error('[Omnis] Update error:', err);
+    BrowserWindow.getAllWindows().forEach(win => {
+      win.webContents.send('update-message', { type: 'error', text: 'Update check failed.' });
+    });
+  });
+
   // Debug: allow F12 to open devtools
   const { globalShortcut } = require("electron");
   globalShortcut.register("F12", () => {
