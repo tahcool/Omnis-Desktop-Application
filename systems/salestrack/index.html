@@ -5760,141 +5760,107 @@
         </div> <!-- End View Dashboard -->
 
 
-        <!-- SETTINGS VIEW (Nesting fix) -->
-        <div id="view-settings" class="view-content hidden"
-          style="display:flex; flex-direction:column; padding: 0; max-width: 800px; margin: 0 auto; width:100%;">
-
+        <!-- SETTINGS VIEW (Optimized Grid Layout) -->
+        <div id="view-settings" class="view-content hidden" style="padding: 0; max-width: 1200px; margin: 0 auto; width:100%;">
+          
           <div style="margin-bottom: 30px;">
             <h1 style="font-size: 28px; font-weight: 850; color: #0f172a; margin-bottom: 8px;">System Settings</h1>
             <p style="color: #64748b; font-size: 14px;">Configure your application preferences and integrations.</p>
           </div>
 
-          <!-- WhatsApp Integration Card -->
-          <div class="dash-card"
-            style="background: #fff; padding: 30px; border-radius: 16px; border: 1px solid #e2e8f0; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); margin-bottom: 25px;">
-            <h2 style="font-size: 18px; font-weight: 700; color: #1e293b; margin-bottom: 20px; display: flex; align-items: center; gap: 10px;">
-              <span style="font-size: 20px;">📲</span> WhatsApp Connectivity
-            </h2>
-            <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; padding: 20px; display: flex; align-items: center; gap: 15px;">
-                <div id="wa-settings-icon" style="background: white; border: 1px solid #e2e8f0; width: 50px; height: 50px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 24px; color: #64748b; transition: all 0.3s;">
-                    <i class="fab fa-whatsapp"></i>
-                </div>
-                <div style="flex: 1;">
-                    <div style="font-size: 14px; font-weight: 700; color: #0f172a;">Built-in WhatsApp Client</div>
-                    <div id="wa-settings-status-text" style="font-size: 12px; color: #64748b;">Checking connection state...</div>
-                </div>
-                <button id="wa-settings-logout" onclick="salestrack.logoutWhatsApp()" 
-                    style="background: #fee2e2; color: #991b1b; border: 1px solid #fecaca; padding: 8px 16px; border-radius: 10px; font-size: 12px; font-weight: 800; cursor: pointer; display: none; transition: transform 0.2s;">
-                    DISCONNECT DEVICE
-                </button>
-            </div>
-            <p style="margin-top: 15px; font-size: 12px; color: #94a3b8; line-height: 1.5;">
-                Maintains a persistent connection to your mobile device. Disconnecting will clear all session tokens and require a new QR scan.
-            </p>
-          </div>
-
-          <div class="dash-card"
-            style="background: #fff; padding: 30px; border-radius: 16px; border: 1px solid #e2e8f0; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);">
-            <h2
-              style="font-size: 18px; font-weight: 700; color: #1e293b; margin-bottom: 20px; display: flex; align-items: center; gap: 10px;">
-              <span style="font-size: 20px;">🤖</span> AI Configuration
-            </h2>
-
-            <div style="margin-bottom: 20px;">
-              <label for="settings-openai-key"
-                style="display: block; font-size: 13px; font-weight: 600; color: #475569; margin-bottom: 8px;">OpenAI
-                API
-                Key</label>
-              <div style="display: flex; gap: 10px;">
-                <input type="password" id="settings-openai-key" placeholder="sk-..."
-                  style="flex: 1; padding: 12px 16px; border-radius: 10px; border: 1px solid #cbd5e1; font-size: 14px; outline: none; transition: border-color 0.2s;"
-                  onfocus="this.style.borderColor='#4f46e5'" onblur="this.style.borderColor='#cbd5e1'">
-                <button onclick="salestrack.togglePasswordVisibility('settings-openai-key')"
-                  style="padding: 0 15px; border-radius: 10px; border: 1px solid #e2e8f0; background: #f8fafc; color: #64748b; cursor: pointer; font-size: 16px;">
-                  👁️
-                </button>
-              </div>
-              <p style="margin-top: 8px; font-size: 12px; color: #94a3b8;">Your key is stored locally in this browser
-                and
-                never sent to our servers except for AI calls.</p>
-            </div>
-
-            <div style="display: flex; gap: 12px; margin-top: 10px;">
-              <button onclick="salestrack.saveSettings()"
-                style="background: #0f172a; color: white; border: none; padding: 12px 24px; border-radius: 10px; font-weight: 700; cursor: pointer; transition: transform 0.2s, background 0.2s; display: flex; align-items: center; gap: 8px;"
-                onmouseover="this.style.background='#1e293b'; this.style.transform='translateY(-1px)'"
-                onmouseout="this.style.background='#0f172a'; this.style.transform='none'">
-                Save Changes
-              </button>
-              <button id="btn-test-ai-connection" onclick="salestrack.testAIConnection()"
-                style="background: white; color: #1e293b; border: 1px solid #e2e8f0; padding: 12px 24px; border-radius: 10px; font-weight: 700; cursor: pointer; transition: all 0.2s; display: flex; align-items: center; gap: 8px;"
-                onmouseover="this.style.background='#f8fafc'; this.style.transform='translateY(-1px)'; this.style.borderColor='#cbd5e1'"
-                onmouseout="this.style.background='white'; this.style.transform='none'; this.style.borderColor='#e2e8f0'">
-                Test Connection
-              </button>
-            </div>
-          </div>
-
-          <!-- Software Maintenance Card -->
-          <div class="dash-card" style="background: #fff; padding: 30px; border-radius: 16px; border: 1px solid #e2e8f0; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); margin-top: 25px;">
-            <h2 style="font-size: 18px; font-weight: 700; color: #1e293b; margin-bottom: 20px; display: flex; align-items: center; gap: 10px;">
-              <span style="font-size: 20px;">🔄</span> Software Maintenance
-            </h2>
-            <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; padding: 20px; display: flex; align-items: center; gap: 15px;">
-                <div style="background: white; border: 1px solid #e2e8f0; width: 50px; height: 50px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 24px; color: #2563eb;">
-                    <i class="fas fa-cloud-download-alt"></i>
-                </div>
-                <div style="flex: 1;">
-                    <div style="font-size: 14px; font-weight: 700; color: #0f172a;">Application Updates</div>
-                    <div id="update-settings-status" style="font-size: 12px; color: #64748b;">Loading version info...</div>
-                </div>
-                <button id="btn-manual-update" onclick="salestrack.checkUpdatesManually()" 
-                    style="background: #2563eb; color: white; border: none; padding: 10px 20px; border-radius: 10px; font-size: 13px; font-weight: 700; cursor: pointer; transition: all 0.2s; display: flex; align-items: center; gap: 8px;">
-                    <i class="fas fa-sync-alt"></i> CHECK FOR UPDATES
-                </button>
-            </div>
-            <p style="margin-top: 15px; font-size: 12px; color: #94a3b8; line-height: 1.5;">
-                Omnis automatically checks for updates on startup. Use this button to force a manual check if you are expecting a new feature or patch.
-            </p>
-          </div>
-
-          <!-- ADMIN ERROR LOGS SECTION -->
-          <div id="settings-admin-logs-card" class="dash-card"
-            style="display:none; background: #fff; padding: 30px; border-radius: 16px; border: 1px solid #e2e8f0; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); margin-top: 25px;">
-            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 20px;">
-              <h2 style="font-size: 18px; font-weight: 700; color: #1e293b; margin:0; display: flex; align-items: center; gap: 10px;">
-                <span style="font-size: 20px;">🛡️</span> System Diagnostics
-              </h2>
-              <button onclick="salestrack.fetchErrorLogs()" 
-                style="background: #f1f5f9; color: #475569; border: 1px solid #e2e8f0; padding: 8px 16px; border-radius: 10px; font-size: 12px; font-weight: 700; cursor: pointer; transition: all 0.2s; display: flex; align-items: center; gap: 6px;"
-                onmouseover="this.style.background='#e2e8f0'"
-                onmouseout="this.style.background='#f1f5f9'">
-                <i class="fas fa-sync-alt"></i> Refresh Logs
-              </button>
-            </div>
+          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(400px, 1fr)); gap: 25px; align-items: start;">
             
-            <div id="settings-logs-container" style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; max-height: 400px; overflow-y: auto; font-family: 'JetBrains Mono', 'Fira Code', monospace; font-size: 12px;">
-              <div style="padding: 40px; text-align: center; color: #94a3b8;">
-                Click "Refresh Logs" to fetch latest system errors.
-              </div>
-            </div>
-          </div>
+            <!-- LEFT COLUMN: CONNECTIVITY & MAINTENANCE -->
+            <div style="display: flex; flex-direction: column; gap: 25px;">
+                
+                <!-- WhatsApp Integration Card -->
+                <div class="dash-card" style="background: #fff; padding: 30px; border-radius: 16px; border: 1px solid #e2e8f0; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);">
+                    <h2 style="font-size: 18px; font-weight: 700; color: #1e293b; margin-bottom: 20px; display: flex; align-items: center; gap: 10px;">
+                        <span style="font-size: 20px;">📲</span> WhatsApp Connectivity
+                    </h2>
+                    <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; padding: 20px; display: flex; align-items: center; gap: 15px;">
+                        <div id="wa-settings-icon" style="background: white; border: 1px solid #e2e8f0; width: 50px; height: 50px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 24px; color: #64748b; transition: all 0.3s;">
+                            <i class="fab fa-whatsapp"></i>
+                        </div>
+                        <div style="flex: 1;">
+                            <div style="font-size: 14px; font-weight: 700; color: #0f172a;">Built-in WhatsApp Client</div>
+                            <div id="wa-settings-status-text" style="font-size: 12px; color: #64748b;">Checking connection state...</div>
+                        </div>
+                        <button id="wa-settings-logout" onclick="salestrack.logoutWhatsApp()" 
+                            style="background: #fee2e2; color: #991b1b; border: 1px solid #fecaca; padding: 8px 16px; border-radius: 10px; font-size: 12px; font-weight: 800; cursor: pointer; display: none; transition: transform 0.2s;">
+                            DISCONNECT
+                        </button>
+                    </div>
+                    <p style="margin-top: 15px; font-size: 12px; color: #94a3b8; line-height: 1.5;">
+                        Maintains a persistent connection to your mobile device for automated notifications.
+                    </p>
+                </div>
 
-          <div id="settings-admin-logs-section" class="dash-card"
-            style="display:none; background: #fff; padding: 30px; border-radius: 16px; border: 1px solid #e2e8f0; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); margin-top:30px;">
-            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
-              <h2 style="font-size: 18px; font-weight: 700; color: #1e293b; margin:0; display: flex; align-items: center; gap: 10px;">
-                <span style="font-size: 20px;">🛡️</span> System Diagnostics
-              </h2>
-              <button onclick="salestrack.fetchErrorLogs()" 
-                      style="background: #f1f5f9; color: #475569; border: 1px solid #e2e8f0; padding: 6px 14px; border-radius: 8px; font-size: 12px; font-weight: 700; cursor: pointer;">
-                <i class="fas fa-sync"></i> Refresh Logs
-              </button>
+                <!-- Software Maintenance Card -->
+                <div class="dash-card" style="background: #fff; padding: 30px; border-radius: 16px; border: 1px solid #e2e8f0; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);">
+                    <h2 style="font-size: 18px; font-weight: 700; color: #1e293b; margin-bottom: 20px; display: flex; align-items: center; gap: 10px;">
+                        <span style="font-size: 20px;">🔄</span> Software Maintenance
+                    </h2>
+                    <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; padding: 20px; display: flex; flex-direction: column; gap: 15px;">
+                        <div style="display: flex; align-items: center; gap: 15px;">
+                            <div style="background: white; border: 1px solid #e2e8f0; width: 50px; height: 50px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 24px; color: #2563eb;">
+                                <i class="fas fa-cloud-download-alt"></i>
+                            </div>
+                            <div style="flex: 1;">
+                                <div style="font-size: 14px; font-weight: 700; color: #0f172a;">Application Updates</div>
+                                <div id="update-settings-status" style="font-size: 12px; color: #64748b;">Loading version info...</div>
+                            </div>
+                        </div>
+                        <button id="btn-manual-update" onclick="salestrack.checkUpdatesManually()" 
+                            style="background: #2563eb; color: white; border: none; padding: 12px; border-radius: 10px; font-size: 13px; font-weight: 700; cursor: pointer; transition: all 0.2s; display: flex; align-items: center; justify-content: center; gap: 8px; width: 100%;">
+                            <i class="fas fa-sync-alt"></i> CHECK FOR UPDATES
+                        </button>
+                    </div>
+                </div>
+
             </div>
-            
-            <div id="settings-logs-container" style="max-height: 400px; overflow-y: auto; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; padding: 10px;">
-              <p style="text-align:center; padding:20px; color:#94a3b8; font-size:13px;">Click Refresh to load system error logs.</p>
+
+            <!-- RIGHT COLUMN: AI CONFIG & DIAGNOSTICS -->
+            <div style="display: flex; flex-direction: column; gap: 25px;">
+                
+                <!-- AI Configuration Card -->
+                <div class="dash-card" style="background: #fff; padding: 30px; border-radius: 16px; border: 1px solid #e2e8f0; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);">
+                    <h2 style="font-size: 18px; font-weight: 700; color: #1e293b; margin-bottom: 20px; display: flex; align-items: center; gap: 10px;">
+                        <span style="font-size: 20px;">🤖</span> AI Configuration
+                    </h2>
+                    <div style="margin-bottom: 20px;">
+                        <label for="settings-openai-key" style="display: block; font-size: 13px; font-weight: 600; color: #475569; margin-bottom: 8px;">OpenAI API Key</label>
+                        <div style="display: flex; gap: 10px;">
+                            <input type="password" id="settings-openai-key" placeholder="sk-..." style="flex: 1; padding: 12px 16px; border-radius: 10px; border: 1px solid #cbd5e1; font-size: 14px; outline: none;">
+                            <button onclick="salestrack.togglePasswordVisibility('settings-openai-key')" style="padding: 0 15px; border-radius: 10px; border: 1px solid #e2e8f0; background: #f8fafc; color: #64748b; cursor: pointer;">👁️</button>
+                        </div>
+                    </div>
+                    <div style="display: flex; gap: 12px;">
+                        <button onclick="salestrack.saveSettings()" style="flex:1; background: #0f172a; color: white; border: none; padding: 12px; border-radius: 10px; font-weight: 700; cursor: pointer;">Save Changes</button>
+                        <button id="btn-test-ai-connection" onclick="salestrack.testAIConnection()" style="flex:1; background: white; color: #1e293b; border: 1px solid #e2e8f0; padding: 12px; border-radius: 10px; font-weight: 700; cursor: pointer;">Test</button>
+                    </div>
+                </div>
+
+                <!-- ADMIN ERROR LOGS SECTION -->
+                <div id="settings-admin-logs-section" class="dash-card"
+                    style="display:none; background: #fff; padding: 30px; border-radius: 16px; border: 1px solid #e2e8f0; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);">
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
+                        <h2 style="font-size: 18px; font-weight: 700; color: #1e293b; margin:0; display: flex; align-items: center; gap: 10px;">
+                            <span style="font-size: 20px;">🛡️</span> System Diagnostics
+                        </h2>
+                        <button onclick="salestrack.fetchErrorLogs()" 
+                                style="background: #f1f5f9; color: #475569; border: 1px solid #e2e8f0; padding: 6px 14px; border-radius: 8px; font-size: 12px; font-weight: 700; cursor: pointer;">
+                            <i class="fas fa-sync"></i> Refresh Logs
+                        </button>
+                    </div>
+                    
+                    <div id="settings-logs-container" style="max-height: 400px; overflow-y: auto; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; padding: 10px;">
+                        <p style="text-align:center; padding:20px; color:#94a3b8; font-size:13px;">Click Refresh to load system error logs.</p>
+                    </div>
+                </div>
+
             </div>
+
           </div>
 
           <div id="settings-status-msg"
