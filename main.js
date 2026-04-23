@@ -1,4 +1,5 @@
 const { app, BrowserWindow, session, ipcMain, globalShortcut } = require("electron");
+const { autoUpdater } = require("electron-updater");
 const path = require("path");
 const axios = require("axios");
 const https = require("https");
@@ -717,6 +718,36 @@ app.whenReady().then(async () => {
   } catch (err) {
     console.error('[Omnis] WhatsApp init failed:', err);
   }
+
+  // ✅ Initialize Auto-Updater
+  autoUpdater.logger = require("electron-log");
+  autoUpdater.logger.transports.file.level = "info";
+  console.log('[Omnis] Checking for updates...');
+  autoUpdater.checkForUpdatesAndNotify();
+
+  autoUpdater.on('update-available', () => {
+    console.log('[Omnis] Update available.');
+    BrowserWindow.getAllWindows().forEach(win => {
+      win.webContents.send('update-message', { type: 'available', text: 'Update available. Downloading...' });
+    });
+  });
+
+  autoUpdater.on('download-progress', (progress) => {
+    BrowserWindow.getAllWindows().forEach(win => {
+      win.webContents.send('update-message', { type: 'progress', percent: progress.percent });
+    });
+  });
+
+  autoUpdater.on('update-downloaded', () => {
+    console.log('[Omnis] Update downloaded; will install now.');
+    BrowserWindow.getAllWindows().forEach(win => {
+      win.webContents.send('update-message', { type: 'downloaded', text: 'Update downloaded. Restarting...' });
+    });
+    // Give user 3 seconds to see the message
+    setTimeout(() => {
+      autoUpdater.quitAndInstall();
+    }, 3000);
+  });
 
   // Debug: allow F12 to open devtools
   const { globalShortcut } = require("electron");

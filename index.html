@@ -637,6 +637,29 @@
     </div>
   </div>
 
+  <!-- AUTO-UPDATE NOTIFICATION -->
+  <div id="update-notification" style="display:none; position:fixed; top:20px; right:20px; width:320px; background:#1e293b; color:white; padding:16px; border-radius:12px; box-shadow:0 20px 25px -5px rgba(0,0,0,0.2); z-index:10001; animation: slideIn 0.5s ease-out;">
+    <div style="display:flex; align-items:center; gap:12px; margin-bottom:12px;">
+      <div style="width:32px; height:32px; background:#2563eb; border-radius:8px; display:flex; align-items:center; justify-content:center;">
+        <svg style="width:18px; height:18px; fill:white;" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 14H9v-2h2v2zm0-4H9V7h2v5z"/></svg>
+      </div>
+      <div>
+        <div style="font-size:14px; font-weight:700;">System Update</div>
+        <div id="update-text" style="font-size:12px; color:#94a3b8;">An update is available...</div>
+      </div>
+    </div>
+    <div id="update-progress-container" style="display:none; width:100%; height:4px; background:rgba(255,255,255,0.1); border-radius:2px; overflow:hidden;">
+      <div id="update-progress-bar" style="width:0%; height:100%; background:#2563eb; transition:width 0.3s ease;"></div>
+    </div>
+  </div>
+
+  <style>
+    @keyframes slideIn {
+      from { transform: translateX(100%); opacity: 0; }
+      to { transform: translateX(0); opacity: 1; }
+    }
+  </style>
+
   <!-- LOGIN VIEW -->
   <div id="login-view" class="page-login">
     <div id="login-stage" class="login-stage">
@@ -798,6 +821,27 @@
     }
 
     let pendingUrl = null;
+    
+    // ✅ AUTO-UPDATER LISTENER
+    if (window.electron && window.electron.on) {
+      window.electron.on('update-message', (event, data) => {
+        const el = document.getElementById('update-notification');
+        const txt = document.getElementById('update-text');
+        const bar = document.getElementById('update-progress-bar');
+        const container = document.getElementById('update-progress-container');
+
+        el.style.display = 'block';
+        txt.innerText = data.text;
+
+        if (data.type === 'progress') {
+          container.style.display = 'block';
+          bar.style.width = data.percent + '%';
+        } else if (data.type === 'downloaded') {
+          container.style.display = 'none';
+          el.style.background = '#059669'; // Green for success
+        }
+      });
+    }
 
     const TECHNICAL_JARGON = [
       "Establishing cryptographic handshake…",
