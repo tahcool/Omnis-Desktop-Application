@@ -767,8 +767,9 @@ app.whenReady().then(async () => {
 
   autoUpdater.on('error', (err) => {
     console.error('[Omnis] Update error:', err);
+    appendIpcTrace({ event: 'update-error', error: err.message, stack: err.stack });
     BrowserWindow.getAllWindows().forEach(win => {
-      win.webContents.send('update-message', { type: 'error', text: 'Update check failed.' });
+      win.webContents.send('update-message', { type: 'error', text: 'Update check failed: ' + err.message });
     });
   });
 
