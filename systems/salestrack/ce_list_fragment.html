@@ -1,0 +1,49 @@
+<!-- CUSTOMER ENQUIRIES / OPPORTUNITY LIST VIEW -->
+<div id="view-ce-list" class="view-page hidden">
+    <div class="qlist-header-row">
+        <div class="qlist-title">Customer Enquiries</div>
+        <div class="qlist-filters">
+            <input id="ce-list-search" class="qlist-search" placeholder="Search enquiries..." />
+            <select id="ce-list-status" class="qlist-select">
+                <option value="">All Status</option>
+                <option value="Open">Open</option>
+                <option value="Quotation">Quotation</option>
+                <option value="Converted">Converted</option>
+                <option value="Lost">Lost</option>
+            </select>
+            <button id="btn-add-ce" class="primary-pill-btn">
+                <span class="icon">+</span>
+                <span>Create CE</span>
+            </button>
+        </div>
+    </div>
+
+    <div class="table-wrapper">
+        <table id="r-table-ce">
+            <thead>
+                <tr>
+                    <th>Title</th>
+                    <th>Status</th>
+                    <th>Company</th>
+                    <th>From</th>
+                    <th>Series</th>
+                    <th>Salesperson</th>
+                    <th>Last Updated</th>
+                </tr>
+            </thead>
+            <tbody id="ce-list-body">
+                <tr>
+                    <td colspan="7" style="padding:20px; text-align:center; color:#6b7280;">Loading opportunities...
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <div class="qlist-footer">
+        <span id="ce-list-info"></span>
+        <div>
+            <!-- Pagination if needed later -->
+        </div>
+    </div>
+</div>

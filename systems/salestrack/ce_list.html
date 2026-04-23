@@ -1,0 +1,570 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Omnis – CE's</title>
+  <style>
+    :root {
+      --bg-shell: #f6f7fb;
+      --surface: #ffffff;
+      --surface-2: #f9fafb;
+      --border: #e6e9f2;
+      --border-2: rgba(230, 233, 242, .75);
+      --text-main: #111827;
+      --text-muted: #6b7280;
+
+      --accent: #e11c2a;
+      --accent-soft: rgba(225, 28, 42, 0.10);
+      --accent-strong: #b3121d;
+
+      --radius: 14px;
+      --shadow-sm: 0 4px 14px rgba(17, 24, 39, 0.06);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+
+    body {
+      background: var(--bg-shell);
+      color: var(--text-main);
+      padding: 16px;
+    }
+
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow-sm);
+      padding: 14px;
+    }
+
+    .header {
+      display: flex;
+      align-items: flex-end;
+      justify-content: space-between;
+      gap: 12px;
+      flex-wrap: wrap;
+      margin-bottom: 12px;
+    }
+
+    .title {
+      font-size: 16px;
+      font-weight: 800;
+      letter-spacing: -0.01em;
+    }
+
+    .sub {
+      font-size: 11px;
+      color: var(--text-muted);
+      margin-top: 2px;
+    }
+
+    .filters {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+
+    .pill-input,
+    .pill-select,
+    .pill-btn {
+      padding: 8px 12px;
+      border-radius: 999px;
+      border: 1px solid var(--border);
+      background: #fff;
+      font-size: 12px;
+      outline: none;
+    }
+
+    .pill-btn {
+      cursor: pointer;
+      font-weight: 800;
+      box-shadow: 0 1px 2px rgba(15, 23, 42, 0.06);
+    }
+
+    .pill-btn.primary {
+      background: var(--accent);
+      border-color: rgba(0, 0, 0, 0.05);
+      color: #fff;
+      box-shadow: 0 10px 22px rgba(225, 28, 42, 0.22);
+    }
+
+    .pill-btn.primary:hover {
+      background: var(--accent-strong);
+    }
+
+    table {
+      width: 100%;
+      border-collapse: separate;
+      border-spacing: 0;
+      font-size: 12px;
+    }
+
+    thead {
+      background: var(--surface-2);
+    }
+
+    th,
+    td {
+      padding: 10px 12px;
+      border-bottom: 1px solid var(--border-2);
+      text-align: left;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      max-width: 260px;
+    }
+
+    th {
+      font-size: 10px;
+      color: #9ca3b2;
+      text-transform: uppercase;
+      border-bottom: 1px solid var(--border);
+    }
+
+    tbody tr:hover {
+      background: var(--surface-2);
+      cursor: pointer;
+    }
+
+    .right {
+      text-align: right;
+    }
+
+    .status-pill {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 2px 8px;
+      border-radius: 999px;
+      font-size: 10px;
+      font-weight: 700;
+      border: 1px solid var(--border);
+      background: #fff;
+      color: #111827;
+    }
+
+    .status-open {
+      background: rgba(34, 197, 94, .12);
+      border-color: rgba(34, 197, 94, .35);
+      color: #15803d;
+    }
+
+    .status-lost {
+      background: rgba(239, 68, 68, .12);
+      border-color: rgba(239, 68, 68, .35);
+      color: #dc2626;
+    }
+
+    .status-quotation {
+      background: rgba(99, 102, 241, .12);
+      border-color: rgba(99, 102, 241, .35);
+      color: #4f46e5;
+    }
+
+    .status-converted {
+      background: rgba(16, 185, 129, .12);
+      border-color: rgba(16, 185, 129, .35);
+      color: #059669;
+    }
+
+    /* CE ID styling */
+    .ce-id {
+      font-weight: 700;
+      font-size: 11px;
+      color: var(--text-main);
+      font-family: ui-monospace, SFMono-Regular, monospace;
+    }
+
+    /* Age badge styling */
+    .age-badge {
+      display: inline-block;
+      padding: 2px 8px;
+      border-radius: 4px;
+      font-size: 10px;
+      font-weight: 700;
+    }
+
+    .age-green {
+      background: rgba(22, 163, 74, .1);
+      color: #16a34a;
+    }
+
+    .age-yellow {
+      background: rgba(202, 138, 4, .1);
+      color: #ca8a04;
+    }
+
+    .age-orange {
+      background: rgba(234, 88, 12, .1);
+      color: #ea580c;
+    }
+
+    .age-red {
+      background: rgba(220, 38, 38, .1);
+      color: #dc2626;
+    }
+
+    .footer {
+      margin-top: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      flex-wrap: wrap;
+      font-size: 11px;
+      color: var(--text-muted);
+    }
+
+    .muted {
+      color: var(--text-muted);
+    }
+
+    .danger {
+      color: #b91c1c;
+      font-weight: 700;
+    }
+
+    .topline {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      margin-bottom: 8px;
+      font-size: 11px;
+      color: var(--text-muted);
+    }
+
+    .sync-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 999px;
+      border: 1px solid var(--border);
+      background: #16a34a;
+      display: inline-block;
+      margin-right: 6px;
+      vertical-align: middle;
+    }
+
+    .syncing {
+      background: #facc15;
+      animation: pulse 1s infinite;
+    }
+
+    .offline {
+      background: #b91c1c;
+    }
+
+    @keyframes pulse {
+      0% {
+        transform: scale(1);
+        opacity: 1;
+      }
+
+      50% {
+        transform: scale(1.2);
+        opacity: .7;
+      }
+
+      100% {
+        transform: scale(1);
+        opacity: 1;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <div class="card">
+    <div class="header">
+      <div>
+        <div class="sub" id="meta-sub">Loading…</div>
+      </div>
+
+      <div class="filters">
+        <input id="q" class="pill-input" placeholder="Search (name, customer, title)..." />
+        <select id="status" class="pill-select">
+          <option value="">All status</option>
+          <option value="Open">Open</option>
+          <option value="Quotation">Quotation</option>
+          <option value="Converted">Converted</option>
+          <option value="Lost">Lost</option>
+          <option value="Replied">Replied</option>
+          <option value="Closed">Closed</option>
+        </select>
+        <select id="pageLen" class="pill-select">
+          <option value="20" selected>20</option>
+          <option value="50">50</option>
+          <option value="100">100</option>
+        </select>
+        <button id="refresh" class="pill-btn primary" type="button">Refresh</button>
+      </div>
+    </div>
+
+    <div class="topline">
+      <div>
+        <span id="syncDot" class="sync-dot"></span>
+        <span id="syncText">Ready</span>
+      </div>
+      <div class="muted">Tip: click a row to open the CE in Salestrack</div>
+    </div>
+
+    <div style="overflow:auto;">
+      <table>
+        <thead>
+          <tr>
+            <th>CE</th>
+            <th>Customer / Party</th>
+            <th>Title</th>
+            <th>Age</th>
+            <th>Status</th>
+            <th>Salesperson</th>
+            <th>Company</th>
+            <th class="right">Amount</th>
+          </tr>
+        </thead>
+        <tbody id="body">
+          <tr>
+            <td colspan="8" class="muted">Loading…</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="footer">
+      <div id="info">—</div>
+      <div style="display:flex; gap:8px; align-items:center;">
+        <button id="prev" class="pill-btn" type="button">Previous</button>
+        <button id="next" class="pill-btn" type="button">Next</button>
+      </div>
+    </div>
+
+    <div id="err" style="margin-top:10px; font-size:11px;"></div>
+  </div>
+
+  <script>
+    const qs = new URLSearchParams(location.search);
+    let BASE_URL = (qs.get("baseUrl") || "").trim();
+    if (!BASE_URL) BASE_URL = (localStorage.getItem("omnisBaseUrl") || "").trim();
+    BASE_URL = BASE_URL.replace(/\/$/, "");
+
+    const CE_LIST_PATH = "/api/method/powerstar_salestrack.omnis_dashboard.get_omnis_ces";
+
+    const metaSub = document.getElementById("meta-sub");
+    const body = document.getElementById("body");
+    const err = document.getElementById("err");
+    const qEl = document.getElementById("q");
+    const statusEl = document.getElementById("status");
+    const pageLenEl = document.getElementById("pageLen");
+    const refreshBtn = document.getElementById("refresh");
+    const prevBtn = document.getElementById("prev");
+    const nextBtn = document.getElementById("next");
+    const info = document.getElementById("info");
+
+    const syncDot = document.getElementById("syncDot");
+    const syncText = document.getElementById("syncText");
+
+    let offset = 0;
+    let pageLen = 20;
+    let hasMore = false;
+
+    function setSync(state) {
+      syncDot.classList.remove("syncing", "offline");
+      if (state === "syncing") {
+        syncDot.classList.add("syncing");
+        syncText.textContent = "Syncing…";
+      } else if (state === "offline") {
+        syncDot.classList.add("offline");
+        syncText.textContent = "Offline";
+      } else {
+        syncText.textContent = "Ready";
+      }
+    }
+
+    function escapeHtml(s) {
+      return String(s ?? "").replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+    }
+
+    function formatDate(d) {
+      if (!d) return "";
+      try {
+        const date = d.length === 10 ? new Date(d + "T00:00:00") : new Date(d);
+        if (isNaN(date.getTime())) return d;
+        const dd = String(date.getDate()).padStart(2, "0");
+        const mm = String(date.getMonth() + 1).padStart(2, "0");
+        const yyyy = date.getFullYear();
+        return `${dd}-${mm}-${yyyy}`;
+      } catch { return d; }
+    }
+
+    function fmtNum(v) {
+      if (v == null || v === "") return "-";
+      const n = Number(v);
+      if (isNaN(n)) return String(v);
+      return n.toLocaleString(undefined, { maximumFractionDigits: 2 });
+    }
+
+    function statusClass(s) {
+      const val = String(s || "").toLowerCase();
+      if (val === "open") return "status-open";
+      if (val === "lost") return "status-lost";
+      if (val === "quotation") return "status-quotation";
+      if (val === "converted") return "status-converted";
+      return "";
+    }
+
+    function getAgeBadge(dateStr) {
+      if (!dateStr) return '<span class="muted">-</span>';
+      const d = dateStr.length === 10 ? new Date(dateStr + "T00:00:00") : new Date(dateStr);
+      const now = new Date();
+      const days = Math.floor((now - d) / (1000 * 60 * 60 * 24));
+      let cls = "age-green";
+      if (days >= 30) cls = "age-red";
+      else if (days >= 14) cls = "age-orange";
+      else if (days >= 7) cls = "age-yellow";
+      return `<span class="age-badge ${cls}">${days}d</span>`;
+    }
+
+    async function loadCEs() {
+      err.textContent = "";
+      if (!BASE_URL) {
+        metaSub.innerHTML = "<span class='danger'>Missing baseUrl.</span> Open iframe as ce_list.html?baseUrl=https://salestrack.powerstar.co.zw";
+        body.innerHTML = "<tr><td colspan='8' class='danger'>No baseUrl provided.</td></tr>";
+        return;
+      }
+
+      if (!navigator.onLine) {
+        setSync("offline");
+        metaSub.textContent = "Offline. Connect to the internet to load CE’s.";
+        body.innerHTML = "<tr><td colspan='8' class='danger'>You are offline.</td></tr>";
+        return;
+      }
+
+      setSync("syncing");
+      metaSub.textContent = "Loading from " + BASE_URL;
+
+      pageLen = Number(pageLenEl.value || "20") || 20;
+
+      const q = (qEl.value || "").trim();
+      const st = (statusEl.value || "").trim();
+
+      const params = new URLSearchParams({
+        start: String(offset),
+        page_length: String(pageLen),
+        search: q,
+        status: st
+      });
+
+      try {
+        const res = await fetch(BASE_URL + CE_LIST_PATH + "?" + params.toString(), {
+          method: "GET",
+          credentials: "include"
+        });
+
+
+        const raw = await res.json().catch(async () => {
+          const t = await res.text().catch(() => "");
+          throw new Error("Non-JSON response: " + t.slice(0, 200));
+        });
+        console.log("CE raw response:", raw);
+
+        const msg = raw.message || raw;
+
+        if (!msg || msg.ok !== true) {
+          throw new Error(msg?.error || "Server returned ok=false");
+        }
+
+        const rows = msg.data || [];
+        hasMore = !!msg.has_more;
+
+        if (!rows.length) {
+          body.innerHTML = "<tr><td colspan='8' class='muted'>No CE’s found.</td></tr>";
+          info.textContent = "No records";
+          prevBtn.disabled = offset === 0;
+          nextBtn.disabled = true;
+          setSync("ready");
+          return;
+        }
+
+        body.innerHTML = "";
+
+        rows.forEach(r => {
+          const ce = r.name || "";
+          const customer = r.party_name || r.customer_name || "";
+          const title = r.title || "";
+          const date = formatDate(r.transaction_date);
+          const status = r.status || "";
+          const sp = r.custom_salesperson || r.sales_person || r.opportunity_owner || r.owner || "";
+          const company = r.company || "";
+          const amt = (r.opportunity_amount != null ? `${fmtNum(r.opportunity_amount)} ${escapeHtml(r.currency || "")}` : "-");
+
+          const tr = document.createElement("tr");
+          tr.dataset.ce = ce;
+
+          tr.innerHTML = `
+            <td><span class="ce-id" title="${escapeHtml(ce)}">${escapeHtml(ce)}</span></td>
+            <td title="${escapeHtml(customer)}">${escapeHtml(customer)}</td>
+            <td title="${escapeHtml(title)}" class="muted">${escapeHtml(title)}</td>
+            <td>${getAgeBadge(r.transaction_date)}</td>
+            <td><span class="status-pill ${statusClass(status)}">${escapeHtml(status || "-")}</span></td>
+            <td title="${escapeHtml(sp)}" class="muted">${escapeHtml(sp)}</td>
+            <td title="${escapeHtml(company)}" class="muted">${escapeHtml(company)}</td>
+            <td class="right">${amt}</td>
+          `;
+
+          tr.addEventListener("click", () => {
+            if (!ce) return;
+            const openUrl = BASE_URL + "/app/opportunity/" + encodeURIComponent(ce);
+            window.open(openUrl, "_blank");
+          });
+
+          body.appendChild(tr);
+        });
+
+        const start = offset + 1;
+        const end = offset + rows.length;
+        info.textContent = `Showing ${start} – ${end}` + (hasMore ? "" : " (end)");
+        prevBtn.disabled = offset === 0;
+        nextBtn.disabled = !hasMore;
+
+        setSync("ready");
+      } catch (e) {
+        setSync("ready");
+        console.error(e);
+        err.innerHTML = "<span class='danger'>Error:</span> " + escapeHtml(e.message || String(e));
+        body.innerHTML = "<tr><td colspan='8' class='danger'>Failed to load CE’s.</td></tr>";
+        info.textContent = "Error";
+        prevBtn.disabled = offset === 0;
+        nextBtn.disabled = true;
+      }
+    }
+
+    refreshBtn.addEventListener("click", () => { offset = 0; loadCEs(); });
+    qEl.addEventListener("input", () => { offset = 0; loadCEs(); });
+    statusEl.addEventListener("change", () => { offset = 0; loadCEs(); });
+    pageLenEl.addEventListener("change", () => { offset = 0; loadCEs(); });
+
+    prevBtn.addEventListener("click", () => {
+      if (offset === 0) return;
+      offset = Math.max(0, offset - pageLen);
+      loadCEs();
+    });
+
+    nextBtn.addEventListener("click", () => {
+      if (!hasMore) return;
+      offset += pageLen;
+      loadCEs();
+    });
+
+    window.addEventListener("DOMContentLoaded", loadCEs);
+  </script>
+</body>
+
+</html>

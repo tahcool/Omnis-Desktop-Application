@@ -1,0 +1,171 @@
+<!-- CREATE CE / OPPORTUNITY VIEW -->
+<div id="view-create-ce" class="view-page hidden">
+    <div class="create-card">
+        <div class="create-header-row">
+            <div>
+                <div class="create-title">New Opportunity</div>
+                <div class="create-sub" id="ce-subtitle">Not Saved</div>
+            </div>
+            <div style="display:flex;gap:10px;">
+                <button id="ce-save" type="button" class="primary-pill-btn">
+                    <span class="icon">💾</span>
+                    <span>Save</span>
+                </button>
+                <button id="ce-cancel" type="button" class="btn-secondary">Close</button>
+            </div>
+        </div>
+
+        <!-- Tabs -->
+        <div class="tab-nav" style="border-bottom:1px solid var(--border); margin-bottom:16px;">
+            <button id="tab-ce-details" class="tab-btn active" onclick="switchCeTab('details')">Details</button>
+            <button id="tab-ce-contacts" class="tab-btn" onclick="switchCeTab('contacts')">Contacts</button>
+            <button id="tab-ce-items" class="tab-btn" onclick="switchCeTab('items')">Items</button>
+        </div>
+
+        <!-- TAB: DETAILS -->
+        <div id="ce-tab-details" class="ce-tab-content">
+            <div class="create-row-half">
+                <div class="form-row">
+                    <label class="form-label">Series<span class="asterisk">*</span></label>
+                    <select id="ce-series" class="form-input">
+                        <option value="CRM-OPP-.YYYY.-">CRM-OPP-.YYYY.-</option>
+                    </select>
+                </div>
+                <div class="form-row">
+                    <label class="form-label">Opportunity From<span class="asterisk">*</span></label>
+                    <select id="ce-opp-from" class="form-input">
+                        <option value="Customer">Customer</option>
+                        <option value="Lead">Lead</option>
+                        <option value="Prospect">Prospect</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="form-row">
+                <label class="form-label">Customer / Party<span class="asterisk">*</span></label>
+                <div class="suggest-container">
+                    <input id="ce-party" class="form-input" type="text" placeholder="Type to search..." />
+                    <div id="ce-party-suggest" class="suggest-list hidden"></div>
+                </div>
+            </div>
+
+            <div class="create-row-half">
+                <div class="form-row">
+                    <label class="form-label">Salesperson<span class="asterisk">*</span></label>
+                    <div class="suggest-container">
+                        <input id="ce-salesperson" class="form-input" type="text" placeholder="Sales Person" />
+                        <div id="ce-salesperson-suggest" class="suggest-list hidden"></div>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <label class="form-label">Status<span class="asterisk">*</span></label>
+                    <select id="ce-status" class="form-input">
+                        <option value="Open">Open</option>
+                        <option value="Quotation">Quotation</option>
+                        <option value="Converted">Converted</option>
+                        <option value="Lost">Lost</option>
+                        <option value="Replied">Replied</option>
+                        <option value="Closed">Closed</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="create-row-half">
+                <div class="form-row">
+                    <label class="form-label">Opportunity Amount</label>
+                    <input id="ce-amount" class="form-input" type="number" step="0.01" />
+                </div>
+                <div class="form-row">
+                    <label class="form-label">Currency</label>
+                    <input id="ce-currency" class="form-input" type="text" value="USD" />
+                </div>
+            </div>
+
+            <div class="create-row-half">
+                <div class="form-row">
+                    <label class="form-label">Company<span class="asterisk">*</span></label>
+                    <div class="suggest-container">
+                        <input id="ce-company" class="form-input" type="text" placeholder="Company" />
+                        <div id="ce-company-suggest" class="suggest-list hidden"></div>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <label class="form-label">Opportunity Date<span class="asterisk">*</span></label>
+                    <input id="ce-date" class="form-input" type="date" />
+                </div>
+            </div>
+
+            <div class="form-row">
+                <label class="form-label">Title / Description</label>
+                <input id="ce-title" class="form-input" type="text" placeholder="Short description" />
+            </div>
+
+            <div class="form-row">
+                <label class="form-label">Additional Notes</label>
+                <textarea id="ce-notes" class="form-textarea" rows="3"></textarea>
+            </div>
+        </div>
+
+        <!-- TAB: CONTACTS -->
+        <div id="ce-tab-contacts" class="ce-tab-content hidden">
+            <div class="section-title" style="font-size:12px; margin-bottom:10px;">Primary Contact</div>
+            <div class="create-row-half">
+                <div class="form-row">
+                    <label class="form-label">Contact Person</label>
+                    <div class="suggest-container">
+                        <input id="ce-contact-person" class="form-input" type="text" placeholder="Search Contact..." />
+                        <div id="ce-contact-person-suggest" class="suggest-list hidden"></div>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <label class="form-label">Job Title</label>
+                    <input id="ce-job-title" class="form-input" type="text" />
+                </div>
+            </div>
+
+            <div class="create-row-half">
+                <div class="form-row">
+                    <label class="form-label">Email</label>
+                    <input id="ce-email" class="form-input" type="text" />
+                </div>
+                <div class="form-row">
+                    <label class="form-label">Mobile</label>
+                    <input id="ce-mobile" class="form-input" type="text" />
+                </div>
+            </div>
+            <div class="create-row-half">
+                <div class="form-row">
+                    <label class="form-label">WhatsApp</label>
+                    <input id="ce-whatsapp" class="form-input" type="text" />
+                </div>
+                <div class="form-row">
+                    <label class="form-label">Phone</label>
+                    <input id="ce-phone" class="form-input" type="text" />
+                </div>
+            </div>
+        </div>
+
+        <!-- TAB: ITEMS -->
+        <div id="ce-tab-items" class="ce-tab-content hidden">
+            <table class="items-table">
+                <thead>
+                    <tr>
+                        <th>Item Code<span class="asterisk">*</span></th>
+                        <th>Qty<span class="asterisk">*</span></th>
+                        <th>Rate</th>
+                        <th class="text-right">Amount</th>
+                        <th style="width:30px;"></th>
+                    </tr>
+                </thead>
+                <tbody id="ce-items-body"></tbody>
+            </table>
+            <button id="ce-items-add" type="button" class="items-add-btn" style="margin-top:10px;">+ Add Item
+                Row</button>
+
+            <div style="margin-top:20px; text-align:right; font-weight:700; font-size:14px;">
+                Total: <span id="ce-items-total">0.00</span>
+            </div>
+        </div>
+
+    </div>
+</div>

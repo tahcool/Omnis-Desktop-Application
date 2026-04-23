@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>FT Machine Register</title>
+
+    <meta name="pdfkit-orientation" content="Landscape" />
+
+    <style>
+        :root {
+            --ft-red: #f02510;
+        }
+
+        .print-format.landscape {
+            font-size: initial !important;
+        }
+
+        .justify-content-between {
+            justify-content: space-between !important;
+        }
+
+        .d-flex {
+            display: flex !important;
+        }
+
+        .ft-logo {
+            width: 250px;
+        }
+
+        .ft-table td,
+        .ft-table th {
+            padding: 5px !important;
+        }
+
+        .ft-table th {
+            text-align: left;
+        }
+
+        .ft-container {
+            margin: 1rem 1.8rem 1rem 1.8rem;
+        }
+
+        .text-white {
+            color: #fff !important;
+        }
+
+        table.ft-main thead th {
+            background-color: var(--ft-red);
+            color: #fff;
+            padding: 5px 5px;
+            font-weight: 600 !important;
+        }
+
+        table.ft-main tbody td {
+            border-bottom: 1px solid #9aa0a61f;
+            padding: 5px;
+        }
+
+        .text-right {
+            text-align: right !important;
+        }
+
+        .text-center {
+            text-align: center !important;
+        }
+
+        .ft-bold {
+            font-weight: 700;
+        }
+
+        .no-fold {
+            width: 1px !important;
+            white-space: nowrap !important;
+        }
+
+        .ft-middle {
+            vertical-align: middle !important;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 2px 6px;
+            font-size: 0.75em;
+            font-weight: 600;
+            border-radius: 3px;
+        }
+
+        .badge-success {
+            background-color: #28a745;
+            color: white;
+        }
+
+        .badge-warning {
+            background-color: #ffc107;
+            color: #212529;
+        }
+
+        .badge-danger {
+            background-color: #dc3545;
+            color: white;
+        }
+
+        .badge-secondary {
+            background-color: #6c757d;
+            color: white;
+        }
+
+        tr {
+            page-break-inside: avoid !important;
+        }
+
+        .text-muted {
+            color: #6c757d !important;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="container-fluid">
+        <div class="d-flex justify-content-between">
+            <div class="d-flex" style="flex-direction: column; justify-content: center;">
+                <img class="ft-logo" src="/assets/mxg_fleet_track/img/fleetrack-logo.png" alt="Fleetrack Logo">
+            </div>
+            <div class="d-flex" style="display: flex; flex-direction: column; justify-content: center;">
+                <h1 style="font-size: 2rem; margin-left: auto !important;">FT Machine Register</h1>
+                {% if(filters.region) { %}
+                <p style="text-align: right; margin: 0;">Region: <strong>{%= filters.region %}</strong></p>
+                {% } %}
+            </div>
+        </div>
+
+        <hr>
+
+        <div class="d-flex justify-content-between">
+            <div>
+                <table>
+                    <tr>
+                        <th style="padding: 2px 5px !important;" class="lead">Prepared by</th>
+                        <td style="padding: 2px 5px !important;" class="font-weight-bold lead">
+                            {%= frappe.user_info().fullname %}
+                        </td>
+                    </tr>
+                    <tr>
+                        <th style="padding: 2px 5px !important;">Date</th>
+                        <td style="padding: 2px 5px !important;">
+                            {%= frappe.datetime.now_date(true).toLocaleDateString("en-GB") %}
+                        </td>
+                    </tr>
+                    <tr>
+                        <th style="padding: 2px 5px !important;">Total Machines</th>
+                        <td style="padding: 2px 5px !important;">
+                            <strong>{%= data.length %}</strong>
+                        </td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+
+        <div class="" style="margin-top: 20px;">
+            <table class="table table-responsive-sm ft-main">
+                <thead>
+                    <tr>
+                        <th style="vertical-align: middle !important; background-color: #f02510 !important; width: 8%;"
+                            class="no-fold">
+                            Fleet No
+                        </th>
+                        <th style="vertical-align: middle !important; background-color: #f02510 !important; width: 12%;"
+                            class="no-fold">
+                            Customer
+                        </th>
+                        <th style="vertical-align: middle !important; background-color: #f02510 !important; width: 10%;"
+                            class="no-fold">
+                            Model
+                        </th>
+                        <th style="vertical-align: middle !important; background-color: #f02510 !important; width: 12%;"
+                            class="no-fold">
+                            Serial Number
+                        </th>
+                        <th style="vertical-align: middle !important; background-color: #f02510 !important; width: 8%;"
+                            class="no-fold">
+                            Current HMR
+                        </th>
+                        <th style="vertical-align: middle !important; background-color: #f02510 !important; width: 12%;"
+                            class="no-fold">
+                            Location
+                        </th>
+                        <th style="vertical-align: middle !important; background-color: #f02510 !important; width: 8%;"
+                            class="no-fold">
+                            Region
+                        </th>
+                        <th style="vertical-align: middle !important; background-color: #f02510 !important; width: 10%;"
+                            class="no-fold">
+                            Status
+                        </th>
+                        <th style="vertical-align: middle !important; background-color: #f02510 !important; width: 10%;"
+                            class="no-fold">
+                            Warranty
+                        </th>
+                        <th style="vertical-align: middle !important; background-color: #f02510 !important; width: 10%;"
+                            class="no-fold">
+                            Commission Date
+                        </th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for(var i=0, l=data.length; i < l ; i++) { %} <tr>
+                        <td class="">
+                            <strong>{%= data[i]["Fleet No"] %}</strong>
+                            {% if(data[i]["Customer Ref"] && data[i]["Customer Ref"] !== "") { %}
+                            <br>
+                            <span style="font-size: 0.8em" class="text-muted">
+                                Ref: {%= data[i]["Customer Ref"] %}
+                            </span>
+                            {% } %}
+                        </td>
+                        <td class="">{%= data[i]["Customer"] %}</td>
+                        <td class="">{%= data[i]["Model"] %}</td>
+                        <td class="">
+                            {%= data[i]["Serial Number"] %}
+                        </td>
+                        <td class="text-center">
+                            {% if(data[i]["Current HMR"]) { %}
+                            {%= data[i]["Current HMR"] %}
+                            {% } else { %}
+                            <span class="text-muted">-</span>
+                            {% } %}
+                        </td>
+                        <td class="">{%= data[i]["Location"] %}</td>
+                        <td class="">{%= data[i]["Region"] %}</td>
+                        <td class="">
+                            {% if(data[i]["Status"] === "Active") { %}
+                            <span class="badge badge-success">Active</span>
+                            {% } else if(data[i]["Status"] === "Under Maintenance") { %}
+                            <span class="badge badge-warning">Maintenance</span>
+                            {% } else if(data[i]["Status"] === "Inactive") { %}
+                            <span class="badge badge-secondary">Inactive</span>
+                            {% } else { %}
+                            {%= data[i]["Status"] %}
+                            {% } %}
+                        </td>
+                        <td class="">
+                            {% if(data[i]["Warranty Status"] === "Under Warranty") { %}
+                            <span class="badge badge-success">Under Warranty</span>
+                            {% } else if(data[i]["Warranty Status"] === "Out of Warranty") { %}
+                            <span class="badge badge-danger">Out of Warranty</span>
+                            {% } else if(data[i]["Warranty Status"]) { %}
+                            {%= data[i]["Warranty Status"] %}
+                            {% } else { %}
+                            <span class="text-muted">-</span>
+                            {% } %}
+                            {% if(data[i]["Warranty Expiry"] && data[i]["Warranty Expiry"] !== "") { %}
+                            <br>
+                            <span style="font-size: 0.75em" class="text-muted">
+                                Exp: {%= data[i]["Warranty Expiry"] %}
+                            </span>
+                            {% } %}
+                        </td>
+                        <td class="">
+                            {% if(data[i]["Commission Date"] && data[i]["Commission Date"] !== "") { %}
+                            {%= data[i]["Commission Date"] %}
+                            {% } else { %}
+                            <span class="text-muted">-</span>
+                            {% } %}
+                        </td>
+                        </tr>
+                        {% } %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+</body>
+
+</html>

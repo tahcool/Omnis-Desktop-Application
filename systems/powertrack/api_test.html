@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Powertrack API Test</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: #1a1a1a;
+            color: #fff;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        h1 {
+            color: #f97316;
+        }
+
+        .status {
+            padding: 15px;
+            border-radius: 8px;
+            margin: 20px 0;
+            font-weight: 600;
+        }
+
+        .success {
+            background: #10b981;
+        }
+
+        .error {
+            background: #ef4444;
+        }
+
+        .pending {
+            background: #f59e0b;
+        }
+
+        pre {
+            background: #2a2a2a;
+            padding: 15px;
+            border-radius: 8px;
+            overflow-x: auto;
+            font-size: 12px;
+        }
+
+        button {
+            background: #f97316;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 14px;
+        }
+
+        button:hover {
+            background: #ea580c;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <h1>🔧 Powertrack API Connection Test</h1>
+
+        <p>This page tests if the Powertrack API is accessible from the browser.</p>
+
+        <button onclick="testAPI()">Test API Connection</button>
+
+        <div id="status"></div>
+        <div id="result"></div>
+    </div>
+
+    <script>
+        const BASE_URL = "https://powertrack.powerstar.co.zw";
+        const API_ENDPOINT = "/api/method/ptz_powertrack.omnis_dashboard.pt_dashboard.get_pt_overview";
+
+        async function testAPI() {
+            const statusDiv = document.getElementById('status');
+            const resultDiv = document.getElementById('result');
+
+            statusDiv.innerHTML = '<div class="status pending">⏳ Testing API connection...</div>';
+            resultDiv.innerHTML = '';
+
+            try {
+                console.log('Calling API:', BASE_URL + API_ENDPOINT);
+
+                const response = await fetch(BASE_URL + API_ENDPOINT, {
+                    method: 'GET',
+                    credentials: 'include', // Include cookies for authentication
+                    headers: {
+                        'Accept': 'application/json'
+                    }
+                });
+
+                console.log('Response status:', response.status);
+                console.log('Response headers:', response.headers);
+
+                const data = await response.json();
+                console.log('Response data:', data);
+
+                if (response.ok && data.message) {
+                    const kpis = data.message.kpis || {};
+                    const breakdowns = data.message.recent_breakdowns || [];
+
+                    statusDiv.innerHTML = `
+                        <div class="status success">
+                            ✅ API Connection Successful!<br>
+                            <small>Found ${kpis.open_breakdowns || 0} open breakdowns</small>
+                        </div>
+                    `;
+
+                    resultDiv.innerHTML = `
+                        <h3>KPIs:</h3>
+                        <pre>${JSON.stringify(kpis, null, 2)}</pre>
+                        
+                        <h3>First 3 Breakdowns:</h3>
+                        <pre>${JSON.stringify(breakdowns.slice(0, 3), null, 2)}</pre>
+                        
+                        <h3>Full Response:</h3>
+                        <pre>${JSON.stringify(data, null, 2)}</pre>
+                    `;
+                } else if (response.status === 403) {
+                    statusDiv.innerHTML = `
+                        <div class="status error">
+                            ❌ Authentication Error (403 Forbidden)<br>
+                            <small>You are not logged into Powertrack. Please log in first.</small>
+                        </div>
+                    `;
+                    resultDiv.innerHTML = `<pre>${JSON.stringify(data, null, 2)}</pre>`;
+                } else if (response.status === 404) {
+                    statusDiv.innerHTML = `
+                        <div class="status error">
+                            ❌ API Not Found (404)<br>
+                            <small>The backend API hasn't been deployed to the server yet.</small>
+                        </div>
+                    `;
+                    resultDiv.innerHTML = `<pre>${JSON.stringify(data, null, 2)}</pre>`;
+                } else {
+                    statusDiv.innerHTML = `
+                        <div class="status error">
+                            ❌ API Error (${response.status})<br>
+                            <small>${data.exception || data._server_messages || 'Unknown error'}</small>
+                        </div>
+                    `;
+                    resultDiv.innerHTML = `<pre>${JSON.stringify(data, null, 2)}</pre>`;
+                }
+            } catch (error) {
+                console.error('Fetch error:', error);
+                statusDiv.innerHTML = `
+                    <div class="status error">
+                        ❌ Connection Failed<br>
+                        <small>${error.message}</small>
+                    `;
+                resultDiv.innerHTML = `
+                    <h3>Error Details:</h3>
+                    <pre>${error.stack}</pre>
+                    
+                    <h3>Possible Causes:</h3>
+                    <ul>
+                        <li>Not logged into Powertrack (need to authenticate first)</li>
+                        <li>Backend API not deployed to server</li>
+                        <li>CORS policy blocking request</li>
+                        <li>Network connection issue</li>
+                    </ul>
+                `;
+            }
+        }
+
+        // Auto-run test on page load
+        window.onload = () => {
+            console.log('Page loaded, ready to test API');
+            document.getElementById('status').innerHTML = '<div class="status">Click the button to test the API connection</div>';
+        };
+    </script>
+</body>
+
+</html>

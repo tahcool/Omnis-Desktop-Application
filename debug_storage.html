@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Omnis Storage Debug</title>
+    <style>
+        body {
+            font-family: monospace;
+            padding: 20px;
+            background: #1e1e1e;
+            color: #d4d4d4;
+        }
+
+        h2 {
+            color: #4ec9b0;
+        }
+
+        pre {
+            background: #2d2d2d;
+            padding: 10px;
+            border-radius: 4px;
+            overflow-x: auto;
+        }
+
+        .section {
+            margin-bottom: 30px;
+        }
+
+        button {
+            padding: 10px 20px;
+            background: #0e639c;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+        }
+
+        button:hover {
+            background: #1177bb;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>Omnis Storage Diagnostic Tool</h1>
+
+    <div class="section">
+        <h2>Actions</h2>
+        <button onclick="clearAllStorage()">Clear All Storage</button>
+        <button onclick="location.reload()">Refresh</button>
+    </div>
+
+    <div class="section">
+        <h2>LocalStorage Contents</h2>
+        <pre id="localStorage"></pre>
+    </div>
+
+    <div class="section">
+        <h2>SessionStorage Contents</h2>
+        <pre id="sessionStorage"></pre>
+    </div>
+
+    <div class="section">
+        <h2>Cookies</h2>
+        <pre id="cookies"></pre>
+    </div>
+
+    <div class="section">
+        <h2>Search for IP: 192.168.202.198</h2>
+        <pre id="ipSearch"></pre>
+    </div>
+
+    <script>
+        function displayStorage() {
+            // LocalStorage
+            const localData = {};
+            for (let i = 0; i < localStorage.length; i++) {
+                const key = localStorage.key(i);
+                localData[key] = localStorage.getItem(key);
+            }
+            document.getElementById('localStorage').textContent = JSON.stringify(localData, null, 2);
+
+            // SessionStorage
+            const sessionData = {};
+            for (let i = 0; i < sessionStorage.length; i++) {
+                const key = sessionStorage.key(i);
+                sessionData[key] = sessionStorage.getItem(key);
+            }
+            document.getElementById('sessionStorage').textContent = JSON.stringify(sessionData, null, 2);
+
+            // Cookies
+            document.getElementById('cookies').textContent = document.cookie || '(none)';
+
+            // Search for IP
+            const searchResults = [];
+            const targetIP = '192.168.202.198';
+
+            // Search localStorage
+            for (let i = 0; i < localStorage.length; i++) {
+                const key = localStorage.key(i);
+                const value = localStorage.getItem(key);
+                if (value && value.includes(targetIP)) {
+                    searchResults.push(`LocalStorage[${key}]: ${value}`);
+                }
+            }
+
+            // Search sessionStorage
+            for (let i = 0; i < sessionStorage.length; i++) {
+                const key = sessionStorage.key(i);
+                const value = sessionStorage.getItem(key);
+                if (value && value.includes(targetIP)) {
+                    searchResults.push(`SessionStorage[${key}]: ${value}`);
+                }
+            }
+
+            // Search cookies
+            if (document.cookie.includes(targetIP)) {
+                searchResults.push(`Cookies: ${document.cookie}`);
+            }
+
+            document.getElementById('ipSearch').textContent = searchResults.length > 0
+                ? searchResults.join('\n\n')
+                : 'IP address not found in storage';
+        }
+
+        function clearAllStorage() {
+            if (confirm('This will clear ALL localStorage, sessionStorage, and cookies. Continue?')) {
+                localStorage.clear();
+                sessionStorage.clear();
+                document.cookie.split(";").forEach(function (c) {
+                    document.cookie = c.replace(/^ +/, "").replace(/=.*/, "=;expires=" + new Date().toUTCString() + ";path=/");
+                });
+                alert('Storage cleared! Refresh the page to see changes.');
+                location.reload();
+            }
+        }
+
+        // Run on load
+        displayStorage();
+    </script>
+</body>
+
+</html>

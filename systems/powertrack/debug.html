@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <title>Powertrack Debug Panel</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: #1a1a1a;
+            color: #fff;
+        }
+
+        .debug-container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        h1 {
+            color: #f97316;
+            margin-bottom: 20px;
+        }
+
+        .section {
+            background: #2a2a2a;
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 20px;
+            border-left: 4px solid #f97316;
+        }
+
+        .section h2 {
+            margin-top: 0;
+            color: #f97316;
+            font-size: 18px;
+        }
+
+        .status {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: 600;
+            margin-bottom: 10px;
+        }
+
+        .status.success {
+            background: #10b981;
+            color: white;
+        }
+
+        .status.error {
+            background: #ef4444;
+            color: white;
+        }
+
+        .status.pending {
+            background: #f59e0b;
+            color: white;
+        }
+
+        pre {
+            background: #1a1a1a;
+            padding: 15px;
+            border-radius: 4px;
+            overflow-x: auto;
+            font-size: 12px;
+            line-height: 1.5;
+        }
+
+        .kpi-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-top: 15px;
+        }
+
+        .kpi-card {
+            background: #1a1a1a;
+            padding: 15px;
+            border-radius: 6px;
+            border: 1px solid #3a3a3a;
+        }
+
+        .kpi-label {
+            font-size: 12px;
+            color: #999;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .kpi-value {
+            font-size: 32px;
+            font-weight: 700;
+            color: #f97316;
+            margin-top: 5px;
+        }
+
+        .breakdown-list {
+            margin-top: 15px;
+        }
+
+        .breakdown-item {
+            background: #1a1a1a;
+            padding: 12px;
+            border-radius: 4px;
+            margin-bottom: 8px;
+            border-left: 3px solid #f97316;
+        }
+
+        .breakdown-item strong {
+            color: #f97316;
+        }
+
+        button {
+            background: #f97316;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+            margin-right: 10px;
+        }
+
+        button:hover {
+            background: #ea580c;
+        }
+
+        .error-msg {
+            color: #ef4444;
+            background: #2a1a1a;
+            padding: 10px;
+            border-radius: 4px;
+            border-left: 3px solid #ef4444;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="debug-container">
+        <h1>🔧 Powertrack Dashboard Debug Panel</h1>
+
+        <div class="section">
+            <h2>API Connection Test</h2>
+            <button onclick="testAPI()">Test API Connection</button>
+            <button onclick="testOverview()">Test Overview API</button>
+            <button onclick="testBreakdownList()">Test Breakdown List API</button>
+            <div id="api-status" style="margin-top: 15px;"></div>
+        </div>
+
+        <div class="section">
+            <h2>KPIs</h2>
+            <div id="kpis-display"></div>
+        </div>
+
+        <div class="section">
+            <h2>Recent Breakdowns (First 5)</h2>
+            <div id="breakdowns-display"></div>
+        </div>
+
+        <div class="section">
+            <h2>Raw API Response</h2>
+            <pre id="raw-response">Click "Test Overview API" to see response...</pre>
+        </div>
+
+        <div class="section">
+            <h2>JavaScript Errors</h2>
+            <div id="errors-display">No errors captured yet</div>
+        </div>
+    </div>
+
+    <script>
+        const BASE_URL = "https://powertrack.powerstar.co.zw";
+        const OVERVIEW_API = "/api/method/ptz_powertrack.omnis_dashboard.pt_dashboard.get_pt_overview";
+        const BREAKDOWN_LIST_API = "/api/method/ptz_powertrack.omnis_dashboard.pt_dashboard.get_pt_breakdown_list";
+
+        // Capture JavaScript errors
+        window.onerror = function (msg, url, lineNo, columnNo, error) {
+            const errorDiv = document.getElementById('errors-display');
+            errorDiv.innerHTML += `
+                <div class="error-msg">
+                    <strong>Error:</strong> ${msg}<br>
+                    <strong>Line:</strong> ${lineNo}:${columnNo}<br>
+                    <strong>Stack:</strong> ${error ? error.stack : 'N/A'}
+                </div>
+            `;
+        };
+
+        async function testAPI() {
+            const statusDiv = document.getElementById('api-status');
+            statusDiv.innerHTML = '<span class="status pending">Testing...</span>';
+
+            try {
+                const response = await fetch(BASE_URL + "/api/method/ping");
+                if (response.ok) {
+                    statusDiv.innerHTML = '<span class="status success">✓ API Connection OK</span>';
+                } else {
+                    statusDiv.innerHTML = `<span class="status error">✗ API Error: ${response.status}</span>`;
+                }
+            } catch (error) {
+                statusDiv.innerHTML = `<span class="status error">✗ Connection Failed: ${error.message}</span>`;
+            }
+        }
+
+        async function testOverview() {
+            const statusDiv = document.getElementById('api-status');
+            const rawDiv = document.getElementById('raw-response');
+            const kpisDiv = document.getElementById('kpis-display');
+            const breakdownsDiv = document.getElementById('breakdowns-display');
+
+            statusDiv.innerHTML = '<span class="status pending">Fetching overview data...</span>';
+
+            try {
+                const response = await fetch(BASE_URL + OVERVIEW_API);
+                const data = await response.json();
+
+                if (response.ok && data.message) {
+                    statusDiv.innerHTML = '<span class="status success">✓ Overview API Working</span>';
+
+                    // Display raw response
+                    rawDiv.textContent = JSON.stringify(data, null, 2);
+
+                    // Display KPIs
+                    const kpis = data.message.kpis;
+                    kpisDiv.innerHTML = `
+                        <div class="kpi-grid">
+                            <div class="kpi-card">
+                                <div class="kpi-label">Active Trucks</div>
+                                <div class="kpi-value">${kpis.active_trucks || 0}</div>
+                            </div>
+                            <div class="kpi-card">
+                                <div class="kpi-label">Open Breakdowns</div>
+                                <div class="kpi-value">${kpis.open_breakdowns || 0}</div>
+                            </div>
+                            <div class="kpi-card">
+                                <div class="kpi-label">High Severity</div>
+                                <div class="kpi-value">${kpis.high_severity_breakdowns || 0}</div>
+                            </div>
+                            <div class="kpi-card">
+                                <div class="kpi-label">Avg Days on BD</div>
+                                <div class="kpi-value">${kpis.avg_days_on_bd || 'N/A'}</div>
+                            </div>
+                        </div>
+                    `;
+
+                    // Display first 5 breakdowns
+                    const breakdowns = data.message.recent_breakdowns || data.message.recent_jrvs || [];
+                    if (breakdowns.length > 0) {
+                        breakdownsDiv.innerHTML = '<div class="breakdown-list">' +
+                            breakdowns.slice(0, 5).map(bd => `
+                                <div class="breakdown-item">
+                                    <strong>${bd.name}</strong><br>
+                                    Truck: ${bd.lbz || bd.truck || 'N/A'}<br>
+                                    Client: ${bd.client || 'N/A'}<br>
+                                    Severity: ${bd.severity || bd.nature || 'N/A'}<br>
+                                    Date: ${bd.breakdown_date || bd.date || 'N/A'}<br>
+                                    Days: ${bd.days_on_bd || 'N/A'}
+                                </div>
+                            `).join('') +
+                            '</div>';
+                    } else {
+                        breakdownsDiv.innerHTML = '<p>No breakdowns found</p>';
+                    }
+
+                } else {
+                    statusDiv.innerHTML = `<span class="status error">✗ API Error: ${data.exception || 'Unknown error'}</span>`;
+                    rawDiv.textContent = JSON.stringify(data, null, 2);
+                }
+            } catch (error) {
+                statusDiv.innerHTML = `<span class="status error">✗ Fetch Failed: ${error.message}</span>`;
+                rawDiv.textContent = error.stack;
+            }
+        }
+
+        async function testBreakdownList() {
+            const statusDiv = document.getElementById('api-status');
+            statusDiv.innerHTML = '<span class="status pending">Fetching breakdown list...</span>';
+
+            try {
+                const response = await fetch(BASE_URL + BREAKDOWN_LIST_API);
+                const data = await response.json();
+
+                if (response.ok) {
+                    statusDiv.innerHTML = `<span class="status success">✓ Breakdown List API Working (${data.message.count || 0} items)</span>`;
+                    document.getElementById('raw-response').textContent = JSON.stringify(data, null, 2);
+                } else {
+                    statusDiv.innerHTML = `<span class="status error">✗ API Error</span>`;
+                }
+            } catch (error) {
+                statusDiv.innerHTML = `<span class="status error">✗ Failed: ${error.message}</span>`;
+            }
+        }
+
+        // Auto-test on load
+        window.onload = function () {
+            testOverview();
+        };
+    </script>
+</body>
+
+</html>

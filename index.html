@@ -1,0 +1,1016 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <title>Omnis – Login</title>
+  <style>
+    :root {
+      --bg-main: #f4f6fb;
+      --bg-card: #ffffff;
+      --omnis-black: #1c1c1c;
+      --omnis-dark-grey: #2f2f2f;
+      --omnis-red: #e11c2a;
+      --surface: #ffffff;
+      --surface-2: #f9fafb;
+      --bg-shell: #f6f7fb;
+      --border: #e6e9f2;
+      --border-2: rgba(230, 233, 242, 0.75);
+      --accent: var(--omnis-red);
+      --accent-soft: rgba(225, 28, 42, 0.10);
+      --accent-strong: #b3121d;
+      --text-main: #111827;
+      --text-muted: #6b7280;
+      --sidebar-bg: #ffffff;
+      --sidebar-border: var(--border);
+      --border-soft: var(--border);
+      --radius: 0;
+      --radius-sm: 0;
+      --shadow-sm: 0 4px 14px rgba(17, 24, 39, 0.06);
+      --shadow: 0 10px 30px rgba(17, 24, 39, 0.06);
+      --login-panel-1: #2f2f2f;
+      --login-panel-2: #1c1c1c;
+      --login-panel-3: #121212;
+      --login-btn-1: #8b2219;
+      --login-btn-2: #4a0404;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+
+    body {
+      min-height: 100vh;
+      background: transparent !important;
+      color: var(--text-main);
+      display: flex;
+      align-items: stretch;
+      justify-content: center;
+      overflow: hidden;
+    }
+
+    /* ---------- LOGIN VIEW ---------- */
+    .page-login {
+      width: 100%;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 28px 18px;
+      background: transparent;
+    }
+
+    .login-stage {
+      width: 100%;
+      height: 100vh;
+      border-radius: 0;
+      overflow: hidden;
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 30px;
+      padding: 40px;
+      background: linear-gradient(135deg, #4a0404, #0f0f10);
+      box-shadow: none;
+      -webkit-app-region: drag;
+    }
+
+    .brand-side {
+      position: relative;
+      z-index: 2;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-right: 0;
+    }
+
+    .login-left-logo {
+      padding: 40px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .login-left-logo img {
+      max-width: 480px;
+      width: 100%;
+      height: auto;
+      object-fit: contain;
+      flex-shrink: 0;
+    }
+
+    .login-right-panel {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 60px;
+      position: relative;
+      background: transparent;
+      z-index: 2;
+    }
+
+    .login-card {
+      width: 100%;
+      min-width: 440px;
+      max-width: 440px;
+      border-radius: 0;
+      background: #ffffff;
+      padding: 34px 30px 26px;
+      box-shadow:
+        0 18px 40px rgba(0, 0, 0, 0.3),
+        0 0 0 1px rgba(255,255,255,0.1);
+      animation: card-entrance 0.8s cubic-bezier(0.16, 1, 0.3, 1) both;
+    }
+
+    @keyframes card-entrance {
+      from { opacity: 0; transform: translateY(20px) scale(0.98); }
+      to { opacity: 1; transform: translateY(0) scale(1); }
+    }
+
+    .login-title {
+      font-size: 40px;
+      line-height: 1.05;
+      font-weight: 550;
+      color: #1f0004;
+      margin-bottom: 8px;
+      letter-spacing: -0.02em;
+    }
+
+    .login-sub {
+      font-size: 12px;
+      color: #6b7280;
+      margin-bottom: 18px;
+      line-height: 1.45;
+    }
+
+    .form-row {
+      margin-bottom: 12px;
+      width: 100%;
+    }
+
+    .form-label {
+      display: block;
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      color: #6b7280;
+      margin-bottom: 6px;
+    }
+
+    .form-input {
+      width: 100%;
+      padding: 12px 12px;
+      border-radius: 0;
+      border: 1px solid #d0d7e5;
+      font-size: 13px;
+      outline: none;
+      transition: border-color 0.15s ease-out, box-shadow 0.15s ease-out, background 0.15s ease-out;
+      background: #ffffff;
+    }
+
+    .form-input:focus {
+      border-color: #1d4ed8;
+      box-shadow: 0 0 0 3px rgba(29, 78, 216, 0.12);
+      background: #ffffff;
+    }
+
+    .asterisk {
+      color: #b91c1c;
+      margin-left: 2px;
+    }
+
+    .input-wrap {
+      position: relative;
+      display: block;
+    }
+
+    .input-wrap .form-input {
+      padding-right: 70px;
+    }
+
+    .pw-toggle {
+      position: absolute;
+      right: 10px;
+      top: 50%;
+      transform: translateY(-50%);
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 0.06em;
+      color: #1a0000;
+      cursor: pointer;
+      padding: 6px 10px;
+      border-radius: 0;
+      user-select: none;
+      transition: background 0.12s ease-out;
+    }
+
+    .pw-toggle:hover {
+      background: rgba(11, 111, 208, 0.08);
+    }
+
+    .pw-hide {
+      display: none;
+    }
+
+    #show-password:checked+.input-wrap .pw-show {
+      display: none;
+    }
+
+    #show-password:checked+.input-wrap .pw-hide {
+      display: inline;
+    }
+
+    .visually-hidden {
+      position: absolute !important;
+      width: 1px !important;
+      height: 1px !important;
+      padding: 0 !important;
+      margin: -1px !important;
+      overflow: hidden !important;
+      clip: rect(0, 0, 0, 0) !important;
+      white-space: nowrap !important;
+      border: 0 !important;
+    }
+
+    .login-under-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      margin: 10px 0 14px;
+      font-size: 12px;
+      color: #6b7280;
+    }
+
+    .login-under-row label {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      cursor: pointer;
+    }
+
+    .login-under-row input[type="checkbox"] {
+      width: 14px;
+      height: 14px;
+      accent-color: var(--omnis-red);
+    }
+
+    .login-under-row a {
+      color: #0b6fd0;
+      text-decoration: none;
+      font-weight: 600;
+    }
+
+    .login-under-row a:hover {
+      text-decoration: underline;
+    }
+
+    .login-button {
+      width: 100%;
+      margin-top: 6px;
+      padding: 12px 14px;
+      border-radius: 0;
+      border: 0;
+      font-size: 15px;
+      font-weight: 800;
+      cursor: pointer;
+      background: linear-gradient(135deg, var(--login-btn-1), var(--login-btn-2));
+      color: #ffffff;
+      transition: transform 0.1s ease-out, box-shadow 0.15s ease-out, filter 0.15s ease-out;
+      box-shadow: 0 14px 30px rgba(2, 68, 136, 0.30);
+    }
+
+    .login-button:hover {
+      transform: translateY(-1px);
+      filter: brightness(1.02);
+      box-shadow: 0 18px 40px rgba(2, 68, 136, 0.38);
+    }
+
+    .login-button:disabled {
+      opacity: 0.7;
+      cursor: default;
+      transform: none;
+      box-shadow: none;
+    }
+
+    .login-status {
+      margin-top: 10px;
+      font-size: 11px;
+      text-align: center;
+      color: #6b7280;
+      min-height: 14px;
+    }
+
+    .login-status.error {
+      color: #b91c1c;
+    }
+
+    .login-status.success {
+      color: #15803d;
+    }
+
+    /* ---------- SHARED ATMOSPHERE (BUBBLES) ---------- */
+    .splash-bubble {
+      position: absolute;
+      border-radius: 50%;
+      filter: blur(40px);
+      z-index: 1;
+      opacity: 0.9;
+      pointer-events: none;
+      mix-blend-mode: screen;
+    }
+
+    .b1 { width: 900px; height: 900px; background: radial-gradient(circle, rgba(255, 60, 60, 0.5) 0%, rgba(255, 60, 60, 0) 70%); top: -300px; left: -300px; animation: float 12s infinite alternate ease-in-out; }
+    .b2 { width: 800px; height: 800px; background: radial-gradient(circle, rgba(255, 30, 30, 0.45) 0%, rgba(255, 30, 30, 0) 70%); bottom: -250px; right: -250px; animation: float 18s infinite alternate-reverse ease-in-out; }
+    .b3 { width: 700px; height: 700px; background: radial-gradient(circle, rgba(255, 120, 120, 0.35) 0%, rgba(255, 120, 120, 0) 70%); top: 5%; left: 15%; animation: float 22s infinite alternate ease-in-out; }
+    .b4 { width: 500px; height: 500px; background: radial-gradient(circle, rgba(255, 50, 50, 0.3) 0%, rgba(255, 50, 50, 0) 70%); bottom: 20%; left: 30%; animation: float 15s infinite alternate-reverse ease-in-out; }
+
+    @keyframes float {
+      0% { transform: translate(0, 0) scale(1); }
+      50% { transform: translate(80px, -80px) scale(1.15); }
+      100% { transform: translate(-40px, 40px) scale(0.9); }
+    }
+
+
+    .login-footer {
+      position: absolute;
+      bottom: 25px;
+      left: 0;
+      right: 0;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      z-index: 10;
+      pointer-events: none;
+    }
+
+    .login-footer img {
+      height: 56px;
+      width: auto;
+      opacity: 0.7;
+      filter: grayscale(1) brightness(1.5);
+      transition: opacity 0.3s ease;
+    }
+
+    /* Headless Splash Styles */
+    #splash-overlay {
+      position: fixed;
+      inset: 0;
+      background: linear-gradient(135deg, #4a0404, #0f0f10);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+      overflow: hidden;
+    }
+
+
+    .splash-content {
+      position: relative;
+      z-index: 2;
+    }
+
+    .system-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 10px 0;
+      background: transparent;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+      font-size: 13px;
+      font-weight: 500;
+      color: rgba(255, 255, 255, 0.4);
+      transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .system-item:last-child {
+      border-bottom: none;
+    }
+
+    .system-item.active {
+      color: #fff;
+      padding-left: 8px;
+    }
+
+    .system-item.active .status-indicator {
+      color: rgba(255, 255, 255, 0.6);
+    }
+
+    .system-item.done {
+      color: #34d399; /* Emerald 400 */
+      font-weight: 600;
+    }
+
+    .system-item.done .status-indicator {
+      color: #34d399;
+      letter-spacing: 0.05em;
+    }
+
+    .system-item.error {
+      color: #fbbf24; /* Amber 400 - more professional than Red */
+      opacity: 0.9;
+    }
+
+    .system-item.error .status-indicator {
+      color: #fbbf24;
+    }
+
+    .status-indicator {
+      font-size: 10px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      font-weight: 700;
+    }
+
+    .hidden {
+      display: none !important;
+    }
+
+    /* Window Controls */
+    .win-controls {
+      position: absolute;
+      top: 40px;
+      right: 40px;
+      display: flex;
+      gap: 12px;
+      z-index: 9999;
+      -webkit-app-region: no-drag;
+    }
+
+    .win-btn {
+      width: 28px;
+      height: 28px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 0;
+      background: rgba(255, 255, 255, 0.05);
+      color: rgba(255, 255, 255, 0.5);
+      cursor: pointer;
+      transition: all 0.2s ease;
+      font-size: 14px;
+      font-weight: bold;
+      border: none;
+    }
+
+    .win-btn:hover {
+      background: rgba(255, 255, 255, 0.15);
+      color: #fff;
+    }
+
+    .win-btn.win-close:hover {
+      background: #e11c2a;
+    }
+
+    /* Security Reminder Modal */
+    #security-reminder {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.85);
+      backdrop-filter: blur(12px);
+      z-index: 10000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      opacity: 0;
+      visibility: hidden;
+      transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    #security-reminder.active {
+      opacity: 1;
+      visibility: visible;
+    }
+
+    .security-modal {
+      width: 480px;
+      background: #ffffff;
+      padding: 40px;
+      position: relative;
+      border-radius: 0;
+      box-shadow: 0 30px 60px rgba(0, 0, 0, 0.5);
+      transform: translateY(20px) scale(0.95);
+      transition: all 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+      overflow: hidden;
+      -webkit-app-region: no-drag;
+    }
+
+    #security-reminder.active .security-modal {
+      transform: translateY(0) scale(1);
+    }
+
+    .security-header {
+      display: flex;
+      align-items: center;
+      gap: 15px;
+      margin-bottom: 25px;
+    }
+
+    .security-icon {
+      width: 48px;
+      height: 48px;
+      background: #fdf2f2;
+      color: #9b1c1c;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 24px;
+    }
+
+    .security-title {
+      font-size: 22px;
+      font-weight: 700;
+      color: #1f0004;
+      letter-spacing: -0.01em;
+    }
+
+    .security-content {
+      font-size: 14px;
+      line-height: 1.6;
+      color: #4b5563;
+      margin-bottom: 30px;
+    }
+
+    .security-tip-box {
+      background: #f9f9f9;
+      border-left: 4px solid #9b1c1c;
+      padding: 15px 20px;
+      margin-bottom: 30px;
+      font-style: italic;
+      color: #1a1a1a;
+    }
+
+    .security-button {
+      width: 100%;
+      padding: 16px;
+      background: #4a0404;
+      color: #ffffff;
+      border: none;
+      font-weight: 700;
+      font-size: 14px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .security-button:hover {
+      background: #6a0606;
+      transform: translateY(-1px);
+    }
+
+    .splash-logo {
+      width: 540px;
+      margin-bottom: 48px;
+      position: relative;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      -webkit-app-region: no-drag;
+      overflow: hidden;
+    }
+
+    .splash-logo img {
+      width: 100%;
+      height: auto;
+      object-fit: contain;
+    }
+
+    @keyframes shake {
+      10%, 90% { transform: translate3d(-1px, 0, 0); }
+      20%, 80% { transform: translate3d(2px, 0, 0); }
+      30%, 50%, 70% { transform: translate3d(-4px, 0, 0); }
+      40%, 60% { transform: translate3d(4px, 0, 0); }
+    }
+
+    .login-card, .splash-content, .pw-toggle, .form-input, .login-button, .login-under-row label, .login-under-row a {
+      -webkit-app-region: no-drag;
+    }
+  </style>
+</head>
+
+<body>
+  <!-- CINEMATIC SPLASH OVERLAY (Frameless) -->
+  <div id="splash-overlay" class="hidden">
+    <div class="splash-bubble b1"></div>
+    <div class="splash-bubble b2"></div>
+    <div class="splash-bubble b3"></div>
+    <div class="splash-bubble b4"></div>
+
+    <div class="splash-content" style="width: 440px; max-width: 90vw; display: flex; flex-direction: column; align-items: center; justify-content: center;">
+      <div class="splash-logo">
+        <img src="assets/images/omnis-logo-white.png" alt="Omnis Logo" />
+      </div>
+      
+      <div id="system-feed" style="width: 100%; margin-bottom: 32px; display: flex; flex-direction: column; gap: 8px;">
+        <!-- System statuses will be injected here -->
+      </div>
+
+      <div class="splash-text" id="splash-text" style="font-size: 11px; font-weight: 800; color: #94a3b8; text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 12px; opacity: 0.8;">Omnis Initialisation…</div>
+      
+      <div class="splash-bar" style="width: 100%; height: 3px; background: rgba(255,255,255,0.05); border-radius: 999px; overflow: hidden;">
+        <div id="splash-bar-inner" style="width: 0%; height: 100%; background: linear-gradient(90deg, #e11c2a, #f97316); box-shadow: 0 0 15px rgba(225, 28, 42, 0.4); transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1);"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SECURITY REMINDER MODAL -->
+  <div id="security-reminder">
+    <div class="security-modal">
+      <div class="security-header" style="-webkit-app-region: no-drag;">
+        <div class="security-icon" style="-webkit-app-region: no-drag;">🛡️</div>
+        <div class="security-title" style="-webkit-app-region: no-drag;">Security Awareness</div>
+      </div>
+      <div class="security-content" style="-webkit-app-region: no-drag;">
+        Protecting institutional data is our top priority. Please remember:
+        <div class="security-tip-box" id="security-tip" style="-webkit-app-region: no-drag;">
+          Never share your system credentials. Use strong, unique passwords and change them regularly to stay protected.
+        </div>
+        Your session is automatically monitored for inactivity to ensure unauthorized access is prevented.
+      </div>
+      <button class="security-button" onclick="acknowledgeSecurity()" style="-webkit-app-region: no-drag;">I Understand</button>
+    </div>
+  </div>
+
+  <!-- LOGIN VIEW -->
+  <div id="login-view" class="page-login">
+    <div id="login-stage" class="login-stage">
+      <!-- Background Bubbles (Matching Splash) -->
+      <div class="splash-bubble b1"></div>
+      <div class="splash-bubble b2"></div>
+      <div class="splash-bubble b3"></div>
+      <div class="splash-bubble b4"></div>
+
+      <!-- Window Controls -->
+      <div class="win-controls">
+        <button class="win-btn win-close" onclick="window.frappeAPI.close()">✕</button>
+      </div>
+
+      <!-- CONTENT -->
+      <div class="brand-side">
+        <div class="login-left-logo">
+           <img src="assets/images/omnis-logo-white.png" alt="Omnis Logo" />
+        </div>
+      </div>
+
+      <div class="login-right-panel">
+        <form id="omnis-login" class="login-card">
+          <div class="login-title">Sign in</div>
+          <div class="login-sub">
+            Enter your normal system credentials. Omnis will check each connected system for you.
+          </div>
+
+          <div class="form-row">
+            <label class="form-label" for="login-email">
+              Email / Username<span class="asterisk">*</span>
+            </label>
+            <input id="login-email" class="form-input" type="text" autocomplete="username" required />
+          </div>
+
+          <div class="form-row">
+            <label class="form-label" for="login-password">
+              Password<span class="asterisk">*</span>
+            </label>
+
+            <input type="checkbox" id="show-password" class="visually-hidden" />
+
+            <div class="input-wrap">
+              <input id="login-password" class="form-input" type="password" autocomplete="current-password" required />
+              <label class="pw-toggle" for="show-password" title="Show/Hide password">
+                <span class="pw-show">SHOW</span><span class="pw-hide">HIDE</span>
+              </label>
+            </div>
+          </div>
+
+          <div class="login-under-row">
+            <label>
+              <input type="checkbox" id="remember-me" />
+              <span>Remember me</span>
+            </label>
+
+            <a href="#" id="forgot-password-link">Forgot Password?</a>
+          </div>
+
+          <button id="login-submit" class="login-button" type="submit">Sign in</button>
+
+          <div id="login-status" class="login-status"></div>
+        </form>
+      </div>
+      <!-- FOOTER LOGO -->
+      <div class="login-footer">
+        <img src="assets/images/IEG_logo.png" alt="IEG">
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const OMNIS_SYSTEMS = [
+      { key: "fleetrack", name: "Fleetrack", baseUrl: "https://fleetrack.machinery-exchange.com" },
+      { key: "salestrack", name: "Salestrack", baseUrl: "https://salestrack.powerstar.co.zw" },
+      { key: "engtrack", name: "Engtrack", baseUrl: "https://engtrack.machinery-exchange.com" },
+      { key: "powertrack", name: "Powertrack", baseUrl: "https://powertrack.powerstar.co.zw" },
+      { key: "spe", name: "SPE", baseUrl: "https://omnis.spareparts-exchange.com" },
+    ];
+
+    const LS_REMEMBER = "omnisRemember";
+    const LS_USER = "omnisUser";
+    const LS_PWD = "omnisPwd";
+
+    const loginView = document.getElementById("login-view");
+    const form = document.getElementById("omnis-login");
+    const emailInput = document.getElementById("login-email");
+    const pwdInput = document.getElementById("login-password");
+    const showPw = document.getElementById("show-password");
+    const rememberMe = document.getElementById("remember-me");
+    const forgotLink = document.getElementById("forgot-password-link");
+    const statusEl = document.getElementById("login-status");
+    const submitBtn = document.getElementById("login-submit");
+    const splashOverlay = document.getElementById("splash-overlay");
+    const splashText = document.getElementById("splash-text");
+    const splashBar = document.getElementById("splash-bar-inner");
+
+    /* ---------- SECURITY & IDLE LOGIC ---------- */
+    const IDLE_TIMEOUT = 30 * 60 * 1000; // 30 minutes in ms
+    let idleTimer;
+
+    function resetIdleTimer() {
+        if (!loginView.classList.contains('hidden')) return; // Don't track idle on login screen
+        
+        clearTimeout(idleTimer);
+        idleTimer = setTimeout(() => {
+            console.log("Idle timeout reached. Logging out...");
+            window.frappeAPI.close(); // Force application close/logout
+        }, IDLE_TIMEOUT);
+    }
+
+    // Interaction listeners for idle tracking
+    ['mousemove', 'mousedown', 'keypress', 'touchstart', 'scroll'].forEach(evt => {
+        window.addEventListener(evt, resetIdleTimer, true);
+    });
+
+    const securityModal = document.getElementById('security-reminder');
+    const SECURITY_TIPS = [
+        "Never share your password with anyone, including support staff.",
+        "Always lock your machine when stepping away from your desk.",
+        "Verify the source of emails before clicking any suspicious links.",
+        "Use multi-factor authentication where available for maximum security.",
+        "Report any suspicious system activity to your administrator immediately."
+    ];
+
+    function checkSecurityReminder() {
+        const lastShown = localStorage.getItem('omnis_security_last');
+        const today = new Date().toDateString();
+
+        if (lastShown !== today) {
+            // Pick a random tip
+            const tip = SECURITY_TIPS[Math.floor(Math.random() * SECURITY_TIPS.length)];
+            document.getElementById('security-tip').innerText = tip;
+            
+            securityModal.classList.add('active');
+        } else {
+            // Already shown today, proceed
+            onSecurityAcknowledged();
+        }
+    }
+
+    function acknowledgeSecurity() {
+        const today = new Date().toDateString();
+        localStorage.setItem('omnis_security_last', today);
+        securityModal.classList.remove('active');
+        onSecurityAcknowledged();
+    }
+
+    function onSecurityAcknowledged() {
+        if (!pendingUrl) return;
+        const target = pendingUrl;
+        pendingUrl = null;
+
+        if (window.frappeAPI && window.frappeAPI.openDashboard) {
+            window.frappeAPI.openDashboard(target);
+        } else {
+            window.location.href = target;
+        }
+    }
+
+    let pendingUrl = null;
+
+    const TECHNICAL_JARGON = [
+      "Establishing cryptographic handshake…",
+      "Requesting TGT from Kerberos…",
+      "Validating JWT signature…",
+      "Parsing BGP routing tables…",
+      "Handshaking with node clusters…",
+      "Initializing secure tunnel (TLS 1.3)…",
+      "Querying distributed Hashmap…",
+      "Verifying zero-knowledge proofs…",
+      "Synchronizing entropy pools…",
+      "Executing cold-start routines…"
+    ];
+
+    function getRandomJargon() {
+      return TECHNICAL_JARGON[Math.floor(Math.random() * TECHNICAL_JARGON.length)];
+    }
+
+    function setStatus(text, cls) {
+      statusEl.textContent = text || "";
+      statusEl.className = "login-status" + (cls ? " " + cls : "");
+    }
+
+    function showSplash(message, progress) {
+      splashOverlay.classList.remove("hidden");
+      splashText.textContent = message || "Connecting to Omnis…";
+      if (typeof progress === "number") {
+        const clamped = Math.max(0, Math.min(100, progress));
+        splashBar.style.width = clamped + "%";
+      }
+    }
+
+    function updateSplash(message, progress) {
+      if (message) splashText.textContent = message;
+      if (typeof progress === "number") {
+        const clamped = Math.max(0, Math.min(100, progress));
+        splashBar.style.width = clamped + "%";
+      }
+    }
+
+    function hideSplash() { splashOverlay.classList.add("hidden"); }
+
+    function runInitialSplash() {
+      const messages = [
+        "Booting Omnis engine…",
+        "Initialising secure session…",
+        "Syncing dashboards…",
+        "Linking systems…",
+        "Ready."
+      ];
+      let i = 0;
+      showSplash(messages[0], 10);
+      const interval = setInterval(() => {
+        i++;
+        if (i >= messages.length) {
+          clearInterval(interval);
+          setTimeout(() => hideSplash(), 400);
+          return;
+        }
+        updateSplash(messages[i], (i / messages.length) * 100);
+      }, 500);
+    }
+
+    // Initial
+    runInitialSplash();
+
+    /* Login interactions */
+    showPw.addEventListener("change", () => { pwdInput.type = showPw.checked ? "text" : "password"; });
+    forgotLink.addEventListener("click", (e) => { e.preventDefault(); window.open("https://salestrack.powerstar.co.zw/#forgot", "_blank"); });
+
+    form.addEventListener("submit", (e) => {
+      e.preventDefault();
+      const usr = emailInput.value.trim();
+      const pwd = pwdInput.value.trim();
+      if (!usr || !pwd) {
+        setStatus("Please enter email and password.", "error");
+        return;
+      }
+      submitBtn.disabled = true;
+      tryLoginSequentially(usr, pwd, false);
+    });
+
+    async function tryLoginSequentially(usr, pwd, silentAuto = false) {
+      const total = OMNIS_SYSTEMS.length;
+      showSplash(getRandomJargon(), 10);
+      
+      const feed = document.getElementById("system-feed");
+      feed.innerHTML = OMNIS_SYSTEMS.map(s => `
+        <div class="system-item" id="sys-row-${s.key}">
+          <span>${s.name}</span>
+          <span class="status-indicator">...</span>
+        </div>
+      `).join('');
+
+      let lastError = "";
+
+      // Jargon rotator for visual feedback
+      const jargonInterval = setInterval(() => {
+        updateSplash(getRandomJargon());
+      }, 1500);
+
+      for (let i = 0; i < OMNIS_SYSTEMS.length; i++) {
+        const sys = OMNIS_SYSTEMS[i];
+        const row = document.getElementById(`sys-row-${sys.key}`);
+        if (row) row.classList.add('active');
+
+        // Update progress bar
+        updateSplash(null, ((i + 1) / total) * 100);
+
+        try {
+          const loginUrl = sys.baseUrl + "/api/method/login";
+          let data = {};
+          
+          if (window.frappeAPI && window.frappeAPI.request) {
+            const requestHeaders = {};
+            if (sys.key === "spe" || loginUrl.includes('spareparts-exchange')) requestHeaders['Host'] = 'omnis.spareparts-exchange.com';
+            const res = await window.frappeAPI.request({ url: loginUrl, method: 'POST', data: { usr, pwd }, headers: requestHeaders, syncCookies: true });
+            data = res.data;
+          } else {
+            const params = new URLSearchParams();
+            params.append('usr', usr);
+            params.append('pwd', pwd);
+            const res = await fetch(loginUrl, { method: "POST", headers: { "Content-Type": "application/x-www-form-urlencoded" }, body: params.toString(), credentials: "include" });
+            const txt = await res.text();
+            try { data = JSON.parse(txt); } catch { }
+          }
+
+          if (data && data.message && String(data.message).toLowerCase().includes("logged")) {
+            clearInterval(jargonInterval);
+            if (row) {
+              row.classList.remove('active');
+              row.classList.add('done');
+              row.querySelector('.status-indicator').innerHTML = 'AUTHORIZED';
+            }
+
+            localStorage.setItem("omnisUser", usr);
+            localStorage.setItem("omnisSystemKey", sys.key);
+            if (rememberMe.checked || silentAuto) {
+              localStorage.setItem(LS_REMEMBER, "1");
+              localStorage.setItem(LS_USER, usr);
+              localStorage.setItem(LS_PWD, pwd);
+            }
+            if (sys.key === "fleetrack") localStorage.setItem("ft_user_email", usr);
+
+            setTimeout(() => {
+                updateSplash("Handshake Finalized. Redirecting...", 100);
+                setTimeout(() => {
+                  let url = "";
+                  if (sys.key === "powertrack") {
+                    url = "systems/powertrack/dashboard.html";
+                  } else if (sys.key === "fleetrack") {
+                    url = "systems/fleetrack/index.html";
+                  } else if (sys.key === "salestrack") {
+                    url = "systems/salestrack/index.html";
+                  } else {
+                    url = "systems/group_accounts/index.html";
+                  }
+
+                  // Store the URL and check for security briefing
+                  pendingUrl = url;
+                  hideSplash();
+                  checkSecurityReminder();
+                }, 800);
+            }, 600);
+            return;
+          } else {
+            throw new Error("Invalid");
+          }
+        } catch (err) {
+          if (row) {
+            row.classList.remove('active');
+            row.classList.add('error');
+            
+            // Extract meaningful error message if available
+            let errorMsg = 'DEFERRED';
+            if (err.message && err.message.includes('417')) errorMsg = 'SERVER ERR (417)';
+            else if (err.message && err.message.includes('500')) errorMsg = 'SERVER ERR (500)';
+            else if (err.message && err.message.includes('403')) errorMsg = 'FORBIDDEN (403)';
+            
+            row.querySelector('.status-indicator').textContent = errorMsg;
+          }
+          lastError = sys.name;
+        }
+      }
+
+      clearInterval(jargonInterval);
+      hideSplash();
+      if (!silentAuto) {
+        setStatus("Access Denied: Invalid Credentials Provided", "error");
+        submitBtn.disabled = false;
+        // Shake animation for the form
+        form.style.animation = 'none';
+        form.offsetHeight; // trigger reflow
+        form.style.animation = 'shake 0.5s cubic-bezier(.36,.07,.19,.97) both';
+      }
+    }
+
+    (function autoLoginIfRemembered() {
+      const remembered = localStorage.getItem(LS_REMEMBER) === "1";
+      if (!remembered) return;
+
+      const savedUser = localStorage.getItem(LS_USER) || "";
+      const savedPwd = localStorage.getItem(LS_PWD) || "";
+      if (!savedUser || !savedPwd) return;
+
+      emailInput.value = savedUser;
+      pwdInput.value = savedPwd;
+      rememberMe.checked = true;
+
+      submitBtn.disabled = true;
+      tryLoginSequentially(savedUser.trim(), savedPwd.trim(), true);
+    })();
+  </script>
+</body>
+
+</html>

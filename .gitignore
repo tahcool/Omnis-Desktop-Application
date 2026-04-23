@@ -1,0 +1,83 @@
+# Dependency directories
+node_modules/
+dist/
+build/
+bin/
+obj/
+assets/browser/
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.venv/
+env/
+venv/
+ENV/
+
+# Logs and databases
+*.log
+*.sqlite
+*.db
+crash_dump.txt
+crash_errors.txt
+crash_final.txt
+crash_recurring.txt
+build_log*.txt
+npm_install_log.txt
+curl_out.txt
+device_crash.log
+device_crash_2.log
+ipc_trace.log
+
+# WhatsApp / Session data (CRITICAL)
+.wwebjs_cache/
+.test_auth/
+.wwebjs_auth/
+session.json
+*.session
+
+# Mobile / Expo
+.expo/
+*.apk
+*.ipa
+
+# OS / IDE
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+
+# Scratch and Temporary files (Screenshots/Dumps/Debug scripts)
+*.png
+*.jpg
+*.jpeg
+*.gif
+*.txt
+scratch/
+check_*.py
+debug_*.py
+verify_*.py
+dump_*.py
+test_*.py
+catch_sql.py
+discovery.py
+fix_ft_dashboard.py
+search_db.py
+clear_cache.js
+api_error.json
+debug_dbr_response.json
+logo_*.txt
+timestamp.txt
+find_results.txt
+requests_search.txt
+
+# Keep specific markdown files
+!INSTALLATION.md
+!SYSTEM_ARCHITECTURE.md
+!USER_MANUAL.md
+!README.md
+
+# Keep specific necessary scripts if any
+# !build_installer.bat

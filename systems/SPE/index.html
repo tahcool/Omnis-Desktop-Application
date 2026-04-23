@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SPE – Parts Search</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;850&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="index.css">
+</head>
+
+<body>
+    <div class="spe-root">
+        <div class="spe-background-blobs">
+            <div class="blob blob-1"></div>
+            <div class="blob blob-2"></div>
+        </div>
+
+        <header class="spe-header">
+            <div class="spe-logo">
+                <span class="logo-spe">SPE</span>
+                <span class="logo-dot">·</span>
+                <span class="logo-omnis">Omnis</span>
+            </div>
+
+            <div class="spe-status-indicators">
+                <div class="status-item sync-time">
+                    <span class="status-label">Last Sync:</span>
+                    <span id="sync-time-val">Just now</span>
+                </div>
+                <div class="status-item connection">
+                    <div id="conn-dot" class="status-dot online"></div>
+                    <span id="conn-status">Connected</span>
+                </div>
+            </div>
+            <div class="spe-header-actions">
+                <div class="action-item logout-btn" id="spe-logout-btn" title="Sign Out">
+                    <span class="icon">🚪</span>
+                </div>
+                <div class="spe-user-profile">
+                    <div class="user-info">
+                        <div class="user-name" id="user-name">Administrator</div>
+                        <div class="user-role">Inventory Manager</div>
+                    </div>
+                    <div class="user-avatar">AD</div>
+                </div>
+            </div>
+        </header>
+
+        <main class="spe-main">
+            <section class="spe-hero">
+                <h1>Find your <span id="dynamic-word">Parts</span> faster.</h1>
+                <p>Search by part number, name, or specific dimensions across our entire catalog.</p>
+
+                <div class="spe-search-container">
+                    <div class="spe-search-bar-wrapper">
+                        <div class="search-icon">🔍</div>
+                        <label for="parts-search-input" class="sr-only">Search parts</label>
+                        <input type="text" id="parts-search-input" placeholder="Part number, name, or size..."
+                            autocomplete="off" title="Search part number, keyword, or category">
+                        <button class="search-btn">Search</button>
+                    </div>
+
+                    <div class="spe-extra-toggles">
+                        <div class="spe-dimension-toggle-wrapper">
+                            <span class="toggle-label">Search by Dimensions</span>
+                            <label class="spe-switch">
+                                <input type="checkbox" id="dimension-toggle" title="Search by Dimensions">
+                                <span class="spe-slider"></span>
+                            </label>
+                        </div>
+
+                        <div class="spe-trending-toggle-wrapper">
+                            <button id="toggle-trending-btn" class="spe-text-btn">
+                                <span class="btn-icon">📈</span>
+                                <span class="btn-text">Show Trending Parts</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="dimension-panel" class="spe-dimension-panel hidden">
+                    <div class="dimension-inputs">
+                        <div class="dim-group">
+                            <label for="dim-width">Width (mm)</label>
+                            <input type="number" id="dim-width" step="0.1" placeholder="e.g. 10.0">
+                        </div>
+                        <div class="dim-group">
+                            <label for="dim-height">Height (mm)</label>
+                            <input type="number" id="dim-height" step="0.1" placeholder="e.g. 12.5">
+                        </div>
+                        <div class="dim-group">
+                            <label for="dim-diameter">Diameter (mm)</label>
+                            <input type="number" id="dim-diameter" step="0.1" placeholder="e.g. 5.0">
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <section id="results-section" class="spe-results-section hidden">
+                <div class="results-header">
+                    <h2 id="results-title">Trending Parts</h2>
+                    <div class="results-count" id="results-count">Showing 6 items</div>
+                </div>
+
+                <div class="spe-results-grid" id="results-grid">
+                    <!-- Placeholder cards will go here via JS -->
+                    <div class="loading-state">Initializing catalog...</div>
+                </div>
+            </section>
+        </main>
+
+        <footer class="spe-footer">
+            <a href="https://www.spareparts-exchange.com" target="_blank" rel="noopener" class="spe-footer-link">
+                www.spareparts-exchange.com
+            </a>
+        </footer>
+    </div>
+
+    <script src="search.js"></script>
+</body>
+
+</html>

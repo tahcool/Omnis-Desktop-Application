@@ -1,0 +1,442 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Omnis – Dashboard</title>
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self' 'unsafe-inline' data:;">
+  <style>
+    :root {
+      --bg-main: #f4f6fb;
+      --bg-card: #ffffff;
+      --accent: #e53935;
+      --accent-soft: #fdecea;
+      --accent-strong: #b71c1c;
+      --text-main: #111827;
+      --text-muted: #6b7280;
+      --sidebar-bg: #111827;
+      --sidebar-hover: #1f2937;
+      --sidebar-accent: #f97373;
+      --border-subtle: #e5e7eb;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: var(--bg-main);
+      color: var(--text-main);
+      min-height: 100vh;
+      display: flex;
+    }
+
+    .sidebar {
+      width: 220px;
+      background: radial-gradient(circle at top left, #1e293b, #020617);
+      color: #e5e7eb;
+      padding: 14px 12px;
+      display: flex;
+      flex-direction: column;
+      transition: width 0.18s ease-out;
+      position: relative;
+    }
+
+    .sidebar.collapsed {
+      width: 64px;
+    }
+
+    .sidebar-logo-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 16px;
+    }
+
+    .sidebar .logo-mark {
+      width: 30px;
+      height: 30px;
+      border-radius: 10px;
+      background: linear-gradient(135deg, #e53935, #b71c1c);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      font-size: 16px;
+    }
+
+    .sidebar .logo-labels {
+      margin-left: 8px;
+      transition: opacity 0.15s ease-out;
+    }
+
+    .sidebar.collapsed .logo-labels {
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    .logo-main {
+      font-size: 11px;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+    }
+
+    .logo-sub {
+      font-size: 10px;
+      color: #9ca3af;
+    }
+
+    .sidebar-toggle {
+      border: none;
+      background: rgba(15, 23, 42, 0.8);
+      color: #e5e7eb;
+      border-radius: 999px;
+      padding: 4px 8px;
+      font-size: 11px;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .nav {
+      margin-top: 10px;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      flex: 1;
+    }
+
+    .nav-item {
+      border-radius: 8px;
+      padding: 7px 8px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 12px;
+      color: #e5e7eb;
+      cursor: pointer;
+      border: 1px solid transparent;
+    }
+
+    .nav-item span.icon {
+      width: 18px;
+      text-align: center;
+      font-size: 13px;
+    }
+
+    .sidebar.collapsed .nav-item span.label {
+      display: none;
+    }
+
+    .nav-item.active {
+      background: rgba(248, 250, 252, 0.07);
+      border-color: rgba(248, 113, 113, 0.4);
+    }
+
+    .nav-item:hover {
+      background: rgba(15, 23, 42, 0.85);
+    }
+
+    .sidebar-footer {
+      font-size: 10px;
+      color: #9ca3af;
+      margin-top: 8px;
+    }
+
+    .sidebar-footer strong {
+      color: #f97373;
+    }
+
+    .main {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      padding: 12px 18px;
+      gap: 10px;
+    }
+
+    .topbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+    }
+
+    .topbar-left {
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+
+    .topbar-title {
+      font-size: 14px;
+      font-weight: 600;
+    }
+
+    .topbar-sub {
+      font-size: 11px;
+      color: var(--text-muted);
+    }
+
+    .topbar-right {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .sync-indicator {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      font-size: 11px;
+      padding: 5px 9px;
+      border-radius: 999px;
+      background: #ecfdf3;
+      border: 1px solid #bbf7d0;
+      color: #15803d;
+    }
+
+    .sync-indicator.offline {
+      background: #fef2f2;
+      border-color: #fecaca;
+      color: #b91c1c;
+    }
+
+    .sync-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 999px;
+      background: #22c55e;
+    }
+
+    .sync-indicator.offline .sync-dot {
+      background: #ef4444;
+    }
+
+    .icon-pill {
+      width: 30px;
+      height: 30px;
+      border-radius: 999px;
+      background: #ffffff;
+      border: 1px solid #e5e7eb;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 14px;
+      cursor: pointer;
+    }
+
+    .profile-pill {
+      display: inline-flex;
+      align-items: center;
+      border-radius: 999px;
+      padding: 3px 8px;
+      background: #ffffff;
+      border: 1px solid #e5e7eb;
+      font-size: 11px;
+      gap: 6px;
+      cursor: pointer;
+    }
+
+    .profile-avatar {
+      width: 20px;
+      height: 20px;
+      border-radius: 999px;
+      background: linear-gradient(135deg, #4b5563, #111827);
+      color: #f9fafb;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 11px;
+      font-weight: 600;
+    }
+
+    .layout {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    main#content {
+      flex: 1;
+      border-radius: 16px;
+      background: #f9fafb;
+      border: 1px solid var(--border-subtle);
+      padding: 12px;
+      overflow: auto;
+    }
+
+    .ai-bubble {
+      position: fixed;
+      right: 20px;
+      bottom: 20px;
+      width: 48px;
+      height: 48px;
+      border-radius: 999px;
+      background: radial-gradient(circle at top left, #e53935, #b71c1c);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: #f9fafb;
+      font-size: 22px;
+      cursor: pointer;
+      box-shadow: 0 14px 30px rgba(185, 28, 28, 0.4);
+      z-index: 50;
+    }
+  </style>
+</head>
+<body>
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-logo-row">
+      <div style="display:flex; align-items:center; gap:8px;">
+        <div class="logo-mark">O</div>
+        <div class="logo-labels">
+          <div class="logo-main">OMNIS</div>
+          <div class="logo-sub" id="systemLabel">Loading…</div>
+        </div>
+      </div>
+      <button class="sidebar-toggle" id="toggleSidebar">&laquo;</button>
+    </div>
+
+    <nav class="nav" id="navMenu">
+      <div class="nav-item active" data-section="home">
+        <span class="icon">🏠</span><span class="label">Home</span>
+      </div>
+      <div class="nav-item" data-section="reports">
+        <span class="icon">📊</span><span class="label">Reports</span>
+      </div>
+      <div class="nav-item" data-section="tasks">
+        <span class="icon">✅</span><span class="label">Tasks</span>
+      </div>
+      <!-- per-system extra items can be injected via JS -->
+    </nav>
+
+    <div class="sidebar-footer">
+      Connected as <strong id="userLabel">User</strong>
+    </div>
+  </aside>
+
+  <div class="main">
+    <header class="topbar">
+      <div class="topbar-left">
+        <div class="topbar-title" id="pageTitle">Dashboard</div>
+        <div class="topbar-sub" id="pageSubtitle">System overview at a glance.</div>
+      </div>
+      <div class="topbar-right">
+        <div class="sync-indicator" id="syncIndicator">
+          <span class="sync-dot"></span>
+          <span id="syncText">Online</span>
+        </div>
+        <div class="icon-pill" title="Notifications">🔔</div>
+        <div class="profile-pill" id="profilePill">
+          <div class="profile-avatar" id="profileInitials">GT</div>
+          <span id="profileName">Ghost</span>
+        </div>
+      </div>
+    </header>
+
+    <div class="layout">
+      <main id="content">
+        <!-- System-specific content will be injected here -->
+      </main>
+    </div>
+  </div>
+
+  <div class="ai-bubble" title="Ask Omnis AI">
+    💬
+  </div>
+
+  <script>
+    function getQueryParam(name) {
+      const url = new URL(window.location.href);
+      return url.searchParams.get(name);
+    }
+
+    const system = getQueryParam("system") || "salestrack";
+    const userInfoRaw = localStorage.getItem("omnis_login");
+    let userEmail = "";
+    try {
+      if (userInfoRaw) {
+        const data = JSON.parse(userInfoRaw);
+        userEmail = data.email || "";
+      }
+    } catch(e) {}
+
+    document.getElementById("systemLabel").textContent =
+      system.toUpperCase();
+    document.getElementById("userLabel").textContent =
+      userEmail || "Unknown user";
+    document.getElementById("profileName").textContent =
+      userEmail || "Ghost";
+    document.getElementById("profileInitials").textContent =
+      (userEmail || "GT")[0].toUpperCase();
+
+    // Sidebar collapse
+    const sidebar = document.getElementById("sidebar");
+    const toggleSidebarBtn = document.getElementById("toggleSidebar");
+    toggleSidebarBtn.addEventListener("click", () => {
+      const collapsed = sidebar.classList.toggle("collapsed");
+      toggleSidebarBtn.innerHTML = collapsed ? "&raquo;" : "&laquo;";
+    });
+
+    // Naive online/offline indicator
+    const syncIndicator = document.getElementById("syncIndicator");
+    const syncText = document.getElementById("syncText");
+    function updateOnlineStatus() {
+      if (navigator.onLine) {
+        syncIndicator.classList.remove("offline");
+        syncText.textContent = "Online";
+      } else {
+        syncIndicator.classList.add("offline");
+        syncText.textContent = "Offline";
+      }
+    }
+    window.addEventListener("online", updateOnlineStatus);
+    window.addEventListener("offline", updateOnlineStatus);
+    updateOnlineStatus();
+
+    // Load system-specific content
+    const contentEl = document.getElementById("content");
+    const pageTitle = document.getElementById("pageTitle");
+    const pageSubtitle = document.getElementById("pageSubtitle");
+
+    const systemMeta = {
+      salestrack: {
+        title: "SalesTrack Overview",
+        subtitle: "Quotations, orders and follow-ups in one place.",
+        file: "dashboard-salestrack.html"
+      },
+      fleettrack: {
+        title: "FleetTrack Overview",
+        subtitle: "Telematics and unit activity.",
+        file: "dashboard-fleettrack.html"
+      },
+      engtrack: {
+        title: "EngTrack Overview",
+        subtitle: "Breakdowns, jobs and technicians.",
+        file: "dashboard-engtrack.html"
+      }
+    };
+
+    const meta = systemMeta[system] || systemMeta["salestrack"];
+    pageTitle.textContent = meta.title;
+    pageSubtitle.textContent = meta.subtitle;
+
+    fetch(meta.file)
+      .then(r => r.text())
+      .then(html => { contentEl.innerHTML = html; })
+      .catch(() => {
+        contentEl.innerHTML = "<p style='font-size:12px;color:#b91c1c;'>Unable to load dashboard content.</p>";
+      });
+
+    // Simple nav click handling – can be extended later
+    document.querySelectorAll(".nav-item").forEach(item => {
+      item.addEventListener("click", () => {
+        document.querySelectorAll(".nav-item").forEach(i => i.classList.remove("active"));
+        item.classList.add("active");
+        // In future: load section-specific partials if needed.
+      });
+    });
+  </script>
+</body>
+</html>
