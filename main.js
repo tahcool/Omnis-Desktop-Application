@@ -327,6 +327,11 @@ ipcMain.handle("app:getVersion", () => {
   return app.getVersion();
 });
 
+ipcMain.handle("app:checkForUpdates", () => {
+  autoUpdater.checkForUpdates();
+  return { ok: true };
+});
+
 // Helper: Append entry to persistent IPC trace log
 function appendIpcTrace(entry) {
   const fs = require('fs');

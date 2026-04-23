@@ -58,6 +58,9 @@ window.OmnisDashboardV6 = class OmnisDashboardV6 {
                 window.electron.getVersion().then(v => {
                     const label = document.getElementById('app-version-label');
                     if (label) label.innerText = `V${v}-STABLE`;
+                    
+                    const sLabel = document.getElementById('update-settings-status');
+                    if (sLabel) sLabel.innerText = `Version ${v} Stable`;
                 });
             }
         } catch (e) {
@@ -74,6 +77,23 @@ window.OmnisDashboardV6 = class OmnisDashboardV6 {
 
     showError(msg) {
         console.warn("Dashboard Display Error:", msg);
+    }
+
+    checkUpdatesManually() {
+        if (window.electron && window.electron.checkForUpdates) {
+            const btn = document.getElementById('btn-manual-update');
+            if (!btn) return;
+            const originalText = btn.innerHTML;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> CHECKING...';
+            btn.disabled = true;
+
+            window.electron.checkForUpdates().then(() => {
+                setTimeout(() => {
+                    btn.innerHTML = originalText;
+                    btn.disabled = false;
+                }, 2000);
+            });
+        }
     }
 
     formatNumber(num) {
