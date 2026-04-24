@@ -367,29 +367,8 @@ ipcMain.handle("frappe:request", async (event, { url, method, data, headers, syn
                        url.includes(ENGTRACK_DOMAIN) || url.includes(FLEETRACK_DOMAIN_V2) || 
                        url.includes(ENGTRACK_DOMAIN_V2) || url.includes(POWERTRACK_DOMAIN);
 
-    let finalUrl = url;
-
-    // Forced IP mapping due to unstable DNS resolution on user network
-    if (isSpe && url.includes(SPE_DOMAIN)) {
-      finalUrl = url.replace(SPE_DOMAIN, SPE_IP);
-      console.log(`[Frappe IPC] SPE HARDWARE REWRITE: ${url} -> ${finalUrl}`);
-    } else if (isSalestrack && url.includes(SALESTRACK_DOMAIN)) {
-      finalUrl = url.replace(SALESTRACK_DOMAIN, SALESTRACK_IP);
-      console.log(`[Frappe IPC] SALESTRACK HARDWARE REWRITE: ${url} -> ${finalUrl}`);
-    } else if (isFleetrack) {
-      // Handle both .machinery-exchange.com and .powerstar.co.zw variants
-      finalUrl = url.replace(FLEETRACK_DOMAIN, FLEETRACK_IP)
-                    .replace(ENGTRACK_DOMAIN, FLEETRACK_IP)
-                    .replace(FLEETRACK_DOMAIN_V2, FLEETRACK_IP)
-                    .replace(ENGTRACK_DOMAIN_V2, FLEETRACK_IP)
-                    .replace(POWERTRACK_DOMAIN, FLEETRACK_IP);
-      
-      if (finalUrl !== url) {
-        console.log(`[Frappe IPC] FLEET/ENG/POWER HARDWARE REWRITE: ${url} -> ${finalUrl}`);
-      }
-    }
-
-    console.log(`[Frappe IPC] Request Trace: ${method || 'POST'} ${finalUrl}`);
+    const finalUrl = url;
+    console.log(`[Frappe IPC] Request Trace: ${method || 'POST'} ${url}`);
 
     // Get cookies from Electron session for this URL
     const ses = session.defaultSession;
@@ -454,16 +433,27 @@ ipcMain.handle("frappe:request", async (event, { url, method, data, headers, syn
     delete requestHeaders['Expect'];
     delete requestHeaders['expect'];
 
-    console.log(`[IPC Request] ${axiosMethod} ${finalUrl}`);
+    console.log(`[IPC Request] ${axiosMethod} ${url}`);
     console.log(`[IPC Request] Headers:`, JSON.stringify(requestHeaders));
 
-    appendIpcTrace(`START: ${axiosMethod} ${finalUrl} (Host: ${requestHeaders['Host']})`);
+    appendIpcTrace(`START: ${axiosMethod} ${url} (Host: ${requestHeaders['Host']})`);
+
+    // Global mapping for hardware IPs to bypass DNS instability
+    const DNS_MAP = {
+      [SPE_DOMAIN]: SPE_IP,
+      [SALESTRACK_DOMAIN]: SALESTRACK_IP,
+      [FLEETRACK_DOMAIN]: FLEETRACK_IP,
+      [ENGTRACK_DOMAIN]: FLEETRACK_IP,
+      [POWERTRACK_DOMAIN]: FLEETRACK_IP,
+      [FLEETRACK_DOMAIN_V2]: FLEETRACK_IP,
+      [ENGTRACK_DOMAIN_V2]: FLEETRACK_IP,
+    };
 
     // FORCED OVERRIDE TIMEOUT: Ensure we never hang the main loop beyond 12s
     const FORCED_TIMEOUT_MS = 12000;
     
     const axiosPromise = axios({
-      url: finalUrl,
+      url: url, // Use ORIGINAL URL (Domain name)
       method: axiosMethod,
       data: isPost ? requestData : undefined,
       params: !isPost ? data : undefined,
@@ -475,8 +465,15 @@ ipcMain.handle("frappe:request", async (event, { url, method, data, headers, syn
       validateStatus: (status) => status < 500,
       httpsAgent: new https.Agent({
         rejectUnauthorized: false,
-        // CRITICAL: Set servername for SNI when connecting via IP
-        servername: cleanHost || undefined
+        // ✅ The Golden Fix: Custom Lookup
+        // We connect to the IP but tell SSL it's the Domain
+        lookup: (hostname, options, callback) => {
+          if (DNS_MAP[hostname]) {
+            console.log(`[DNS Bypass] Mapping ${hostname} -> ${DNS_MAP[hostname]}`);
+            return callback(null, DNS_MAP[hostname], 4); // Force IPv4
+          }
+          require('dns').lookup(hostname, options, callback);
+        }
       }),
     });
 
