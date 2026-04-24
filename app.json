@@ -1,5 +1,7 @@
 {
+  "version": "2.0.1",
   "android": {
-    "package": "com.tahcool.omnisdesktop"
+    "package": "com.tahcool.omnisdesktop",
+    "versionCode": 201
   }
 }

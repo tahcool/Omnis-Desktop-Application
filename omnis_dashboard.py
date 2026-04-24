@@ -50,84 +50,42 @@ def _has_col(doctype, column, log_missing=True):
 
 def extract_params(payload=None, **kwargs):
     """
-    ULTRA-ROBUST parameter extraction with Deep Diagnostic Logging. 
-    Handles:
-    - Base64 payload (WAF Bypass)
-    - form_dict (Standard Frappe POST)
-    - Raw JSON Body (417 Fallback)
-    - Direct JSON Request (Harden)
-    - Multiple ID variations (reportId, report_id, name, order_name)
+    Ultra-clean parameter extraction to prevent 417/WAF issues.
     """
     import base64
     import json
     params = {}
     
-    # --- Deep Diagnostic Logging ---
-    try:
-        diag = {
-            "ts": nowdate(),
-            "form_dict_keys": list(frappe.form_dict.keys()) if frappe.form_dict else [],
-            "kwargs_keys": list(kwargs.keys()) if kwargs else [],
-            "payload_type": str(type(payload))
-        }
-        log_debug(f"DIAGNOSTIC: {json.dumps(diag)}")
-    except: pass
+    # 1. Global form_dict
+    if frappe.form_dict:
+        for k, v in frappe.form_dict.items():
+            if k not in ["cmd", "method"]:
+                params[k] = v
     
-    # 1. Start with form_dict (Prefer global frappe.form_dict)
-    try:
-        if frappe.form_dict:
-            params.update(frappe.form_dict)
-    except: pass
-    
-    # 2. Add direct JSON request body (New Harden Path)
-    try:
-        if hasattr(frappe, "request") and frappe.request and frappe.request.get_data():
-            try:
-                data = json.loads(frappe.request.get_data())
-                if data and isinstance(data, dict):
-                    params.update(data)
-            except: pass
-    except: pass
-
-    # 3. Add direct kwargs
-    if kwargs:
-        params.update(kwargs)
-        
-    # 4. Handle 'payload' (Base64 encoded JSON - THE WAF BYPASS)
+    # 2. Direct Payload (Bypass 417)
     p_str = payload or params.get("payload")
-    if p_str and isinstance(p_str, str) and len(p_str) > 4:
+    if p_str and isinstance(p_str, str) and len(p_str) > 5:
         try:
-            # Try Base64 then direct JSON
-            try: d = json.loads(base64.b64decode(p_str).decode('utf-8'))
-            except: d = json.loads(p_str)
+            # Try Base64 then direct
+            try:
+                decoded = base64.b64decode(p_str).decode('utf-8')
+                d = json.loads(decoded)
+            except:
+                d = json.loads(p_str)
             
-            # Recurse once if we got a double-stringified JSON (handles legacy bug fallout)
-            if isinstance(d, str) and d.strip().startswith("{"):
-                try: d = json.loads(d)
-                except: pass
-
             if d and isinstance(d, dict):
                 params.update(d)
         except: pass
 
-    # 5. Final ID Logic: Permissive Key Mapping
-    # Standardize 'report_id' to capture all possible incoming variations
+    # 3. Add direct kwargs
+    if kwargs:
+        params.update(kwargs)
+
+    # 4. Standardize ID mapping
     if not params.get("report_id"):
         permissive_id = params.get("reportId") or params.get("name") or params.get("order_name") or params.get("rid")
         if permissive_id:
             params["report_id"] = permissive_id
-        else:
-            # DUMP ALL KEYS FOR IMMEDIATE FRONTEND DEBUGGING
-            try:
-                diag_info = {
-                    "fd": list(frappe.form_dict.keys()),
-                    "kw": list(kwargs.keys()),
-                    "pl": str(type(payload)),
-                    "p_type": str(type(p_str)),
-                    "p_len": len(p_str) if p_str else 0
-                }
-                params["__diag__"] = json.dumps(diag_info)
-            except: pass
 
     return params
 
@@ -1462,27 +1420,35 @@ def _parse_lead_time_days(lead_time_str, base_date=None):
     if "in stock" in txt or "immediate" in txt:
         return 0
         
-    # 2. Arriving end of [Month]
-    if "arriving end of" in txt:
-        months = ["january", "february", "march", "april", "may", "june", 
-                  "july", "august", "september", "october", "november", "december"]
-        for i, month in enumerate(months):
-            if month in txt:
-                target_month = i + 1
-                base = getdate(base_date or today())
-                # Calculate last day of that month
-                year = base.year
-                if target_month < base.month:
-                    year += 1 # Next year
+    # 2. Month Names / End of Month (e.g., "End of June", "August")
+    months = ["january", "february", "march", "april", "may", "june", 
+              "july", "august", "september", "october", "november", "december"]
+    
+    found_month = -1
+    for i, month in enumerate(months):
+        if month in txt:
+            found_month = i + 1
+            break
+            
+    if found_month > 0:
+        base = getdate(base_date or today())
+        year = base.year
+        if found_month < base.month:
+            year += 1 # Assume next year if month has passed
+            
+        try:
+            # If "end of" is present, use the last day of the month
+            if "end of" in txt or "end " in txt:
+                test_date = getdate(f"{year}-{found_month:02d}-01")
+                target_date = get_last_day(test_date)
+            else:
+                # Default to middle of month if just month name is given
+                target_date = getdate(f"{year}-{found_month:02d}-15")
                 
-                # Get last day of target month using frappe utils
-                try:
-                    test_date = getdate(f"{year}-{target_month:02d}-01")
-                    target_date = get_last_day(test_date)
-                    diff = date_diff(target_date, base)
-                    return max(0, diff)
-                except:
-                    return 0
+            diff = date_diff(target_date, base)
+            return max(0, diff)
+        except:
+            pass
 
     # 3. Numeric ranges or values
     nums = re.findall(r"(\d+(?:\.\d*)?)", txt)
@@ -1502,53 +1468,93 @@ def _parse_lead_time_days(lead_time_str, base_date=None):
     # Default to weeks if no unit found but numbers exist
     return int(val * 7)
 
-def _trigger_fmb_entry_from_sale(sale_doc):
+@frappe.whitelist(allow_guest=True)
+def diagnostic_get_logs():
+    """Temporary endpoint to check for automation errors."""
+    return {
+        "ok": True,
+        "logs": frappe.get_all("Error Log", 
+            filters={"title": ["like", "%Salestrack%"]}, 
+            fields=["title", "message", "creation"], 
+            order_by="creation desc", 
+            limit=20)
+    }
+
+def _trigger_fmb_entry_from_sale(sale_doc, original_user=None):
     """
     Automatically creates an Order Tracking (FMB Report) entry when a Group Sales record is created.
+    Hardened for visibility in GSM and Orders dashboards.
     """
-    frappe.log_error(f"FMB Automation Started for Sale: {sale_doc.name}", "Salestrack Debug")
+    # Use name if available, otherwise use doc directly
+    sale_name = getattr(sale_doc, "name", "New")
+    log_debug(f"FMB Automation: Start for Sale {sale_name}", "FMB SYNC DEBUG")
+    
     try:
+        # Re-fetch to ensure we have all fields after insert (if name exists)
+        if hasattr(sale_doc, "name") and sale_doc.name:
+            try: 
+                loaded_doc = frappe.get_doc("Group Sales", sale_doc.name)
+                if loaded_doc: sale_doc = loaded_doc
+            except: pass
+
         # 1. Parse lead time and calculate target date
-        lead_time_days = _parse_lead_time_days(sale_doc.committed_lead_time, sale_doc.order_date)
-        target_date = add_days(sale_doc.order_date, lead_time_days)
+        lt_str = sale_doc.get("committed_lead_time") or ""
+        order_dt = sale_doc.get("order_date") or nowdate()
+        
+        lead_time_days = _parse_lead_time_days(lt_str, order_dt)
+        target_date = add_days(order_dt, lead_time_days)
         
         # 2. Create FMB Report (Parent)
         fmb = frappe.new_doc("FMB Report")
-        fmb.customer_name = sale_doc.customer
-        fmb.order_date = sale_doc.order_date
-        fmb.committed_lead_time = sale_doc.committed_lead_time
+        fmb.customer_name = sale_doc.get("customer") or "Unknown Customer"
+        fmb.order_date = order_dt
+        fmb.committed_lead_time = lt_str
         fmb.status = "New Sale"
+        fmb.tracking_only_no_order = 0
         
-        # Map salesperson to owner if it's an email, otherwise use company fallback for filters
-        if hasattr(sale_doc, "salesperson") and sale_doc.salesperson and "@" in sale_doc.salesperson:
-            fmb.owner = sale_doc.salesperson
+        # Map Parent Machine field for list views
+        machine_item = sale_doc.get("model") or sale_doc.get("item") or "Machine"
+        if _has_col("FMB Report", "machine", log_missing=False):
+            fmb.machine = machine_item
+            
+        # Ownership Logic
+        u = original_user or frappe.session.user
+        if u and "@" in u and "admin" not in u.lower():
+            fmb.owner = u
         else:
-            # Case-insensitive check for company
-            comp = str(getattr(sale_doc, "company", "") or "").lower()
-            if "sino" in comp:
+            comp_raw = str(sale_doc.get("company") or "").lower()
+            if "sino" in comp_raw:
                 fmb.owner = "automation@sinopower.co.zw"
             else:
                 fmb.owner = "automation@machinery-exchange.com"
         
-        # 3. Add Machine (Child Table) via append for better transaction safety
+        # 3. Add Machine (Child Table)
+        machine_qty = frappe.utils.cint(sale_doc.get("qty") or 1)
         fmb.append("machines", {
-            "item": getattr(sale_doc, "model", None) or getattr(sale_doc, "item", None),
-            "qty": getattr(sale_doc, "qty", 1) or 1,
+            "item": machine_item,
+            "qty": machine_qty,
             "target_handover_date": target_date
         })
             
         fmb.insert(ignore_permissions=True)
         
-        # 4. Final Commit
+        # 4. Force visibility fields (db_set bypasses default overrides)
+        frappe.db.set_value("FMB Report", fmb.name, "owner", fmb.owner, update_modified=False)
+        frappe.db.set_value("FMB Report", fmb.name, "tracking_only_no_order", 0, update_modified=False)
+        
+        sale_company = sale_doc.get("company")
+        if sale_company and _has_col("FMB Report", "company", log_missing=False):
+            comp_val = _company_value(sale_company) or sale_company
+            frappe.db.set_value("FMB Report", fmb.name, "company", comp_val, update_modified=False)
+            
+        # 5. Finalize
         frappe.db.commit()
-        frappe.log_error(f"FMB Automation Success: Created {fmb.name}", "Salestrack Debug")
+        frappe.log_error(f"FMB Automation Success: Created {fmb.name} for {fmb.customer_name}", "Salestrack Debug")
         return True
     except Exception as e:
-        frappe.log_error(f"FMB Automation Failure: {str(e)}", "Salestrack Debug Error")
+        frappe.log_error(f"FMB Automation Failure: {str(e)}\n{frappe.get_traceback()}", "Salestrack Debug Error")
         return False
-        # Log error but don't crash the main sale save process
-        log_debug(f"FMB Automation Trigger Failed: {str(e)}", "Salestrack Automation")
-        return False
+
 
 @frappe.whitelist(allow_guest=True, methods=["POST"])
 def save_group_sales(payload=None, **kwargs):
@@ -1603,7 +1609,7 @@ def save_group_sales(payload=None, **kwargs):
         doc.insert(ignore_permissions=True)
         
         # ✅ AUTOMATION: Trigger FMB (Order Tracking) Entry creation automatically
-        _trigger_fmb_entry_from_sale(doc)
+        _trigger_fmb_entry_from_sale(doc, original_user=previous_user)
         
         frappe.db.commit()
         return {"ok": True, "name": doc.name}
@@ -3185,9 +3191,9 @@ def get_weekly_gsm_report(company="all", from_date=None, to_date=None, payload=N
             )"""
 
             if company == "sinopower":
-                where_fmb_company = "AND f.owner LIKE '%@sinopower.co.zw%'"
+                where_fmb_company = "AND (f.owner LIKE '%@sinopower.co.zw%' OR f.company LIKE '%Sinopower%')"
             elif company == "machinery":
-                where_fmb_company = "AND f.owner LIKE '%@machinery-exchange.com%'"
+                where_fmb_company = "AND (f.owner LIKE '%@machinery-exchange.com%' OR f.company LIKE '%Machinery Exchange%')"
 
         # Dynamic Column Selection (Defensive Guard against 417 Sync Errors)
         notes_col = "m.internal_notes as internal_notes," if _has_col("FMB Report Machine", "internal_notes") else "'' as internal_notes,"
@@ -3353,6 +3359,8 @@ def get_weekly_gsm_report(company="all", from_date=None, to_date=None, payload=N
         "from_date": from_date,
         "to_date": to_date,
         "orders_total_qty": 0,
+        "debug_fmb_count": frappe.db.count("FMB Report"),
+        "debug_fmb_machine_count": frappe.db.count("FMB Report Machine")
     }
 
     return {
@@ -4086,20 +4094,7 @@ def get_group_sales_list(payload=None, **kwargs):
     )
 
 
-@frappe.whitelist(allow_guest=True)
-def get_omnis_group_sales(start: int = 0, page_length: int = 50, search: str = "", company: str = "", from_date: str = "", to_date: str = ""):
-    """Core logic for Group Sales pagination and search."""
-    # Ensure numeric types if passed directly
-    try:
-        start = frappe.utils.cint(start or 0)
-        page_length = frappe.utils.cint(page_length or 20)
-    except:
-        start=0
-        page_length=20
-        
-    search = (search or "").strip()
-    company = (company or "").strip()
-    
+def _get_group_sales_filters(search="", company="", from_date="", to_date=""):
     filters = []
     or_filters = None
     if company:
@@ -4116,6 +4111,22 @@ def get_omnis_group_sales(start: int = 0, page_length: int = 50, search: str = "
             ["Group Sales", "model", "like", f"%{search}%"],
             ["Group Sales", "company", "like", f"%{search}%"]
         ]
+    return filters, or_filters
+
+@frappe.whitelist(allow_guest=True)
+def get_omnis_group_sales(start: int = 0, page_length: int = 50, search: str = "", company: str = "", from_date: str = "", to_date: str = ""):
+    """Core logic for Group Sales pagination and search."""
+    try:
+        start = frappe.utils.cint(start or 0)
+        page_length = frappe.utils.cint(page_length or 20)
+    except:
+        start=0
+        page_length=20
+        
+    search = (search or "").strip()
+    company = (company or "").strip()
+    
+    filters, or_filters = _get_group_sales_filters(search, company, from_date, to_date)
 
     previous_user = frappe.session.user
     frappe.set_user("Administrator")
@@ -4150,30 +4161,35 @@ def get_omnis_group_sales(start: int = 0, page_length: int = 50, search: str = "
 
 @frappe.whitelist(allow_guest=True)
 def get_omnis_group_sales_kpi(payload=None, **kwargs):
-    # Decode payload if present (Global bypass 417 fix)
-    params = extract_params(payload)
-    # (Currently this function doesn't use filters from frontend, but we add it for future-proofing)
-    """
-    Returns MTD and YTD sales for Machinery Exchange and Sinopower.
-    Targets:
-      ME: 12/mo, 144/yr
-      SP: 16/mo, 192/yr
-    Calculates Variance = Actual - Target.
-    Top Salesperson: Month and Year.
-    """
+    # Decode payload if present
+    params = extract_params(payload, **kwargs)
+    search = params.get("search", "")
+    company = params.get("company", "")
+    from_date = params.get("from_date", "")
+    to_date = params.get("to_date", "")
+
     today_date = getdate(nowdate())
     s_this_month = str(get_first_day(today_date))
     s_this_year = str(today_date.replace(month=1, day=1))
     
-    # Fetch all sales for this year
-    # We need: qty, order_date, company, salesperson
+    # Unified filters from the same helper
+    filters, or_filters = _get_group_sales_filters(search, company, from_date, to_date)
+    
+    # We must ensure we look at at least this year for YTD cards, 
+    # BUT if the user provided a date range, we respect that.
+    # Logic: If no from_date, default to start of year.
+    if not from_date:
+        filters.append(["Group Sales", "order_date", ">=", s_this_year])
+
+    # Fetch all matching sales
     previous_user = frappe.session.user
     frappe.set_user("Administrator")
     try:
         rows = frappe.get_all(
             "Group Sales",
-            filters=[["order_date", ">=", s_this_year]],
-            fields=["name", "company", "order_date", "qty", "salesperson"]
+            filters=filters,
+            or_filters=or_filters,
+            fields=["name", "company", "order_date", "qty", "salesperson", "model", "customer"]
         )
     finally:
         frappe.set_user(previous_user)
@@ -4226,23 +4242,23 @@ def get_omnis_group_sales_kpi(payload=None, **kwargs):
     top_mtd = get_top(sales_mtd)
     top_ytd = get_top(sales_ytd)
 
-    # Calculate general aggregates for frontend legacy support
+    # Calculate general aggregates
     sales_mtd_total = me_mtd + sp_mtd
     sales_ytd_total = me_ytd + sp_ytd
     
-    # Calculate top model for the current month
+    # Unique Customers in the filtered set
+    active_customers = len(set(r.customer for r in rows if r.customer))
+
+    # Calculate top model in the filtered set
+    model_counts = {}
+    for r in rows:
+        m = r.model or r.get("item")
+        if m:
+            model_counts[m] = model_counts.get(m, 0) + float(r.qty or 0)
+    
     top_model = "-"
-    try:
-        model_rows = frappe.db.sql("""
-            SELECT item, SUM(qty) as total
-            FROM `tabGroup Sales`
-            WHERE docstatus < 2 AND order_date >= %s
-            GROUP BY item
-            ORDER BY total DESC
-            LIMIT 1
-        """, (s_this_month,), as_dict=True)
-        if model_rows: top_model = model_rows[0].get("item") or "-"
-    except: pass
+    if model_counts:
+        top_model = max(model_counts, key=model_counts.get)
 
     # Return structure for 6 cards + legacy fields
     return {
@@ -4251,7 +4267,7 @@ def get_omnis_group_sales_kpi(payload=None, **kwargs):
             # Legacy fields expected by index.html
             "sales_this_month": sales_mtd_total,
             "sales_ytd": sales_ytd_total,
-            "active_dealers": len(sales_ytd), # Approximate by unique salespersons/customers
+            "active_dealers": active_customers,
             "top_model": top_model,
             
             # New split fields
@@ -5155,17 +5171,13 @@ def get_eff_final_v10(payload=None, **kwargs):
         if company and company not in ["All", "All Companies", ""]:
             comp_lower = str(company).lower()
             if "sinopower" in comp_lower or "sino" in comp_lower:
-                # Absolute Lockdown for Sinopower: All known domains + Brand
-                where_clauses.append("(f.owner LIKE %s OR f.owner LIKE %s OR f.owner LIKE %s)")
-                args.extend(["%sinopower%", "%spz%", "%sino%"])
-                where_clauses.append("i.brand LIKE %s")
-                args.append("%Sinopower%")
+                # Inclusive Lockdown for Sinopower: Known domains OR Brand
+                where_clauses.append("((f.owner LIKE %s OR f.owner LIKE %s OR f.owner LIKE %s) OR (i.brand LIKE %s))")
+                args.extend(["%sinopower%", "%spz%", "%sino%", "%Sinopower%"])
             elif "machinery" in comp_lower or "mxg" in comp_lower:
-                # Absolute Lockdown for MXG: All known domains + Brand Exclusion
-                where_clauses.append("(f.owner LIKE %s OR f.owner LIKE %s OR f.owner LIKE %s)")
-                args.extend(["%machinery%", "%mxg%", "%exchange%"])
-                where_clauses.append("i.brand NOT LIKE %s")
-                args.append("%Sinopower%")
+                # Inclusive Lockdown for MXG: Known domains OR Brand exclusion
+                where_clauses.append("((f.owner LIKE %s OR f.owner LIKE %s OR f.owner LIKE %s) AND (i.brand NOT LIKE %s))")
+                args.extend(["%machinery%", "%mxg%", "%exchange%", "%Sinopower%"])
             else:
                 where_clauses.append("f.owner LIKE %s")
                 args.append(f"%{company}%")
@@ -6004,6 +6016,26 @@ def get_stock_pipeline():
             "production_completion", "shipping_date", "eta_durban", 
             "ted", "eta_harare", "name"
         ])
+        
+        # Fetch potential customers for all records in one go (Efficiency)
+        all_names = [r.get("name") for r in records if r.get("name")]
+        if all_names:
+            # We omit 'parenttype' filter to be robust against "Stock Pipeline" vs "Stock Sheet" naming
+            pcs = frappe.get_all("Potential Customers", 
+                filters={"parent": ["in", all_names]},
+                fields=["parent", "customer_name"]
+            )
+            # Group by parent
+            pc_map = {}
+            for pc in pcs:
+                p = pc.get("parent")
+                if p not in pc_map: pc_map[p] = []
+                pc_map[p].append({"customer_name": pc.get("customer_name")})
+            
+            # Attach to records
+            for r in records:
+                r["potential_customers"] = pc_map.get(r.get("name"), [])
+
         return {"ok": True, "data": records}
     except Exception as e:
         frappe.log_error(frappe.get_traceback(), "get_stock_pipeline failed")
@@ -6038,19 +6070,36 @@ def get_omnis_fleet_overview():
 
 
 @frappe.whitelist(allow_guest=True)
-def get_schema_debug():
-    """Returns the columns of key tables for debugging unit_price error."""
+def debug_stock_pipeline_schema():
+    """Diagnostic to find the real child table for Stock Pipeline."""
     try:
-        data = {}
-        for table in ["tabGroup Sales", "tabQuotation Item", "tabItem", "tabQuotation"]:
-            try:
-                cols = frappe.db.get_table_columns(table)
-                data[table] = cols
-            except Exception as e:
-                data[table] = str(e)
-        return {"ok": True, "schemas": data}
+        results = {}
+        # 1. Check parent doctype
+        if frappe.db.exists("DocType", "Stock Pipeline"):
+            meta = frappe.get_meta("Stock Pipeline")
+            results["parent"] = {
+                "name": meta.name,
+                "fields": [{"fieldname": f.fieldname, "label": f.label, "fieldtype": f.fieldtype, "options": f.options} for f in meta.fields if f.fieldtype == "Table"]
+            }
+        elif frappe.db.exists("DocType", "Stock Sheet"):
+             meta = frappe.get_meta("Stock Sheet")
+             results["parent_sheet"] = {
+                "name": meta.name,
+                "fields": [{"fieldname": f.fieldname, "label": f.label, "fieldtype": f.fieldtype, "options": f.options} for f in meta.fields if f.fieldtype == "Table"]
+            }
+            
+        # 2. Check known child tables
+        for dt in ["Potential Customers", "Stock Pipeline Potential Customer", "Stock Sheet Potential Customer"]:
+            if frappe.db.exists("DocType", dt):
+                meta = frappe.get_meta(dt)
+                results[dt] = [{"fieldname": f.fieldname, "label": f.label} for f in meta.fields]
+
+        return {"ok": True, "results": results}
     except Exception as e:
         return {"ok": False, "error": str(e)}
+
+@frappe.whitelist(allow_guest=True)
+def get_schema_debug():
 @frappe.whitelist(allow_guest=True)
 def get_db_search():
     """Searches for 'unit_price' in standard and custom fields."""
@@ -6502,6 +6551,21 @@ def save_stock_pipeline(payload=None, **kwargs):
             "ted": safe_date(params.get("ted")), # ETA Beira
             "eta_harare": safe_date(params.get("eta_harare"))
         })
+
+        # Handle Potential Customers (Child Table)
+        pot_cust = params.get("potential_customers")
+        if isinstance(pot_cust, str) and pot_cust.strip().startswith('['):
+            import json
+            try: pot_cust = json.loads(pot_cust)
+            except: pot_cust = []
+        
+        if isinstance(pot_cust, list):
+            doc.set("potential_customers", [])
+            for c in pot_cust:
+                if c.get("customer_name"):
+                    doc.append("potential_customers", {
+                        "customer_name": c.get("customer_name")
+                    })
         
         if is_new:
             doc.insert(ignore_permissions=True)
@@ -6540,6 +6604,24 @@ def delete_stock_pipeline(payload=None, **kwargs):
             return {"ok": False, "error": f"Record {doc_id} not found."}
     except Exception as e:
         frappe.log_error(frappe.get_traceback(), "Delete Stock Pipeline Error")
+        return {"ok": False, "error": str(e)}
+    finally:
+        frappe.set_user(previous_user)
+
+
+@frappe.whitelist(allow_guest=True)
+def delete_group_sale(name):
+    """Securely deletes a Group Sale entry."""
+    if not name: return {"ok": False, "error": "Missing name"}
+    
+    previous_user = frappe.session.user
+    frappe.set_user("Administrator")
+    try:
+        if frappe.db.exists("Group Sales", name):
+            frappe.delete_doc("Group Sales", name, ignore_permissions=True)
+            return {"ok": True}
+        return {"ok": False, "error": "Record not found"}
+    except Exception as e:
         return {"ok": False, "error": str(e)}
     finally:
         frappe.set_user(previous_user)

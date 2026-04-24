@@ -180,6 +180,13 @@ async function loadOrdersList(force = false) {
         const res = await window.callFrappeSequenced(base, method, args);
         console.log("[OrdersLogic] Received response:", res);
         const data = res.message || res;
+        
+        if (data && data.meta) {
+            console.log("[OrdersLogic] Diagnostic DB Counts:", {
+                total_fmb: data.meta.debug_fmb_count,
+                total_fmb_machine: data.meta.debug_fmb_machine_count
+            });
+        }
 
         if (data && data.current_orders) {
             olOrdersData = data.current_orders;
