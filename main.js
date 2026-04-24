@@ -470,6 +470,10 @@ ipcMain.handle("frappe:request", async (event, { url, method, data, headers, syn
         // ✅ The Golden Fix: Custom Lookup
         // We connect to the IP but tell SSL it's the Domain
         lookup: (hostname, options, callback) => {
+          if (typeof options === 'function') {
+            callback = options;
+            options = {};
+          }
           if (DNS_MAP[hostname]) {
             console.log(`[DNS Bypass] Mapping ${hostname} -> ${DNS_MAP[hostname]}`);
             return callback(null, DNS_MAP[hostname], 4); // Force IPv4
