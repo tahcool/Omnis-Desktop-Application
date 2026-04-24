@@ -451,8 +451,8 @@ ipcMain.handle("frappe:request", async (event, { url, method, data, headers, syn
     if (cleanHost) requestHeaders['Host'] = cleanHost;
     
     // Explicitly disable Expect header which causes 417 on some servers
-    delete requestHeaders['Expect'];
-    delete requestHeaders['expect'];
+    requestHeaders['Expect'] = '';
+    requestHeaders['expect'] = '';
 
     appendIpcTrace(`START: ${axiosMethod} ${finalUrl} (Host: ${requestHeaders['Host']})`);
 
