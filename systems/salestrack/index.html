@@ -10216,7 +10216,7 @@
           const res = await window.frappeAPI.request({
             url: url,
             method: httpMethod,
-            data: bypassPayload,
+            data: params || {},
             syncCookies: true
           });
 
@@ -10251,8 +10251,11 @@
 
         const isPost = (httpMethod || "POST").toUpperCase() === "POST";
         const formData = new URLSearchParams();
-        // Use bypassPayload for fetch too
-        formData.append("payload", bypassPayload.payload);
+        if (params) {
+          for (const key in params) {
+            formData.append(key, typeof params[key] === 'object' ? JSON.stringify(params[key]) : params[key]);
+          }
+        }
 
         const fetchOptions = {
           method: httpMethod,
