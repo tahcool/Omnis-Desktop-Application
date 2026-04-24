@@ -451,8 +451,11 @@ ipcMain.handle("frappe:request", async (event, { url, method, data, headers, syn
     if (cleanHost) requestHeaders['Host'] = cleanHost;
     
     // Explicitly disable Expect header which causes 417 on some servers
-    requestHeaders['Expect'] = '';
-    requestHeaders['expect'] = '';
+    requestHeaders['Expect'] = null;
+    requestHeaders['expect'] = null;
+
+    console.log(`[IPC Request] ${axiosMethod} ${finalUrl}`);
+    console.log(`[IPC Request] Headers:`, JSON.stringify(requestHeaders));
 
     appendIpcTrace(`START: ${axiosMethod} ${finalUrl} (Host: ${requestHeaders['Host']})`);
 
@@ -519,13 +522,18 @@ ipcMain.handle("frappe:request", async (event, { url, method, data, headers, syn
       headers: response.headers,
     };
   } catch (error) {
-    appendIpcTrace(`ERROR: ${error.message} during ${url}`);
-    return {
-      ok: false,
-      error: error.message,
-      code: error.code,
-      stack: error.stack
-    };
+      const errorMsg = error.response ? `${error.response.status} ${error.response.statusText}` : error.message;
+      console.error(`[IPC Error] ${axiosMethod} ${finalUrl}: ${errorMsg}`);
+      if (error.response) {
+        console.error(`[IPC Error] Headers:`, JSON.stringify(error.response.headers));
+        console.error(`[IPC Error] Data:`, JSON.stringify(error.response.data));
+      }
+      appendIpcTrace(`ERROR: ${axiosMethod} ${finalUrl}: ${errorMsg}`);
+      return {
+        ok: false,
+        error: errorMsg,
+        status: error.response ? error.response.status : 0
+      };
   }
 });
 
