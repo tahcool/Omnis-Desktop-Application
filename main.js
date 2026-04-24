@@ -373,13 +373,10 @@ ipcMain.handle("frappe:request", async (event, { url, method, data, headers, syn
     if (isSpe && url.includes(SPE_DOMAIN)) {
       finalUrl = url.replace(SPE_DOMAIN, SPE_IP);
       console.log(`[Frappe IPC] SPE HARDWARE REWRITE: ${url} -> ${finalUrl}`);
-    } else /*
-    if (isSalestrack) {
+    } else if (isSalestrack && url.includes(SALESTRACK_DOMAIN)) {
       finalUrl = url.replace(SALESTRACK_DOMAIN, SALESTRACK_IP);
       console.log(`[Frappe IPC] SALESTRACK HARDWARE REWRITE: ${url} -> ${finalUrl}`);
-    } else 
-    */
-    if (isFleetrack) {
+    } else if (isFleetrack) {
       // Handle both .machinery-exchange.com and .powerstar.co.zw variants
       finalUrl = url.replace(FLEETRACK_DOMAIN, FLEETRACK_IP)
                     .replace(ENGTRACK_DOMAIN, FLEETRACK_IP)
@@ -518,10 +515,16 @@ ipcMain.handle("frappe:request", async (event, { url, method, data, headers, syn
       }
     }
 
+    const responseData = response.data;
+    console.log(`[IPC Response] ${finalUrl} Status: ${response.status}`);
+    if (response.status !== 200) {
+      console.log(`[IPC Response Body]`, JSON.stringify(responseData));
+    }
+
     return {
       ok: response.status >= 200 && response.status < 300,
       status: response.status,
-      data: response.data,
+      data: responseData,
       headers: response.headers,
     };
   } catch (error) {
