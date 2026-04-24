@@ -359,6 +359,9 @@ ipcMain.handle("renderer:error", (event, { error, stack, url }) => {
 });
 
 ipcMain.handle("frappe:request", async (event, { url, method, data, headers, syncCookies, timeout }) => {
+  const axiosMethod = (method || 'POST').toUpperCase();
+  const finalUrl = url;
+
   try {
     // Identification and forced IP mapping for known systems
     const isSpe = url.includes(SPE_DOMAIN) || url.includes(SPE_IP);
@@ -367,8 +370,7 @@ ipcMain.handle("frappe:request", async (event, { url, method, data, headers, syn
                        url.includes(ENGTRACK_DOMAIN) || url.includes(FLEETRACK_DOMAIN_V2) || 
                        url.includes(ENGTRACK_DOMAIN_V2) || url.includes(POWERTRACK_DOMAIN);
 
-    const finalUrl = url;
-    console.log(`[Frappe IPC] Request Trace: ${method || 'POST'} ${url}`);
+    console.log(`[Frappe IPC] Request Trace: ${axiosMethod} ${url}`);
 
     // Get cookies from Electron session for this URL
     const ses = session.defaultSession;
@@ -412,7 +414,7 @@ ipcMain.handle("frappe:request", async (event, { url, method, data, headers, syn
     }
     // END FIX
 
-    const axiosMethod = (method || 'POST').toUpperCase();
+
     const isPost = axiosMethod === 'POST' || axiosMethod === 'PUT';
 
     if (data && typeof data === 'object' && isPost) {
