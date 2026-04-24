@@ -1392,7 +1392,7 @@ def save_omnis_quotation():
         return {"ok": True, "name": qtn.name, "title": qtn.title}
 
     except frappe.ValidationError as e:
-        frappe.local.response.http_status_code = 417
+        frappe.local.response.http_status_code = 400
         return {"ok": False, "error": "ValidationError", "message": str(e)}
 
     except Exception:
