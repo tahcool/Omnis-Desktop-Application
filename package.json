@@ -1,6 +1,6 @@
 {
   "name": "omnis-desktop",
-  "version": "2.2.2",
+  "version": "2.2.3",
   "description": "Omnis Desktop Application",
   "main": "main.js",
   "scripts": {
@@ -64,6 +64,6 @@
     "electron-store": "^9.0.0",
     "electron-updater": "^6.8.3",
     "qrcode": "^1.5.4",
-    "whatsapp-web.js": "^1.34.6"
+    "whatsapp-web.js": "^1.34.7"
   }
 }
