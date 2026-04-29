@@ -843,15 +843,18 @@
           container.style.display = 'none';
           txt.style.color = '#34d399';
           txt.innerText = "Update Downloaded. Restarting...";
-        } else if (data.type === 'uptodate') {
-          txt.innerText = "System is up to date";
+        } else if (data.type === 'uptodate' || data.type === 'error') {
+          txt.innerText = data.type === 'uptodate' ? "System is up to date" : "Update check complete";
           setTimeout(() => {
               const updaterUI = document.getElementById('inline-updater');
               if (updaterUI) {
                   updaterUI.style.transition = 'opacity 0.5s ease';
                   updaterUI.style.opacity = '0';
+                  setTimeout(() => {
+                      updaterUI.style.display = 'none';
+                  }, 500);
               }
-          }, 3000);
+          }, 2500);
         }
       });
     }
