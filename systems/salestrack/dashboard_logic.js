@@ -10,11 +10,11 @@ window.OmnisDashboardV6 = class OmnisDashboardV6 {
         this.data = null;
         this.selectedDate = new Date(); // Track current view date for Action Center
         
-        // ⚡ Immediate Global Aliases (Self-Registration)
+        // * Immediate Global Aliases (Self-Registration)
         window.salestrack = this;
         window.dashManager = this;
         
-        // 🛠️ Listeners
+        // &#x1F44B; Listeners
         this.initWhatsAppListeners();
     }
 
@@ -53,18 +53,18 @@ window.OmnisDashboardV6 = class OmnisDashboardV6 {
             await this.fetchData();
             this.render();
 
-            // ✅ Dynamic Versioning from Electron
+            // ... Dynamic Versioning from Electron
             if (window.electron && window.electron.getVersion) {
                 window.electron.getVersion().then(v => {
                     const label = document.getElementById('app-version-label');
-                    if (label) label.innerText = `V${v}-STABLE`;
+                    if (label) label.innerText = `V${v}-NEXUS`;
                     
                     const sLabel = document.getElementById('update-settings-status');
-                    if (sLabel) sLabel.innerText = `Version ${v} Stable`;
+                    if (sLabel) sLabel.innerText = `Version ${v} Nexus`;
                 });
             }
 
-            // ✅ Update Message Listener (Toasts)
+            // ... Update Message Listener (Toasts)
             if (window.electron && window.electron.on) {
                 window.electron.on('update-message', (event, data) => {
                     // Update settings UI text if present
@@ -231,7 +231,7 @@ window.OmnisDashboardV6 = class OmnisDashboardV6 {
         const id = item.id || "";
         const priority = item.priority || "medium";
 
-        const typeIcon = type === 'call' ? '📞' : (type === 'meetup' ? '🤝' : '📝');
+        const typeIcon = type === 'call' ? '&#x1F4DE;' : (type === 'meetup' ? '&#x1F91D;' : '&#x1F4C5;');
         const priorityColor = priority === 'high' ? '#ef4444' : '#f59e0b';
 
         const html = `
@@ -244,16 +244,16 @@ window.OmnisDashboardV6 = class OmnisDashboardV6 {
                         <div style="font-size: 20px; font-weight: 850; color: #0f172a; letter-spacing: -0.02em;">${title}</div>
                         <div style="display: flex; align-items: center; gap: 8px; margin-top: 4px;">
                             <span style="background: ${priorityColor}; color: white; font-size: 10px; font-weight: 800; padding: 2px 8px; border-radius: 6px; text-transform: uppercase; letter-spacing: 0.05em;">${priority} Priority</span>
-                            <span style="color: #64748b; font-size: 13px;">•</span>
+                            <span style="color: #64748b; font-size: 13px;">&bull;</span>
                             <span style="color: #64748b; font-size: 13px; font-weight: 500;">${type.charAt(0).toUpperCase() + type.slice(1)}</span>
-                            ${item.salesperson ? `<span style="color: #64748b; font-size: 13px;">•</span> <span style="color: #0f172a; font-size: 13px; font-weight: 600;">Rep: ${item.salesperson}</span>` : ''}
+                            ${item.salesperson ? `<span style="color: #64748b; font-size: 13px;">&bull;</span> <span style="color: #0f172a; font-size: 13px; font-weight: 600;">Rep: ${item.salesperson}</span>` : ''}
                         </div>
                     </div>
                 </div>
 
                 <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 16px; padding: 20px; margin-bottom: 24px;">
                     <div style="font-weight: 800; color: #475569; font-size: 11px; text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 12px; display: flex; align-items: center; gap: 8px;">
-                        <span style="font-size: 14px;">🧠</span> Why this is a priority
+                        <span style="font-size: 14px;">&#x1F3AF;</span> Why this is a priority
                     </div>
                     <div style="font-size: 15px; color: #1e293b; line-height: 1.6; font-weight: 500;">
                         ${rationale}
@@ -454,7 +454,7 @@ window.OmnisDashboardV6 = class OmnisDashboardV6 {
                        <div style="font-weight:700; color:#0f172a; font-size:13px; margin-bottom:4px; line-height:1.3; overflow: hidden; text-overflow: ellipsis; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical;">${item.title}</div>
                        <div style="display:flex; align-items:center; gap:6px; font-size:10.5px; color:#94a3b8; text-transform: uppercase; letter-spacing: 0.02em;">
                            <span style="font-weight:700; color:#9f1239;">${item.publisher}</span>
-                           <span>•</span>
+                           <span>&bull;</span>
                            <span>${formatDate(item.published)}</span>
                        </div>
                    </div>
@@ -465,7 +465,7 @@ window.OmnisDashboardV6 = class OmnisDashboardV6 {
                ${item.impact_note ? `
                    <div style="background: #fff; border: 1px solid rgba(159, 18, 57, 0.08); border-left: 2px solid #9f1239; padding: 8px 10px; border-radius: 6px; font-size: 11.5px; color: #475569; line-height: 1.4; box-shadow: 0 1px 2px rgba(0,0,0,0.02);">
                       <div style="font-weight:800; color:#9f1239; font-size:9px; text-transform:uppercase; margin-bottom:4px; letter-spacing:0.04em; display:flex; align-items:center; gap:4px;">
-                        <span>💡</span> PERSPECTIVE
+                        <span>&#x1F4A1;</span> PERSPECTIVE
                       </div>
                       <div style="font-weight: 500; color: #334155;">${item.impact_note}</div>
                    </div>
@@ -522,7 +522,7 @@ window.OmnisDashboardV6 = class OmnisDashboardV6 {
                         <div class="todo-check"></div>
                         <div class="todo-content">
                             <div class="todo-title">${item.title}</div>
-                            <div class="todo-meta">${item.subtitle} • 👤 ${item.salesperson || 'Unassigned'}</div>
+                            <div class="todo-meta">${item.subtitle} &bull; &#x1F464; ${item.salesperson || 'Unassigned'}</div>
                         </div>
                         ${isUrgent ? '<span class="todo-badge urgent">URGENT</span>' : ''}
                     </div>
@@ -536,7 +536,7 @@ window.OmnisDashboardV6 = class OmnisDashboardV6 {
                         <div class="todo-check"></div>
                         <div class="todo-content">
                             <div class="todo-title">Follow up: ${item.customer}</div>
-                            <div class="todo-meta">Amount: $${item.amount || 0} • 👤 ${item.salesperson || 'Unassigned'}</div>
+                            <div class="todo-meta">Amount: $${item.amount || 0} &bull; &#x1F464; ${item.salesperson || 'Unassigned'}</div>
                         </div>
                     </div>
                 `;
@@ -739,7 +739,7 @@ window.OmnisDashboardV6 = class OmnisDashboardV6 {
                     <div style="background: #ffffff; border: 1px solid rgba(128, 0, 0, 0.1); padding: 14px 18px; border-radius: 12px; transition: all 0.2s; box-shadow: 0 4px 12px rgba(0,0,0,0.03); cursor: pointer;" onmouseover="this.style.transform='translateX(6px)'; this.style.borderColor='rgba(128, 0, 0, 0.3)';" onmouseout="this.style.transform='none'; this.style.borderColor='rgba(128, 0, 0, 0.1)';" onclick="window.salestrack.openDoc('Hot Lead', '${(l.name || '').replace(/'/g, "\\'")}');">
                         <div style="font-weight:800; color:#1e293b; font-size:13px; margin-bottom:6px; letter-spacing:0.02em;">${l.lead_name || l.party_name || 'Anonymous Lead'}</div>
                         <div style="font-size:11px; color:#64748b; display:flex; justify-content:space-between; align-items:center; font-weight:600;">
-                            <span style="overflow:hidden; text-overflow:ellipsis; white-space:nowrap; max-width:140px;">📍 ${l.territory || 'Global Market'}</span>
+                            <span style="overflow:hidden; text-overflow:ellipsis; white-space:nowrap; max-width:140px;">&#x1F4CD; ${l.territory || 'Global Market'}</span>
                             <span style="font-weight:900; color:#b91c1c; background:rgba(128, 0, 0, 0.05); padding:3px 10px; border-radius:99px; font-size:10px; letter-spacing:0.02em;">${l.status || 'HOT'}</span>
                         </div>
                     </div>
@@ -968,7 +968,7 @@ window.OmnisDashboardV6 = class OmnisDashboardV6 {
                     </div>
 
                     <div style="margin-top:24px; font-size:11px; color:#94a3b8; text-align:center;">
-                        Generated via OAI · Omnis SalesTrack · ${new Date().toLocaleString()}
+                        Generated via OAI &middot; Omnis SalesTrack &middot; ${new Date().toLocaleString()}
                     </div>
                 </div>
             `;
@@ -980,7 +980,7 @@ window.OmnisDashboardV6 = class OmnisDashboardV6 {
             console.error("Efficiency Report Error:", e);
             document.getElementById('dash-generic-body').innerHTML = `
                 <div style="padding:60px; text-align:center; color:#ef4444;">
-                    <div style="font-size:40px; margin-bottom:16px;">⚠️</div>
+                    <div style="font-size:40px; margin-bottom:16px;">&#x2705;</div>
                     <div style="font-size:18px; font-weight:800; margin-bottom:8px;">Report Generation Failed</div>
                     <div style="color:#64748b; font-size:14px; line-height:1.6;">
                         ${e.message || "An unexpected network error occurred."}<br>
@@ -1049,7 +1049,7 @@ window.OmnisDashboardV6 = class OmnisDashboardV6 {
                     color: #475569;
                     gap: 8px;
                 " onmouseover="this.style.borderColor='#cbd5e1'; this.style.background='#f1f5f9';" onmouseout="this.style.borderColor='#e2e8f0'; this.style.background='linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%)';">
-                    <div style="font-size:20px;">📂</div>
+                    <div style="font-size:20px;">&#x1F4DA;</div>
                     <div style="font-size:12px; font-weight:700;">View All (${displayLeads.length})</div>
                 </div>
             `;
@@ -1069,7 +1069,7 @@ window.OmnisDashboardV6 = class OmnisDashboardV6 {
 
         const equipmentHtml = lead.equipment
             ? `<div style="font-size:10px; color:#475569; background:#f8fafc; padding:4px 8px; border-radius:6px; margin-top:6px; font-weight:600; border:1px solid #e2e8f0; display:block; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">
-                <span style="opacity:0.7;">📦</span> ${lead.equipment}
+                <span style="opacity:0.7;">&#x1F4E6;</span> ${lead.equipment}
                </div>`
             : '';
 
@@ -1238,7 +1238,7 @@ window.OmnisDashboardV6 = class OmnisDashboardV6 {
                 },
                 events: {
                     dataPointSelection: (event, chartContext, config) => {
-                        // ✋ Only open the modal if the selection was a REAL user click
+                        // &#x270F; Only open the modal if the selection was a REAL user click
                         if (!event) return; 
                         
                         const oemName = labels[config.dataPointIndex];
@@ -1298,7 +1298,7 @@ window.OmnisDashboardV6 = class OmnisDashboardV6 {
         const chart = new ApexCharts(container, options);
         chart.render();
 
-        // 🚀 Auto-Cycle Engine with Slice Highlighting (Theme Merged)
+        // &#x1F680; Auto-Cycle Engine with Slice Highlighting (Theme Merged)
         this.oemCycleInterval = setInterval(() => {
             if (!document.getElementById('widget-oem-chart')) {
                 clearInterval(this.oemCycleInterval);
@@ -1310,7 +1310,7 @@ window.OmnisDashboardV6 = class OmnisDashboardV6 {
             const currentQty = series[this.oemCycleIndex];
             const currentPct = totalUnits > 0 ? ((currentQty / totalUnits) * 100).toFixed(1) : 0;
 
-            // 🔦 Highlight the current slice (using theme-native opacity)
+            // &#x1F4A1; Highlight the current slice (using theme-native opacity)
             const basePalette = ['#1e40af', '#8b2219', '#059669', '#d97706', '#7c3aed', '#db2777', '#0891b2', '#4b5563', '#1e293b'];
             const cycleColors = basePalette.map((c, i) => i === this.oemCycleIndex ? c : c + '22'); // 22 is ~13% opacity for a cleaner look
 
@@ -1454,7 +1454,7 @@ window.OmnisDashboardV6 = class OmnisDashboardV6 {
                             <img src="file:///C:/Users/Administrator/omnis/assets/images/omnis-logo.png" style="height:45px;" alt="Omnis Logo" onerror="this.src='../../assets/images/omnis-logo.png'">
                             <div style="text-align:right;">
                                 <div class="mer-title">QUOTES & SALES MONTHLY REPORT</div>
-                                <div class="mer-subtitle">MANAGEMENT SUMMARY – ${report_month} ${report_year}</div>
+                                <div class="mer-subtitle">MANAGEMENT SUMMARY &mdash; ${report_month} ${report_year}</div>
                             </div>
                         </div>
                         
@@ -1654,9 +1654,9 @@ window.OmnisDashboardV6 = class OmnisDashboardV6 {
 
                     <div class="no-print" style="position: sticky; bottom: 0; background: #f8fafc; padding: 20px 0; border-top: 1px solid #e2e8f0; width: 100%; display: flex; justify-content: center; gap: 15px; align-items: center; z-index: 10;">
                         <span id="mer-page-indicator" style="background:#f1f5f9; padding:12px 20px; border-radius:99px; font-weight:800; font-size:14px; box-shadow:0 10px 20px rgba(0,0,0,0.1); border:1px solid #cbd5e1; color:#334155;">Page 1</span>
-                        <button id="btn-mer-prev" onclick="window.salestrack.changeMERPage(-1)" style="padding:12px 25px; background:#475569; color:white; border:none; border-radius:99px; font-weight:700; cursor:pointer; box-shadow:0 10px 20px rgba(0,0,0,0.2); transition:opacity 0.2s;">◀ Previous</button>
-                        <button id="btn-mer-next" onclick="window.salestrack.changeMERPage(1)" style="padding:12px 25px; background:#2563eb; color:white; border:none; border-radius:99px; font-weight:700; cursor:pointer; box-shadow:0 10px 20px rgba(0,0,0,0.2); transition:opacity 0.2s;">Next ▶</button>
-                        <button onclick="window.print()" style="padding:12px 25px; background:#0f172a; color:white; border:none; border-radius:99px; font-weight:700; cursor:pointer; box-shadow:0 10px 20px rgba(0,0,0,0.2); margin-left:10px;">🖨️ Export PDF</button>
+                        <button id="btn-mer-prev" onclick="window.salestrack.changeMERPage(-1)" style="padding:12px 25px; background:#475569; color:white; border:none; border-radius:99px; font-weight:700; cursor:pointer; box-shadow:0 10px 20px rgba(0,0,0,0.2); transition:opacity 0.2s;">&larr; Previous</button>
+                        <button id="btn-mer-next" onclick="window.salestrack.changeMERPage(1)" style="padding:12px 25px; background:#2563eb; color:white; border:none; border-radius:99px; font-weight:700; cursor:pointer; box-shadow:0 10px 20px rgba(0,0,0,0.2); transition:opacity 0.2s;">Next &rarr;</button>
+                        <button onclick="window.print()" style="padding:12px 25px; background:#0f172a; color:white; border:none; border-radius:99px; font-weight:700; cursor:pointer; box-shadow:0 10px 20px rgba(0,0,0,0.2); margin-left:10px;">&#x1F5A8;&#xFE0F; Export PDF</button>
                     </div>
 
                 </div>
@@ -1680,7 +1680,7 @@ window.OmnisDashboardV6 = class OmnisDashboardV6 {
             if (genericBodyElement) {
                 genericBodyElement.innerHTML = `
                     <div style="padding:60px; text-align:center; color:#ef4444;">
-                        <div style="font-size:40px; margin-bottom:16px;">⚠️</div>
+                        <div style="font-size:40px; margin-bottom:16px;">&#x2705;</div>
                         <div style="font-size:18px; font-weight:800; margin-bottom:8px;">MER Report Failed</div>
                         <div style="color:#64748b; font-size:14px; line-height:1.6;">
                             ${e.message || "Unable to compile MER management data."}<br>
@@ -1743,7 +1743,7 @@ window.OmnisDashboardV6 = class OmnisDashboardV6 {
         if (!element || !btn) return;
 
         const origText = btn.innerHTML;
-        btn.innerHTML = '⚙️ Generating PDF...';
+        btn.innerHTML = '&#x270F;&#xFE0F; Generating PDF...';
         btn.disabled = true;
 
         // 2. Prepare layout for continuous canvas (no scrolls, all tabs)
@@ -1799,7 +1799,7 @@ window.OmnisDashboardV6 = class OmnisDashboardV6 {
             element.style.height = origHeight;
         }).catch(err => {
             console.error("PDF Gen Error:", err);
-            btn.innerHTML = "❌ Error";
+            btn.innerHTML = "&#x274C; Error";
             alert("Failed to generate PDF. See console.");
         });
     }
@@ -2010,9 +2010,9 @@ window.OmnisDashboardV6 = class OmnisDashboardV6 {
                     
                     <!-- TAB NAVIGATION -->
                     <div class="oem-tabs no-print">
-                        <button class="oem-tab active" data-tab="summary">📊 Executive Summary</button>
-                        <button class="oem-tab" data-tab="sales">📦 Sales Details (${payload.period_label})</button>
-                        <button class="oem-tab" data-tab="quotes">💼 Quotations Details (${payload.period_label})</button>
+                        <button class="oem-tab active" data-tab="summary">&#x1F4C8; Executive Summary</button>
+                        <button class="oem-tab" data-tab="sales">&#x1F4E6; Sales Details (${payload.period_label})</button>
+                        <button class="oem-tab" data-tab="quotes">&#x1F4BC; Quotations Details (${payload.period_label})</button>
                     </div>
 
                     <!-- TAB 1: EXECUTIVE SUMMARY -->
@@ -2488,7 +2488,7 @@ window.OmnisDashboardV6 = class OmnisDashboardV6 {
 
         if (!rows.length) {
             lines.push(
-                '*Machine*:', '• —', '*Status*: —', '*Target Handover date*: -', '',
+                '*Machine*:', '&bull; -', '*Status*: -', '*Target Handover date*: -', '',
                 'For any questions or enquiries, please contact Humphrey on +263 77 799 7136.', '',
                 signOff
             );
@@ -2502,7 +2502,7 @@ window.OmnisDashboardV6 = class OmnisDashboardV6 {
             const item = r.item || 'Item';
             const qty = r.qty > 1 ? ` x${r.qty}` : '';
             const sn = r.serial_no ? ` (SN: ${r.serial_no})` : '';
-            const notes = (r.notes || '—').trim();
+            const notes = (r.notes || '-').trim();
             const target = formatDate(r.target_handover_date);
 
             lines.push(`${i + 1}) ${item}${qty}${sn}`);
@@ -2528,7 +2528,7 @@ window.OmnisDashboardV6 = class OmnisDashboardV6 {
         if (risks.length === 0) {
             container.innerHTML = `
                 <div class="dash-stat-success" style="display:flex; flex-direction:column; align-items:center; justify-content:center; height:100%; color:#059669;">
-                    <div class="icon" style="font-size:24px; margin-bottom:8px;">🚚</div>
+                    <div class="icon" style="font-size:24px; margin-bottom:8px;">&#x1F3C1;</div>
                     <div class="text" style="font-weight:600;">Logistics on Schedule</div>
                 </div>
             `;
@@ -2543,7 +2543,7 @@ window.OmnisDashboardV6 = class OmnisDashboardV6 {
             <div class="dash-risk-header" style="margin-bottom:0; display:flex; align-items:center; gap:8px;">
                  <h3 class="card-title" style="margin-bottom:0; border-bottom:none; padding-bottom:0; width:100%; justify-content:space-between;">
                     <span style="display:flex; align-items:center; gap:8px;">
-                        <span style="font-size:18px;">🚚</span>
+                        <span style="font-size:18px;">&#x1F3C1;</span>
                         Customer Orders Tracking
                     </span>
                     <span style="font-size:10px; color:#b91c1c; background:#fef2f2; padding:2px 8px; border-radius:99px; font-weight:800; letter-spacing:0;">${risks.length} DELAYED</span>
@@ -2598,7 +2598,7 @@ window.OmnisDashboardV6 = class OmnisDashboardV6 {
         risks.forEach(r => html += this._generateRiskCardHtml(r));
         html += '</div>';
 
-        this.openListModal("⚠️ CRITICAL DELAYS (" + risks.length + ")", html);
+        this.openListModal("&#x2705; CRITICAL DELAYS (" + risks.length + ")", html);
 
         // Apply Critical Styling
         const modal = document.getElementById('dash-generic-modal');
@@ -2648,7 +2648,7 @@ window.OmnisDashboardV6 = class OmnisDashboardV6 {
                 <div class="t-main" style="display:flex; align-items:flex-start; gap:10px; margin-bottom:8px;">
                     
                     <!-- Warning Icon -->
-                        <div class="t-icon" style="min-width:28px; height:28px; background:#fef2f2; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:14px; border:1px solid #fee2e2; color:#ef4444;">⚠️</div>
+                        <div class="t-icon" style="min-width:28px; height:28px; background:#fef2f2; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:14px; border:1px solid #fee2e2; color:#ef4444;">&#x2705;</div>
                     
                     <div class="t-info" style="flex:1;">
                             <div style="display:flex; justify-content:space-between; margin-bottom:2px;">
@@ -2662,9 +2662,9 @@ window.OmnisDashboardV6 = class OmnisDashboardV6 {
                                 <!-- Left: Update Flag -->
                                 <div style="flex-shrink:0; margin-right:10px;">
                                 ${showUpdateFlag ?
-                `<div style="font-size:10px; color:#b91c1c; background:#fee2e2; padding:2px 8px; border-radius:4px; font-weight:700; border:1px solid #fecaca; white-space:nowrap; ${flashStyle}">⚠️ Update Required (${lastUpdateText})</div>`
+                `<div style="font-size:10px; color:#b91c1c; background:#fee2e2; padding:2px 8px; border-radius:4px; font-weight:700; border:1px solid #fecaca; white-space:nowrap; ${flashStyle}">&#x2705; Update Required (${lastUpdateText})</div>`
                 :
-                `<div style="font-size:10px; color:#059669; background:#d1fae5; padding:2px 6px; border-radius:4px; font-weight:600; white-space:nowrap;">✔️ Updated ${lastUpdateText}</div>`
+                `<div style="font-size:10px; color:#059669; background:#d1fae5; padding:2px 6px; border-radius:4px; font-weight:600; white-space:nowrap;">&#x2713;&#xFE0F; Updated ${lastUpdateText}</div>`
             }
                                 </div>
 
@@ -2672,11 +2672,11 @@ window.OmnisDashboardV6 = class OmnisDashboardV6 {
                                 <div style="display:flex; gap:6px; flex-shrink:0; align-items:center;">
                                     ${r.status === 'Handed Over' ?
                 `<div style="display:flex; align-items:center; gap:4px; font-size:10px; font-weight:700; color:#059669; background:#ecfdf5; padding:4px 8px; border-radius:6px; border:1px solid #a7f3d0;">
-                                        <span>✅</span> <span>Handed Over</span>
+                                        <span>...</span> <span>Handed Over</span>
                                         </div>`
                 :
                 `<button onclick="salestrack.openHandoverModal('${r.name}')" style="background:#64748b; color:white; border:none; padding:4px 8px; border-radius:6px; font-size:10px; font-weight:600; cursor:pointer; white-space:nowrap; display:flex; align-items:center; gap:4px;">
-                                        <span style="font-size:12px;">⬜</span> <span>Handover</span>
+                                        <span style="font-size:12px;">&larr;</span> <span>Handover</span>
                                         </button>`
             }
                                 </div>
@@ -2684,7 +2684,7 @@ window.OmnisDashboardV6 = class OmnisDashboardV6 {
 
                             <!-- AI Insight Section -->
                             <div class="ai-insight" style="background:#fff; border:1px solid #e2e8f0; border-radius:6px; padding:6px 8px; display:flex; gap:6px; clear:both; margin-top:6px;">
-                            <div style="font-size:12px;">🤖</div>
+                            <div style="font-size:12px;">&#x1F451;</div>
                             <div style="font-size:10px; color:#475569; line-height:1.4;">
                                 <span style="font-weight:700; color:#64748b;">AI Insight:</span> ${insight}
                             </div>
@@ -2709,7 +2709,7 @@ window.OmnisDashboardV6 = class OmnisDashboardV6 {
         const visibleList = list.slice(0, LIMIT);
         const hasMore = list.length > LIMIT;
 
-        let html = `<h3 class="card-title">Quote Follow-ups <span style="font-size:12px; margin-left:auto; opacity:0.5;">⏱️</span></h3><div class="followup-list" style="display:flex; flex-direction:column; gap:8px;">`;
+        let html = `<h3 class="card-title">Quote Follow-ups <span style="font-size:12px; margin-left:auto; opacity:0.5;">&#x23F1;&#xFE0F;</span></h3><div class="followup-list" style="display:flex; flex-direction:column; gap:8px;">`;
 
         visibleList.forEach(item => html += this._generateFollowUpRow(item));
 
@@ -2767,7 +2767,7 @@ window.OmnisDashboardV6 = class OmnisDashboardV6 {
             const top = topItems[0];
             html += `
                 <div class="stat-pill" style="display: flex; align-items: center; gap: 12px; background: rgba(255,255,255,0.05); border: 1px solid var(--glass-border); padding: 6px 16px; border-radius: 4px; height: 100%;">
-                    <div class="stat-pill-icon" style="font-size: 18px; filter: drop-shadow(0 0 4px rgba(255, 215, 0, 0.4));">🏆</div>
+                    <div class="stat-pill-icon" style="font-size: 18px; filter: drop-shadow(0 0 4px rgba(255, 215, 0, 0.4));">&#x1F3C6;</div>
                     <div class="stat-pill-info">
                         <div class="stat-pill-label" style="font-size: 9px; font-weight: 900; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 2px;">Most Sold Model</div>
                         <div style="display:flex; align-items:baseline;">
@@ -2786,7 +2786,7 @@ window.OmnisDashboardV6 = class OmnisDashboardV6 {
             const topC = customers[0];
             html += `
                 <div class="stat-pill" style="display: flex; align-items: center; gap: 12px; background: rgba(255,255,255,0.05); border: 1px solid var(--glass-border); padding: 6px 16px; border-radius: 4px; height: 100%;">
-                    <div class="stat-pill-icon" style="font-size: 18px; filter: drop-shadow(0 0 4px rgba(0, 191, 255, 0.4));">💎</div>
+                    <div class="stat-pill-icon" style="font-size: 18px; filter: drop-shadow(0 0 4px rgba(0, 191, 255, 0.4));">&#x1F4BD;</div>
                     <div class="stat-pill-info">
                         <div class="stat-pill-label" style="font-size: 9px; font-weight: 900; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 2px;">Top Customer</div>
                         <div style="display:flex; align-items:baseline;">
@@ -2833,7 +2833,7 @@ window.OmnisDashboardV6 = class OmnisDashboardV6 {
             return Math.round((ytd / currentMonthIdx) * 12);
         });
 
-        // 🎯 Compute Targets & Status for Annotations
+        // // Compute Targets & Status for Annotations
         const annotations = originalCompanies.map((company, idx) => {
             const target = targets[company] || 0;
             if (target === 0) return null;
@@ -2848,7 +2848,7 @@ window.OmnisDashboardV6 = class OmnisDashboardV6 {
             };
         }).filter(a => a);
 
-        // 📊 Simplified Unit-Focused Labels
+        // &#x1F4C8; Simplified Unit-Focused Labels
         const enhancedLabels = originalCompanies.map(company => {
             const ytd = data[company].ytd || 0;
             const target = targets[company] || 0;
@@ -2996,7 +2996,7 @@ window.OmnisDashboardV6 = class OmnisDashboardV6 {
         if (!breakdownContainer) return;
 
         let breakdownHtml = `<div style="font-size:12px; font-weight:700; color:#334155; margin-bottom:12px; display:flex; align-items:center; justify-content:space-between;">
-            <span style="letter-spacing:0.02em; text-transform:uppercase;">📊 Predictive Performance & Sales Breakdown</span>
+            <span style="letter-spacing:0.02em; text-transform:uppercase;">&#x1F4C8; Predictive Performance & Sales Breakdown</span>
             <span style="font-size:10px; color:#64748b;">*Projection based on 4-month weighted run-rate</span>
         </div><div style="display:flex; gap:20px; flex-wrap:wrap;">`;
 
@@ -3233,7 +3233,7 @@ window.OmnisDashboardV6 = class OmnisDashboardV6 {
             console.error("Handover Error:", e);
             alert("Failed to process handover: " + e.message);
         } finally {
-            if (btn) { btn.disabled = false; btn.textContent = "✅ Confirm Handover"; }
+            if (btn) { btn.disabled = false; btn.textContent = "... Confirm Handover"; }
         }
     }
 
@@ -3470,7 +3470,7 @@ window.OmnisDashboardV6 = class OmnisDashboardV6 {
                <!-- AI Operational Insight -->
                ${order && order.ai_rationale ? `
                 <div style="background:#fff1f2; border:1px solid #fee2e2; border-radius:12px; padding:16px; display:flex; gap:12px; align-items:flex-start; box-shadow:0 1px 2px rgba(0,0,0,0.05);">
-                    <div style="background:#fef2f2; color:#8b2219; font-size:20px; width:40px; height:40px; display:flex; align-items:center; justify-content:center; border-radius:10px; flex-shrink:0;">🤖</div>
+                    <div style="background:#fef2f2; color:#8b2219; font-size:20px; width:40px; height:40px; display:flex; align-items:center; justify-content:center; border-radius:10px; flex-shrink:0;">&#x1F451;</div>
                     <div style="flex:1;">
                         <div style="font-size:11px; font-weight:800; color:#8b2219; text-transform:uppercase; letter-spacing:0.5px; margin-bottom:4px;">AI Operations Insight</div>
                         <div style="font-size:13px; color:#450a0a; line-height:1.5; font-style:italic;">"${order.ai_rationale}"</div>
@@ -3551,10 +3551,13 @@ window.OmnisDashboardV6 = class OmnisDashboardV6 {
                      </div>
 
                      <!-- Right: Standard Actions -->
-                     <div style="display:flex; gap:12px;">
+                     <div style="display:flex; gap:12px; flex-wrap:wrap;">
                         <button onclick="salestrack.closeListModal()" style="padding:12px 24px; border:1px solid #cbd5e1; background:white; color:#475569; border-radius:8px; font-size:14px; font-weight:600; cursor:pointer;">Cancel</button>
+                        <button id="btn-send-email-update" onclick="salestrack.initEmailUpdate('${reportId}')" style="padding:12px 24px; background:#1d4ed8; color:white; border:none; border-radius:8px; font-size:14px; font-weight:700; cursor:pointer; display:flex; align-items:center; gap:8px; box-shadow:0 10px 15px -3px rgba(29, 78, 216, 0.25); transition:all 0.2s;">
+                           <span style="font-size:18px;">&#128231;</span> Send Email
+                        </button>
                         <button id="btn-send-whatsapp-update" onclick="salestrack.initWhatsAppUpdate('${reportId}', '${machineId}')" style="padding:12px 24px; background:#25d366; color:white; border:none; border-radius:8px; font-size:14px; font-weight:700; cursor:pointer; display:flex; align-items:center; gap:8px; box-shadow:0 10px 15px -3px rgba(37, 211, 102, 0.2); transition:all 0.2s;">
-                           <span style="font-size:18px;">💬</span> Update WhatsApp
+                           <span style="font-size:18px;">&#128172;</span> WhatsApp Update
                         </button>
                         <button id="btn-save-order-changes" class="btn-primary" style="padding:12px 32px; background:#8b2219; color:white; border:none; border-radius:8px; font-size:14px; font-weight:700; cursor:pointer; box-shadow:0 10px 15px -3px rgba(139, 34, 25, 0.25);">Save Changes</button>
                      </div>
@@ -3764,7 +3767,7 @@ window.OmnisDashboardV6 = class OmnisDashboardV6 {
             toast = document.createElement('div');
             toast.id = 'dash-toast';
             toast.style.cssText = `
-                position: fixed; bottom: 20px; right: 20px; z-index: 9999;
+                position: fixed; bottom: 20px; right: 20px; z-index: 99999;
                 background: #1e293b; color: white; padding: 12px 24px;
                 border-radius: 8px; font-size: 14px; font-weight: 600;
                 box-shadow: 0 4px 6px rgba(0,0,0,0.1);
@@ -3990,7 +3993,7 @@ window.OmnisDashboardV6 = class OmnisDashboardV6 {
             msgEl.style.background = '#f0fdf4';
             msgEl.style.color = '#15803d';
             msgEl.style.border = '1px solid #bbf7d0';
-            msgEl.textContent = '✅ Settings saved successfully!';
+            msgEl.textContent = '... Settings saved successfully!';
 
             setTimeout(() => {
                 msgEl.style.display = 'none';
@@ -4003,7 +4006,7 @@ window.OmnisDashboardV6 = class OmnisDashboardV6 {
             msgEl.style.background = '#fef2f2';
             msgEl.style.color = '#b91c1c';
             msgEl.style.border = '1px solid #fecaca';
-            msgEl.textContent = '❌ Failed to save settings.';
+            msgEl.textContent = '&#x274C; Failed to save settings.';
         }
     }
 
@@ -4048,7 +4051,7 @@ window.OmnisDashboardV6 = class OmnisDashboardV6 {
         if (!container) return;
         
         if (!logs || logs.length === 0) {
-            container.innerHTML = '<div style="padding:40px; text-align:center; color:#94a3b8;">No error logs found. System is healthy! ✅</div>';
+            container.innerHTML = '<div style="padding:40px; text-align:center; color:#94a3b8;">No error logs found. System is healthy! ...</div>';
             return;
         }
 
@@ -4114,7 +4117,7 @@ window.OmnisDashboardV6 = class OmnisDashboardV6 {
                 msgEl.style.background = '#f0fdf4';
                 msgEl.style.color = '#15803d';
                 msgEl.style.border = '1px solid #bbf7d0';
-                msgEl.textContent = '✅ Connection successful! Your API key is valid.';
+                msgEl.textContent = '... Connection successful! Your API key is valid.';
                 this.showToast("API Key Validated", "success");
             } else {
                 // If it's a 404 model not found, the key itself IS valid, just restricted models.
@@ -4122,13 +4125,13 @@ window.OmnisDashboardV6 = class OmnisDashboardV6 {
                     msgEl.style.background = '#f0fdf4';
                     msgEl.style.color = '#15803d';
                     msgEl.style.border = '1px solid #bbf7d0';
-                    msgEl.textContent = '✅ API key is valid (Model access restricted: ' + (data.error.message || 'model_not_found') + ')';
+                    msgEl.textContent = '... API key is valid (Model access restricted: ' + (data.error.message || 'model_not_found') + ')';
                     this.showToast("API Key Validated", "success");
                 } else {
                     msgEl.style.background = '#fef2f2';
                     msgEl.style.color = '#b91c1c';
                     msgEl.style.border = '1px solid #fecaca';
-                    msgEl.textContent = '❌ ' + (data.error ? data.error.message : 'Connection failed.');
+                    msgEl.textContent = '&#x274C; ' + (data.error ? data.error.message : 'Connection failed.');
                     this.showToast("Connection Failed", "error");
                 }
             }
@@ -4139,7 +4142,7 @@ window.OmnisDashboardV6 = class OmnisDashboardV6 {
             msgEl.style.background = '#fef2f2';
             msgEl.style.color = '#b91c1c';
             msgEl.style.border = '1px solid #fecaca';
-            msgEl.textContent = '❌ Connection error: ' + e.message;
+            msgEl.textContent = '&#x274C; Connection error: ' + e.message;
             this.showToast("Error testing key", "error");
         } finally {
             btn.innerHTML = originalBtnContent;
@@ -4156,6 +4159,7 @@ window.OmnisDashboardV6 = class OmnisDashboardV6 {
             window.electron.removeAllListeners('whatsapp:status');
 
             window.electron.on('whatsapp:qr', (event, qr) => {
+                // Update Modal QR
                 const qrImg = document.getElementById('wa-qr-img');
                 const placeholder = document.getElementById('wa-qr-placeholder');
                 const statusLabel = document.getElementById('wa-scan-status');
@@ -4167,6 +4171,15 @@ window.OmnisDashboardV6 = class OmnisDashboardV6 {
                 if (statusLabel) {
                     statusLabel.innerText = 'Ready to Scan';
                     statusLabel.className = 'whatsapp-status-pill wa-status-ready';
+                }
+
+                // Update Settings Page Embedded QR
+                const settingsQrImg = document.getElementById('wa-settings-qr-img');
+                const settingsPlaceholder = document.getElementById('wa-settings-qr-placeholder');
+                if (settingsQrImg && settingsPlaceholder) {
+                    settingsQrImg.src = qr;
+                    settingsQrImg.classList.remove('hidden');
+                    settingsPlaceholder.classList.add('hidden');
                 }
             });
 
@@ -4209,7 +4222,7 @@ window.OmnisDashboardV6 = class OmnisDashboardV6 {
                 // 2. Update Settings Page Status
                 const settingsIcon = document.getElementById('wa-settings-icon');
                 const settingsText = document.getElementById('wa-settings-status-text');
-                const logoutBtn = document.getElementById('wa-settings-logout');
+                const qrPanel = document.getElementById('wa-settings-qr-panel');
                 
                 if (settingsText) settingsText.innerText = status;
                 if (settingsIcon) {
@@ -4222,8 +4235,14 @@ window.OmnisDashboardV6 = class OmnisDashboardV6 {
                         settingsIcon.style.background = 'white';
                     }
                 }
-                if (logoutBtn) {
-                    logoutBtn.style.display = (status === 'CONNECTED' ? 'block' : 'none');
+                
+                // Toggle QR Panel visibility in Settings
+                if (qrPanel) {
+                    if (status === 'QR_READY') {
+                        qrPanel.style.display = 'flex';
+                    } else if (status === 'CONNECTED') {
+                        qrPanel.style.display = 'none';
+                    }
                 }
 
                 if (status === 'CONNECTED') {
@@ -4237,17 +4256,33 @@ window.OmnisDashboardV6 = class OmnisDashboardV6 {
     }
 
     async logoutWhatsApp() {
-        if (!confirm("Are you sure you want to logout of WhatsApp and unlink this device?")) return;
+        if (!confirm("Are you sure you want to hard reset the WhatsApp connection? This will wipe the session and require re-linking.")) return;
         
         try {
-            if (window.omnisLog) window.omnisLog("[WhatsApp] Requesting session logout...");
+            if (window.omnisLog) window.omnisLog("[WhatsApp] Requesting session wipe...");
             const res = await window.electron.invoke('whatsapp:logout');
             if (res.ok) {
-                if (window.omnisLog) window.omnisLog("[WhatsApp] Logged out successfully.", "success");
+                if (window.omnisLog) window.omnisLog("[WhatsApp] Session wiped successfully.", "success");
+                this.showToast("WhatsApp session reset. Please scan new QR.", "success");
             }
         } catch (err) {
             console.error("Logout Error:", err);
-            if (window.omnisLog) window.omnisLog("WhatsApp Logout Error: " + err.message, "error");
+            if (window.omnisLog) window.omnisLog("WhatsApp Wipe Error: " + err.message, "error");
+        }
+    }
+
+    async testWhatsAppReconnect() {
+        try {
+            if (window.omnisLog) window.omnisLog("[WhatsApp] Restarting client...");
+            const res = await window.electron.invoke('whatsapp:reconnect');
+            if (res.ok) {
+                if (window.omnisLog) window.omnisLog("[WhatsApp] Client restarted.", "success");
+                this.showToast("Client restarted successfully.", "success");
+            }
+        } catch (err) {
+            console.error("Reconnect Error:", err);
+            if (window.omnisLog) window.omnisLog("WhatsApp Restart Error: " + err.message, "error");
+            this.showToast("Failed to restart client: " + err.message, "error");
         }
     }
 
@@ -4271,145 +4306,427 @@ window.OmnisDashboardV6 = class OmnisDashboardV6 {
             }
             return;
         }
-        this.sendWhatsAppUpdate(document.getElementById('btn-send-whatsapp-update'));
+        this.showWhatsAppPreview(document.getElementById('btn-send-whatsapp-update'));
     }
 
-    async sendWhatsAppUpdate(btn) {
-        const originalHtml = btn.innerHTML;
-        btn.disabled = true;
-        btn.innerHTML = `<i class="fas fa-spinner fa-spin"></i> Preparing...`;
-
+    showWhatsAppPreview(btn) {
         try {
             const orderStatus = document.getElementById('edit-order-status')?.value || "In Progress";
-            
+
             // 1. Extract All Valid Contacts
             const sentToNames = [];
             const validContacts = [];
-            
-            const contactRows = document.querySelectorAll('#contacts-tbody tr');
-            for (let row of contactRows) {
-                const sInp = row.querySelector('input[data-field="salutation"]');
-                const nInp = row.querySelector('input[data-field="name1"]');
-                const pInp = row.querySelector('input[data-field="phone_number"]');
-                
-                const sVal = sInp ? sInp.value.trim() : "";
-                const nVal = nInp ? nInp.value.trim() : "";
-                const pVal = pInp ? pInp.value.trim() : "";
-                
+            document.querySelectorAll('#contacts-tbody tr').forEach(row => {
+                const sVal = row.querySelector('input[data-field="salutation"]')?.value.trim() || "";
+                const nVal = row.querySelector('input[data-field="name1"]')?.value.trim() || "";
+                const pVal = row.querySelector('input[data-field="phone_number"]')?.value.trim() || "";
                 if (pVal && pVal !== "Phone") {
-                    validContacts.push({
-                        phone: pVal,
-                        salutation: sVal,
-                        name: nVal || "Valued Customer"
-                    });
+                    validContacts.push({ phone: pVal, salutation: sVal, name: nVal || "Valued Customer" });
                     sentToNames.push(nVal || "Valued Customer");
                 }
-            }
+            });
 
-            if (validContacts.length === 0) throw new Error("No customer phone numbers found in contacts.");
+            if (validContacts.length === 0) {
+                this.showToast("No customer phone numbers found in contacts.", "error");
+                return;
+            }
 
             // 2. Extract Machines
             const machines = [];
             document.querySelectorAll('#machines-tbody tr').forEach(row => {
                 if (row.cells.length < 5) return;
-                
-                const nameCell = row.cells[0];
-                const qtyCell = row.cells[2];
-                const targetCell = row.cells[3];
-                const revisedInp = row.querySelector('.m-revised');
-                const notesInp = row.querySelector('.m-notes');
-                
-                const mNameRaw = nameCell ? nameCell.innerText.trim().split('\n')[0] : "Unknown Machine";
-                const mQty = qtyCell ? qtyCell.innerText.trim() : "1";
-                const mTarget = targetCell ? targetCell.innerText.trim() : "-";
-                const mRevised = revisedInp ? revisedInp.value : "";
-                const mNotes = notesInp ? notesInp.value.trim() : "";
-                
-                if (mNameRaw && mNameRaw !== "Machine / Item") {
-                    machines.push({
-                        name: mNameRaw,
-                        qty: mQty,
-                        target: mTarget,
-                        revised: mRevised,
-                        notes: mNotes
-                    });
+                const mName   = row.cells[0]?.innerText.trim().split('\n')[0] || "";
+                const mQty    = row.cells[2]?.innerText.trim() || "1";
+                const mTarget = row.cells[3]?.innerText.trim() || "-";
+                const mRevised = row.querySelector('.m-revised')?.value || "";
+                const mNotes   = row.querySelector('.m-notes')?.value.trim() || "";
+                if (mName && mName !== "Machine / Item") {
+                    machines.push({ name: mName, qty: mQty, target: mTarget, revised: mRevised, notes: mNotes });
                 }
             });
 
-            // 3. Send to each contact
-            const customerName = document.querySelector('div[style*="font-size:18px; font-weight:700;"]') ?.textContent.trim() || "Customer";
-            
+            // 3. Build customer message preview (personalised for first contact)
+            const customerName = document.querySelector('#dash-generic-body div[style*="font-size:18px"]')?.textContent.trim() || "Customer";
+            const previewContact = validContacts[0];
+            const greetingName = previewContact.salutation
+                ? `${previewContact.salutation} ${previewContact.name}`
+                : previewContact.name;
+
+            let previewMsg = `Dear *${greetingName}*,\n\nPlease see below details of your order:\n\n*Machine*:\n`;
+            machines.forEach((m, idx) => {
+                const dateToShow = m.revised ? `${m.revised} (Revised)` : m.target;
+                previewMsg += `${idx + 1}) ${m.name} x${m.qty}\n   *Status*: ${m.notes || orderStatus}\n   *Target Handover*: ${dateToShow}\n\n`;
+            });
+            previewMsg += `For any questions or enquiries, please contact Humphrey on +263 77 799 7136.\n\nBest Regards,\nMachinery Exchange`;
+
+            const recipientLabels = validContacts.map(c =>
+                `${c.salutation ? c.salutation + ' ' : ''}${c.name} (${c.phone})`
+            ).join(', ');
+
+            // 4. Render message as styled WhatsApp-like bubble (bold = **)
+            const styledMsg = previewMsg
+                .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+                .replace(/\*([^*]+)\*/g, '<strong>$1</strong>')
+                .replace(/\n/g, '<br>');
+
+            // 5. Inject preview modal
+            const existing = document.getElementById('wa-preview-modal');
+            if (existing) existing.remove();
+
+            document.body.insertAdjacentHTML('beforeend', `
+            <div id="wa-preview-modal" style="
+                position:fixed; inset:0; background:rgba(0,0,0,0.6); z-index:20000;
+                display:flex; align-items:center; justify-content:center;
+                backdrop-filter:blur(6px); animation:fadeIn 0.2s ease;
+            ">
+                <div style="
+                    background:white; width:90%; max-width:620px; border-radius:16px;
+                    box-shadow:0 30px 60px rgba(0,0,0,0.3); overflow:hidden;
+                    animation:slideUp 0.25s cubic-bezier(0.16,1,0.3,1);
+                    max-height:90vh; display:flex; flex-direction:column;
+                ">
+                    <!-- Header -->
+                    <div style="background:linear-gradient(135deg,#075e54,#128c7e); padding:20px 24px; display:flex; justify-content:space-between; align-items:center; flex-shrink:0;">
+                        <div style="display:flex; align-items:center; gap:12px;">
+                            <div style="width:40px; height:40px; background:rgba(255,255,255,0.15); border-radius:10px; display:flex; align-items:center; justify-content:center; font-size:22px;">&#x1F4AC;</div>
+                            <div>
+                                <div style="font-size:17px; font-weight:700; color:white;">WhatsApp Update Preview</div>
+                                <div style="font-size:12px; color:rgba(255,255,255,0.75); margin-top:2px;">Review before sending to customer</div>
+                            </div>
+                        </div>
+                        <button onclick="document.getElementById('wa-preview-modal').remove()" style="background:rgba(255,255,255,0.1); border:none; color:white; width:32px; height:32px; border-radius:8px; font-size:18px; cursor:pointer;">&times;</button>
+                    </div>
+
+                    <!-- Scrollable body -->
+                    <div style="padding:24px; display:flex; flex-direction:column; gap:16px; overflow-y:auto;">
+
+                        <!-- Recipients -->
+                        <div style="background:#f0fdf4; border:1px solid #bbf7d0; border-radius:10px; padding:14px 16px;">
+                            <div style="font-size:11px; font-weight:700; color:#15803d; text-transform:uppercase; letter-spacing:0.5px; margin-bottom:6px;">&#x1F4F1; Sending To</div>
+                            <div style="font-size:13px; color:#166534; font-weight:500;">${recipientLabels}</div>
+                        </div>
+
+                        <!-- WhatsApp bubble -->
+                        <div>
+                            <div style="font-size:11px; font-weight:700; color:#64748b; text-transform:uppercase; letter-spacing:0.5px; margin-bottom:8px;">Message Preview</div>
+                            <div style="background:#dcf8c6; border-radius:0 12px 12px 12px; padding:16px 18px; font-size:13px; line-height:1.7; color:#111827; box-shadow:0 1px 3px rgba(0,0,0,0.1);">
+                                <div style="font-size:10px; color:#128c7e; font-weight:700; margin-bottom:8px; text-transform:uppercase; letter-spacing:0.5px;">Customer Message${validContacts.length > 1 ? ' (first recipient shown)' : ''}</div>
+                                ${styledMsg}
+                            </div>
+                        </div>
+
+                        <!-- Internal group note -->
+                        <div style="background:#fff7ed; border:1px solid #fed7aa; border-radius:10px; padding:12px 16px; display:flex; gap:10px; align-items:flex-start;">
+                            <span style="font-size:16px; flex-shrink:0;">&#x1F514;</span>
+                            <div style="font-size:12px; color:#92400e; line-height:1.5;">
+                                <strong>Internal Group Notification</strong> will also be posted to the <em>IEG | Order Updates</em> WhatsApp group.
+                            </div>
+                        </div>
+
+                        ${validContacts.length > 1 ? `<div style="background:#eff6ff; border:1px solid #bfdbfe; border-radius:10px; padding:12px 16px; font-size:12px; color:#1e40af;">&#x2139; A personalised message will be sent to each of the <strong>${validContacts.length} contacts</strong> individually.</div>` : ''}
+
+                        <!-- Actions -->
+                        <div style="display:flex; gap:12px; justify-content:flex-end; padding-top:8px; border-top:1px solid #f1f5f9;">
+                            <button onclick="document.getElementById('wa-preview-modal').remove()" style="padding:10px 24px; border:1px solid #e2e8f0; background:white; color:#64748b; border-radius:8px; font-size:14px; font-weight:600; cursor:pointer;">Cancel</button>
+                            <button id="btn-confirm-send-wa" style="padding:10px 28px; background:#25d366; color:white; border:none; border-radius:8px; font-size:14px; font-weight:700; cursor:pointer; display:flex; align-items:center; gap:8px; box-shadow:0 4px 14px rgba(37,211,102,0.35);">
+                                <span>&#x1F4AC;</span> Send Now
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>`);
+
+            document.getElementById('btn-confirm-send-wa').onclick = () => {
+                document.getElementById('wa-preview-modal').remove();
+                this.executeWhatsAppSend(btn, validContacts, machines, sentToNames, orderStatus, customerName);
+            };
+
+        } catch (err) {
+            console.error("WhatsApp Preview Error:", err);
+            this.showToast("Could not build message preview: " + err.message, "error");
+        }
+    }
+
+    async executeWhatsAppSend(btn, validContacts, machines, sentToNames, orderStatus, customerName) {
+        const originalHtml = btn ? btn.innerHTML : '';
+        if (btn) { btn.disabled = true; btn.innerHTML = `<i class="fas fa-spinner fa-spin"></i> Sending...`; }
+
+        try {
+            // Send personalised message to each contact
             for (const contact of validContacts) {
                 const greetingName = contact.salutation ? `${contact.salutation} ${contact.name}` : contact.name;
                 let customerMsg = `Dear *${greetingName}*,\n\nPlease see below details of your order:\n\n*Machine*:\n`;
-                
                 machines.forEach((m, idx) => {
                     const dateToShow = m.revised ? `${m.revised} (Revised)` : m.target;
-                    const displayStatus = m.notes || orderStatus;
-                    customerMsg += `${idx + 1}) ${m.name} x${m.qty}\n   *Status*: ${displayStatus}\n   *Target Handover*: ${dateToShow}\n\n`;
+                    customerMsg += `${idx + 1}) ${m.name} x${m.qty}\n   *Status*: ${m.notes || orderStatus}\n   *Target Handover*: ${dateToShow}\n\n`;
                 });
-                
+                customerMsg += `For any questions or enquiries, please contact Humphrey on +263 77 799 7136.\n\nBest Regards,\nMachinery Exchange`;
+
                 if (window.omnisLog) window.omnisLog(`[WhatsApp] Sending to ${contact.name} (${contact.phone})...`);
                 const res = await window.electron.invoke('whatsapp:send-msg', { to: contact.phone, body: customerMsg });
                 if (!res.ok) console.warn(`Failed to send to ${contact.name}: ${res.error}`);
             }
 
-            // 4. Construct Internal Group Message
+            // Internal group message
             const company = this._currentFullDoc?.company || "";
             let teamLabel = "Team";
             if (company.includes("Machinery Exchange")) teamLabel = "Machinery Exchange Team";
             else if (company.includes("Sinopower")) teamLabel = "Sinopower Team";
             else if (company.includes("Industrial Equipment")) teamLabel = "Industrial Equipment Group Team";
 
-            let groupMsg = `Hi *${teamLabel}*,\n\n`;
-            groupMsg += `*Internal Update*: An order update for *${customerName}* has been sent.\n\n`;
-            
-            // Recipients List
-            groupMsg += `*Recipients*:\n`;
-            sentToNames.forEach(name => {
-                groupMsg += `• ${name}\n`;
-            });
-            groupMsg += `\n`;
+            let groupMsg = `Hi *${teamLabel}*,\n\n*Internal Update*: An order update for *${customerName}* has been sent.\n\n*Recipients*:\n`;
+            sentToNames.forEach(name => { groupMsg += `&bull; ${name}\n`; });
+            groupMsg += `\n*Current Status*: ${orderStatus}\n`;
 
-            groupMsg += `*Current Status*: ${orderStatus}\n`;
-
-            // Days Left Flagging
             const daysLeft = this._currentOrderSnippet?.days_left || "";
             if (daysLeft !== "") {
                 const daysInt = parseInt(daysLeft);
-                const flag = daysInt < 0 ? "🚩 OVERDUE" : (daysInt <= 7 ? "⚠️ SOON" : "✅");
+                const flag = daysInt < 0 ? "&#x1F6A9; OVERDUE" : (daysInt <= 7 ? "&#x2705; SOON" : "...");
                 groupMsg += `*Days Left*: ${daysLeft} ${flag}\n`;
             }
 
-            // Extract unique non-empty notes from machines
             const allNotes = machines.map(m => m.notes).filter(n => n && n.trim() !== "");
-            if (allNotes.length > 0) {
-                const uniqueNotes = [...new Set(allNotes)];
-                groupMsg += `*Notes*: ${uniqueNotes.join("; ")}\n`;
-            }
+            if (allNotes.length > 0) groupMsg += `*Notes*: ${[...new Set(allNotes)].join("; ")}\n`;
 
             groupMsg += `\n*Machine Details*:\n`;
-            
             machines.forEach((m, idx) => {
                 const dateToShow = m.revised ? `${m.revised} (Revised)` : m.target;
                 groupMsg += `${idx + 1}) ${m.name} x${m.qty} (Target: ${dateToShow})\n`;
             });
 
-            if (window.omnisLog) window.omnisLog("[WhatsApp] Group Message Preview:\n" + groupMsg);
+            if (window.omnisLog) window.omnisLog("[WhatsApp] Group Message:\n" + groupMsg);
+            // Group message is OPTIONAL - if the group does not exist on this device, skip gracefully
+            try {
+                const resGroup = await window.electron.invoke('whatsapp:send-to-group', { groupName: "IEG | Order Updates", body: groupMsg });
+                if (!resGroup.ok) {
+                    console.warn("[WhatsApp] Group not found, skipping:", resGroup.error);
+                    if (window.omnisLog) window.omnisLog("[WhatsApp] Note: Group not on this device - skipping.", "warn");
+                }
+            } catch (groupErr) {
+                console.warn("[WhatsApp] Group send skipped:", groupErr.message);
+            }
 
-            // 5. Send to Group
-            const resGroup = await window.electron.invoke('whatsapp:send-to-group', { groupName: "IEG | Order Updates", body: groupMsg });
-            if (!resGroup.ok) throw new Error("Failed to send to group: " + resGroup.error);
-
-            btn.innerHTML = `<span>✅</span> Sent!`;
+            if (btn) btn.innerHTML = `<span>...</span> Sent!`;
+            this.showToast(`WhatsApp update sent to ${validContacts.length} contact${validContacts.length > 1 ? 's' : ''}!`, 'success');
             if (window.omnisLog) window.omnisLog("[WhatsApp] Order update sent successfully.");
-            setTimeout(() => { btn.disabled = false; btn.innerHTML = originalHtml; }, 3000);
+            setTimeout(() => { if (btn) { btn.disabled = false; btn.innerHTML = originalHtml; } }, 3000);
+
         } catch (err) {
             console.error("WhatsApp Error: " + err.message);
             if (window.omnisLog) window.omnisLog("WhatsApp Error: " + err.message, "error");
-            btn.disabled = false;
-            btn.innerHTML = `<span>❌</span> Error`;
-            setTimeout(() => { btn.innerHTML = originalHtml; }, 3000);
+            if (btn) {
+                btn.innerHTML = `<span>&#x274C;</span> Error`;
+                setTimeout(() => { btn.disabled = false; btn.innerHTML = originalHtml; }, 3000);
+            }
+        }
+    }
+
+    /* ---------- EMAIL UPDATE INTEGRATION ---------- */
+
+    async initEmailUpdate(reportId) {
+        const btn = document.getElementById('btn-send-email-update');
+        const originalHtml = btn ? btn.innerHTML : '';
+
+        const emailContacts = [];
+        document.querySelectorAll('#contacts-tbody tr').forEach(row => {
+            const sal   = row.querySelector('input[data-field="salutation"]')?.value.trim() || '';
+            const name  = row.querySelector('input[data-field="name1"]')?.value.trim() || '';
+            const email = row.querySelector('input[data-field="email_address"]')?.value.trim() || '';
+            if (email && email.includes('@')) {
+                emailContacts.push({ salutation: sal, name: name || 'Valued Customer', email });
+            }
+        });
+
+        if (emailContacts.length === 0) {
+            this.showToast('No email addresses found in contacts. Please add at least one email.', 'error');
+            return;
+        }
+
+        const recipientList = emailContacts.map(c =>
+            `${c.salutation ? c.salutation + ' ' : ''}${c.name} &lt;${c.email}&gt;`
+        ).join('<br>');
+
+        const customerName = document.querySelector('#dash-generic-body div[style*="font-size:18px"]')?.textContent.trim()
+            || this._currentFullDoc?.customer_name || 'Customer';
+
+        const company = this._currentFullDoc?.company || "";
+        let internalTeamLabel = "Internal Team";
+        let ccList = [];
+        if (company.includes("Sinopower")) {
+            internalTeamLabel = "Sinopower";
+            // --- TESTING MODE ---
+            ccList = [
+                "takunda@industrial-exchange.group", 
+                "rutendo@industrial-exchange.group", 
+                "omnis@industrial-exchange.group"
+            ];
+            // --- ORIGINAL SINOPOWER LIST ---
+            // ccList = [
+            //     "takunda@industrial-exchange.group", "antony@industrial-exchange.group", 
+            //     "logistics@sinopower.co.zw", "brett@sinopower.co.zw", "trucks@sinopower.co.zw", 
+            //     "rutendo@industrial-exchange.group", "louis@industrial-exchange.group", 
+            //     "mathew@industrial-exchange.group", "barry@industrial-exchange.group"
+            // ];
+        } else {
+            internalTeamLabel = "Machinery Exchange";
+            // --- TESTING MODE ---
+            ccList = [
+                "takunda@industrial-exchange.group", 
+                "rutendo@industrial-exchange.group", 
+                "omnis@industrial-exchange.group"
+            ];
+            // --- ORIGINAL MXG LIST ---
+            // ccList = [
+            //     "takunda@industrial-exchange.group", "antony@industrial-exchange.group", 
+            //     "sales.humphrey@machinery-exchange.com", "chetan.samji@machinery-exchange.com", 
+            //     "equipment@machinery-exchange.com", "sales@machinery-exchange.com", 
+            //     "robin.hunter@machinery-exchange.com", "rutendo@industrial-exchange.group", 
+            //     "mathew@industrial-exchange.group", "barry@industrial-exchange.group"
+            // ];
+        }
+        const ccListHtml = ccList.join(', ');
+
+        const machines = [];
+        document.querySelectorAll('#machines-tbody tr').forEach(row => {
+            if (row.cells.length < 5) return;
+            const mName    = row.cells[0]?.innerText.trim().split('\n')[0] || '';
+            const mQty     = row.cells[2]?.innerText.trim() || '1';
+            const mTarget  = row.cells[3]?.innerText.trim() || '-';
+            const mRevised = row.querySelector('.m-revised')?.value || '';
+            if (mName && mName !== 'Machine / Item') {
+                machines.push({ name: mName, qty: mQty, target: mTarget, revised: mRevised });
+            }
+        });
+
+        const previewRows = machines.map((m, i) => {
+            const date = m.revised
+                ? `<span style="color:#ef4444;">${m.revised}</span> <em style="font-size:11px;">(Revised)</em>`
+                : m.target;
+            return `<tr style="border-bottom:1px solid #f1f5f9;">
+                <td style="padding:8px 12px; font-size:13px; font-weight:600; color:#0f172a;">${i+1}. ${m.name}</td>
+                <td style="padding:8px 12px; font-size:13px; color:#475569; text-align:center;">&times;${m.qty}</td>
+                <td style="padding:8px 12px; font-size:13px; color:#475569; white-space:nowrap;">${date}</td>
+            </tr>`;
+        }).join('');
+
+        const existing = document.getElementById('email-preview-modal');
+        if (existing) existing.remove();
+
+        const multiNote = emailContacts.length > 1
+            ? `<div style="background:#eff6ff;border:1px solid #bfdbfe;border-radius:10px;padding:12px 16px;font-size:12px;color:#1e40af;">&nbsp;&#x2139;&#xFE0F;&nbsp; A formatted report will be sent to the <strong>${emailContacts.length} recipients</strong> in a single email thread.</div>`
+            : '';
+
+        const machineSection = machines.length > 0 ? `
+        <div>
+            <div style="font-size:11px;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:8px;">Order Contents</div>
+            <div style="border:1px solid #e2e8f0;border-radius:10px;overflow:hidden;">
+                <table style="width:100%;border-collapse:collapse;">
+                    <thead style="background:#c92222;">
+                        <tr>
+                            <th style="padding:10px 12px;text-align:left;color:white;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.04em;">Machine / Item</th>
+                            <th style="padding:10px 12px;text-align:center;color:white;font-size:11px;font-weight:700;text-transform:uppercase;">Qty</th>
+                            <th style="padding:10px 12px;text-align:left;color:white;font-size:11px;font-weight:700;text-transform:uppercase;">Handover Date</th>
+                        </tr>
+                    </thead>
+                    <tbody>${previewRows}</tbody>
+                </table>
+            </div>
+        </div>` : '';
+
+        document.body.insertAdjacentHTML('beforeend', `
+        <div id="email-preview-modal" style="
+            position:fixed; inset:0; background:rgba(0,0,0,0.6); z-index:20000;
+            display:flex; align-items:center; justify-content:center;
+            backdrop-filter:blur(6px); animation:fadeIn 0.2s ease;
+        ">
+            <div style="
+                background:white; width:90%; max-width:660px; border-radius:16px;
+                box-shadow:0 30px 60px rgba(0,0,0,0.3); overflow:hidden;
+                animation:slideUp 0.25s cubic-bezier(0.16,1,0.3,1);
+                max-height:90vh; display:flex; flex-direction:column;
+            ">
+                <div style="background:linear-gradient(135deg,#1d4ed8,#1e40af); padding:20px 24px; display:flex; justify-content:space-between; align-items:center; flex-shrink:0;">
+                    <div style="display:flex; align-items:center; gap:12px;">
+                        <div style="width:40px; height:40px; background:rgba(255,255,255,0.15); border-radius:10px; display:flex; align-items:center; justify-content:center; font-size:20px;">&#128231;</div>
+                        <div>
+                            <div style="font-size:17px; font-weight:700; color:white;">Send Email Update</div>
+                            <div style="font-size:12px; color:rgba(255,255,255,0.7); margin-top:2px;">Equipment Order Status Report</div>
+                        </div>
+                    </div>
+                    <button onclick="document.getElementById('email-preview-modal').remove()" style="background:rgba(255,255,255,0.1); border:none; color:white; width:32px; height:32px; border-radius:8px; font-size:18px; cursor:pointer;">&times;</button>
+                </div>
+                <div style="padding:24px; display:flex; flex-direction:column; gap:16px; overflow-y:auto;">
+                    <div style="background:#eff6ff; border:1px solid #bfdbfe; border-radius:10px; padding:14px 16px;">
+                        <div style="font-size:11px; font-weight:700; color:#1d4ed8; text-transform:uppercase; letter-spacing:0.5px; margin-bottom:8px;">&#128236; Customers (To)</div>
+                        <div style="font-size:13px; color:#1e40af; font-weight:500; line-height:1.8; margin-bottom:12px;">${recipientList}</div>
+                        
+                        <div style="font-size:11px; font-weight:700; color:#1d4ed8; text-transform:uppercase; letter-spacing:0.5px; margin-bottom:6px;">&#128101; ${internalTeamLabel} (CC)</div>
+                        <div style="font-size:12px; color:#3b82f6; font-weight:400; line-height:1.6;">${ccListHtml}</div>
+                    </div>
+                    <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:10px; padding:14px 16px;">
+                        <div style="font-size:11px; font-weight:700; color:#64748b; text-transform:uppercase; letter-spacing:0.5px; margin-bottom:6px;">Subject</div>
+                        <div style="font-size:13px; color:#0f172a; font-weight:600;">Order Status Report &mdash; ${customerName}</div>
+                    </div>
+                    ${machineSection}
+                    ${multiNote}
+                    <div style="background:#f0fdf4; border:1px solid #bbf7d0; border-radius:10px; padding:12px 16px; display:flex; gap:10px; align-items:flex-start;">
+                        <span style="font-size:15px; flex-shrink:0;">&#128203;</span>
+                        <div style="font-size:12px; color:#166534; line-height:1.5;">
+                            The email will be sent as a <strong>formatted Equipment Order Status Report</strong> including all available logistics dates (production, shipping, ETA Beira, ETA Harare, handover) pulled directly from the order record.
+                        </div>
+                    </div>
+                    <div style="display:flex; gap:12px; justify-content:flex-end; padding-top:8px; border-top:1px solid #f1f5f9;">
+                        <button onclick="document.getElementById('email-preview-modal').remove()" style="padding:10px 24px; border:1px solid #e2e8f0; background:white; color:#64748b; border-radius:8px; font-size:14px; font-weight:600; cursor:pointer;">Cancel</button>
+                        <button id="btn-confirm-send-email" style="padding:10px 28px; background:#1d4ed8; color:white; border:none; border-radius:8px; font-size:14px; font-weight:700; cursor:pointer; display:flex; align-items:center; gap:8px; box-shadow:0 4px 14px rgba(29,78,216,0.3);">
+                            <span>&#128231;</span> Send Now
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>`);
+
+        document.getElementById('btn-confirm-send-email').onclick = () => {
+            document.getElementById('email-preview-modal').remove();
+            this.sendEmailUpdate(btn, originalHtml, emailContacts, reportId);
+        };
+    }
+
+    async sendEmailUpdate(btn, originalHtml, emailContacts, reportId) {
+        if (btn) { btn.disabled = true; btn.innerHTML = `<span>&#9203;</span> Sending...`; }
+
+        try {
+            const sys = window.getCurrentSystem ? window.getCurrentSystem() : { baseUrl: 'https://salestrack.powerstar.co.zw' };
+            const baseUrl = sys.baseUrl || 'https://salestrack.powerstar.co.zw';
+
+            const recipientEmails = emailContacts.map(c => c.email).join(',');
+            const recipientNames = emailContacts.map(c => c.salutation ? `${c.salutation} ${c.name}` : c.name).join(' and ');
+
+            const res = await window.callFrappeSequenced(baseUrl, 'powerstar_salestrack.omnis_dashboard.send_order_email_update', {
+                report_id: reportId || '',
+                recipient_email: recipientEmails,
+                recipient_name: recipientNames || 'Customer'
+            });
+            const payload = res.message || res;
+            
+            if (payload && payload.ok) {
+                if (btn) btn.innerHTML = `<span>&#9989;</span> Sent!`;
+                this.showToast(`Email report sent to ${emailContacts.length} contact${emailContacts.length > 1 ? 's' : ''}!`, 'success');
+            } else {
+                console.warn(`[Email] Failed to send:`, payload?.error || payload);
+                throw new Error(payload?.error || 'No emails were delivered by the server.');
+            }
+
+            setTimeout(() => {
+                if (btn) { btn.disabled = false; btn.innerHTML = originalHtml || `<span style="font-size:18px;">&#128231;</span> Send Email`; }
+            }, 3000);
+
+        } catch (err) {
+            console.error('[Email Update Error]', err);
+            this.showToast('Email failed: ' + err.message, 'error');
+            if (btn) {
+                btn.innerHTML = `<span>&#10060;</span> Error`;
+                setTimeout(() => { btn.disabled = false; btn.innerHTML = originalHtml || `<span style="font-size:18px;">&#128231;</span> Send Email`; }, 3000);
+            }
         }
     }
 }
@@ -4532,7 +4849,7 @@ async function fetchGSMAIRiskAnalysis() {
             const cells = tr.querySelectorAll('td');
             if (cells.length < 10) return null;
             return {
-                customer: cells[0].textContent.replace('🚩', '').trim(),
+                customer: cells[0].textContent.replace('&#x1F6A9;', '').trim(),
                 machine: cells[1].textContent.trim(),
                 qty: cells[2].textContent.trim(),
                 status: cells[3].textContent.trim(),
@@ -4608,7 +4925,7 @@ async function fetchGSMAIRiskAnalysis() {
                     </div>`;
                 }).join("");
             } else {
-                alerts.innerHTML = `<div style="color:#10b981; font-weight:600; font-size:13px; margin-top:8px;">✅ No specific order risks detected from news correlation.</div>`;
+                alerts.innerHTML = `<div style="color:#10b981; font-weight:600; font-size:13px; margin-top:8px;">... No specific order risks detected from news correlation.</div>`;
             }
         } else {
             content.textContent = "AI Analysis failed: " + (data.error || "Unknown error");
@@ -4653,7 +4970,7 @@ window.initDashboard = async function(period) {
 // Global Alias for compatibility
 window.Dashboard = window.OmnisDashboardV6;
 
-// ⚡ Auto-Boot Sequence (Failsafe)
+// * Auto-Boot Sequence (Failsafe)
 if (document.readyState === "complete") {
     window.initDashboard("This Year");
 } else {

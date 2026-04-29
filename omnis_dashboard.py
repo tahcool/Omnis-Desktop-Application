@@ -1030,6 +1030,10 @@ def get_omnis_orders(start: int = 0, page_length: int = 20, search: str = "", st
     
     limit_clause = f"LIMIT {int(page_length)} OFFSET {int(start)}"
 
+    _fmb_has_machine = _has_col("FMB Report", "machine", log_missing=False)
+    machine_select = "f.machine," if _fmb_has_machine else "NULL as machine,"
+    machine_group  = ", f.machine" if _fmb_has_machine else ""
+
     sql = f"""
         SELECT
             f.name,
@@ -1039,12 +1043,13 @@ def get_omnis_orders(start: int = 0, page_length: int = 20, search: str = "", st
             f.modified,
             COALESCE(SUM(m.qty), 0) AS quantity,
             MIN(m.target_handover_date) AS target_handover_date,
-            f.machine
+            {machine_select}
+            MIN(m.item) AS machine_label
         FROM `tabFMB Report` f
         LEFT JOIN `tabFMB Report Machine` m
             ON m.parent = f.name AND m.parenttype = 'FMB Report'
         WHERE {where_clause}
-        GROUP BY f.name, f.customer_name, f.order_date, f.status, f.modified, f.machine
+        GROUP BY f.name, f.customer_name, f.order_date, f.status, f.modified{machine_group}
         ORDER BY f.modified DESC
         {limit_clause}
     """
@@ -1128,17 +1133,20 @@ def get_omnis_quotations_kpi(payload=None, **kwargs):
         ordered = frappe.db.count("Quotation", {"docstatus": 1, "status": "Ordered"})
         lost = frappe.db.count("Quotation", {"status": ["in", ["Lost", "Expired"]]})
         
-        # Calculate potential value of Open quotes
-        val = frappe.db.sql("""
-            SELECT SUM(grand_total) FROM `tabQuotation` 
-            WHERE status IN ('Open', 'Draft') AND docstatus < 2
+        # Count total machines (items) quoted on open/draft quotations
+        machine_count = frappe.db.sql("""
+            SELECT COALESCE(SUM(qi.qty), 0)
+            FROM `tabQuotation Item` qi
+            INNER JOIN `tabQuotation` q ON q.name = qi.parent
+            WHERE q.status IN ('Open', 'Draft') AND q.docstatus < 2
         """)[0][0] or 0
 
     finally:
         frappe.set_user(previous_user)
 
     return {"ok": True, "data": {
-        "total": total, "open": open_q, "ordered": ordered, "lost": lost, "pipeline_value": val
+        "total": total, "open": open_q, "ordered": ordered, "lost": lost,
+        "machine_count": int(machine_count)
     }}
 
 
@@ -1299,29 +1307,67 @@ def delete_gsm_task(task_id=None, payload=None, **kwargs):
 
 
 @frappe.whitelist(allow_guest=True, methods=["POST"])
-def save_omnis_quotation():
+def save_omnis_quotation(customer=None, company=None, title=None, transaction_date=None,
+                         valid_till=None, items=None, sales_person=None, created_by=None,
+                         pfi_checked=None, delivery=None, bank_account=None,
+                         notes=None, payload=None, **kwargs):
+    """
+    Creates a Quotation. Accepts both:
+      - URL-encoded form params (from callFrappeSequenced / IPC)
+      - JSON body (legacy / direct fetch)
+    """
     try:
-        raw = frappe.request.get_data(as_text=True)
-        if not raw:
-            frappe.throw(_("Missing request body"), frappe.ValidationError)
+        # 1. Try Frappe param extraction (IPC / form-encoded path)
+        params = extract_params(payload)
+        if params:
+            customer = params.get("customer") or customer
+            company = params.get("company") or company
+            title = params.get("title") or title
+            transaction_date = params.get("transaction_date") or transaction_date
+            valid_till = params.get("valid_till") or valid_till
+            items = params.get("items") or items
+            sales_person = params.get("sales_person") or sales_person
+            created_by = params.get("created_by") or created_by
+            pfi_checked = params.get("pfi_checked") or pfi_checked
+            delivery = params.get("delivery") or delivery
+            bank_account = params.get("bank_account") or bank_account
+            notes = params.get("notes") or notes
 
-        try:
-            payload = json.loads(raw)
-        except Exception:
-            frappe.throw(_("Invalid JSON payload"), frappe.ValidationError)
+        # 2. Fallback: try raw JSON body (direct fetch path)
+        if not customer:
+            try:
+                raw = frappe.request.get_data(as_text=True)
+                if raw:
+                    data = json.loads(raw)
+                    customer = data.get("customer") or customer
+                    company = data.get("company") or company
+                    title = data.get("title") or title
+                    transaction_date = data.get("transaction_date") or transaction_date
+                    items = data.get("items") or items
+                    sales_person = data.get("sales_person") or sales_person
+                    created_by = data.get("created_by") or created_by
+                    notes = data.get("notes") or notes
+            except Exception:
+                pass
+
+        # 3. Deserialize items if sent as JSON string
+        if isinstance(items, str):
+            try:
+                items = json.loads(items)
+            except Exception:
+                items = []
 
 
+        customer = (customer or "").strip()
+        company = (company or "").strip()
+        if not company:
+            # Auto-detect default company if not supplied
+            company = frappe.defaults.get_global_default("company") or ""
+        if not customer:
+            frappe.throw(_("Customer is required."), frappe.ValidationError)
 
-        customer = (payload.get("customer") or "").strip()
-        company = (payload.get("company") or "").strip()
-        if not customer or not company:
-            frappe.throw(_("Customer and Company are required."), frappe.ValidationError)
-
-        items = payload.get("items") or []
-        if not items:
-            frappe.throw(_("Please add at least one item."), frappe.ValidationError)
-
-        created_by = (payload.get("created_by") or "").strip()
+        items = items or []
+        created_by = (created_by or "").strip()
 
         # Field mapping based on custom/quotation.json
         doc_dict = {
@@ -1331,20 +1377,15 @@ def save_omnis_quotation():
             "customer": customer,
             "company": company,
             "order_type": "Sales",
-            "transaction_date": payload.get("transaction_date") or nowdate(),
-            "valid_till": payload.get("valid_till"),
+            "transaction_date": transaction_date or nowdate(),
+            "valid_till": valid_till or None,
             "items": [],
             # Mapped fields
-            "sales_person": payload.get("sales_person") or None,
-            "bank_account": payload.get("bank_account") or None,
-            "pfi_checked": 1 if payload.get("pfi_checked") else 0,
-            "delivery": payload.get("delivery") or None,
-            # Assuming 'notes' maps to implicit standard 'notes' or custom if found. 
-            # If not found in JSON, stick to generic 'notes' or 'terms'?
-            # Let's use 'custom_additional_notes' if the user requested it specifically, 
-            # otherwise 'notes' is safer if standard.
-            # But the previous code used `custom_additional_notes`. Let's stick to that IF I don't find better.
-            "custom_additional_notes": payload.get("notes") or None, 
+            "sales_person": sales_person or None,
+            "bank_account": bank_account or None,
+            "pfi_checked": 1 if pfi_checked else 0,
+            "delivery": delivery or None,
+            "custom_additional_notes": notes or None,
         }
 
         if created_by and frappe.db.exists("User", created_by):
@@ -1358,15 +1399,10 @@ def save_omnis_quotation():
                     "item_code": row.get("item_code"),
                     "qty": row.get("qty"),
                     "rate": row.get("rate") or 0,
-                    # Child table custom fields might need check too, assuming standard for now except simple ones
                 }
             )
 
-        if not doc_dict["items"]:
-            frappe.throw(
-                _("Please add at least one item with item code and quantity."),
-                frappe.ValidationError,
-            )
+        # Items are optional for quick-create; user can add via Advanced Form
 
         service_user = "Administrator"
 
@@ -2911,7 +2947,7 @@ TARGETS = {
 }
 
 
-@frappe.whitelist(allow_guest=True)
+@frappe.whitelist(allow_guest=True, methods=["GET", "POST"])
 def get_weekly_gsm_report(company="all", from_date=None, to_date=None, payload=None, **kwargs):
     # Decode payload if present (Global bypass 417 fix)
     params = extract_params(payload)
@@ -3190,13 +3226,22 @@ def get_weekly_gsm_report(company="all", from_date=None, to_date=None, payload=N
                 AND LOWER(m.item) NOT LIKE '%beiben%'
             )"""
 
+            _fmb_has_company = _has_col("FMB Report", "company", log_missing=False)
             if company == "sinopower":
-                where_fmb_company = "AND (f.owner LIKE '%@sinopower.co.zw%' OR f.company LIKE '%Sinopower%')"
+                if _fmb_has_company:
+                    where_fmb_company = "AND (f.owner LIKE '%@sinopower.co.zw%' OR f.company LIKE '%Sinopower%')"
+                else:
+                    where_fmb_company = "AND f.owner LIKE '%@sinopower.co.zw%'"
             elif company == "machinery":
-                where_fmb_company = "AND (f.owner LIKE '%@machinery-exchange.com%' OR f.company LIKE '%Machinery Exchange%')"
+                if _fmb_has_company:
+                    where_fmb_company = "AND (f.owner LIKE '%@machinery-exchange.com%' OR f.company LIKE '%Machinery Exchange%')"
+                else:
+                    where_fmb_company = "AND f.owner LIKE '%@machinery-exchange.com%'"
 
         # Dynamic Column Selection (Defensive Guard against 417 Sync Errors)
         notes_col = "m.internal_notes as internal_notes," if _has_col("FMB Report Machine", "internal_notes") else "'' as internal_notes,"
+        _fmb_has_tracking = _has_col("FMB Report", "tracking_only_no_order", log_missing=False)
+        tracking_filter = "AND f.tracking_only_no_order = 0" if _fmb_has_tracking else ""
         
         query = f"""
             SELECT
@@ -3221,7 +3266,7 @@ def get_weekly_gsm_report(company="all", from_date=None, to_date=None, payload=N
             LEFT JOIN `tabItem` i ON i.name = m.item
             WHERE f.docstatus < 2
               AND f.customer_name NOT LIKE '%%DIAGNOSTIC%%'
-              AND COALESCE(f.tracking_only_no_order, 0) = 0
+              {tracking_filter}
               AND m.actual_handover_date IS NULL
               {where_fmb_company}
             ORDER BY order_date DESC, machine_id ASC
@@ -5727,6 +5772,279 @@ def send_customer_update(customer, message, subject="Update on your Order"):
 
 
 # ---------------------------------------------------------------------------
+# Order Email Update ✅ REBUILT — Server-side formatted report
+# ---------------------------------------------------------------------------
+
+@frappe.whitelist(allow_guest=True)
+def send_order_email_update(payload=None, **kwargs):
+    """
+    Sends a branded HTML Equipment Order Status Report to a specific contact.
+    The email format mirrors the Frappe Notification Jinja template:
+    - Dynamic columns (only shows columns that have data anywhere in the doc)
+    - Contact logic (Chetan/MXG vs Brett/Sinopower based on owner)
+    - All logistics dates: production, ETD, ETA Beira, ETA Harare, handover
+    """
+    params = extract_params(payload=payload, **kwargs)
+
+    report_id       = params.get("report_id") or ""
+    recipient_email = params.get("recipient_email") or ""
+    recipient_name  = params.get("recipient_name") or "Valued Customer"
+
+    if not recipient_email:
+        return {"ok": False, "error": "No recipient email provided."}
+    if not report_id:
+        return {"ok": False, "error": "No report ID provided."}
+
+    previous_user = frappe.session.user
+    frappe.set_user("Administrator")
+    try:
+        doc = frappe.get_doc("FMB Report", report_id)
+
+        # ── Enrich machines with resolved item names ────────────────────────
+        machines = []
+        for m in (doc.machines or []):
+            item_name = frappe.db.get_value("Item", m.item, "item_name") if m.item else None
+            machines.append({
+                "item":                 item_name or m.item or "",
+                "item_code":            m.item or "",
+                "qty":                  m.qty,
+                "serial_no":            getattr(m, "serial_no", "") or "",
+                "target_handover_date": getattr(m, "target_handover_date", None),
+                "revised_handover_date":getattr(m, "revised_handover_date", None),
+                "actual_handover_date": getattr(m, "actual_handover_date", None),
+                "notes":                getattr(m, "notes", "") or "",
+            })
+
+        # ── Column detection (match Jinja template logic) ───────────────────
+        def hv(v):
+            return bool(v and str(v).strip())
+
+        show_qty       = any(hv(m["qty"]) for m in machines) or hv(getattr(doc, "quantity", None))
+        show_serial    = any(hv(m["serial_no"]) for m in machines)
+        show_status    = hv(getattr(doc, "status_issue", None))
+        show_prod_comp = hv(getattr(doc, "production_completion_date", None))
+        show_etd       = hv(getattr(doc, "estimated_time_of_departure", None))
+        show_eta_beira = hv(getattr(doc, "estimated_time_of_arrival_beira", None))
+        show_eta_hre   = hv(getattr(doc, "estimated_time_of_arrival_harare", None))
+        show_thd  = any(hv(m["target_handover_date"]) for m in machines) or hv(getattr(doc, "target_handover_date", None))
+        show_rthd = any(hv(m["revised_handover_date"]) for m in machines) or hv(getattr(doc, "revised_target_handover_date", None))
+        show_ahd  = any(hv(m["actual_handover_date"]) for m in machines) or hv(getattr(doc, "actual_handover_date", None))
+        show_notes = any(hv(m["notes"]) for m in machines) or hv(getattr(doc, "comment", None))
+
+        # ── Contact & brand logic ───────────────────────────────────────────
+        owner = (doc.owner or "").lower()
+        if "sinopower" in owner:
+            contact_name  = "Brett Berry"
+            contact_title = "Commercial Manager"
+            contact_email = "brett@sinopower.co.zw"
+            brand_colour  = "#7b1515"
+            brand_name    = "Sinopower"
+            
+            # --- TESTING MODE ---
+            cc_list = [
+                "takunda@industrial-exchange.group",
+                "rutendo@industrial-exchange.group",
+                "omnis@industrial-exchange.group"
+            ]
+            # --- ORIGINAL SINOPOWER LIST ---
+            # cc_list = [
+            #     "takunda@industrial-exchange.group",
+            #     "antony@industrial-exchange.group",
+            #     "logistics@sinopower.co.zw",
+            #     "brett@sinopower.co.zw",
+            #     "trucks@sinopower.co.zw",
+            #     "rutendo@industrial-exchange.group",
+            #     "louis@industrial-exchange.group",
+            #     "mathew@industrial-exchange.group",
+            #     "barry@industrial-exchange.group"
+            # ]
+        else:
+            contact_name  = "Chetan Samji"
+            contact_title = "Commercial Manager"
+            contact_email = "chetan.samji@machinery-exchange.com"
+            brand_colour  = "#c92222"
+            brand_name    = "Machinery Exchange"
+
+            # --- TESTING MODE ---
+            cc_list = [
+                "takunda@industrial-exchange.group",
+                "rutendo@industrial-exchange.group",
+                "omnis@industrial-exchange.group"
+            ]
+            # --- ORIGINAL MXG LIST ---
+            # cc_list = [
+            #     "takunda@industrial-exchange.group",
+            #     "antony@industrial-exchange.group",
+            #     "sales.humphrey@machinery-exchange.com",
+            #     "chetan.samji@machinery-exchange.com",
+            #     "equipment@machinery-exchange.com",
+            #     "sales@machinery-exchange.com",
+            #     "robin.hunter@machinery-exchange.com",
+            #     "rutendo@industrial-exchange.group",
+            #     "mathew@industrial-exchange.group",
+            #     "barry@industrial-exchange.group"
+            # ]
+
+        # ── Date formatter ──────────────────────────────────────────────────
+        def fmt(d):
+            if not d:
+                return ""
+            try:
+                from frappe.utils import formatdate
+                return formatdate(d, "dd MMMM yyyy")
+            except Exception:
+                return str(d)
+
+        # ── HTML helpers ────────────────────────────────────────────────────
+        TH = '<th style="padding:14px 18px; text-align:{align}; color:white; font-size:13px; font-weight:700; text-transform:uppercase; letter-spacing:0.04em; white-space:{nw};">{label}</th>'
+        TD = '<td style="padding:14px 18px; text-align:{align}; font-size:15px; color:#334155; vertical-align:top; white-space:{nw};">{val}</td>'
+
+        def th(label, align="left", nowrap=False):
+            return TH.format(label=label, align=align, nw="nowrap" if nowrap else "normal")
+
+        def td(val, align="left", nowrap=False):
+            return TD.format(val=val or "", align=align, nw="nowrap" if nowrap else "normal")
+
+        # ── Build header row ────────────────────────────────────────────────
+        headers = th("Machine Details")
+        if show_qty:       headers += th("Qty", "center")
+        if show_status:    headers += th("Current Status")
+        if show_prod_comp: headers += th("Production Completion Date", "center", True)
+        if show_etd:       headers += th("Est. Time of Shipping", "center", True)
+        if show_eta_beira: headers += th("Est. Arrival in Beira", "center", True)
+        if show_eta_hre:   headers += th("Est. Arrival in Harare", "center", True)
+        if show_thd:       headers += th("Target Handover Date", "center", True)
+        if show_rthd:      headers += th("Revised Handover Date", "center", True)
+        if show_ahd:       headers += th("Actual Handover Date", "center", True)
+        if show_notes:     headers += th("Comments / Notes")
+
+        # ── Build data rows ─────────────────────────────────────────────────
+        rows_html = ""
+        if not machines:
+            # Fallback: single row from parent doc fields
+            serial_div = ""
+            machine_label = getattr(doc, "machine", "") or ""
+            row  = f'<td style="padding:14px 18px; font-size:15px; color:#0f172a; font-weight:600;"><strong>{machine_label}</strong>{serial_div}</td>'
+            if show_qty:       row += td(getattr(doc, "quantity", "") or "", "center")
+            if show_status:    row += td(getattr(doc, "status_issue", "") or "")
+            if show_prod_comp: row += td(fmt(getattr(doc, "production_completion_date", None)), "center", True)
+            if show_etd:       row += td(fmt(getattr(doc, "estimated_time_of_departure", None)), "center", True)
+            if show_eta_beira: row += td(fmt(getattr(doc, "estimated_time_of_arrival_beira", None)), "center", True)
+            if show_eta_hre:   row += td(fmt(getattr(doc, "estimated_time_of_arrival_harare", None)), "center", True)
+            if show_thd:       row += td(fmt(getattr(doc, "target_handover_date", None)), "center", True)
+            if show_rthd:      row += td(fmt(getattr(doc, "revised_target_handover_date", None)), "center", True)
+            if show_ahd:       row += td(fmt(getattr(doc, "actual_handover_date", None)), "center", True)
+            if show_notes:     row += td(f"<em>{getattr(doc, 'comment', '') or ''}</em>")
+            rows_html = f'<tr style="background:#f5fafd;">{row}</tr>'
+        else:
+            for i, m in enumerate(machines):
+                bg = "#f5fafd" if i % 2 == 0 else "#ffffff"
+                serial_div = f'<div style="color:#64748b; font-size:13px; margin-top:4px;">Serial: {m["serial_no"]}</div>' if (show_serial and m["serial_no"]) else ""
+                row = f'<td style="padding:14px 18px; font-size:15px; color:#0f172a; font-weight:600;"><strong>{m["item"]}</strong>{serial_div}</td>'
+                if show_qty:       row += td(m["qty"] or "", "center")
+                if show_status:    row += td(getattr(doc, "status_issue", "") or "")
+                if show_prod_comp: row += td(fmt(getattr(doc, "production_completion_date", None)), "center", True)
+                if show_etd:       row += td(fmt(getattr(doc, "estimated_time_of_departure", None)), "center", True)
+                if show_eta_beira: row += td(fmt(getattr(doc, "estimated_time_of_arrival_beira", None)), "center", True)
+                if show_eta_hre:   row += td(fmt(getattr(doc, "estimated_time_of_arrival_harare", None)), "center", True)
+                thd_val  = m["target_handover_date"]  or getattr(doc, "target_handover_date", None)
+                rthd_val = m["revised_handover_date"] or getattr(doc, "revised_target_handover_date", None)
+                ahd_val  = m["actual_handover_date"]  or getattr(doc, "actual_handover_date", None)
+                if show_thd:  row += td(fmt(thd_val), "center", True)
+                if show_rthd: row += td(fmt(rthd_val), "center", True)
+                if show_ahd:  row += td(fmt(ahd_val), "center", True)
+                notes_val = m["notes"] or getattr(doc, "comment", "") or ""
+                if show_notes: row += td(f"<em>{notes_val}</em>" if notes_val else "")
+                rows_html += f'<tr style="background:{bg};">{row}</tr>'
+
+        # ── Compose full HTML email ─────────────────────────────────────────
+        subject    = f"Order Status Report \u2014 {doc.customer_name or ''}"
+        greeting_name = recipient_name if (recipient_name and recipient_name != "Customer") else (doc.customer_name or "Customer")
+
+        email_html = f"""<!DOCTYPE html>
+<html><head><meta charset="utf-8"></head>
+<body style="margin:0; padding:20px; font-family:Arial,'Helvetica Neue',sans-serif; background:#f0f4f8;">
+<div style="max-width:900px; margin:0 auto; background:#ffffff; border-radius:10px; overflow:hidden; box-shadow:0 3px 16px rgba(0,0,0,0.10);">
+
+  <!-- Brand Header -->
+  <table style="width:100%; border-collapse:collapse; background:{brand_colour};" cellpadding="0" cellspacing="0">
+    <tr>
+      <td style="padding:24px 28px;">
+        <div style="font-size:20px; font-weight:800; color:#ffffff; letter-spacing:-0.3px;">{brand_name}</div>
+        <div style="font-size:12px; color:rgba(255,255,255,0.75); margin-top:4px; text-transform:uppercase; letter-spacing:0.06em;">Equipment Order Status Report</div>
+      </td>
+    </tr>
+  </table>
+
+  <!-- Greeting -->
+  <div style="padding:24px 28px 12px;">
+    <p style="margin:0 0 16px; font-size:15px; color:#0f172a; line-height:1.6;">
+      Dear <strong>{greeting_name}</strong>,<br><br>
+      Please find the latest status report for your equipment order below.<br>
+      We are actively monitoring your order to ensure timely delivery. Should you require any further clarification or assistance, please do not hesitate to contact our Commercial Manager: <a href="mailto:{contact_email}" style="color:{brand_colour}; text-decoration:none; font-weight:600;">{contact_name}</a>.
+    </p>
+  </div>
+
+  <!-- Data Table -->
+  <div style="padding:0 28px 28px; overflow-x:auto;">
+    <table style="width:100%; border-collapse:collapse; font-size:15px;" cellpadding="0" cellspacing="0" border="1" bordercolor="#e2e8f0">
+      <thead>
+        <tr style="background:{brand_colour};">
+          {headers}
+        </tr>
+      </thead>
+      <tbody style="color:#334155;">
+        {rows_html}
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Footer -->
+  <div style="background:#f8fafc; border-top:1px solid #e2e8f0; padding:14px 28px; font-size:11px; color:#94a3b8; text-align:center;">
+    This is an automated order status update from {brand_name}. Please do not reply directly to this email.<br>
+    &copy; {brand_name} &mdash; Omnis Order Management System
+  </div>
+
+</div>
+</body></html>"""
+
+        recipient_list = [e.strip() for e in recipient_email.split(',') if e.strip()]
+        
+        # To ensure all customers are on a single thread and visible to each other
+        primary_to = [recipient_list[0]] if recipient_list else []
+        final_cc_list = (recipient_list[1:] if len(recipient_list) > 1 else []) + cc_list
+        
+        frappe.sendmail(
+            recipients=primary_to,
+            cc=final_cc_list,
+            subject=subject,
+            message=email_html,
+            reference_doctype="FMB Report",
+            reference_name=doc.name,
+            now=True,
+            expose_recipients="header",
+            with_container=False,
+            add_unsubscribe_link=False
+        )
+
+        # Log comment on the doc
+        try:
+            doc.add_comment("Info", f"Email status report sent to {recipient_name} ({recipient_email})")
+            frappe.db.commit()
+        except Exception:
+            pass
+
+        return {"ok": True, "message": f"Email sent to {recipient_email}"}
+
+    except Exception as e:
+        frappe.log_error(frappe.get_traceback(), "send_order_email_update Error")
+        return {"ok": False, "error": str(e)}
+    finally:
+        frappe.set_user(previous_user)
+
+
+
+# ---------------------------------------------------------------------------
 # Fleetrack Wrappers
 # ---------------------------------------------------------------------------
 
@@ -6015,7 +6333,7 @@ def get_stock_pipeline():
             "oem", "model", "proposed_order", "quantity", 
             "production_completion", "shipping_date", "eta_durban", 
             "ted", "eta_harare", "name"
-        ])
+        ], limit_page_length=0)
         
         # Fetch potential customers for all records in one go (Efficiency)
         all_names = [r.get("name") for r in records if r.get("name")]
@@ -6023,7 +6341,8 @@ def get_stock_pipeline():
             # We omit 'parenttype' filter to be robust against "Stock Pipeline" vs "Stock Sheet" naming
             pcs = frappe.get_all("Potential Customers", 
                 filters={"parent": ["in", all_names]},
-                fields=["parent", "customer_name"]
+                fields=["parent", "customer_name"],
+                limit_page_length=0
             )
             # Group by parent
             pc_map = {}
@@ -6100,6 +6419,17 @@ def debug_stock_pipeline_schema():
 
 @frappe.whitelist(allow_guest=True)
 def get_schema_debug():
+    """Diagnostic: Returns schema debug info for Stock Pipeline."""
+    try:
+        result = {}
+        for dt in ["Stock Pipeline", "Stock Sheet", "Potential Customers"]:
+            if frappe.db.exists("DocType", dt):
+                meta = frappe.get_meta(dt)
+                result[dt] = [{"fieldname": f.fieldname, "label": f.label, "fieldtype": f.fieldtype} for f in meta.fields]
+        return {"ok": True, "schema": result}
+    except Exception as e:
+        return {"ok": False, "error": str(e)}
+
 @frappe.whitelist(allow_guest=True)
 def get_db_search():
     """Searches for 'unit_price' in standard and custom fields."""
@@ -6152,7 +6482,7 @@ def test_openai_api_key(api_key):
     except Exception as e:
         return {"ok": False, "error": f"Connection failed: {str(e)}"}
 
-@frappe.whitelist(allow_guest=True)
+@frappe.whitelist(allow_guest=True, methods=["GET", "POST"])
 def get_omnis_industry_news(api_key=None):
     import urllib.request
     import xml.etree.ElementTree as ET
@@ -6254,7 +6584,7 @@ def get_omnis_industry_news(api_key=None):
         return {"ok": False, "error": str(e), "news": []}
 
 
-@frappe.whitelist(allow_guest=True)
+@frappe.whitelist(allow_guest=True, methods=["GET", "POST"])
 def get_ai_trend_and_prediction_insights(api_key=None, filtered_orders=None):
     """
     Combines active orders and industry news to predict risks and trends.

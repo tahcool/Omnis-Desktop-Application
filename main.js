@@ -470,13 +470,26 @@ ipcMain.handle("frappe:request", async (event, { url, method, data, headers, syn
         // ✅ The Golden Fix: Custom Lookup
         // We connect to the IP but tell SSL it's the Domain
         lookup: (hostname, options, callback) => {
+          // Handle all calling conventions:
+          // (hostname, callback) -> options is fn
+          // (hostname, undefined, callback) -> options is undefined
+          // (hostname, options, callback) -> normal 3-arg form
           if (typeof options === 'function') {
             callback = options;
             options = {};
+          } else if (typeof callback !== 'function') {
+            callback = options;
+            options = {};
           }
+          if (!options) options = {};
           if (DNS_MAP[hostname]) {
-            console.log(`[DNS Bypass] Mapping ${hostname} -> ${DNS_MAP[hostname]}`);
-            return callback(null, DNS_MAP[hostname], 4); // Force IPv4
+            const ip = DNS_MAP[hostname];
+            console.log(`[DNS Bypass] Mapping ${hostname} -> ${ip} (all:${options.all})`);
+            // When options.all is true, Node expects an array of address objects
+            if (options.all) {
+              return callback(null, [{ address: ip, family: 4 }]);
+            }
+            return callback(null, ip, 4);
           }
           require('dns').lookup(hostname, options, callback);
         }

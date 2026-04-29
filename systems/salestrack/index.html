@@ -6209,33 +6209,61 @@
             <p style="color: #64748b; font-size: 14px;">Configure your application preferences and integrations.</p>
           </div>
 
+          <div style="display: flex; flex-direction: column; gap: 25px; margin-bottom: 25px;">
+              <!-- WhatsApp Integration Card -->
+              <div class="dash-card" style="background: #fff; padding: 30px; border-radius: 16px; border: 1px solid #e2e8f0; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);">
+                  <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 20px;">
+                      <h2 style="font-size: 18px; font-weight: 700; color: #1e293b; margin: 0; display: flex; align-items: center; gap: 10px;">
+                          <span style="font-size: 20px;">📲</span> WhatsApp Connectivity
+                      </h2>
+                      <div style="display:flex; gap:10px;">
+                          <button onclick="salestrack.testWhatsAppReconnect()" style="background: #f1f5f9; color: #475569; border: 1px solid #e2e8f0; padding: 8px 16px; border-radius: 8px; font-size: 12px; font-weight: 700; cursor: pointer; transition: background 0.2s;">
+                              <i class="fas fa-sync-alt"></i> Restart Client
+                          </button>
+                          <button onclick="salestrack.logoutWhatsApp()" style="background: #fee2e2; color: #991b1b; border: 1px solid #fecaca; padding: 8px 16px; border-radius: 8px; font-size: 12px; font-weight: 700; cursor: pointer; transition: background 0.2s;">
+                              <i class="fas fa-trash-alt"></i> Hard Reset (Wipe)
+                          </button>
+                      </div>
+                  </div>
+                  
+                  <div style="display:flex; gap: 20px; align-items: stretch; flex-wrap:wrap;">
+                      <!-- Status Panel -->
+                      <div style="flex: 1; min-width: 300px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; padding: 25px; display: flex; flex-direction:column; justify-content:center; gap: 15px;">
+                          <div style="display:flex; align-items:center; gap:20px;">
+                              <div id="wa-settings-icon" style="background: white; border: 1px solid #e2e8f0; width: 60px; height: 60px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 28px; color: #64748b; transition: all 0.3s;">
+                                  <i class="fab fa-whatsapp"></i>
+                              </div>
+                              <div style="flex: 1;">
+                                  <div style="font-size: 15px; font-weight: 800; color: #0f172a; margin-bottom:4px;">Built-in WhatsApp Client</div>
+                                  <div id="wa-settings-status-text" style="font-size: 13px; font-weight: 600; color: #64748b;">Checking connection state...</div>
+                              </div>
+                          </div>
+                          <p style="margin: 0; font-size: 13px; color: #64748b; line-height: 1.6; padding-top: 10px; border-top: 1px solid #e2e8f0;">
+                              Maintains a persistent connection to your mobile device for automated notifications. Ensure your phone remains connected to the internet.
+                          </p>
+                      </div>
+
+                      <!-- QR Code Panel (Visible only when scanning is needed) -->
+                      <div id="wa-settings-qr-panel" style="flex: 0 0 280px; background: white; border: 1px dashed #cbd5e1; border-radius: 12px; padding: 15px; display: flex; flex-direction: column; align-items: center; justify-content: center; display:none;">
+                          <div style="font-size: 13px; font-weight: 700; color: #1e293b; margin-bottom: 12px; text-align:center;">Scan QR to Link Device</div>
+                          <div style="width: 180px; height: 180px; background: #f1f5f9; border-radius: 8px; overflow:hidden; display:flex; align-items:center; justify-content:center;">
+                              <div id="wa-settings-qr-placeholder" style="color: #94a3b8; font-size: 12px; text-align: center; padding: 10px;">
+                                  Generating QR...<br><span style="font-size:10px;">This may take a moment</span>
+                              </div>
+                              <img id="wa-settings-qr-img" class="hidden" style="width:100%; height:100%; object-fit:contain;" />
+                          </div>
+                          <div style="font-size: 11px; color: #64748b; text-align:center; margin-top: 10px; line-height: 1.4;">
+                              Open WhatsApp on your phone &rarr; Settings &rarr; Linked Devices
+                          </div>
+                      </div>
+                  </div>
+              </div>
+          </div>
+
           <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(400px, 1fr)); gap: 25px; align-items: start;">
             
             <!-- LEFT COLUMN: CONNECTIVITY & MAINTENANCE -->
             <div style="display: flex; flex-direction: column; gap: 25px;">
-                
-                <!-- WhatsApp Integration Card -->
-                <div class="dash-card" style="background: #fff; padding: 30px; border-radius: 16px; border: 1px solid #e2e8f0; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);">
-                    <h2 style="font-size: 18px; font-weight: 700; color: #1e293b; margin-bottom: 20px; display: flex; align-items: center; gap: 10px;">
-                        <span style="font-size: 20px;">📲</span> WhatsApp Connectivity
-                    </h2>
-                    <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; padding: 20px; display: flex; align-items: center; gap: 15px;">
-                        <div id="wa-settings-icon" style="background: white; border: 1px solid #e2e8f0; width: 50px; height: 50px; border-radius: 12px; display: flex; align-items: center; justify-content: center; font-size: 24px; color: #64748b; transition: all 0.3s;">
-                            <i class="fab fa-whatsapp"></i>
-                        </div>
-                        <div style="flex: 1;">
-                            <div style="font-size: 14px; font-weight: 700; color: #0f172a;">Built-in WhatsApp Client</div>
-                            <div id="wa-settings-status-text" style="font-size: 12px; color: #64748b;">Checking connection state...</div>
-                        </div>
-                        <button id="wa-settings-logout" onclick="salestrack.logoutWhatsApp()" 
-                            style="background: #fee2e2; color: #991b1b; border: 1px solid #fecaca; padding: 8px 16px; border-radius: 10px; font-size: 12px; font-weight: 800; cursor: pointer; display: none; transition: transform 0.2s;">
-                            DISCONNECT
-                        </button>
-                    </div>
-                    <p style="margin-top: 15px; font-size: 12px; color: #94a3b8; line-height: 1.5;">
-                        Maintains a persistent connection to your mobile device for automated notifications.
-                    </p>
-                </div>
 
                 <!-- Software Maintenance Card -->
                 <div class="dash-card" style="background: #fff; padding: 30px; border-radius: 16px; border: 1px solid #e2e8f0; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);">
@@ -7229,9 +7257,9 @@
             <div class="q-dash-sub">Requiring attention</div>
           </div>
           <div class="q-dash-card">
-            <div class="q-dash-label">MTD Value</div>
+            <div class="q-dash-label">Machines Quoted (Open)</div>
             <div class="q-dash-val" id="q-kpi-mtd">--</div>
-            <div class="q-dash-sub" id="q-kpi-mtd-label">This month</div>
+            <div class="q-dash-sub" id="q-kpi-mtd-label">Units in pipeline</div>
           </div>
         </div>
 
@@ -7259,8 +7287,8 @@
             </div>
             <div class="q-quick-input-group">
               <label class="q-quick-label">Quotation Title</label>
-              <input type="text" id="qq-title" class="q-quick-input" readonly style="background:#f3f4f6;"
-                placeholder="Auto-generated Title" />
+              <input type="text" id="qq-title" class="q-quick-input"
+                placeholder="e.g. Hitachi ZX130 - Customer Name" />
             </div>
             <div class="q-quick-input-group">
               <label class="q-quick-label">Initial Item (Optional)</label>
@@ -7273,7 +7301,16 @@
           </div>
         </div>
 
-        <div class="qlist-section-title">Latest Quotations</div>
+        <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:12px;">
+          <div class="qlist-section-title" style="margin-bottom:0;">All Quotations</div>
+          <div style="display:flex; align-items:center; gap:10px;">
+            <select id="qlist-page-length" style="height:34px; border-radius:8px; border:1px solid #e2e8f0; padding:0 10px; font-size:12px; font-weight:600; color:#374151;">
+              <option value="20">20 per page</option>
+              <option value="50">50 per page</option>
+              <option value="100">100 per page</option>
+            </select>
+          </div>
+        </div>
 
         <div class="table-wrapper">
           <table class="mxg-table">
@@ -7291,6 +7328,15 @@
             </thead>
             <tbody id="qlist-body"></tbody>
           </table>
+        </div>
+
+        <!-- Pagination Bar -->
+        <div style="display:flex; align-items:center; justify-content:space-between; padding:14px 0 4px 0; border-top:1px solid #f1f5f9; margin-top:8px;">
+          <span id="qlist-info" style="font-size:12px; color:#64748b; font-weight:600;">Loading...</span>
+          <div style="display:flex; gap:8px;">
+            <button id="qlist-prev" disabled style="padding:7px 18px; border-radius:8px; border:1px solid #e2e8f0; background:white; color:#374151; font-size:12px; font-weight:700; cursor:pointer; transition:all 0.15s;">&larr; Previous</button>
+            <button id="qlist-next" disabled style="padding:7px 18px; border-radius:8px; border:1px solid #e2e8f0; background:#1e293b; color:white; font-size:12px; font-weight:700; cursor:pointer; transition:all 0.15s;">Next &rarr;</button>
+          </div>
         </div>
 
       </div> <!-- End Padding Container -->
@@ -9701,9 +9747,10 @@
         }
       } catch (ce) { console.warn("Offline cache load failed:", ce); }
 
-      // 5-minute TTL check
+      // 5-minute TTL check (bypass if user has active search/filter)
       const now = Date.now();
-      if (!force && window.lastLoaded['quotations'] && (now - window.lastLoaded['quotations'] < 300000)) {
+      const hasActiveFilter = qSearchText || qStatusValue;
+      if (!force && !hasActiveFilter && window.lastLoaded['quotations'] && (now - window.lastLoaded['quotations'] < 300000)) {
         console.log("Quotations fresh (under 5m), skipping fresh fetch.");
         return;
       }
@@ -9798,8 +9845,9 @@
         document.getElementById('q-kpi-total').textContent = data.total || 0;
         document.getElementById('q-kpi-pending').textContent = data.open || 0;
 
-        const mtdVal = data.pipeline_value || 0;
-        document.getElementById('q-kpi-mtd').textContent = "$" + Number(mtdVal).toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 0 });
+        const machineCount = data.machine_count || 0;
+        document.getElementById('q-kpi-mtd').textContent = machineCount.toLocaleString();
+        document.getElementById('q-kpi-mtd-label').textContent = 'Units in pipeline';
       } catch (e) {
         console.warn("KPI Load fail", e);
       }
@@ -9809,11 +9857,14 @@
     const btnQqSubmit = document.getElementById('btn-qq-submit');
     if (btnQqSubmit) {
       btnQqSubmit.onclick = async () => {
-        const cust = document.getElementById('qq-customer').value.trim();
-        const title = document.getElementById('qq-title').value.trim();
-        const item = document.getElementById('qq-item').value.trim();
+        const custInput = document.getElementById('qq-customer');
+        const titleInput = document.getElementById('qq-title');
+        const itemInput = document.getElementById('qq-item');
+        const cust = custInput?.value.trim();
+        const title = titleInput?.value.trim() || (cust ? `${cust} - Quotation` : '');
+        const item = itemInput?.value.trim();
 
-        if (!cust || !title) { alert("Please enter Customer and Title"); return; }
+        if (!cust) { alert("Please enter a Customer name"); return; }
 
         btnQqSubmit.disabled = true;
         btnQqSubmit.textContent = "Creating...";
@@ -9822,23 +9873,29 @@
           const base = CURRENT_SYSTEM.baseUrl.replace(/\/$/, "");
           const items = item ? [{ item_code: item, qty: 1 }] : [];
 
-          const res = await window.callFrappeSequenced(base, "frappe.client.insert", {
-            doc: {
-              doctype: "Quotation",
+          // Route through IPC (callFrappeSequenced) - same as all other API calls
+          const res = await window.callFrappeSequenced(
+            base,
+            "powerstar_salestrack.omnis_dashboard.save_omnis_quotation",
+            {
               customer: cust,
+              company: CURRENT_SYSTEM.company || "",
               title: title,
               transaction_date: nowdate(),
-              items: items
+              items: items.length ? JSON.stringify(items) : "[]"
             }
-          });
-
-          const newDoc = res.message || res;
+          );
+          const newDoc = (res && res.message) ? res.message : res;
           if (newDoc.name) {
             omnisLog("Quick Quote Created: " + newDoc.name);
-            document.getElementById('qq-customer').value = "";
-            document.getElementById('qq-title').value = "";
-            document.getElementById('qq-item').value = "";
-            loadQuotationList();
+            custInput.value = "";
+            titleInput.value = "";
+            if (itemInput) itemInput.value = "";
+            loadQuotationList(true);
+            // Show success toast
+            if (window.salestrack && window.salestrack.showToast) {
+              window.salestrack.showToast(`Quotation ${newDoc.name} created!`, 'success');
+            }
           }
         } catch (e) {
           alert("Failed to create quotation: " + e.message);
@@ -9849,6 +9906,69 @@
       };
     }
 
+    // ---- Quick Create Autocomplete Wiring ----
+    function setupQuickAutocomplete(inputId, suggestId, searchMethod, searchParam, onSelect) {
+      const input = document.getElementById(inputId);
+      const list = document.getElementById(suggestId);
+      if (!input || !list) return;
+
+      let debTimer;
+      input.addEventListener('input', () => {
+        clearTimeout(debTimer);
+        const q = input.value.trim();
+        if (q.length < 2) { list.innerHTML = ''; list.classList.add('hidden'); return; }
+        debTimer = setTimeout(async () => {
+          if (!CURRENT_SYSTEM) return;
+          try {
+            const base = CURRENT_SYSTEM.baseUrl.replace(/\/$/, '');
+            const res = await window.callFrappeSequenced(base, 'frappe.client.get_list', {
+              doctype: searchMethod,
+              filters: [[searchMethod, searchParam, 'like', `%${q}%`]],
+              fields: [searchParam, 'name'],
+              limit_page_length: 10
+            });
+            const rows = (res.message || res) || [];
+            list.innerHTML = '';
+            if (!rows.length) { list.classList.add('hidden'); return; }
+            rows.forEach(r => {
+              const val = r[searchParam] || r.name;
+              const li = document.createElement('div');
+              li.className = 'suggest-item';
+              li.textContent = val;
+              li.onclick = () => { onSelect(val, r); list.innerHTML = ''; list.classList.add('hidden'); };
+              list.appendChild(li);
+            });
+            list.classList.remove('hidden');
+          } catch(e) { list.classList.add('hidden'); }
+        }, 300);
+      });
+
+      document.addEventListener('click', (e) => {
+        if (!input.contains(e.target) && !list.contains(e.target)) {
+          list.classList.add('hidden');
+        }
+      });
+    }
+
+    // Customer autocomplete - auto-fill title on selection
+    setupQuickAutocomplete('qq-customer', 'qq-customer-suggest', 'Customer', 'customer_name', (val) => {
+      document.getElementById('qq-customer').value = val;
+      const titleEl = document.getElementById('qq-title');
+      if (titleEl && !titleEl.value.trim()) {
+        titleEl.value = `${val} - Quotation`;
+      }
+    });
+
+    // Salesperson autocomplete
+    setupQuickAutocomplete('qq-salesperson', 'qq-salesperson-suggest', 'Sales Person', 'sales_person_name', (val) => {
+      document.getElementById('qq-salesperson').value = val;
+    });
+
+    // Item autocomplete
+    setupQuickAutocomplete('qq-item', 'qq-item-suggest', 'Item', 'item_code', (val) => {
+      document.getElementById('qq-item').value = val;
+    });
+
     // Debounce Utility
     function debounce(func, wait) {
       let timeout;
@@ -9858,15 +9978,40 @@
       };
     }
 
-    if (qSearchInput) qSearchInput.addEventListener("input", debounce(() => {
-      qSearchText = qSearchInput.value.trim();
-      qOffset = 0;
-      loadQuotationList();
-    }, 500));
-    if (qStatusSelect) qStatusSelect.addEventListener("change", () => { qStatusValue = qStatusSelect.value || ""; qOffset = 0; loadQuotationList(); });
-    if (qPageLenSelect) qPageLenSelect.addEventListener("change", () => { qPageLength = Number(qPageLenSelect.value || "20"); qOffset = 0; loadQuotationList(); });
-    if (qPrevBtn) qPrevBtn.addEventListener("click", () => { if (qOffset === 0) return; qOffset = Math.max(0, qOffset - qPageLength); loadQuotationList(); });
-    if (qNextBtn) qNextBtn.addEventListener("click", () => { if (!qHasMore) return; qOffset += qPageLength; loadQuotationList(); });
+    // ---- Quotation Filter Listeners (lazy element lookup for robustness) ----
+    function forceReloadQuotations() {
+      if (window.lastLoaded) window.lastLoaded["quotations"] = 0;
+      loadQuotationList(true);
+    }
+
+    document.addEventListener("input", function(e) {
+      if (e.target && e.target.id === "qlist-search") {
+        clearTimeout(window._qSearchTimer);
+        window._qSearchTimer = setTimeout(() => {
+          qSearchText = e.target.value.trim();
+          qOffset = 0;
+          forceReloadQuotations();
+        }, 400);
+      }
+    });
+
+    document.addEventListener("change", function(e) {
+      if (e.target && e.target.id === "qlist-status") {
+        qStatusValue = e.target.value || ""; qOffset = 0; forceReloadQuotations();
+      }
+      if (e.target && e.target.id === "qlist-page-length") {
+        qPageLength = Number(e.target.value || "20"); qOffset = 0; forceReloadQuotations();
+      }
+    });
+
+    document.addEventListener("click", function(e) {
+      if (e.target && e.target.id === "qlist-prev") {
+        if (qOffset === 0) return; qOffset = Math.max(0, qOffset - qPageLength); forceReloadQuotations();
+      }
+      if (e.target && e.target.id === "qlist-next") {
+        if (!qHasMore) return; qOffset += qPageLength; forceReloadQuotations();
+      }
+    });
 
     /* ---------- ENQUIRIES LIST (Native) ---------- */
     let cePageLength = 20;
@@ -11769,6 +11914,10 @@
 
         if (response && response.ok) {
           closeStockPipelineForm();
+          // Bust the local cache so the next render fetches fresh data
+          if (CURRENT_SYSTEM) {
+            localStorage.removeItem("mxg_stock_data_" + CURRENT_SYSTEM.id);
+          }
           if (window._stockViewMode === 'calendar') {
             window.renderArrivalCalendar();
           } else {
@@ -11788,11 +11937,9 @@
       }
     }
 
-    // Bind save button
-    document.addEventListener('DOMContentLoaded', () => {
-      const btn = document.getElementById('btn-save-stock-pipeline');
-      if (btn) btn.onclick = saveStockPipelineRecord;
-    });
+    // Save button uses direct onclick="saveStockPipelineRecord()" in HTML
+    // (document delegation blocked by event.stopPropagation() on modal inner div)
+    window.saveStockPipelineRecord = saveStockPipelineRecord;
 
     // --- PREMIUM UNIFIED CONFIRMATION DIALOG ---
     window.showOmnisConfirm = function (opts = {}) {
@@ -11840,6 +11987,10 @@
         if (response && response.ok) {
           window.showToast?.('Record Deleted Successfully', 'success');
           window.closeStockPipelineForm();
+          // Bust the local cache so the next render fetches fresh data
+          if (CURRENT_SYSTEM) {
+            localStorage.removeItem("mxg_stock_data_" + CURRENT_SYSTEM.id);
+          }
           // Refresh current view
           if (window._stockViewMode === 'calendar') {
             window.renderArrivalCalendar();
@@ -14921,8 +15072,8 @@
           <button class="gs-btn-cancel" onclick="closeStockPipelineForm()"
             style="background:#f8fafc; border:1px solid #e2e8f0; color:#64748b; padding:8px 16px; border-radius:8px; font-weight:700; cursor:pointer;">Cancel</button>
           <button class="gs-btn-save btn-leak-effect" id="btn-save-stock-pipeline"
-            style="background:var(--accent-maroon); border:1px solid var(--accent-maroon); color:white; padding:8px 24px; border-radius:8px; font-weight:700; cursor:pointer;">Save
-            Record</button>
+            onclick="saveStockPipelineRecord()"
+            style="background:var(--accent-maroon); border:1px solid var(--accent-maroon); color:white; padding:8px 24px; border-radius:8px; font-weight:700; cursor:pointer;">Save Record</button>
         </div>
       </div>
     </div>
