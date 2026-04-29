@@ -784,7 +784,7 @@ app.whenReady().then(async () => {
 
   autoUpdater.on('download-progress', (progress) => {
     BrowserWindow.getAllWindows().forEach(win => {
-      win.webContents.send('update-message', { type: 'progress', percent: progress.percent });
+      win.webContents.send('update-message', { type: 'progress', progress: progress });
     });
   });
 

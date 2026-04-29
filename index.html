@@ -638,18 +638,18 @@
   </div>
 
   <!-- AUTO-UPDATE NOTIFICATION -->
-  <div id="update-notification" style="display:none; position:fixed; top:20px; right:20px; width:320px; background:#1e293b; color:white; padding:16px; border-radius:12px; box-shadow:0 20px 25px -5px rgba(0,0,0,0.2); z-index:10001; animation: slideIn 0.5s ease-out;">
-    <div style="display:flex; align-items:center; gap:12px; margin-bottom:12px;">
-      <div style="width:32px; height:32px; background:#2563eb; border-radius:8px; display:flex; align-items:center; justify-content:center;">
-        <svg style="width:18px; height:18px; fill:white;" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 14H9v-2h2v2zm0-4H9V7h2v5z"/></svg>
+  <div id="update-notification" style="display:none; position:fixed; top:40px; right:40px; width:340px; background:linear-gradient(135deg, #4a0404, #0f0f10); border: 1px solid rgba(255,255,255,0.1); color:white; padding:20px; border-radius:12px; box-shadow:0 20px 40px rgba(0,0,0,0.6); z-index:10001; animation: slideIn 0.5s ease-out;">
+    <div style="display:flex; align-items:center; gap:14px; margin-bottom:16px;">
+      <div style="width:36px; height:36px; background:#e11c2a; border-radius:8px; display:flex; align-items:center; justify-content:center; box-shadow: 0 4px 12px rgba(225,28,42,0.4);">
+        <svg style="width:20px; height:20px; fill:white;" viewBox="0 0 24 24"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 14H9v-2h2v2zm0-4H9V7h2v5z"/></svg>
       </div>
-      <div>
-        <div style="font-size:14px; font-weight:700;">System Update</div>
-        <div id="update-text" style="font-size:12px; color:#94a3b8;">An update is available...</div>
+      <div style="flex: 1;">
+        <div style="font-size:15px; font-weight:800; letter-spacing:0.5px;">System Update</div>
+        <div id="update-text" style="font-size:12px; color:#94a3b8; margin-top:2px; line-height: 1.4;">An update is available...</div>
       </div>
     </div>
-    <div id="update-progress-container" style="display:none; width:100%; height:4px; background:rgba(255,255,255,0.1); border-radius:2px; overflow:hidden;">
-      <div id="update-progress-bar" style="width:0%; height:100%; background:#2563eb; transition:width 0.3s ease;"></div>
+    <div id="update-progress-container" style="display:none; width:100%; height:6px; background:rgba(255,255,255,0.1); border-radius:3px; overflow:hidden;">
+      <div id="update-progress-bar" style="width:0%; height:100%; background:linear-gradient(90deg, #e11c2a, #f97316); box-shadow: 0 0 10px rgba(225,28,42,0.6); transition:width 0.3s ease;"></div>
     </div>
   </div>
 
@@ -832,14 +832,31 @@
         const container = document.getElementById('update-progress-container');
 
         el.style.display = 'block';
-        txt.innerText = data.text;
+        if (data.text) {
+            txt.innerText = data.text;
+        }
 
         if (data.type === 'progress') {
           container.style.display = 'block';
-          bar.style.width = data.percent + '%';
+          if (data.progress) {
+             let downloadedMB = (data.progress.transferred / 1048576).toFixed(2);
+             let totalMB = (data.progress.total / 1048576).toFixed(2);
+             let speedMBps = (data.progress.bytesPerSecond / 1048576).toFixed(2);
+             
+             let etaSeconds = 0;
+             if (data.progress.bytesPerSecond > 0) {
+                 etaSeconds = Math.round((data.progress.total - data.progress.transferred) / data.progress.bytesPerSecond);
+             }
+             let etaFormatted = etaSeconds > 60 ? Math.floor(etaSeconds/60) + 'm ' + (etaSeconds%60) + 's' : etaSeconds + 's';
+
+             txt.innerText = `Downloading: ${downloadedMB}MB / ${totalMB}MB\nSpeed: ${speedMBps} MB/s | ETA: ${etaFormatted}`;
+             bar.style.width = data.progress.percent + '%';
+          }
         } else if (data.type === 'downloaded') {
           container.style.display = 'none';
-          el.style.background = '#059669'; // Green for success
+          el.style.background = 'linear-gradient(135deg, #064e3b, #022c22)'; // Deep green success gradient
+          bar.parentElement.previousElementSibling.firstElementChild.style.background = '#10b981'; // Emerald icon
+          txt.style.color = '#a7f3d0';
         }
       });
     }
