@@ -324,6 +324,17 @@ ipcMain.handle("window:maximize", () => {
 });
 
 ipcMain.handle("app:getVersion", () => {
+  try {
+    const fs = require('fs');
+    const path = require('path');
+    const pkgPath = path.join(__dirname, 'package.json');
+    if (fs.existsSync(pkgPath)) {
+      const pkg = JSON.parse(fs.readFileSync(pkgPath, 'utf8'));
+      return pkg.version;
+    }
+  } catch (err) {
+    console.error('[Omnis] Error reading package.json for version:', err);
+  }
   return app.getVersion();
 });
 
