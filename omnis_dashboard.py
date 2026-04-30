@@ -975,8 +975,8 @@ def get_omnis_quotations(start: int = 0, page_length: int = 20, search: str = ""
             or_filters=or_filters or None,
             fields=fields,
             order_by="transaction_date desc, modified desc",
-            start=start,
-            page_length=page_length,
+            limit_start=start,
+            limit_page_length=page_length,
         )
     finally:
         frappe.set_user(previous_user)
@@ -4029,8 +4029,8 @@ def get_omnis_ces(start=0, page_length=20, search="", status=""):
             filters=filters_meta,
             or_filters=or_filters if or_filters else None,
             order_by="modified desc",
-            start=start,
-            page_length=page_length + 1,
+            limit_start=start,
+            limit_page_length=page_length + 1,
         )
     finally:
         frappe.set_user(previous_user)
@@ -4074,8 +4074,8 @@ def get_omnis_products(start: int = 0, page_length: int = 20, search: str = ""):
             filters=filters_meta,
             or_filters=or_filters,
             order_by="modified desc",
-            start=start,
-            page_length=page_length
+            limit_start=start,
+            limit_page_length=page_length
         )
     finally:
         frappe.set_user(previous_user)
@@ -4110,8 +4110,8 @@ def get_omnis_customers(start: int = 0, page_length: int = 20, search: str = "")
             filters=filters_meta,
             or_filters=or_filters,
             order_by="modified desc",
-            start=start,
-            page_length=page_length
+            limit_start=start,
+            limit_page_length=page_length
         )
     finally:
         frappe.set_user(previous_user)
@@ -4186,7 +4186,7 @@ def get_omnis_group_sales(start: int = 0, page_length: int = 50, search: str = "
         if "oem" not in fields and "brand" in actual_cols: fields.append("brand as oem")
 
         # Calculate Total Count for high-fidelity pagination
-        total_count = len(frappe.get_all("Group Sales", filters=filters, or_filters=or_filters if search else None))
+        total_count = frappe.db.count("Group Sales", filters=filters, or_filters=or_filters if search else None)
 
         data = frappe.get_list(
             "Group Sales",
@@ -4194,8 +4194,8 @@ def get_omnis_group_sales(start: int = 0, page_length: int = 50, search: str = "
             filters=filters,
             or_filters=or_filters if search else None,
             order_by="order_date desc",
-            start=start,
-            page_length=page_length
+            limit_start=start,
+            limit_page_length=page_length
         )
         return {"ok": True, "data": data, "total_count": total_count}
     except Exception as e:
@@ -6333,7 +6333,7 @@ def get_stock_pipeline():
             "oem", "model", "proposed_order", "quantity", 
             "production_completion", "shipping_date", "eta_durban", 
             "ted", "eta_harare", "name"
-        ], limit_page_length=0)
+        ], limit_page_length=500)
         
         # Fetch potential customers for all records in one go (Efficiency)
         all_names = [r.get("name") for r in records if r.get("name")]
@@ -6342,7 +6342,7 @@ def get_stock_pipeline():
             pcs = frappe.get_all("Potential Customers", 
                 filters={"parent": ["in", all_names]},
                 fields=["parent", "customer_name"],
-                limit_page_length=0
+                limit_page_length=5000
             )
             # Group by parent
             pc_map = {}
