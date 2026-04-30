@@ -14261,7 +14261,7 @@
             const baseUrl = sys ? sys.baseUrl : "https://salestrack.powerstar.co.zw";
             const method = 'powerstar_salestrack.omnis_dashboard.get_gsm_tasks';
 
-            const res = await window.callFrappeSequenced(baseUrl, method, {});
+            const res = await window.callFrappeSequenced(baseUrl, method, {}, "GET");
 
             if (res && res.ok && res.tasks) {
               return res.tasks.map(t => ({

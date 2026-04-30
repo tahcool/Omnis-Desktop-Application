@@ -381,7 +381,7 @@ window.OmnisDashboardV6 = class OmnisDashboardV6 {
             // Build simple payload object since callFrappeSequenced usually takes dict
             const payload = key ? { api_key: key } : {};
 
-            const res = await window.callFrappeSequenced(this.sys.baseUrl, "powerstar_salestrack.omnis_dashboard.get_omnis_ai_dashboard_insights", payload);
+            const res = await window.callFrappeSequenced(this.sys.baseUrl, "powerstar_salestrack.omnis_dashboard.get_omnis_ai_dashboard_insights", payload, "GET");
             if (res && res.message && res.message.ok) {
                 this.renderAIInsights(res.message);
             } else {
@@ -403,7 +403,7 @@ window.OmnisDashboardV6 = class OmnisDashboardV6 {
         try {
             const key = localStorage.getItem("omnis_openai_key");
             const payload = key ? { api_key: key } : {};
-            const res = await window.callFrappeSequenced(this.sys.baseUrl, "powerstar_salestrack.omnis_dashboard.get_omnis_industry_news", payload);
+            const res = await window.callFrappeSequenced(this.sys.baseUrl, "powerstar_salestrack.omnis_dashboard.get_omnis_industry_news", payload, "GET");
 
             if (res && res.message && res.message.ok) {
                 this.renderIndustryNews(res.message.news);
