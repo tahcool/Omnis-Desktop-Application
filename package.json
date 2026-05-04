@@ -1,6 +1,6 @@
 {
   "name": "omnis-desktop",
-  "version": "2.2.11",
+  "version": "2.2.12",
   "description": "Omnis Desktop Application",
   "main": "main.js",
   "scripts": {
