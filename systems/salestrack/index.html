@@ -61,6 +61,23 @@
     .hidden {
       display: none !important;
     }
+    .queue-tab {
+      transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    .queue-tab:hover {
+      background: #f1f5f9 !important;
+      color: #0f172a !important;
+    }
+    .queue-tab.active {
+      box-shadow: 0 2px 8px rgba(37, 99, 235, 0.1);
+    }
+    .queue-content {
+      animation: dashFadeIn 0.3s ease-out;
+    }
+    @keyframes dashFadeIn {
+      from { opacity: 0; transform: translateY(4px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
 
     /* CRITICAL: FORCED OVERLAY ISOLATION */
     #splash-overlay {
@@ -189,16 +206,7 @@
     }
 
     .btn-leak-effect::after {
-      content: "";
-      position: absolute;
-      top: -100%;
-      left: -100%;
-      width: 300%;
-      height: 300%;
-      background: linear-gradient(135deg, transparent 45%, rgba(255, 255, 255, 0.1) 50%, transparent 55%);
-      transition: all 0.6s ease;
-      pointer-events: none;
-      transform: rotate(25deg);
+      display: none;
     }
 
     .btn-leak-effect:hover::after {
@@ -250,11 +258,8 @@
       scrollbar-width: thin;
       scrollbar-color: #cbd5e1 #f8fafc;
       background: var(--page-bg);
-      background-image: radial-gradient(#64748b 0.5px, transparent 0.5px);
-      background-size: 24px 24px;
       background-attachment: fixed;
       background-position: center;
-      --pattern-opacity: 0.03;
     }
 
     .view-page::-webkit-scrollbar {
@@ -577,15 +582,7 @@
     }
 
     .sidebar::before {
-      content: "";
-      position: absolute;
-      inset: 0;
-      background-image: radial-gradient(circle at 2px 2px, rgba(255, 255, 255, 0.05) 1px, transparent 0);
-      background-size: 24px 24px;
-      pointer-events: none;
-      opacity: 0.6;
-      z-index: 5;
-      /* Adjusted to sit correctly between blobs and content */
+      display: none;
     }
 
     /* Aurora Ambience Blobs - updated for Parallax */
@@ -688,16 +685,7 @@
     }
 
     .nav-item.active::before {
-      content: "";
-      position: absolute;
-      top: -50%;
-      left: -100%;
-      width: 50%;
-      height: 200%;
-      background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
-      transform: rotate(35deg);
-      animation: light-leak 4s infinite linear;
-      z-index: 11;
+      display: none;
     }
 
     /* Data Waveform Pulse */
@@ -1249,15 +1237,15 @@
     }
 
     .order-card-row {
-      background: #ffffff !important;
-      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
-      border-radius: 12px;
-      transition: transform 0.2s, box-shadow 0.2s;
+      background: transparent !important;
+      box-shadow: none;
+      border-radius: 0;
+      border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+      transition: background 0.2s;
     }
 
     .order-card-row:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+      background: rgba(0, 0, 0, 0.02) !important;
     }
 
     .order-card-row td {
@@ -1267,15 +1255,13 @@
     }
 
     .order-card-row td:first-child {
-      border-top-left-radius: 12px;
-      border-bottom-left-radius: 12px;
-      position: relative;
-      padding-left: 20px !important;
+      border-top-left-radius: 0;
+      border-bottom-left-radius: 0;
     }
 
     .order-card-row td:last-child {
-      border-top-right-radius: 12px;
-      border-bottom-right-radius: 12px;
+      border-top-right-radius: 0;
+      border-bottom-right-radius: 0;
     }
 
     .risk-strip {
@@ -1443,7 +1429,7 @@
     .main {
       flex: 1;
       height: 100%;
-      border-radius: var(--radius);
+      border-radius: 0 !important;
       display: flex;
       flex-direction: column;
       overflow: hidden;
@@ -1865,6 +1851,7 @@
       display: flex;
       flex-direction: column;
       padding: 0;
+      border-radius: 0 !important;
       /* Header removed, reset padding */
       height: 100vh;
       overflow: hidden;
@@ -2510,7 +2497,7 @@
 
     .ai-stock-grid {
       display: grid;
-      grid-template-columns: 2fr 60px 80px 110px 110px 110px 110px 110px 100px;
+      grid-template-columns: 1.5fr 1.5fr 60px 80px 100px 100px 100px 100px 100px 100px;
       gap: 8px;
       align-items: center;
     }
@@ -2769,15 +2756,7 @@
     }
 
     .ai-recommendation-block::after {
-      content: "";
-      position: absolute;
-      top: -50%;
-      left: -50%;
-      width: 200%;
-      height: 200%;
-      background: linear-gradient(45deg, transparent, rgba(255, 255, 255, 0.4), transparent);
-      transform: rotate(45deg);
-      animation: scanning 4s infinite linear;
+      display: none;
     }
 
     @keyframes scanning {
@@ -4357,30 +4336,18 @@
     }
 
     .mxg-kpi-card {
-      background: linear-gradient(135deg, #ffffff 0%, #f9fafb 100%);
-      border: 1px solid rgba(139, 34, 25, 0.08);
+      background: transparent;
+      border: 1px solid rgba(0, 0, 0, 0.05);
       border-radius: 18px;
       padding: 16px 20px;
-      /* Layered Soft Shadow for depth */
-      box-shadow:
-        0 4px 6px -1px rgba(0, 0, 0, 0.03),
-        0 10px 15px -3px rgba(0, 0, 0, 0.02),
-        0 0 0 1px rgba(0, 0, 0, 0.01);
+      box-shadow: none;
       transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
       position: relative;
       overflow: hidden;
     }
 
     .mxg-kpi-card::after {
-      content: "";
-      position: absolute;
-      top: 0;
-      left: -100%;
-      width: 50%;
-      height: 100%;
-      background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.6), transparent);
-      transform: skewX(-25deg);
-      transition: 0.75s;
+      display: none;
     }
 
     .mxg-kpi-card:hover::after {
@@ -5515,8 +5482,8 @@
   <!-- PREMIUM TOP NAV (MOVED TO BODY ROOT) -->
   <nav class="omnis-top-nav">
     <div class="top-nav-logo">
-      <img src="../../assets/images/omnis-logo-white.png" alt="Omnis AI" style="height: 32px;">
-      <span style="color:white; font-weight:800; letter-spacing:0.05em; font-size:16px;">SALESTRACK</span>
+      <img src="../../assets/images/omnis-logo-white.png" alt="Omnis AI" style="height: 46px; width: auto; object-fit: contain;">
+      <span style="color:#f8fafc; font-weight:800; letter-spacing:0.12em; font-size:13px; margin-right: 12px; margin-top: 4px; opacity: 0.9;">Salestrack</span>
     </div>
 
     <div class="top-nav-group">
@@ -5524,42 +5491,84 @@
       <div class="top-nav-item active" data-view="view-dashboard">
         <span class="icon"><i class="fas fa-th-large"></i></span> <span>Dashboard</span>
       </div>
-      <div class="top-nav-item" data-view="view-group-sales-list">
-        <span class="icon"><i class="fas fa-funnel-dollar"></i></span> <span>Sales</span>
+
+      <!-- Reports Dropdown -->
+      <div class="top-nav-dropdown">
+        <div class="top-nav-item top-nav-dropdown-trigger" id="dd-reports-trigger">
+          <span class="icon"><i class="fas fa-chart-bar"></i></span>
+          <span>Reports</span>
+          <i class="fas fa-chevron-down" style="font-size:8px; margin-left:2px; opacity:0.6;"></i>
+        </div>
+        <div class="top-nav-dropdown-menu" id="dd-reports-menu">
+          <div class="top-nav-dropdown-item" data-view="view-salestrack-reports">
+            <i class="fas fa-chart-bar"></i> GSM Report
+          </div>
+          <div class="top-nav-dropdown-item" data-view="view-oem-reports">
+            <i class="fas fa-chart-pie"></i> OEM Reports
+          </div>
+          <div class="top-nav-dropdown-item" onclick="if(window.salestrack) window.salestrack.openEfficiencyReportModalV5()">
+            <i class="fas fa-bolt"></i> Efficiency
+          </div>
+          <div class="top-nav-dropdown-item" onclick="if(window.salestrack) window.salestrack.openMERReportModal()">
+            <i class="fas fa-chart-line"></i> MER
+          </div>
+        </div>
       </div>
-      <div class="top-nav-item" data-view="view-salestrack-reports">
-        <span class="icon"><i class="fas fa-chart-pie"></i></span> <span>GSM Report</span>
+
+      <!-- Operations Dropdown -->
+      <div class="top-nav-dropdown">
+        <div class="top-nav-item top-nav-dropdown-trigger" id="dd-ops-trigger">
+          <span class="icon"><i class="fas fa-cogs"></i></span>
+          <span>Operations</span>
+          <i class="fas fa-chevron-down" style="font-size:8px; margin-left:2px; opacity:0.6;"></i>
+        </div>
+        <div class="top-nav-dropdown-menu" id="dd-ops-menu">
+          <div class="top-nav-dropdown-item" data-view="view-group-sales-list">
+            <i class="fas fa-chart-line"></i> Sales
+          </div>
+          <div class="top-nav-dropdown-item" data-view="view-orders-list">
+            <i class="fas fa-route"></i> Order Tracking
+          </div>
+          <div class="top-nav-dropdown-item" data-view="view-stock">
+            <i class="fas fa-box"></i> Stock Pipeline
+          </div>
+        </div>
       </div>
-      <div class="top-nav-item" data-view="view-orders-list">
-        <span class="icon"><i class="fas fa-shipping-fast"></i></span> <span>Order Tracking</span>
-      </div>
-      <div class="top-nav-item" data-view="view-stock">
-        <span class="icon"><i class="fas fa-warehouse"></i></span> <span>Stock & Pipeline</span>
-      </div>
+
     </div>
 
     <div class="top-nav-group"
-      style="margin-left: 20px; padding-left: 20px; border-left: 1px solid rgba(255,255,255,0.1);">
+      style="margin-left: 6px; padding-left: 6px; border-left: 1px solid rgba(255,255,255,0.1);">
 
-      <!-- <div class="top-nav-item" data-view="view-quotations-list">
-        <span class="icon"><i class="fas fa-file-signature"></i></span> <span>Quotations</span>
-      </div> -->
+      <div class="top-nav-item" data-view="view-quotations-list">
+        <span class="icon"><i class="fas fa-file-alt"></i></span> <span>Quotations</span>
+      </div>
       <div class="top-nav-item" data-view="view-ce-list">
-        <span class="icon"><i class="fas fa-comments"></i></span> <span>Enquiries</span>
+        <span class="icon"><i class="fas fa-inbox"></i></span> <span>Enquiries</span>
+      </div>
+      <div class="top-nav-item" data-view="view-command-center">
+        <span class="icon"><i class="fas fa-terminal"></i></span> <span>Command</span>
       </div>
     </div>
 
     <div class="top-nav-spacer"></div>
 
-    <div style="display:flex; align-items:center; gap:20px; margin-right: 20px;">
-      <div style="display:flex; align-items:center; gap:8px;">
-        <span
-          style="width:6px; height:6px; background:#10b981; border-radius:50%; display:inline-block; animation: neonPulse 2s infinite;"></span>
+    <div style="display:flex; align-items:center; gap:12px; margin-right: 15px;">
+      <div style="display:flex; align-items:center; gap:6px;">
+        <span style="width:6px; height:6px; background:#10b981; border-radius:50%; display:inline-block; animation: neonPulse 2s infinite;"></span>
         <div style="font-size:10px; color:#10b981; font-weight:800; letter-spacing:0.05em;">LIVE</div>
       </div>
-      <div style="height:20px; width:1px; background:rgba(255,255,255,0.15);"></div>
-      <div id="app-version-label"
-        style="font-size:10px; color:rgba(255,255,255,0.4); font-weight:700; letter-spacing:0.02em;">V1.0.1-STABLE</div>
+
+      <div style="height:16px; width:1px; background:rgba(255,255,255,0.15);"></div>
+
+      <div id="wa-navbar-status" style="display:flex; align-items:center; gap:6px; cursor: pointer;" onclick="switchToView('view-settings')">
+        <span id="wa-navbar-dot" style="width:6px; height:6px; background:#64748b; border-radius:50%; display:inline-block;"></span>
+        <div id="wa-navbar-text" style="font-size:10px; color:rgba(255,255,255,0.4); font-weight:800; letter-spacing:0.05em;">WA: OFFLINE</div>
+      </div>
+
+      <div style="height:16px; width:1px; background:rgba(255,255,255,0.15);"></div>
+
+      <div id="app-version-label" style="font-size:10px; color:rgba(255,255,255,0.4); font-weight:700; letter-spacing:0.02em;">V1.0.1-STABLE</div>
     </div>
 
     <div class="top-nav-group" style="gap:8px;">
@@ -5612,32 +5621,36 @@
           <span>Dashboard</span>
         </div>
         <div class="nav-item" data-view="view-group-sales-list">
-          <span class="icon"><i class="fas fa-briefcase"></i></span>
+          <span class="icon"><i class="fas fa-chart-line"></i></span>
           <span>Sales & Pipeline</span>
         </div>
         <div class="nav-item" data-view="view-salestrack-reports">
-          <span class="icon"><i class="fas fa-chart-line"></i></span>
+          <span class="icon"><i class="fas fa-chart-bar"></i></span>
           <span>GSM Report</span>
         </div>
         <div class="nav-item" data-view="view-orders-list">
-          <span class="icon"><i class="fas fa-truck-loading"></i></span>
+          <span class="icon"><i class="fas fa-route"></i></span>
           <span>Order Tracking</span>
         </div>
         <div class="nav-item" data-view="view-stock">
-          <span class="icon"><i class="fas fa-boxes"></i></span>
+          <span class="icon"><i class="fas fa-box"></i></span>
           <span>Stock & Pipeline</span>
         </div>
       </div>
 
       <div class="nav-list" style="margin-top:10px;">
         <div class="nav-section-title">Actions</div>
-        <!-- <div class="nav-item" data-view="view-quotations-list">
-          <span class="icon"><i class="fas fa-file-invoice"></i></span>
+        <div class="nav-item" data-view="view-quotations-list">
+          <span class="icon"><i class="fas fa-file-alt"></i></span>
           <span>Quotations</span>
-        </div> -->
+        </div>
         <div class="nav-item" data-view="view-ce-list">
-          <span class="icon"><i class="fas fa-headset"></i></span>
+          <span class="icon"><i class="fas fa-inbox"></i></span>
           <span>Enquiries</span>
+        </div>
+        <div class="nav-item" data-view="view-command-center">
+          <span class="icon"><i class="fas fa-terminal"></i></span>
+          <span>Command Center</span>
         </div>
 
         <div class="nav-item" data-view="view-products-list">
@@ -5675,12 +5688,12 @@
     <!-- REMOVED GLASS CLASS HERE -->
     <!-- REMOVED GLASS CLASS HERE -->
     <main class="main"
-      style="margin-top: 80px; height: calc(100vh - 80px); overflow: hidden; display: flex; flex-direction: column; flex: 1; min-width: 0; position: relative; background: #f8fafc;">
+      style="margin-top: 0; height: 100vh; overflow: hidden; display: flex; flex-direction: column; flex: 1; min-width: 0; position: relative; background: #f8fafc;">
       <!-- Topbar removed as per user request -->
 
       <!-- TAB NAVIGATION CONTAINER (shown only for GSM Report) -->
       <div id="gsm-tab-container" class="gsm-tab-container hidden"
-        style="display:none; background: #ffffff; border-bottom:1px solid #e2e8f0; padding: 24px;">
+        style="display:none; background: #ffffff; border-bottom:1px solid #e2e8f0; padding: 24px; margin-top: 80px;">
         <div style="display: flex; align-items: center; justify-content: space-between; gap: 40px;">
           <div class="mxg-page-toggle" style="margin-bottom: 0; display: flex; gap: 8px;">
             <style>
@@ -5870,336 +5883,149 @@
           })();
         </script>
 
-        <!-- DASHBOARD VIEW (Nesting fix for scrolling) -->
-        <div id="view-dashboard" class="view-content active"
-          style="display:flex; flex-direction:column; padding:0; margin:0; position: relative; overflow: hidden; flex: 1; height: 100%; min-height: 0;">
-
-          <!-- Dashboard Slider Viewport -->
-          <div class="dashboard-viewport"
-            style="width: 100%; overflow: hidden; flex: 1; display: flex; flex-direction: column;">
-            <div id="dashboard-slider-track" class="dashboard-slider-track"
-              style="display: flex; transition: transform 0.65s cubic-bezier(0.19, 1, 0.22, 1); width: 200%; height: 100%; flex: 1;">
-
-              <!-- Slide 1: Sales Overview (REVERSED TO FIRST) -->
-              <div class="dash-slide"
-                style="width: 50%; flex-shrink: 0; padding: 24px; padding-bottom: 80px; height: 100%; overflow-y: auto; background: #f2f4f7;">
-                <!-- Unified Sales Overview (Flawlessly Flat Style) -->
-                <div class="dash-card"
-                  style="display:flex; flex-direction:column; background:#ffffff; height: fit-content; border: 1px solid #e2e8f0; border-radius: 12px; overflow: hidden; box-shadow: none; margin-bottom: 24px;">
-
-                  <!-- Modern Integrated Header -->
-                  <div
-                    style="padding:24px 32px; border-bottom:1px solid #f1f5f9; display:flex; align-items:center; justify-content:space-between; background:rgba(248, 250, 252, 0.4); backdrop-filter:blur(10px);">
-                    <div style="display:flex; flex-direction:column; gap:4px;">
-                      <h2
-                        style="font-size:24px; font-weight:900; color:#0f172a; letter-spacing:0.06em; text-transform:uppercase; margin:0;">
-                        STRATEGIC SALES PERFORMANCE & FORECASTING
-                      </h2>
-                      <span style="font-size:13px; font-weight:600; color:#64748b; letter-spacing:0.02em;">
-                        Real-time operational telemetry and predictive yield analytics for executive review.
-                      </span>
-                    </div>
-                    <div style="display:flex; gap:12px;">
-                      <button onclick="window.salestrack.openEfficiencyReportModalV5()"
-                        style="padding:10px 22px; background:#1e40af; color:#fff; border:none; border-radius:12px; font-size:11px; font-weight:800; display:flex; align-items:center; gap:8px; cursor:pointer; transition:all 0.3s ease; box-shadow:0 6px 16px rgba(30, 64, 175, 0.2); letter-spacing:0.04em; text-transform:uppercase;"
-                        onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 8px 20px rgba(30, 64, 175, 0.3)';"
-                        onmouseout="this.style.transform='none'; this.style.boxShadow='0 6px 16px rgba(30, 64, 175, 0.2)';"
-                        id="btn-efficiency-reports">
-                        <i class="fas fa-bolt"></i> Efficiency Reports
-                      </button>
-                      <button onclick="window.salestrack.openMERReportModal()"
-                        style="padding:10px 22px; background:var(--accent-gradient, linear-gradient(135deg, #8b2219 0%, #4c110d 100%)); color:#fff; border:none; border-radius:12px; font-size:11px; font-weight:800; display:flex; align-items:center; gap:8px; cursor:pointer; transition:all 0.3s ease; box-shadow:0 6px 16px rgba(139, 34, 25, 0.2); letter-spacing:0.04em; text-transform:uppercase;"
-                        onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 8px 20px rgba(139, 34, 25, 0.3)';"
-                        onmouseout="this.style.transform='none'; this.style.boxShadow='0 6px 16px rgba(139, 34, 25, 0.2)';"
-                        id="btn-mer-reports">
-                        <i class="fas fa-chart-line"></i> MER Reports
-                      </button>
-                    </div>
-                  </div>
-
-                  <div style="display:grid; grid-template-columns: 2fr 1fr; gap:0; flex:1; padding: 24px;">
-                    <!-- Left: Company Bar Chart -->
-                    <div style="border-right:1px solid #f1f5f9; position:relative;">
-                      <div id="widget-company-chart" style="padding-right:10px;"></div>
-                    </div>
-
-                    <!-- Right: OEM Pie -->
-                    <div style="padding-left:20px; display:flex; flex-direction:column;">
-                      <div id="widget-oem-chart"
-                        style="flex:1; display:flex; align-items:center; justify-content:center;">
-                        <div style="color:#94a3b8; font-size:13px;">Loading...</div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                <!-- NEW: Predictive Performance & Sales Control Center -->
-                <div id="widget-predictive-breakdown" style="padding: 24px 0;">
-                  <!-- Injected dynamically by dashboard_logic.js -->
-                  <div
-                    style="background:#fff; border-radius:20px; border:1px solid #f1f5f9; padding:40px; text-align:center; color:#94a3b8;">
-                    <span style="font-size:24px; display:block; margin-bottom:12px;">📊</span>
-                    Hydrating Predictive Telemetry...
-                  </div>
-                </div>
-
-                <!-- Recent Orders Preview Card -->
-                <div class="dash-card"
-                  style="background:#fff; border-radius:16px; border:1px solid #e2e8f0; overflow:hidden; box-shadow:0 4px 6px -1px rgba(0,0,0,0.05); margin-bottom: 80px;">
-                  <div
-                    style="padding:16px 24px; border-bottom:1px solid #f1f5f9; background:#f8fafc; font-weight:800; font-size:13px; letter-spacing:0.02em;">
-                    RECENT ORDERS PREVIEW 🚛</div>
-                  <div id="orders-preview-div" style="padding:0;">
-                    <div style="padding:24px; text-align:center; color:#94a3b8; font-size:13px;">Hydrating order
-                      pipeline...</div>
-                  </div>
-                </div>
+        <!-- OEM REPORTS VIEW -->
+        <div id="view-oem-reports" class="view-content hidden" style="padding: 32px 24px; flex: 1; display: flex; flex-direction: column; overflow: hidden; background: #f8fafc;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px;">
+            <div>
+              <h1 style="font-size: 24px; font-weight: 850; color: #0f172a; margin: 0 0 4px 0;">OEM Reports</h1>
+              <p style="color: #64748b; font-size: 14px; margin: 0;">Comprehensive breakdown of sales mix by Original Equipment Manufacturer.</p>
+            </div>
+          </div>
+          <div style="flex:1; display:flex; gap:24px; overflow-y:auto; padding-right:10px; align-items:flex-start;">
+            <div style="flex: 0 0 580px; background:#fff; border:1px solid #e2e8f0; border-radius:14px; display:flex; flex-direction:column; overflow:hidden;">
+              <div style="padding:16px 20px 0; border-bottom:1px solid #f1f5f9; flex-shrink:0;">
+                <h3 style="font-size:13px; font-weight:700; color:#0f172a; margin:0 0 12px; text-transform:uppercase; letter-spacing:0.06em;">OEM Sales Mix</h3>
               </div>
+              <div id="widget-oem-chart" style="flex:1; display:flex; align-items:center; justify-content:center; min-height:600px;">
+                <div style="color:#94a3b8; font-size:13px;">Loading...</div>
+              </div>
+              <div id="widget-oem-insights" style="padding: 24px; border-top: 1px solid #f1f5f9; background: #fafafa; min-height: 100px;">
+                <!-- Insights will be injected here by dashboard_logic.js -->
+              </div>
+            </div>
+            
+            <div id="widget-oem-kpis" style="flex:1; min-width:0;">
+              <!-- KPI Table will be injected here by dashboard_logic.js -->
+            </div>
+          </div>
+        </div>
 
-              <!-- Slide 2: AI Concierge (REVERSED TO SECOND) -->
-              <div class="dash-slide"
-                style="width: 50%; flex-shrink: 0; padding: 24px; padding-bottom: 100px; height: 100%; overflow-y: auto;">
-                <!-- AI Concierge Hero Section (Strategic Context) -->
-                <div id="ai-concierge-hero" class="dash-card"
-                  style="display:flex; flex-direction:column; background: #ffffff; border: 1px solid rgba(128, 0, 0, 0.1); border-radius: 20px; box-shadow: 0 10px 25px rgba(0,0,0,0.05); padding: 24px; margin-bottom: 24px; color: #1e293b;">
-                  <!-- Decorative Glow -->
-                  <div
-                    style="position:absolute; top:-50%; left:-20%; width:60%; height:200%; background: radial-gradient(circle, rgba(159,18,57,0.15) 0%, rgba(0,0,0,0) 70%); transform: rotate(15deg); pointer-events:none;">
-                  </div>
+        <!-- DASHBOARD VIEW (Unified Command Center 2.0) -->
+        <div id="view-dashboard" class="view-content active" style="display:flex; flex-direction:column; padding:0; margin:0; position: relative; overflow: hidden; flex: 1; height: 100%;">
+          
+          <!-- 🚀 TOP KPI RIBBON -->
+          <div style="display:grid; grid-template-columns: repeat(4, 1fr); gap:24px; margin-bottom:32px; padding:32px 40px 0;" id="dash-kpi-ribbon">
+              <!-- KPIs will be injected here by dashboard_logic.js -->
+          </div>
 
-                  <div
-                    style="display:grid; grid-template-columns: 1.2fr 0.8fr 1fr; gap: 24px; align-items:flex-start; position: relative; z-index: 1;">
+          <div style="flex:1; overflow-y:auto; padding:0 40px 40px;">
+            <!-- 🏛️ MAIN GRID (2 Columns) -->
+            <div style="display:grid; grid-template-columns: 1.8fr 1fr; gap:32px; align-items:flex-start;">
+                
+                <!-- 🛠️ LEFT COLUMN: OPERATIONAL -->
+                <div style="display:flex; flex-direction:column; gap:32px;">
+                    
+                    <!-- Welcome & Action Center -->
+                    <div style="background:#fff; border:1px solid #e2e8f0; border-radius:18px; padding:28px; box-shadow:0 4px 20px rgba(0,0,0,0.02);">
+                      <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:24px;">
+                        <div style="display:flex; align-items:center; gap:16px;">
+                          <div style="width:56px; height:56px; border-radius:50%; background:linear-gradient(135deg,#ef4444,#b91c1c); display:flex; align-items:center; justify-content:center; font-size:24px; font-weight:800; color:#fff;" id="welcome-avatar-circle">A</div>
+                          <div>
+                            <h2 id="welcome-greeting" style="font-size:22px; font-weight:900; color:#0f172a; margin:0; letter-spacing:-0.02em;">Good afternoon, Administrator!</h2>
+                            <p style="font-size:14px; color:#64748b; margin:4px 0 0; font-weight:500;">Situation awareness for your fleet today.</p>
+                          </div>
+                        </div>
+                        <div style="display:flex; gap:12px;">
+                            <button onclick="window.salestrack.openEfficiencyReportModalV5()" style="padding:10px 18px; background:#f1f5f9; color:#475569; border:1px solid #e2e8f0; border-radius:10px; font-size:12px; font-weight:800; cursor:pointer; transition:all 0.2s;"><i class="fas fa-bolt" style="margin-right:6px;"></i> Efficiency</button>
+                            <button onclick="window.salestrack.openMERReportModal()" style="padding:10px 18px; background:#f1f5f9; color:#475569; border:1px solid #e2e8f0; border-radius:10px; font-size:12px; font-weight:800; cursor:pointer; transition:all 0.2s;"><i class="fas fa-chart-line" style="margin-right:6px;"></i> MER</button>
+                        </div>
+                      </div>
 
-                    <!-- Column 1: Strategic Analysis -->
-                    <div style="padding-right: 12px; border-right: 1px solid rgba(159, 18, 57, 0.05);">
-                      <h2
-                        style="font-size: 16px; font-weight: 850; color: #1e293b; margin-bottom: 12px; display: flex; align-items: center; gap: 8px; letter-spacing: 0.05em; text-transform: uppercase;">
-                        <span style="font-size: 18px;">🤖</span> Strategic Analysis
-                      </h2>
-                      <div id="ai-strategic-summary"
-                        style="font-size: 14.5px; line-height: 1.6; color: #1e293b; min-height: 60px;">
-                        <div class="ai-loading" style="font-style:italic; color: #64748b;">Processing market
-                          telemetry...</div>
+                      <div style="display:grid; grid-template-columns:1fr 1fr; gap:16px;">
+                        <div style="background:#f8fafc; border:1px solid #e2e8f0; padding:16px; border-radius:12px; border-left:4px solid #ef4444;">
+                           <div style="font-size:10px; font-weight:800; color:#64748b; text-transform:uppercase; letter-spacing:0.05em; margin-bottom:6px;">Last Action</div>
+                           <div style="font-size:14px; color:#0f172a; font-weight:700;">#QT-2026-089 <span style="font-weight:500; color:#64748b; margin-left:4px;">Updated 2h ago</span></div>
+                        </div>
+                        <div style="background:#fff1f2; border:1px solid #ffe4e6; padding:16px; border-radius:12px; border-left:4px solid #e11d48;">
+                           <div style="font-size:10px; font-weight:800; color:#e11d48; text-transform:uppercase; letter-spacing:0.05em; margin-bottom:6px;">High Priority Task</div>
+                           <div style="font-size:14px; color:#9f1239; font-weight:700;">3 Deliveries Awaiting Confirmation</div>
+                        </div>
                       </div>
                     </div>
 
-                    <!-- Column 2: Operational Benchmarks -->
-                    <div
-                      style="padding: 0 12px; border-right: 1px solid rgba(159, 18, 57, 0.05); display: flex; flex-direction: column; gap: 12px;">
-                      <h2
-                        style="font-size: 13px; font-weight: 850; color: #1e293b; margin-bottom: 4px; display: flex; align-items: center; gap: 8px; letter-spacing: 0.02em; opacity: 0.7;">
-                        KPI BENCHMARKS
-                      </h2>
-                      <div style="display:grid; grid-template-columns: 1fr 1fr; gap: 10px;">
-                        <div
-                          style="background: rgba(128, 0, 0, 0.05); border: 1px solid rgba(128, 0, 0, 0.2); padding: 12px; border-radius: 12px; text-align: center; backdrop-filter: blur(10px);">
-                          <div
-                            style="font-size: 10px; font-weight: 700; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 4px;">
-                            Quote Conv.</div>
-                          <div id="ai-metric-quote" style="font-size: 18px; font-weight: 900; color: #8b2219;">--%</div>
-                        </div>
-                        <div
-                          style="background: rgba(128, 0, 0, 0.05); border: 1px solid rgba(128, 0, 0, 0.2); padding: 12px; border-radius: 12px; text-align: center; backdrop-filter: blur(10px);">
-                          <div
-                            style="font-size: 10px; font-weight: 700; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 4px;">
-                            Order Eff.</div>
-                          <div id="ai-metric-order" style="font-size: 18px; font-weight: 900; color: #8b2219;">--%</div>
-                        </div>
-                      </div>
-                      <!-- Sales Health Indicator -->
-                      <div
-                        style="margin-top: 4px; background: rgba(128, 0, 0, 0.05); padding: 10px; border-radius: 10px; border: 1px solid rgba(128, 0, 0, 0.1);">
-                        <div
-                          style="font-size: 10px; font-weight: 800; color: #8b2219; text-transform: uppercase; margin-bottom: 6px; letter-spacing: 0.05em;">
-                          Sales Health Status</div>
-                        <div style="display:flex; align-items:center; gap:8px;">
-                          <div
-                            style="flex:1; height:4px; background:rgba(0,0,0,0.05); border-radius:2px; overflow:hidden;">
-                            <div id="ai-health-bar"
-                              style="width:75%; height:100%; background:linear-gradient(90deg, #800000, #ff0000); border-radius:2px;">
+                    <!-- Order Tracking Map -->
+                    <div id="dash-order-tracking-map-container" style="background:#fff; border:1px solid #e2e8f0; border-radius:18px; padding:24px; box-shadow:0 4px 20px rgba(0,0,0,0.02); min-height:320px; display:flex; flex-direction:column; position:relative; overflow:hidden;">
+                        <!-- Animated background accent -->
+                        <div style="position:absolute; top:0; right:0; width:150px; height:150px; background:linear-gradient(135deg, rgba(59,130,246,0.03), transparent); border-radius:50%; filter:blur(40px);"></div>
+                        
+                        <div style="padding:0 0 20px 0; border-bottom:1px solid #f1f5f9; display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
+                            <div style="display:flex; align-items:center; gap:12px;">
+                                <div style="width:36px; height:36px; border-radius:10px; background:linear-gradient(135deg, #3b82f6, #2563eb); display:flex; align-items:center; justify-content:center; color:#fff; box-shadow:0 4px 12px rgba(37,99,235,0.2);">
+                                    <i class="fas fa-route"></i>
+                                </div>
+                                <div>
+                                    <h3 style="font-size:15px; font-weight:800; color:#0f172a; margin:0;">Order Tracking Map</h3>
+                                    <div style="font-size:11px; color:#64748b; font-weight:600; margin-top:2px;">Real-time fulfillment pipeline</div>
+                                </div>
                             </div>
-                          </div>
-                          <span id="ai-health-status"
-                            style="font-size:10px; font-weight:800; color:#1e293b;">Optimal</span>
+                            <button onclick="switchToView('view-orders-list')" style="display:flex; align-items:center; gap:8px; padding:8px 16px; background:#f8fafc; color:#475569; border:1px solid #e2e8f0; border-radius:10px; font-size:11px; font-weight:800; cursor:pointer; transition:all 0.2s;" onmouseover="this.style.background='#eff6ff'; this.style.color='#2563eb'; this.style.borderColor='#dbeafe';">
+                                VIEW TRACKING <i class="fas fa-arrow-right"></i>
+                            </button>
                         </div>
-                      </div>
+
+                        <div id="order-map-svg-container" style="flex:1; display:flex; align-items:center; justify-content:center; position:relative; min-height:180px;">
+                            <div class="ai-loading" style="font-style:italic; color:#94a3b8; font-size:13px; display:flex; align-items:center; gap:10px;">
+                                <i class="fas fa-circle-notch fa-spin"></i> Mapping operational pulse...
+                            </div>
+                        </div>
+
+                        <!-- Mini Legend -->
+                        <div style="margin-top:20px; display:flex; justify-content:center; gap:24px; padding-top:16px; border-top:1px dashed #f1f5f9;">
+                            <div style="display:flex; align-items:center; gap:6px;">
+                                <div style="width:8px; height:8px; border-radius:50%; background:#3b82f6;"></div>
+                                <span style="font-size:10px; font-weight:700; color:#64748b; text-transform:uppercase; letter-spacing:0.02em;">Sales</span>
+                            </div>
+                            <div style="display:flex; align-items:center; gap:6px;">
+                                <div style="width:8px; height:8px; border-radius:50%; background:#8b5cf6;"></div>
+                                <span style="font-size:10px; font-weight:700; color:#64748b; text-transform:uppercase; letter-spacing:0.02em;">Logistics</span>
+                            </div>
+                            <div style="display:flex; align-items:center; gap:6px;">
+                                <div style="width:8px; height:8px; border-radius:50%; background:#10b981;"></div>
+                                <span style="font-size:10px; font-weight:700; color:#64748b; text-transform:uppercase; letter-spacing:0.02em;">Delivered</span>
+                            </div>
+                        </div>
                     </div>
 
-                    <!-- Column 3: Market Pulse -->
-                    <div style="padding-left: 12px;">
-                      <h2
-                        style="font-size: 13px; font-weight: 850; color: #1e293b; margin-bottom: 12px; display: flex; align-items: center; justify-content: space-between; letter-spacing: 0.05em; text-transform: uppercase;">
-                        <span>📡 Market Pulse</span>
-                        <span id="news-sync-indicator"
-                          style="font-size: 10px; color: #16a34a; font-weight: 800;">LIVE</span>
-                      </h2>
-                      <div id="ai-market-pulse"
-                        style="display: flex; flex-direction: column; gap: 8px; max-height: 140px; overflow-y: auto; padding-right: 4px;">
-                        <div
-                          style="font-size: 11px; color: #64748b; font-style: italic; text-align: center; padding: 20px;">
-                          Fetching global trends...</div>
-                      </div>
-                    </div>
-                  </div>
-
-                  <!-- Priority Actions (Reverted to horizontal grid) -->
-                  <div style="margin-top: 24px; position: relative; z-index: 1;">
-                    <div
-                      style="font-size: 12px; font-weight: 800; color: #64748b; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 12px; display: flex; align-items: center; gap: 6px;">
-                      <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2"
-                        viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z"></path>
-                      </svg>
-                      Priority Action Items
-                    </div>
-                    <!-- NEW: Operational Pipeline & Action Center Section -->
-                    <div id="action-center-hero" class="dash-card"
-                      style="display:flex; flex-direction:column; background: #ffffff; border: 1px solid rgba(128, 0, 0, 0.12); border-radius: 20px; box-shadow: 0 10px 25px rgba(0,0,0,0.04); overflow: hidden; height: fit-content; margin-top: 12px;">
-
-                      <!-- Action Center Header with Month Nav -->
-                      <div
-                        style="display: flex; align-items: center; justify-content: space-between; padding: 18px 24px; border-bottom: 1px solid rgba(128, 0, 0, 0.08); background: rgba(128, 0, 0, 0.03);">
-                        <div id="action-center-title"
-                          style="font-size: 14px; font-weight: 850; color: #1e293b; text-transform: uppercase; letter-spacing: 0.1em; display: flex; align-items: center; gap: 10px;">
-                          <span style="font-size: 18px;">📅</span> Weekly Action Center
-                        </div>
-                        <div
-                          style="display: flex; align-items: center; gap: 16px; background: #ffffff; padding: 4px 12px; border-radius: 99px; border: 1px solid rgba(128, 0, 0, 0.12); box-shadow: 0 2px 5px rgba(0,0,0,0.03);">
-                          <button onclick="window.salestrack.changeMonth(-1)"
-                            style="background: none; border: none; color: #800000; cursor: pointer; font-size: 14px; padding: 4px; display: flex; align-items: center; opacity: 0.7; transition: opacity 0.2s;"
-                            onmouseover="this.style.opacity='1'" onmouseout="this.style.opacity='0.7'">
-                            <i class="fas fa-chevron-left"></i>
-                          </button>
-                          <span id="action-center-month-label"
-                            style="font-size: 12px; font-weight: 800; color: #1e293b; min-width: 100px; text-align: center; text-transform: uppercase; letter-spacing: 0.05em;">April
-                            2026</span>
-                          <button onclick="window.salestrack.changeMonth(1)"
-                            style="background: none; border: none; color: #800000; cursor: pointer; font-size: 14px; padding: 4px; display: flex; align-items: center; opacity: 0.7; transition: opacity 0.2s;"
-                            onmouseover="this.style.opacity='1'" onmouseout="this.style.opacity='0.7'">
-                            <i class="fas fa-chevron-right"></i>
-                          </button>
-                        </div>
-                      </div>
-
-                      <div style="display: grid; grid-template-columns: 2fr 1.2fr; gap: 0; padding: 0;">
-                        <!-- Left: Weekly Schedule & Action Items -->
-                        <div style="padding: 24px; border-right: 1px solid rgba(128, 0, 0, 0.1);">
-                          <!-- Weekly View Bar -->
-                          <div class="week-nav">
-                            <div class="week-day">Mon</div>
-                            <div class="week-day">Tue</div>
-                            <div class="week-day active">Wed</div>
-                            <div class="week-day">Thu</div>
-                            <div class="week-day">Fri</div>
-                            <div class="week-day">Sat</div>
-                            <div class="week-day">Sun</div>
-                          </div>
-
-                          <div
-                            style="font-size: 13px; font-weight: 850; color: #64748b; text-transform: uppercase; margin-bottom: 16px; letter-spacing: 0.08em; display: flex; align-items: center; gap: 8px;">
-                            Strategic To-Do List
-                          </div>
-
-                          <div id="ai-action-items" style="display: flex; flex-direction: column; gap: 4px;">
-                            <div
-                              style="text-align: center; padding: 40px; color: #94a3b8; font-size: 14px; font-style: italic;">
-                              Prioritizing weekly tasks...</div>
-                          </div>
-                        </div>
-
-                        <!-- Right: Priority Leads Monitoring -->
-                        <div style="padding: 24px; background: rgba(128,0,0,0.02);">
-                          <div
-                            style="font-size: 13px; font-weight: 850; color: #64748b; text-transform: uppercase; margin-bottom: 20px; letter-spacing: 0.08em;">
-                            Priority Hot Leads</div>
-                          <div id="ai-pipeline-leads" style="display: flex; flex-direction: column; gap: 12px;">
-                            <div
-                              style="text-align: center; padding: 40px; color: #64748b; font-size: 13px; font-style: italic;">
-                              Syncing lead monitoring...</div>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-
-                    <!-- Industry News Section (Hidden by default, triggered by "View More" card) -->
-                    <div id="ai-industry-news-section"
-                      style="display: none; margin-top: 24px; animation: slideDown 0.3s ease-out;">
-                      <div
-                        style="font-size: 11px; font-weight: 800; color: #9f1239; text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 12px; display: flex; align-items: center; gap: 8px; opacity: 0.8;">
-                        <span style="font-size: 14px;">📡</span> Global Industry Headlines
-                      </div>
-                      <div id="industry-news-list"
-                        style="background: rgba(255,255,255,0.5); border: 1px solid rgba(159,18,57,0.08); border-radius: 12px; overflow: hidden; backdrop-filter: blur(10px);">
-                        <div style="padding: 20px; text-align: center; color: #94a3b8; font-size: 12px;">
-                          Initializing news feed...
-                        </div>
-                      </div>
-                    </div>
-                  </div>
                 </div>
-              </div>
 
-            </div>
-          </div>
+                <!-- 🧠 RIGHT COLUMN: STRATEGIC -->
+                <div style="display:flex; flex-direction:column; gap:32px;">
+                    
+                    <!-- AI Strategic Insight (Glassmorphism Effect) -->
+                    <div style="background:linear-gradient(135deg, #0f172a, #1e293b); border-radius:18px; padding:28px; color:#fff; position:relative; overflow:hidden;">
+                        <div style="position:absolute; top:-20px; right:-20px; width:100px; height:100px; background:rgba(239,68,68,0.1); filter:blur(40px); border-radius:50%;"></div>
+                        <h4 style="font-size:13px; font-weight:800; color:#ef4444; text-transform:uppercase; letter-spacing:0.1em; margin:0 0 16px 0; display:flex; align-items:center; gap:8px;">
+                            <span style="font-size:16px;">🤖</span> AI Strategic Analysis
+                        </h4>
+                        <div id="ai-strategic-summary" style="font-size:15px; line-height:1.7; color:#cbd5e1; font-weight:500;">
+                            <div class="ai-loading" style="font-style:italic; opacity:0.6;">Synthesizing market intelligence...</div>
+                        </div>
+                    </div>
 
-          <!-- Dashboard View Switcher (Cyber-Harmonized) -->
-          <div class="dash-nav-zone"
-            style="position: fixed; bottom: 0; left: var(--sidebar-width); right: 0; height: 140px; z-index: 8000;">
-          </div>
-          <div class="dashboard-slider-dots visible"
-            style="position: fixed; bottom: 50px; left: calc(var(--sidebar-width) + (100% - var(--sidebar-width))/2); transform: translateX(-50%); display: flex; align-items: center; background: linear-gradient(135deg, #000000 0%, #4a0404 100%); backdrop-filter: blur(25px); -webkit-backdrop-filter: blur(25px); border-radius: 99px; border: 1px solid rgba(255,255,255,0.08); box-shadow: 0 25px 50px rgba(0,0,0,0.6), inset 0 0 0 1px rgba(255,255,255,0.03); z-index: 8001; transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1); padding: 4px; overflow: hidden;">
+                    <!-- Top Performers -->
+                    <div style="background:#fff; border:1px solid #e2e8f0; border-radius:18px; padding:24px;">
+                        <h4 style="font-size:12px; font-weight:800; color:#64748b; text-transform:uppercase; letter-spacing:0.05em; margin:0 0 20px 0;">Top Performing OEM Mix</h4>
+                        <div id="dash-top-oem-mix" style="display:flex; flex-direction:column; gap:14px;">
+                            <!-- Injected via JS -->
+                        </div>
+                        <button onclick="switchToView('view-oem-reports')" style="width:100%; margin-top:24px; padding:12px; background:#f8fafc; border:1px solid #e2e8f0; border-radius:10px; color:#475569; font-size:12px; font-weight:800; cursor:pointer; transition:all 0.2s;" onmouseover="this.style.background='#f1f5f9';">View Full OEM Report</button>
+                    </div>
 
-            <!-- Technical Texture Overlay -->
-            <div
-              style="position:absolute; inset:0; background-image: radial-gradient(circle at 1px 1px, rgba(255, 255, 255, 0.03) 0.5px, transparent 0); background-size: 8px 8px; pointer-events:none; opacity:0.8;">
-            </div>
+                </div>
 
-            <!-- Sliding Background Capsule (Maroon Light-Leak) -->
-            <div id="dash-active-pill"
-              style="position: absolute; height: calc(100% - 8px); width: calc(50% - 6px); background: var(--accent-gradient); border-radius: 99px; transition: all 0.5s cubic-bezier(0.19, 1, 0.22, 1); z-index: 0; left: 4px; box-shadow: 0 0 20px rgba(139, 34, 25, 0.4), inset 0 1px 0 rgba(255,255,255,0.1);">
-              <!-- Top Highlight -->
-              <div
-                style="position:absolute; top:0; left:10%; right:10%; height:1px; background:linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);">
-              </div>
-            </div>
-
-            <div id="dash-label-0" class="dash-nav-label active"
-              onclick="if(window.salestrack) window.salestrack.setDashboardSlide(0)"
-              style="position: relative; z-index: 1; padding: 12px 36px; font-size: 10px; font-weight: 850; color: rgba(255,255,255,0.5); cursor: pointer; transition: all 0.3s; letter-spacing: 0.15em; text-transform: uppercase; white-space: nowrap;">
-              Sales Overview
-            </div>
-            <div id="dash-label-1" class="dash-nav-label"
-              onclick="if(window.salestrack) window.salestrack.setDashboardSlide(1)"
-              style="position: relative; z-index: 1; padding: 12px 36px; font-size: 10px; font-weight: 850; color: rgba(255,255,255,0.5); cursor: pointer; transition: all 0.3s; letter-spacing: 0.15em; text-transform: uppercase; white-space: nowrap;">
-              AI Concierge
-            </div>
-          </div>
-
-          <style>
-            .dash-nav-label.active {
-              color: #ffffff !important;
-              text-shadow: 0 0 10px rgba(255, 255, 255, 0.3);
-            }
-
-            .dash-nav-label:hover:not(.active) {
-              color: #ffffff !important;
-              opacity: 0.8;
-            }
-
-            .dashboard-slider-dots {
-              opacity: 0;
-              transform: translate(-50%, 30px) !important;
-              pointer-events: none;
-            }
-
-            .dashboard-slider-dots.visible {
-              opacity: 1;
-              transform: translate(-50%, 0) !important;
-              pointer-events: auto;
-            }
-          </style>
+            </div> <!-- End Main Grid -->
+          </div> <!-- End Scrollable Area -->
         </div> <!-- End View Dashboard -->
-
 
         <!-- SETTINGS VIEW (Optimized Grid Layout) -->
         <div id="view-settings" class="view-content hidden" style="padding: 0; max-width: 1200px; margin: 0 auto; width:100%;">
@@ -6310,7 +6136,8 @@
                     </div>
                 </div>
 
-                <!-- ADMIN ERROR LOGS SECTION -->
+
+        <!-- ADMIN ERROR LOGS SECTION -->
                 <div id="settings-admin-logs-section" class="dash-card"
                     style="display:none; background: #fff; padding: 30px; border-radius: 16px; border: 1px solid #e2e8f0; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);">
                     <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
@@ -6337,6 +6164,13 @@
           </div>
         </div>
 
+
+        <!-- COMMAND CENTER VIEW (Relocated to root) -->
+        <div id="view-command-center" class="view-page hidden" style="padding: 30px; background: #f8fafc; flex: 1; height: 100%; overflow-y: auto;">
+          <div id="command-center-full-container">
+            <div style="padding:100px; text-align:center;"><i class="fas fa-spinner fa-spin" style="font-size:32px; color:#4f46e5;"></i><div style="margin-top:20px; font-weight:600; color:#64748b; font-size:18px;">Scanning systems for follow-ups...</div></div>
+          </div>
+        </div>
 
         <!-- NEW CHAT VIEW -->
         <div id="view-chat" class="view-page hidden"
@@ -6443,14 +6277,14 @@
 
         <!-- ✅ NEW: SALESTRACK WEEKLY GSM (NATIVE, NO WEBVIEW) -->
         <div id="view-salestrack-reports" class="view-page hidden"
-          style="min-width: 0; max-width: 100%; overflow-y: auto; padding: 24px; box-sizing: border-box; background: #f2f4f7 !important; z-index: 10;">
+          style="min-width: 0; max-width: 100%; overflow-y: auto; padding: 24px; box-sizing: border-box; background: #f8fafc !important; z-index: 10;">
 
-          <div class="dash-card"
-            style="display: flex; flex-direction: column; background: #ffffff; border: 1px solid #e2e8f0; border-radius: 12px; overflow: hidden; box-shadow: none; min-height: 100%;">
+          <div
+            style="display: flex; flex-direction: column; background: transparent; border: none; border-radius: 0; overflow: visible; box-shadow: none; min-height: 100%;">
 
             <!-- Standardized Premium Header -->
             <div
-              style="padding:24px 32px; border-bottom:1px solid #f1f5f9; display:flex; align-items:center; justify-content:space-between; background:rgba(248, 250, 252, 0.4); backdrop-filter:blur(10px);">
+              style="padding:24px 0; border-bottom:1px solid rgba(0,0,0,0.05); display:flex; align-items:center; justify-content:space-between; background:transparent;">
               <div style="display:flex; flex-direction:column; gap:4px;">
                 <h2
                   style="font-size:24px; font-weight:900; color:#0f172a; letter-spacing:0.06em; text-transform:uppercase; margin:0;">
@@ -6918,13 +6752,13 @@
   </div>
 
   <div id="view-stock" class="view-page"
-    style="display: none; padding: 40px 24px 24px 24px; box-sizing: border-box; background: #f2f4f7 !important; z-index: 10;">
-    <div class="dash-card"
-      style="display: flex; flex-direction: column; background: #ffffff; border: 1px solid #e2e8f0; border-radius: 12px; overflow: hidden; box-shadow: none; min-height: 100%; position: relative;">
+    style="display: none; padding: 24px; box-sizing: border-box; background: #f8fafc !important; z-index: 10;">
+    <div
+      style="display: flex; flex-direction: column; background: transparent; border: none; border-radius: 0; overflow: visible; box-shadow: none; min-height: 100%; position: relative;">
 
       <!-- Standardized Premium Header -->
       <div
-        style="padding:24px 32px; border-bottom:1px solid #f1f5f9; display:flex; align-items:center; justify-content:space-between; background:rgba(248, 250, 252, 0.4); backdrop-filter:blur(10px);">
+        style="padding:24px 0; border-bottom:1px solid rgba(0,0,0,0.05); display:flex; align-items:center; justify-content:space-between; background:transparent;">
         <div style="display:flex; flex-direction:column; gap:4px;">
           <h2
             style="font-size:24px; font-weight:900; color:#0f172a; letter-spacing:0.06em; text-transform:uppercase; margin:0;">
@@ -6936,6 +6770,15 @@
         </div>
 
         <div style="display:flex; align-items:center; gap:12px;">
+          <select id="stock-status-dropdown" class="btn-stock-filter" style="padding: 0 16px; height: 42px; border-radius: 10px; border: 1px solid #e2e8f0; background: white; color: #0f172a; font-weight: 800; font-size: 12px; text-transform:uppercase; letter-spacing:0.02em; cursor: pointer; outline: none; width: 200px; transition: all 0.2s;" onchange="filterStock(window._activeStockOem, this.value, null)">
+              <option value="All">ALL STATUSES</option>
+              <option value="STOCK ON HAND">STOCK ON HAND</option>
+              <option value="EN ROUTE FROM BEIRA">EN ROUTE (BEIRA)</option>
+              <option value="EN ROUTE FROM DURBAN">EN ROUTE (DURBAN)</option>
+              <option value="IN TRANSIT (SHIPPED)">IN TRANSIT (SHIPPED)</option>
+              <option value="ARRANGING SHIPPING">ARRANGING SHIPPING</option>
+              <option value="IN PRODUCTION">IN PRODUCTION</option>
+          </select>
           <button onclick="window.renderStockTab()" class="btn-secondary"
             style="padding:0 20px; border-radius:10px; font-weight:800; height: 42px; font-size: 12px; text-transform:uppercase; letter-spacing:0.02em;">
             <i class="fas fa-sync-alt" style="margin-right:8px;"></i> Sync Pipeline
@@ -6944,7 +6787,7 @@
       </div>
 
       <div id="stock-page-wrapper" class="mxg-page4-wrapper"
-        style="padding: 24px; display: flex; flex-direction: column; flex: 1; min-height: 0; position: relative; z-index: 5;">
+        style="padding: 24px 0; display: flex; flex-direction: column; flex: 1; min-height: 0; position: relative; z-index: 5;">
         <style>
           .stock-table-container {
             margin-bottom: 30px;
@@ -7040,6 +6883,25 @@
             font-weight: 700 !important;
             border-color: #0f172a !important;
           }
+
+          .btn-stock-status-filter {
+            padding: 6px 12px;
+            border-radius: 20px;
+            border: 1px solid #e2e8f0;
+            background: white;
+            color: #64748b;
+            font-weight: 600;
+            cursor: pointer;
+            font-size: 11px;
+            transition: all 0.2s;
+          }
+
+          .btn-stock-status-filter.active {
+            background: #0f172a !important;
+            color: white !important;
+            font-weight: 700 !important;
+            border-color: #0f172a !important;
+          }
         </style>
 
         <!-- SUB NAVIGATION -->
@@ -7059,13 +6921,13 @@
   <!-- ✅ CE LIST VIEW (iframe) -->
   <!-- ✅ CE LIST VIEW (NATIVE) -->
   <div id="view-ce-list" class="view-page"
-    style="display: none; padding: 40px 24px 24px 24px; overflow-y: auto; box-sizing: border-box; background: #f2f4f7 !important; z-index: 10;">
-    <div class="dash-card"
-      style="display: flex; flex-direction: column; background: #ffffff; border: 1px solid #e2e8f0; border-radius: 12px; overflow: hidden; box-shadow: none; min-height: 100%;">
+    style="display: none; padding: 24px; overflow-y: auto; box-sizing: border-box; background: #f8fafc !important; z-index: 10;">
+    <div
+      style="display: flex; flex-direction: column; background: transparent; border: none; border-radius: 0; overflow: visible; box-shadow: none; min-height: 100%;">
 
       <!-- Standardized Premium Header -->
       <div
-        style="padding:24px 32px; border-bottom:1px solid #f1f5f9; display:flex; align-items:center; justify-content:space-between; background:rgba(248, 250, 252, 0.4); backdrop-filter:blur(10px);">
+        style="padding:24px 0; border-bottom:1px solid rgba(0,0,0,0.05); display:flex; align-items:center; justify-content:space-between; background:transparent;">
         <div style="display:flex; flex-direction:column; gap:4px;">
           <h2
             style="font-size:24px; font-weight:900; color:#0f172a; letter-spacing:0.06em; text-transform:uppercase; margin:0;">
@@ -7204,13 +7066,13 @@
   </div> <!-- End view-debug -->
 
   <div id="view-quotations-list" class="view-page"
-    style="display: none; padding: 40px 24px 24px 24px; overflow-y: auto; box-sizing: border-box; background: #f2f4f7 !important; z-index: 10;">
-    <div class="dash-card"
-      style="display: flex; flex-direction: column; background: #ffffff; border: 1px solid #e2e8f0; border-radius: 12px; overflow: hidden; box-shadow: none; min-height: 100%;">
+    style="display: none; padding: 24px; overflow-y: auto; box-sizing: border-box; background: #f8fafc !important; z-index: 10;">
+    <div
+      style="display: flex; flex-direction: column; background: transparent; border: none; border-radius: 0; overflow: visible; box-shadow: none; min-height: 100%;">
 
       <!-- Standardized Premium Header -->
       <div
-        style="padding:24px 32px; border-bottom:1px solid #f1f5f9; display:flex; align-items:center; justify-content:space-between; background:rgba(248, 250, 252, 0.4); backdrop-filter:blur(10px);">
+        style="padding:24px 0; border-bottom:1px solid rgba(0,0,0,0.05); display:flex; align-items:center; justify-content:space-between; background:transparent;">
         <div style="display:flex; flex-direction:column; gap:4px;">
           <h2
             style="font-size:24px; font-weight:900; color:#0f172a; letter-spacing:0.06em; text-transform:uppercase; margin:0;">
@@ -7345,13 +7207,13 @@
 
   <!-- STANDALONE ORDER TRACKING (Synchronized with GSM Current Orders Style) -->
   <div id="view-orders-list" class="view-page"
-    style="display: none; padding: 40px 24px 24px 24px; overflow-y: auto; box-sizing: border-box; background: #f2f4f7 !important; z-index: 10;">
-    <div class="dash-card"
-      style="display: flex; flex-direction: column; background: #ffffff; border: 1px solid #e2e8f0; border-radius: 12px; overflow: hidden; box-shadow: none; min-height: 100%;">
+    style="display: none; padding: 24px; overflow-y: auto; box-sizing: border-box; background: #f8fafc !important; z-index: 10;">
+    <div
+      style="display: flex; flex-direction: column; background: transparent; border: none; border-radius: 0; overflow: visible; box-shadow: none; min-height: 100%;">
 
       <!-- Standardized Premium Header -->
       <div
-        style="padding:24px 32px; border-bottom:1px solid #f1f5f9; display:flex; align-items:center; justify-content:space-between; background:rgba(248, 250, 252, 0.4); backdrop-filter:blur(10px);">
+        style="padding:24px 0; border-bottom:1px solid rgba(0,0,0,0.05); display:flex; align-items:center; justify-content:space-between; background:transparent;">
         <div style="display:flex; flex-direction:column; gap:4px;">
           <h2
             style="font-size:24px; font-weight:900; color:#0f172a; letter-spacing:0.06em; text-transform:uppercase; margin:0;">
@@ -7389,7 +7251,7 @@
       </div>
 
       <!-- Content Area with Padding -->
-      <div style="padding: 24px;">
+      <div style="padding: 24px 0;">
 
         <!-- KPI Row -->
         <div id="ol-stats-row"
@@ -7423,7 +7285,7 @@
 
         <!-- Sub-Filters -->
         <div id="ol-orders-filters"
-          style="display:flex; flex-wrap:wrap; gap:8px; margin-bottom:20px; padding:12px 16px; background:white; border-radius:12px; border:1px solid #e2e8f0; align-items:center;">
+          style="display:flex; flex-wrap:wrap; gap:8px; margin-bottom:20px; padding:16px 0; background:transparent; border-radius:0; border-bottom:1px solid rgba(0,0,0,0.05); align-items:center;">
           <span
             style="font-size:11px; font-weight:800; color:#64748b; margin-right:4px; text-transform:uppercase;">Filter:</span>
           <input type="text" data-filter="customer" placeholder="Customer"
@@ -7528,7 +7390,7 @@
 
   <!-- PRODUCTS LIST -->
   <div id="view-products-list" class="view-page"
-    style="display: none; padding: 40px 24px 24px 24px; overflow-y: auto; box-sizing: border-box; background: #f2f4f7 !important; z-index: 10;">
+    style="display: none; padding: 24px; overflow-y: auto; box-sizing: border-box; background: #f2f4f7 !important; z-index: 10;">
     <div class="dash-card"
       style="display: flex; flex-direction: column; background: #ffffff; border: 1px solid #e2e8f0; border-radius: 12px; overflow: hidden; box-shadow: none; min-height: 100%;">
 
@@ -7599,7 +7461,7 @@
 
   <!-- CUSTOMERS LIST -->
   <div id="view-customers-list" class="view-page"
-    style="display: none; padding: 40px 24px 24px 24px; overflow-y: auto; box-sizing: border-box; background: #f2f4f7 !important; z-index: 10;">
+    style="display: none; padding: 24px; overflow-y: auto; box-sizing: border-box; background: #f2f4f7 !important; z-index: 10;">
     <div class="dash-card"
       style="display: flex; flex-direction: column; background: #ffffff; border: 1px solid #e2e8f0; border-radius: 12px; overflow: hidden; box-shadow: none; min-height: 100%;">
 
@@ -7671,13 +7533,13 @@
 
   <!-- GROUP SALES LIST -->
   <div id="view-group-sales-list" class="view-page"
-    style="display: none; padding: 40px 24px 24px 24px; overflow-y: auto; box-sizing: border-box; background: #f2f4f7 !important; z-index: 10;">
-    <div class="dash-card"
-      style="display: flex; flex-direction: column; background: #ffffff; border: 1px solid #e2e8f0; border-radius: 12px; overflow: hidden; box-shadow: none; min-height: 100%;">
+    style="display: none; padding: 24px; overflow-y: auto; box-sizing: border-box; background: #f8fafc !important; z-index: 10;">
+    <div
+      style="display: flex; flex-direction: column; background: transparent; border: none; border-radius: 0; overflow: visible; box-shadow: none; min-height: 100%;">
 
       <!-- Standardized Premium Header -->
       <div
-        style="padding:24px 32px; border-bottom:1px solid #f1f5f9; display:flex; align-items:center; justify-content:space-between; background:rgba(248, 250, 252, 0.4); backdrop-filter:blur(10px);">
+        style="padding:24px 0; border-bottom:1px solid rgba(0,0,0,0.05); display:flex; align-items:center; justify-content:space-between; background:transparent;">
         <div style="display:flex; flex-direction:column; gap:4px;">
           <h2
             style="font-size:24px; font-weight:900; color:#0f172a; letter-spacing:0.06em; text-transform:uppercase; margin:0;">
@@ -8899,11 +8761,11 @@
         // 3. Show the target view - ALWAYS do this even if previous steps failed
         view.classList.remove("hidden");
         // Force block layout for reliable full-viewport rendering
-        view.style.setProperty("display", "block", "important");
+        view.style.setProperty("display", (view.id === "view-dashboard" || view.id === "view-salestrack-reports") ? "flex" : "block", "important");
         view.style.setProperty("position", "absolute", "important");
-        view.style.setProperty("inset", "0", "important");
+        view.style.setProperty("inset", "80px 0 0 0", "important");
         view.style.setProperty("width", "100%", "important");
-        view.style.setProperty("height", "100%", "important");
+        view.style.setProperty("height", "calc(100% - 80px)", "important");
 
         const scrollableViews = ['view-orders-list', 'view-stock', 'view-group-sales-list', 'view-quotations-list', 'view-ce-list', 'view-customers-list', 'view-products-list'];
         if (scrollableViews.includes(view.id)) {
@@ -8935,8 +8797,18 @@
     }
 
     function activateNavItem(navEl) {
-      document.querySelectorAll(".nav-item, .top-nav-item").forEach(el => el.classList.remove("active"));
-      if (navEl) navEl.classList.add("active");
+      // Clear all active states (top-level and dropdown)
+      document.querySelectorAll(".nav-item, .top-nav-item, .top-nav-dropdown-item").forEach(el => el.classList.remove("active"));
+      if (!navEl) return;
+
+      if (navEl.classList.contains('top-nav-dropdown-item')) {
+        // For dropdown items: mark the item active + mark parent trigger active
+        navEl.classList.add('active');
+        const parentTrigger = navEl.closest('.top-nav-dropdown') && navEl.closest('.top-nav-dropdown').querySelector('.top-nav-dropdown-trigger');
+        if (parentTrigger) parentTrigger.classList.add('active');
+      } else {
+        navEl.classList.add('active');
+      }
     }
 
     /* Splash */
@@ -9489,7 +9361,11 @@
     function switchToView(viewId, label) {
       console.log("Switching to view:", viewId);
 
-      const navItem = document.querySelector(`.nav-item[data-view="${viewId}"], .top-nav-item[data-view="${viewId}"]`);
+      const navItem = document.querySelector(
+        [`.nav-item[data-view="${viewId}"]`,
+         `.top-nav-item[data-view="${viewId}"]`,
+         `.top-nav-dropdown-item[data-view="${viewId}"]`].join(', ')
+      );
       if (navItem) activateNavItem(navItem);
 
       // Hide mobile sidebar if open
@@ -9523,8 +9399,6 @@
       // Set paddingTop based on view type
       const zeroPaddingViews = [
         "view-salestrack-reports",
-        "view-orders-list",
-        "view-stock",
         "view-debug"
       ];
       if (mainViewContainer) {
@@ -9537,7 +9411,7 @@
         showOnly(targetView);
         // Robust enforcement of visibility - scrollable views need block not flex
         targetView.classList.remove("hidden");
-        const scrollableViewIds = ['view-dashboard', 'view-orders-list', 'view-stock', 'view-group-sales-list', 'view-quotations-list', 'view-ce-list', 'view-customers-list', 'view-products-list', 'view-salestrack-reports', 'view-debug'];
+        const scrollableViewIds = ['view-dashboard', 'view-orders-list', 'view-stock', 'view-group-sales-list', 'view-quotations-list', 'view-ce-list', 'view-command-center', 'view-customers-list', 'view-products-list', 'view-salestrack-reports', 'view-debug'];
         if (scrollableViewIds.includes(viewId)) {
           targetView.style.setProperty("display", "block", "important");
           targetView.style.setProperty("overflow-y", "auto", "important");
@@ -9568,6 +9442,7 @@
       if (viewId === "view-dashboard") {
         if (mainTitle) mainTitle.textContent = "Performance Overview";
         if (mainSubtitle) mainSubtitle.textContent = "Overview and quick actions";
+        if (window.dashboardLogic) window.dashboardLogic.render();
       } else if (viewId === "view-salestrack-reports") {
         if (gsmTabContainer) gsmTabContainer.style.display = "block";
         if (mainTitle) mainTitle.textContent = "GSM Operational Report";
@@ -9583,9 +9458,13 @@
         if (mainTitle) mainTitle.textContent = "Enquiries";
         ceOffset = 0;
         loadCeList(false);
+      } else if (viewId === "view-command-center") {
+        if (mainTitle) mainTitle.textContent = "Quotation Command Center";
+        if (mainSubtitle) mainSubtitle.textContent = "Proactive follow-up and engagement engine.";
+        if (typeof salestrack !== 'undefined' && salestrack.openCommandCenter) salestrack.openCommandCenter(true);
       } else if (viewId === "view-chat") {
         if (mainTitle) mainTitle.textContent = "Omnis AI";
-        document.querySelectorAll(".nav-item, .top-nav-item").forEach(n => n.classList.remove("active"));
+        document.querySelectorAll(".nav-item, .top-nav-item, .top-nav-dropdown-item").forEach(n => n.classList.remove("active"));
       } else if (viewId === "view-settings") {
         if (typeof salestrack !== 'undefined' && salestrack.loadSettings) salestrack.loadSettings();
         if (mainTitle) mainTitle.textContent = "System Settings";
@@ -9673,9 +9552,19 @@
     window.switchToView = switchToView;
 
     document.querySelectorAll(".nav-item, .top-nav-item").forEach(item => {
+      if (item.classList.contains('top-nav-dropdown-trigger')) return; // Handled by hover CSS
       item.addEventListener("click", () => {
         const viewId = item.getAttribute("data-view");
         const label = item.getAttribute("data-label") || item.innerText.trim();
+        if (viewId) switchToView(viewId, label);
+      });
+    });
+
+    // Dropdown sub-items
+    document.querySelectorAll(".top-nav-dropdown-item").forEach(item => {
+      item.addEventListener("click", () => {
+        const viewId = item.getAttribute("data-view");
+        const label = item.innerText.trim();
         if (viewId) switchToView(viewId, label);
       });
     });
@@ -10348,20 +10237,23 @@
       }
 
       omnisLog(`Calling ${method} (${httpMethod})...`);
-      const url = baseUrl + "/api/method/" + method;
+      // Stealth Mode: Add randomized query param to avoid static URL pattern matching
+      const url = baseUrl + "/api/method/" + method + "?_s=" + Math.random().toString(36).substring(7);
 
       // 1. Prepare Base64 Payload for WAF Bypass (Global 417 Fix)
-      const bypassPayload = {
-        payload: window.omnisSafeEncode(params || {})
-      };
+      const encodedData = window.omnisSafeEncode(params || {});
+      const bypassPayload = { d: encodedData };
+      const customHeaders = { "X-Omnis-Data": encodedData };
 
       // 1. Try IPC (Robust, handles CORS/Headers/SSL via Main Process)
       if (window.frappeAPI && window.frappeAPI.request) {
         try {
+          const ipcUrl = (httpMethod.toUpperCase() === "GET") ? (url + (url.includes("?") ? "&" : "?") + new URLSearchParams(bypassPayload).toString()) : url;
           const res = await window.frappeAPI.request({
-            url: url,
+            url: ipcUrl,
             method: httpMethod,
-            data: params || {},
+            data: (httpMethod.toUpperCase() === "GET") ? {} : bypassPayload,
+            headers: customHeaders,
             syncCookies: true
           });
 
@@ -10396,19 +10288,22 @@
 
         const isPost = (httpMethod || "POST").toUpperCase() === "POST";
         const formData = new URLSearchParams();
-        if (params) {
-          for (const key in params) {
-            formData.append(key, typeof params[key] === 'object' ? JSON.stringify(params[key]) : params[key]);
+        if (bypassPayload) {
+          for (const key in bypassPayload) {
+            formData.append(key, bypassPayload[key]);
           }
         }
 
         const fetchOptions = {
           method: httpMethod,
-          headers: { "Content-Type": "application/x-www-form-urlencoded" },
+          headers: { 
+            "Content-Type": "application/x-www-form-urlencoded",
+            ...customHeaders
+          },
           credentials: "include"
         };
         if (isPost) fetchOptions.body = formData;
-        const fetchUrl = isPost ? url : (url + "?" + formData.toString());
+        const fetchUrl = isPost ? url : (url + (url.includes("?") ? "&" : "?") + formData.toString());
 
         const res = await fetch(fetchUrl, fetchOptions);
 
@@ -10718,7 +10613,7 @@
         updateGroupSalesInfo(rows, startInt, limitInt, totalCount);
       } catch (e) {
         console.error("Error loading group sales:", e);
-        if (statusEl && tbody.innerHTML === "") {
+        if (statusEl) {
           statusEl.innerHTML = `<div style="color:red" > Error: ${e.message}</div> `;
         }
       }
@@ -11128,6 +11023,28 @@
 
           dashUsername.textContent = fullName;
         }
+
+        // Personalise welcome guide
+        (function() {
+          let displayName = user;
+          if (typeof frappe !== 'undefined' && frappe.boot && frappe.boot.user && frappe.boot.user.fullname) {
+            displayName = frappe.boot.user.fullname;
+          } else if (typeof frappe !== 'undefined' && frappe.session && frappe.session.user_fullname) {
+            displayName = frappe.session.user_fullname;
+          }
+          if (displayName.includes('@')) displayName = displayName.split('@')[0];
+          // Capitalise first letter of each word
+          displayName = displayName.replace(/\b\w/g, c => c.toUpperCase());
+
+          const hour = new Date().getHours();
+          const timeGreeting = hour < 12 ? 'Good morning' : hour < 17 ? 'Good afternoon' : 'Good evening';
+
+          const greetEl = document.getElementById('welcome-greeting');
+          if (greetEl) greetEl.textContent = `${timeGreeting}, ${displayName}! 👋`;
+
+          const avatarCircle = document.getElementById('welcome-avatar-circle');
+          if (avatarCircle) avatarCircle.textContent = (displayName[0] || 'A').toUpperCase();
+        })();
 
         // Wire up Dashboard "Ask me anything" Search Box
         const mainInput = document.getElementById("ai-main-input");
@@ -11883,8 +11800,8 @@
       const originalText = btn.textContent;
 
       const payload = {
-        name: window._editingStockId,
-        report_id: window._editingStockId, // Redundant for extract_params robustness
+        name: window._editingStockId || "",
+        report_id: window._editingStockId || "", // Redundant for extract_params robustness
         oem: document.getElementById('sp-oem').value,
         model: document.getElementById('sp-model-input').value,
         proposed_order: document.getElementById('sp-proposed-order').value,
@@ -12136,7 +12053,7 @@
             skeletons += `
               <div class="ai-order-row ai-stock-grid skeleton-pulse" style="margin-bottom:8px; opacity:0.6;">
                 <div style="height:20px; background:#f1f5f9; border-radius:4px; width:60%;"></div>
-                <div style="height:24px; background:#f1f5f9; border-radius:4px; width:80%;"></div>
+                <div style="height:20px; background:#f1f5f9; border-radius:4px; width:70%;"></div>
                 <div style="height:30px; background:#f1f5f9; border-radius:4px; width:40%; margin:0 auto;"></div>
                 <div style="height:24px; background:#f1f5f9; border-radius:4px; width:40%; margin:0 auto;"></div>
                 <div style="height:18px; background:#f1f5f9; border-radius:4px; width:70%; margin:0 auto;"></div>
@@ -12189,17 +12106,25 @@
           if (navContainer) {
             const sortedOems = Array.from(oemList).sort();
             const activeOem = window._activeStockOem || 'All';
+            const activeStatus = window._activeStockStatus || 'All';
             
-            let navHtml = `<button class="btn-stock-filter ${activeOem === 'All' ? 'active' : ''}" onclick="filterStock('All', this)">All Stock</button>`;
+            let navHtml = `
+              <div style="display:flex; flex-direction:column; gap:10px; width:100%;">
+                 <div style="display:flex; gap:10px; align-items:center; flex-wrap:wrap;">
+                    <span style="font-size:11px; font-weight:800; color:#94a3b8; text-transform:uppercase; letter-spacing:0.05em; width: 60px;">Brand:</span>
+                    <button class="btn-stock-filter ${activeOem === 'All' ? 'active' : ''}" onclick="filterStock('All', window._activeStockStatus, this)">All Stock</button>
+            `;
             
             sortedOems.forEach(oem => {
-                navHtml += `<button class="btn-stock-filter ${activeOem === oem ? 'active' : ''}" onclick="filterStock('${oem}', this)">${oem}</button>`;
+                navHtml += `<button class="btn-stock-filter ${activeOem === oem ? 'active' : ''}" onclick="filterStock('${oem}', window._activeStockStatus, this)">${oem}</button>`;
             });
 
             navHtml += `
-                <button class="btn-stock-filter" onclick="renderArrivalCalendar(); updateStockBtn(this)">📅 Monthly Arrivals</button>
-                <button class="btn-stock-filter" onclick="showStockPipelineForm()"
-                    style="margin-left:auto; background:#800000; color:white; border-color:#800000;">+ Add New Record</button>
+                    <button class="btn-stock-filter" onclick="renderArrivalCalendar(); updateStockBtn(this)">📅 Monthly Arrivals</button>
+                    <button class="btn-stock-filter" onclick="showStockPipelineForm()"
+                        style="margin-left:auto; background:#800000; color:white; border-color:#800000;">+ Add New Record</button>
+                 </div>
+              </div>
             `;
             navContainer.innerHTML = navHtml;
           }
@@ -12214,24 +12139,63 @@
             let rowsHtml = "";
             secRecords.forEach(r => {
               const safeData = JSON.stringify(r).replace(/'/g, "&#39;").replace(/`/g, "\\`").replace(/"/g, "&quot;");
+              const safeName = (r.name || '').replace(/\\/g, "\\\\").replace(/'/g, "\\'").replace(/"/g, "&quot;").replace(/\n/g, "\\n").replace(/\r/g, "");
               
               const earmarkedCount = (r.potential_customers || []).length;
               const hasEarmark = earmarkedCount > 0;
               const isOverEarmarked = earmarkedCount > (r.quantity || 0);
               
-              // Stock On Hand Logic (Harare Date passed or today)
-              let isOnHand = false;
-              if (r.eta_harare) {
-                try {
-                   const hDate = new Date(r.eta_harare);
-                   const today = new Date();
-                   today.setHours(0,0,0,0);
-                   if (hDate <= today) isOnHand = true;
-                } catch(e){}
-              }
+              // Pipeline Status Logic
+              let statusText = "";
+              let statusColor = "";
+              let statusIcon = "";
+              
+              try {
+                  const today = new Date();
+                  today.setHours(0,0,0,0);
+                  
+                  const parseDate = (dStr) => {
+                      if (!dStr || dStr === '-' || dStr === '0000-00-00') return null;
+                      const d = new Date(dStr);
+                      return isNaN(d.getTime()) ? null : d;
+                  };
+
+                  const dProd = parseDate(r.production_completion);
+                  const dShip = parseDate(r.shipping_date);
+                  const dDurban = parseDate(r.eta_durban);
+                  const dBeira = parseDate(r.eta_beira || r.ted);
+                  const dHarare = parseDate(r.eta_harare);
+
+                  if (dHarare && dHarare <= today) {
+                      statusText = "STOCK ON HAND";
+                      statusColor = "#f59e0b"; // Keeping the original orange for this
+                      statusIcon = "fa-clock";
+                  } else if (dBeira && dBeira <= today && (!dHarare || dHarare > today)) {
+                      statusText = "EN ROUTE FROM BEIRA";
+                      statusColor = "#0284c7"; // Light Blue
+                      statusIcon = "fa-truck-moving";
+                  } else if (dDurban && dDurban <= today && (!dBeira || dBeira > today)) {
+                      statusText = "EN ROUTE FROM DURBAN";
+                      statusColor = "#0284c7"; // Light Blue
+                      statusIcon = "fa-ship";
+                  } else if (dShip && dShip <= today && ((dBeira && dBeira > today) || (dDurban && dDurban > today))) {
+                      statusText = "IN TRANSIT (SHIPPED)";
+                      statusColor = "#2563eb"; // Blue
+                      statusIcon = "fa-water";
+                  } else if (dShip && dShip > today) {
+                      statusText = "ARRANGING SHIPPING";
+                      statusColor = "#8b5cf6"; // Purple
+                      statusIcon = "fa-boxes";
+                  } else if (dProd && dProd > today) {
+                      statusText = "IN PRODUCTION";
+                      statusColor = "#ea580c"; // Orange
+                      statusIcon = "fa-hammer";
+                  }
+              } catch(e) {}
 
               let rowStyle = "";
               let earmarkBadge = "";
+              let customerNamesHtml = "";
               
               if (isOverEarmarked) {
                 rowStyle = 'border-left: 4px solid #f59e0b; background: #fffbeb; animation: risk-pulse 2s infinite;';
@@ -12240,22 +12204,33 @@
                 earmarkBadge = `<div style="margin-top:4px; display:inline-flex; align-items:center; gap:4px; background:#e0f2fe; color:#0369a1; padding:2px 8px; border-radius:4px; font-size:10px; font-weight:800; text-transform:uppercase;">EARMARKED: ${earmarkedCount}</div>`;
               }
 
-              // Stock On Hand Badge (Matches Medium Delay Style)
+              if (hasEarmark) {
+                 const names = (r.potential_customers || []).map(c => typeof c === 'string' ? c : (c.customer_name || c.customer || c.name || '')).filter(Boolean).join(', ');
+                 if (names) {
+                    customerNamesHtml = `<div style="margin-top:4px; font-size:10.5px; color:#475569; font-weight:600; white-space: normal; line-height: 1.2;"><i class="fas fa-users" style="margin-right:4px; color:#94a3b8;"></i>${names}</div>`;
+                 }
+              }
+
+              // Status Badge
               let handBadge = "";
-              if (isOnHand) {
+              if (statusText) {
                  handBadge = `
-                  <div style="display:flex; align-items:center; gap:6px; font-size:11px; font-weight:800; color:#f59e0b; margin-top:2px;">
-                    <i class="fas fa-clock"></i> STOCK ON HAND
+                  <div style="display:flex; align-items:center; gap:6px; font-size:10.5px; font-weight:800; color:${statusColor}; margin-top:4px; letter-spacing:0.3px;">
+                    <i class="fas ${statusIcon}"></i> ${statusText}
                   </div>`;
               }
 
               rowsHtml += `
-                <div class="ai-order-row ai-stock-grid" style="${rowStyle}">
+                <div class="ai-order-row ai-stock-grid stock-row-item" data-status="${statusText || ''}" style="${rowStyle}">
                   <div class="ai-order-cell">
                     <span class="cell-label">Model</span>
                     <div style="font-weight:700; font-size:14px; color:#1e293b;">${r.model || '-'}</div>
                     ${earmarkBadge}
                     ${handBadge}
+                  </div>
+                  <div class="ai-order-cell">
+                    <span class="cell-label">Potential Customers</span>
+                    ${customerNamesHtml}
                   </div>
                   <div class="ai-order-cell" style="text-align:center;">
                     <span class="cell-label">Qty</span>
@@ -12263,7 +12238,7 @@
                   </div>
                   <div class="ai-order-cell" style="text-align:center;">
                     <span class="cell-label">Proposed</span>
-                    <div style="font-weight:600; font-size:13px; color:#64748b;">${r.proposed_order || 0}</div>
+                    <div style="font-weight:600; font-size:13px; color:#64748b;">${r.proposed_order || r.proposed_order_quantity || 0}</div>
                   </div>
                   <div class="ai-order-cell" style="text-align:center;">
                     <span class="cell-label">Prod</span>
@@ -12279,15 +12254,15 @@
                   </div>
                   <div class="ai-order-cell" style="text-align:center;">
                     <span class="cell-label">Beira</span>
-                    <div style="font-size:12px; font-weight:700; color:#0369a1;">${r.ted || '-'}</div>
+                    <div style="font-size:12px; font-weight:700; color:#0369a1;">${r.ted || r.eta_beira || '-'}</div>
                   </div>
                   <div class="ai-order-cell" style="text-align:center;">
                     <span class="cell-label">Harare</span>
                     <div style="font-size:12px; font-weight:800; color:#15803d;">${r.eta_harare || '-'}</div>
                   </div>
                   <div class="ai-order-row-actions" style="text-align:right; display:flex; gap:8px; justify-content:flex-end;">
-                    <button class="btn-text-action" onclick="showStockPipelineForm('${r.name}')" style="color:#3b82f6;"><i class="fas fa-pencil-alt"></i></button>
-                    <button class="btn-text-action" onclick="deleteStockPipelineRecord('${r.name.replace(/'/g, "\\'")}')" style="color:#ef4444;"><i class="fas fa-trash-alt"></i></button>
+                    <button class="btn-text-action" onclick="showStockPipelineForm('${safeName}')" style="color:#3b82f6;"><i class="fas fa-pencil-alt"></i></button>
+                    <button class="btn-text-action" onclick="deleteStockPipelineRecord('${safeName}')" style="color:#ef4444;"><i class="fas fa-trash-alt"></i></button>
                   </div>
                 </div>`;
             });
@@ -12304,6 +12279,7 @@
                 <!-- Stock Grid Header -->
                 <div class="ai-order-header ai-stock-grid" style="border-radius:12px 12px 0 0; margin-bottom:8px;">
                   <div>Model</div>
+                  <div>Potential Customers</div>
                   <div style="text-align:center;">Qty</div>
                   <div style="text-align:center;">Proposed</div>
                   <div style="text-align:center;">Prod</div>
@@ -12357,9 +12333,20 @@
         finally { window._syncingStock = false; performRender(records); }
       };
 
-      window.filterStock = function (oem, btn) {
-        window._activeStockOem = oem || 'All';
-        window.updateStockBtn(btn);
+      window.filterStock = function (oem, status, btn) {
+        window._activeStockOem = oem || window._activeStockOem || 'All';
+        window._activeStockStatus = status || window._activeStockStatus || 'All';
+        
+        if (btn) {
+            window.updateStockBtn(btn);
+        } else {
+            // Re-sync buttons if called programmatically
+            document.querySelectorAll('.btn-stock-filter').forEach(b => {
+                b.classList.toggle('active', b.innerText.trim().toLowerCase() === window._activeStockOem.toLowerCase() || (window._activeStockOem === 'All' && b.innerText.includes('All Stock')));
+            });
+            const dropdown = document.getElementById('stock-status-dropdown');
+            if (dropdown) dropdown.value = window._activeStockStatus;
+        }
 
         // CRITICAL: If we are in calendar mode, we need to switch back to table mode and re-render
         if (window._stockViewMode === 'calendar') {
@@ -12369,21 +12356,42 @@
         }
 
         const sections = document.querySelectorAll('.mxg-table-container');
-        if (sections.length === 0) {
-          // If no sections exist (maybe not rendered yet), do nothing or full render if needed
-          return;
-        }
+        if (sections.length === 0) return;
+
+        const targetOem = window._activeStockOem.toLowerCase();
+        const targetStatus = window._activeStockStatus;
 
         sections.forEach(sec => {
           const secOem = (sec.dataset.oem || '').toLowerCase();
-          const targetOem = (oem || '').toLowerCase();
-          sec.style.display = (targetOem === 'all' || secOem === targetOem) ? 'block' : 'none';
+          let sectionHasVisibleRows = false;
+          
+          const rows = sec.querySelectorAll('.stock-row-item');
+          rows.forEach(row => {
+            const rowStatus = row.getAttribute('data-status') || '';
+            const statusMatch = targetStatus === 'All' || rowStatus === targetStatus;
+            if (statusMatch) {
+              row.style.display = ''; // Restore default display
+              sectionHasVisibleRows = true;
+            } else {
+              row.style.display = 'none';
+            }
+          });
+
+          // Only show the OEM section if it matches the brand AND has visible rows after status filtering
+          const oemMatch = targetOem === 'all' || secOem === targetOem;
+          sec.style.display = (oemMatch && sectionHasVisibleRows) ? 'block' : 'none';
         });
       };
 
       window.updateStockBtn = function (btn) {
-        document.querySelectorAll('.btn-stock-filter').forEach(b => b.classList.remove('active'));
-        if (btn) btn.classList.add('active');
+        if (!btn) return;
+        // Determine if it's a brand filter or status filter
+        if (btn.classList.contains('btn-stock-filter')) {
+            document.querySelectorAll('.btn-stock-filter').forEach(b => b.classList.remove('active'));
+        } else if (btn.classList.contains('btn-stock-status-filter')) {
+            document.querySelectorAll('.btn-stock-status-filter').forEach(b => b.classList.remove('active'));
+        }
+        btn.classList.add('active');
       };
 
       window.renderArrivalCalendar = function (targetDate = null) {
@@ -12405,31 +12413,122 @@
         const startOffset = firstDay === 0 ? 6 : firstDay - 1;
         const daysInMonth = new Date(year, month + 1, 0).getDate();
 
-        let html = `
-          <div style="display: flex; flex-direction: column; height: 100%; background: white; border-radius: 12px; overflow: hidden; border: 1px solid #e2e8f0; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);">
-              <div style="padding: 24px 32px; background: white; border-bottom: 1px solid #f1f5f9; display: flex; justify-content: space-between; align-items: center;">
-                  <div>
-                      <h2 style="margin: 0; font-size: 24px; font-weight: 850; color: #0f172a; letter-spacing: -0.02em;">${monthName}</h2>
-                      <p style="margin: 4px 0 0 0; font-size: 13px; color: #64748b; font-weight: 500;">Scheduled machinery arrivals for this month.</p>
-                  </div>
-                  <div style="display: flex; gap: 8px; background: #f1f5f9; padding: 4px; border-radius: 10px;">
-                      <button onclick="window.renderArrivalCalendar(new Date(${year}, ${month - 1}, 1))" style="width: 36px; height: 36px; display: flex; align-items: center; justify-content: center; background: white; border: 1px solid #e2e8f0; border-radius: 8px; cursor: pointer; color: #1e293b; transition: all 0.2s;"><i class="fas fa-chevron-left"></i></button>
-                      <button onclick="window.renderArrivalCalendar(new Date())" style="padding: 0 16px; height: 36px; font-size: 13px; font-weight: 700; background: white; border: 1px solid #e2e8f0; border-radius: 8px; cursor: pointer; color: #1e293b;">Today</button>
-                      <button onclick="window.renderArrivalCalendar(new Date(${year}, ${month + 1}, 1))" style="width: 36px; height: 36px; display: flex; align-items: center; justify-content: center; background: white; border: 1px solid #e2e8f0; border-radius: 8px; cursor: pointer; color: #1e293b;"><i class="fas fa-chevron-right"></i></button>
-                  </div>
-              </div>
-              
-              <!-- Weekday Headers -->
-              <div style="display: grid; grid-template-columns: repeat(7, 1fr); background: #f8fafc; border-bottom: 1px solid #e2e8f0;">
-                  ${['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'].map(day => `
-                      <div style="padding: 12px; text-align: center; font-size: 11px; font-weight: 800; color: #64748b; text-transform: uppercase; letter-spacing: 0.05em;">${day}</div>
-                  `).join('')}
-              </div>
+        const currentMonthStr = `${year}-${(month + 1).toString().padStart(2, '0')}`;
+        const arrivalsThisMonth = records.filter(r => r.eta_harare && r.eta_harare.startsWith(currentMonthStr));
+        
+        let machineSummary = {};
+        let potentialCustomersList = [];
+        
+        arrivalsThisMonth.forEach(r => {
+            const qty = (parseInt(r.quantity) || parseInt(r.proposed_order) || parseInt(r.proposed_order_quantity) || 1);
+            if (!machineSummary[r.model]) machineSummary[r.model] = 0;
+            machineSummary[r.model] += qty;
+            
+            if (r.potential_customers && Array.isArray(r.potential_customers)) {
+                r.potential_customers.forEach(pc => {
+                    if (pc.customer_name) {
+                        const exists = potentialCustomersList.find(item => item.customer === pc.customer_name && item.machine === r.model);
+                        if (!exists) {
+                            potentialCustomersList.push({ customer: pc.customer_name, machine: r.model });
+                        }
+                    }
+                });
+            }
+        });
 
-              <div style="display: grid; grid-template-columns: repeat(7, 1fr); background: #e2e8f0; gap: 1px;">`;
+        let sidebarHtml = `
+            <div style="background: white; border-radius: 12px; border: 1px solid #e2e8f0; padding: 24px; display: flex; flex-direction: column; gap: 24px; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1); max-height: 100%; overflow-y: auto;">
+                <div>
+                    <h3 style="margin: 0 0 4px 0; font-size: 16px; font-weight: 850; color: #0f172a;">Monthly Summary</h3>
+                    <p style="margin: 0; font-size: 13px; color: #64748b; font-weight: 500;">Overview for ${monthName}</p>
+                </div>
+                
+                <div>
+                    <h4 style="margin: 0 0 12px 0; font-size: 11px; font-weight: 800; color: #64748b; text-transform: uppercase; letter-spacing: 0.05em;">Machine Breakdown</h4>
+                    <div style="display: flex; flex-direction: column; gap: 8px;">
+                        ${Object.keys(machineSummary).map(m => `
+                            <div style="display: flex; justify-content: space-between; align-items: center; padding: 8px 12px; background: #f8fafc; border-radius: 6px; border: 1px solid #e2e8f0;">
+                                <span style="font-size: 13px; font-weight: 700; color: #1e293b;">${m}</span>
+                                <span style="font-size: 12px; font-weight: 800; color: #1e40af; background: #dbeafe; padding: 2px 8px; border-radius: 12px;">${machineSummary[m]}</span>
+                            </div>
+                        `).join('')}
+                        ${Object.keys(machineSummary).length === 0 ? '<div style="font-size: 13px; color: #94a3b8; font-style: italic;">No machines scheduled</div>' : ''}
+                    </div>
+                </div>
+
+                <div>
+                    <h4 style="margin: 0 0 12px 0; font-size: 11px; font-weight: 800; color: #64748b; text-transform: uppercase; letter-spacing: 0.05em;">Potential Customers</h4>
+                    <div style="display: flex; flex-direction: column; gap: 8px;">
+                        ${potentialCustomersList.map(pc => `
+                            <div style="display: flex; justify-content: space-between; align-items: center; padding: 8px 12px; background: #f8fafc; border-radius: 6px; border: 1px solid #e2e8f0;">
+                                <div style="display: flex; align-items: center; gap: 8px; font-size: 13px; font-weight: 600; color: #0f172a;">
+                                    <i class="fas fa-user-circle" style="color: #cbd5e1; font-size: 16px;"></i> <span style="overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 120px;" title="${pc.customer}">${pc.customer}</span>
+                                </div>
+                                <span style="font-size: 9px; font-weight: 800; color: #64748b; background: white; padding: 2px 6px; border-radius: 4px; border: 1px solid #e2e8f0;">${pc.machine}</span>
+                            </div>
+                        `).join('')}
+                        ${potentialCustomersList.length === 0 ? '<div style="font-size: 13px; color: #94a3b8; font-style: italic;">No potential customers logged</div>' : ''}
+                    </div>
+                </div>
+            </div>
+        `;
+
+        let upcomingHtml = '<div style="display: flex; gap: 12px; margin-top: 20px; overflow-x: auto; padding-bottom: 4px;">';
+        for(let i=0; i<4; i++) {
+           const sumDate = new Date();
+           sumDate.setMonth(sumDate.getMonth() + i);
+           const sumMonthStr = sumDate.toISOString().slice(0, 7);
+           const mName = sumDate.toLocaleString('default', { month: 'short', year: 'numeric' });
+           let totalUnits = 0;
+           
+           records.forEach(r => {
+               if (r.eta_harare && r.eta_harare.startsWith(sumMonthStr)) {
+                   totalUnits += (parseInt(r.quantity) || parseInt(r.proposed_order) || parseInt(r.proposed_order_quantity) || 0);
+               }
+           });
+           
+           upcomingHtml += `
+             <div onclick="window.renderArrivalCalendar(new Date(${sumDate.getFullYear()}, ${sumDate.getMonth()}, 1))" 
+                  onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 4px 6px -1px rgba(0,0,0,0.1)'" 
+                  onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 1px 2px rgba(0,0,0,0.05)'"
+                  style="flex: 1; min-width: 120px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 12px 16px; display: flex; flex-direction: column; align-items: flex-start; justify-content: center; box-shadow: 0 1px 2px rgba(0,0,0,0.05); cursor: pointer; transition: all 0.2s;">
+               <div style="font-size: 11px; font-weight: 800; color: #64748b; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 8px;">${mName}</div>
+               <div style="font-size: 28px; font-weight: 900; color: #0f172a; line-height: 1; margin-bottom: 2px;">${totalUnits}</div>
+               <div style="font-size: 10px; font-weight: 700; color: #94a3b8; text-transform: uppercase;">Units Arriving</div>
+             </div>
+           `;
+        }
+        upcomingHtml += '</div>';
+
+        let html = `
+          <div style="display: grid; grid-template-columns: 1fr 320px; gap: 24px; height: 100%; align-items: start;">
+            <div style="display: flex; flex-direction: column; background: white; border-radius: 12px; overflow: hidden; border: 1px solid #e2e8f0; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);">
+                <div style="padding: 24px 32px; background: white; border-bottom: 1px solid #f1f5f9;">
+                    <div style="display: flex; justify-content: space-between; align-items: flex-start;">
+                        <div>
+                            <h2 style="margin: 0; font-size: 24px; font-weight: 850; color: #0f172a; letter-spacing: -0.02em;">${monthName}</h2>
+                            <p style="margin: 4px 0 0 0; font-size: 13px; color: #64748b; font-weight: 500;">Scheduled machinery arrivals for this month.</p>
+                        </div>
+                        <div style="display: flex; gap: 8px; background: #f1f5f9; padding: 4px; border-radius: 10px;">
+                            <button onclick="window.renderArrivalCalendar(new Date(${year}, ${month - 1}, 1))" style="width: 36px; height: 36px; display: flex; align-items: center; justify-content: center; background: white; border: 1px solid #e2e8f0; border-radius: 8px; cursor: pointer; color: #1e293b; transition: all 0.2s;"><i class="fas fa-chevron-left"></i></button>
+                            <button onclick="window.renderArrivalCalendar(new Date())" style="padding: 0 16px; height: 36px; font-size: 13px; font-weight: 700; background: white; border: 1px solid #e2e8f0; border-radius: 8px; cursor: pointer; color: #1e293b;">Today</button>
+                            <button onclick="window.renderArrivalCalendar(new Date(${year}, ${month + 1}, 1))" style="width: 36px; height: 36px; display: flex; align-items: center; justify-content: center; background: white; border: 1px solid #e2e8f0; border-radius: 8px; cursor: pointer; color: #1e293b;"><i class="fas fa-chevron-right"></i></button>
+                        </div>
+                    </div>
+                    ${upcomingHtml}
+                </div>
+                
+                <!-- Weekday Headers -->
+                <div style="display: grid; grid-template-columns: repeat(7, 1fr); background: #f8fafc; border-bottom: 1px solid #e2e8f0;">
+                    ${['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'].map(day => `
+                        <div style="padding: 12px; text-align: center; font-size: 11px; font-weight: 800; color: #64748b; text-transform: uppercase; letter-spacing: 0.05em;">${day}</div>
+                    `).join('')}
+                </div>
+
+                <div style="display: grid; grid-template-columns: repeat(7, 1fr); background: #e2e8f0; gap: 1px;">`;
 
         for (let i = 0; i < startOffset; i++) {
-          html += `<div style="background: #f8fafc; aspect-ratio: 1 / 1; position: relative; opacity: 0.5;"></div>`;
+          html += `<div style="background: #f8fafc; min-height: 100px; position: relative; opacity: 0.5;"></div>`;
         }
 
         // Days Loop
@@ -12439,17 +12538,31 @@
           const isToday = new Date().toDateString() === new Date(year, month, d).toDateString();
 
           html += `
-                <div style="background: white; aspect-ratio: 1 / 1; padding: 12px; position: relative; transition: all 0.2s; overflow-y: auto;">
+                <div style="background: white; min-height: 100px; padding: 12px; position: relative; transition: all 0.2s;">
                   <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px;">
                       <span style="font-weight: 850; font-size: 14px; color: ${isToday ? '#8b2219' : '#1e293b'}; ${isToday ? 'background: #fef2f2; width: 28px; height: 28px; display: flex; align-items: center; justify-content: center; border-radius: 50%; margin: -4px;' : ''}">${d}</span>
                   </div>
                   <div style="display: flex; flex-direction: column; gap: 4px;">
                     ${arrivals.map(r => {
             const safeData = JSON.stringify(r).replace(/'/g, "&#39;").replace(/`/g, "\\`").replace(/"/g, "&quot;");
+            const safeName = (r.name || '').replace(/\\/g, "\\\\").replace(/'/g, "\\'").replace(/"/g, "&quot;").replace(/\n/g, "\\n").replace(/\r/g, "");
+            
+            let earmarkHtml = '';
+            if (r.potential_customers && r.potential_customers.length > 0) {
+               // Show the first customer name, or "2 Customers" if multiple
+               let pcLabel = r.potential_customers[0].customer_name;
+               if (r.potential_customers.length > 1) {
+                  pcLabel = `+${r.potential_customers.length} Cust`;
+               }
+               earmarkHtml = `<span style="font-size: 8px; font-weight: 800; background: #dcfce7; color: #166534; padding: 2px 6px; border-radius: 4px; margin-left: auto; text-overflow: ellipsis; overflow: hidden; white-space: nowrap; max-width: 60px;" title="${pcLabel}">${pcLabel}</span>`;
+            }
+
+
             return `
-                        <div onclick="showStockPipelineForm('${r.name}')" style="font-size: 10px; font-weight: 700; background: #eff6ff; color: #1e40af; border: 1px solid #dbeafe; padding: 6px 8px; border-radius: 6px; cursor: pointer; transition: all 0.2s; display: flex; align-items: center; gap: 4px;">
-                            <span style="width: 4px; height: 4px; background: #3b82f6; border-radius: 50%;"></span>
-                            ${r.model}
+                        <div onclick="showStockPipelineForm('${safeName}')" style="font-size: 10px; font-weight: 700; background: #eff6ff; color: #1e40af; border: 1px solid #dbeafe; padding: 6px 8px; border-radius: 6px; cursor: pointer; transition: all 0.2s; display: flex; align-items: center; gap: 4px; box-shadow: 0 1px 2px rgba(0,0,0,0.05);">
+                            <span style="width: 4px; height: 4px; background: #3b82f6; border-radius: 50%; flex-shrink: 0;"></span>
+                            <span style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">${r.model}</span>
+                            ${earmarkHtml}
                         </div>`;
           }).join('')}
                   </div>
@@ -12461,11 +12574,13 @@
         const remainingCells = 7 - (totalCellsProcessed % 7);
         if (remainingCells < 7) {
           for (let i = 0; i < remainingCells; i++) {
-            html += `<div style="background: #f8fafc; aspect-ratio: 1 / 1; opacity: 0.5;"></div>`;
+            html += `<div style="background: #f8fafc; min-height: 100px; opacity: 0.5;"></div>`;
           }
         }
 
-        html += `</div></div>`;
+        html += `</div></div>
+        ${sidebarHtml}
+        </div>`;
         container.innerHTML = html;
       };
 
@@ -12577,7 +12692,14 @@
           const riskLv = (o.risk_level || 'Low').toLowerCase();
           const riskIcon = riskLv === 'high' ? '🔥' : (riskLv === 'medium' ? '⚠️' : '✅');
 
-          const clickGuard = `if(window.salestrack && window.salestrack.openOrderModal) window.salestrack.openOrderModal('${o.report_id}', '${o.machine_id}'); else alert('Dashboard is still loading. Please wait a moment.');`;
+          const escapeJs = (s) => (s || '').replace(/\\/g, "\\\\").replace(/'/g, "\\'").replace(/"/g, "&quot;").replace(/\n/g, "\\n").replace(/\r/g, "");
+          const safeReportId = escapeJs(o.report_id);
+          const safeMachineId = escapeJs(o.machine_id);
+          const safeNotes = escapeJs(o.notes);
+          const safeInternalNotes = escapeJs(o.internal_notes);
+          const safeRevisedHandover = escapeJs(o.revised_handover);
+
+          const clickGuard = `if(window.salestrack && window.salestrack.openOrderModal) window.salestrack.openOrderModal('${safeReportId}', '${safeMachineId}'); else alert('Dashboard is still loading. Please wait a moment.');`;
 
           return `
           <div class="ai-order-row risk-${riskLv} ${riskLv === 'high' ? 'active-pulse' : ''}" 
@@ -12585,7 +12707,7 @@
             
             <div class="ai-order-cell" onclick="${clickGuard}">
                <span class="cell-label">Customer</span>
-               <div style="font-weight:700; color:#1e293b;">${o.customer || '-'}</div>
+               <div style="font-weight:700; color:#1e293b;">${(o.customer || '-').replace(/\"/g, '')}</div>
                <div class="ai-insight-badge ${riskLv}" title="${o.ai_rationale || ''}">
                   <span>${riskIcon}</span> ${o.risk_level || 'Stable'}
                </div>
@@ -12593,7 +12715,7 @@
 
             <div class="ai-order-cell" onclick="${clickGuard}">
                <span class="cell-label">Machine</span>
-               <div style="font-size:14px; font-weight:700; color:#0f172a; overflow:hidden; text-overflow:ellipsis;" title="${o.machine}">${o.machine || '-'}</div>
+               <div style="font-size:14px; font-weight:700; color:#0f172a; overflow:hidden; text-overflow:ellipsis;" title="${(o.machine || '').replace(/\"/g, '')}">${(o.machine || '-').replace(/\"/g, '')}</div>
             </div>
 
             <div class="ai-order-cell" style="text-align:center;" onclick="${clickGuard}">
@@ -12608,14 +12730,14 @@
 
             <div class="ai-order-cell ai-note-cell" 
                  title="Double-click to edit notes"
-                 ondblclick="editOrderField(this, '${o.machine_id}', 'notes', '${(o.notes || "").replace(/'/g, "\\'")}')">
+                 ondblclick="editOrderField(this, '${safeMachineId}', 'notes', '${safeNotes}')">
                <span class="cell-label">Status</span>
                <div style="font-size:15px; color:#1e293b; font-weight:600; line-height:1.6;">${o.notes || '-'}</div>
             </div>
 
             <div class="ai-order-cell ai-note-cell" 
                  title="Double-click to edit internal notes"
-                 ondblclick="editOrderField(this, '${o.machine_id}', 'internal_notes', '${(o.internal_notes || "").replace(/'/g, "\\'")}')">
+                 ondblclick="editOrderField(this, '${safeMachineId}', 'internal_notes', '${safeInternalNotes}')">
                <span class="cell-label">🖋️ Internal Notes</span>
                <div class="ai-internal-notes-pill" 
                     style="line-height:1.6; font-size:14px; font-weight:500;">${o.internal_notes || '-'}</div>
@@ -12633,7 +12755,7 @@
 
             <div class="ai-order-cell" 
                  title="Double-click to edit revised date"
-                 ondblclick="editOrderField(this, '${o.machine_id}', 'revised_handover_date', '${o.revised_handover || ''}')">
+                 ondblclick="editOrderField(this, '${safeMachineId}', 'revised_handover_date', '${safeRevisedHandover}')">
                <span class="cell-label">📍 Revised Date</span>
                <div class="ai-date-pill" style="color:#4338ca;">${o.revised_handover || '-'}</div>
             </div>
@@ -13327,7 +13449,8 @@
             }
 
             // Re-bind the double click value for next time
-            el.setAttribute('ondblclick', `editOrderField(this, '${machineId}', '${field}', '${newVal.replace(/'/g, "\\'")}')`);
+            const escapedNewVal = newVal.replace(/\\/g, "\\\\").replace(/'/g, "\\'").replace(/"/g, "&quot;").replace(/\n/g, "\\n").replace(/\r/g, "");
+            el.setAttribute('ondblclick', `editOrderField(this, '${machineId}', '${field}', '${escapedNewVal}')`);
 
             if (window.showToast) window.showToast("Saved successfully", "success");
             else if (window.salestrack && window.salestrack.showToast) window.salestrack.showToast("Saved successfully", "success");
@@ -13535,8 +13658,8 @@
     */
     .main {
       background: #fff !important;
-      box-shadow: 0 -4px 12px rgba(0, 0, 0, 0.05) !important;
-      border-radius: 32px 0 0 0 !important;
+      box-shadow: none !important;
+      border-radius: 0 !important;
     }
 
     .mxg-table-wrapper {
@@ -13611,25 +13734,27 @@
       top: 0 !important;
       left: 0 !important;
       width: 100vw !important;
-      height: 80px !important;
-      background: linear-gradient(90deg, #000000 0%, #4a0404 100%) !important;
+      height: 100px !important;
+      background: #000000 !important;
       display: flex;
       align-items: center;
-      padding: 0 32px;
-      gap: 40px;
+      padding: 0 20px;
+      gap: 24px;
       z-index: 8000 !important;
-      border-bottom: 3px solid #ef4444 !important;
-      /* Signature Demarcation Line */
+      border-bottom: 2px solid #ef4444 !important;
       box-shadow: none !important;
       flex-shrink: 0;
     }
 
     .top-nav-logo {
       display: flex;
-      align-items: center;
-      gap: 12px;
-      padding-right: 20px;
+      flex-direction: column;
+      align-items: flex-end;
+      justify-content: center;
+      gap: 2px;
+      padding-right: 24px;
       border-right: 1px solid rgba(255, 255, 255, 0.1);
+      flex-shrink: 0;
     }
 
     .top-nav-group {
@@ -13643,21 +13768,19 @@
       display: flex;
       align-items: center;
       gap: 10px;
-      padding: 10px 16px;
+      padding: 10px 14px;
       color: rgba(255, 255, 255, 0.5);
-      font-size: 14px;
+      font-size: 14.5px;
       font-weight: 500;
       cursor: pointer;
-      border-radius: 8px;
-      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      border-radius: 6px;
+      transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
       white-space: nowrap;
       letter-spacing: 0.02em;
       position: relative;
       width: auto !important;
-      /* Prevent sidebar width override */
       flex-shrink: 0;
       overflow: visible !important;
-      /* Ensure glow/underline visible */
     }
 
     .top-nav-item:hover {
@@ -13674,11 +13797,10 @@
     .top-nav-item.active::after {
       content: "";
       position: absolute;
-      bottom: -12px;
-      /* Sits exactly on the bottom border */
+      bottom: -16px;
       left: 0;
       right: 0;
-      height: 4px;
+      height: 3px;
       background: linear-gradient(90deg, #ef4444 0%, #b91c1c 100%);
       border-radius: 4px 4px 0 0;
       box-shadow: 0 -4px 12px rgba(239, 68, 68, 0.6);
@@ -13698,11 +13820,84 @@
     }
 
     .top-nav-item .icon {
-      font-size: 15px;
-      /* Larger icons for visibility */
+      font-size: 16px;
       width: 20px;
       text-align: center;
       opacity: 0.8;
+    }
+
+    /* Dropdown container */
+    .top-nav-dropdown {
+      position: relative;
+    }
+
+    .top-nav-dropdown-menu {
+      display: none;
+      position: absolute;
+      top: 100%;           /* flush — no gap, so hover is unbroken */
+      left: 50%;
+      transform: translateX(-50%);
+      background: #111111;
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 10px;
+      min-width: 160px;
+      padding-top: 10px;   /* visual breathing room pushed INSIDE the menu */
+      padding-bottom: 6px;
+      padding-left: 6px;
+      padding-right: 6px;
+      z-index: 9000;
+      box-shadow: 0 12px 32px rgba(0,0,0,0.6), 0 0 0 1px rgba(239,68,68,0.15);
+      animation: ddFadeIn 0.15s ease-out;
+    }
+
+    /* Invisible bridge: fills the tiny gap between trigger bottom edge and menu top */
+    .top-nav-dropdown-menu::before {
+      content: '';
+      position: absolute;
+      top: -8px;
+      left: 0;
+      right: 0;
+      height: 8px;
+    }
+
+    .top-nav-dropdown:hover .top-nav-dropdown-menu,
+    .top-nav-dropdown-menu:hover {
+      display: block;
+    }
+
+    .top-nav-dropdown-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 9px 14px;
+      color: rgba(255,255,255,0.6);
+      font-size: 11.5px;
+      font-weight: 500;
+      border-radius: 7px;
+      cursor: pointer;
+      transition: all 0.15s ease;
+      white-space: nowrap;
+    }
+
+    .top-nav-dropdown-item:hover {
+      background: rgba(255,255,255,0.07);
+      color: white;
+    }
+
+    .top-nav-dropdown-item.active {
+      color: #ef4444;
+      background: rgba(239,68,68,0.08);
+    }
+
+    @keyframes ddFadeIn {
+      from { opacity: 0; transform: translateX(-50%) translateY(-4px); }
+      to   { opacity: 1; transform: translateX(-50%) translateY(0); }
+    }
+
+    /* Chevron rotates when dropdown open */
+    .top-nav-dropdown:hover .top-nav-dropdown-trigger .fa-chevron-down {
+      transform: rotate(180deg);
+      transition: transform 0.2s ease;
     }
 
     .top-nav-spacer {

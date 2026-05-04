@@ -300,7 +300,7 @@ window.OmnisDashboardV6 = class OmnisDashboardV6 {
         // 3. Lists
         await this.loadStage(period, "get_dashboard_lists", "Lists", (data) => {
             Object.assign(this.data, data);
-            this.renderLists();
+            this.renderOrderMap();
             this.renderHotLeads();
             this.renderAIPipeline();
         });
@@ -319,7 +319,8 @@ window.OmnisDashboardV6 = class OmnisDashboardV6 {
 
     async loadStage(period, method, label, renderCallback) {
         const CACHE_TTL = 12 * 60 * 60 * 1000; // 12 Hours
-        const cacheKey = `omnis_dash_cache_${method}_${period}`;
+        const CACHE_VERSION = "v8"; // Increment to invalidate old structure
+        const cacheKey = `omnis_dash_cache_${method}_${period}_${CACHE_VERSION}`;
 
         // 1. Check & Always Render Cache First (Ghost Loading)
         let isStale = true;
@@ -370,28 +371,22 @@ window.OmnisDashboardV6 = class OmnisDashboardV6 {
 
     async fetchAIInsights() {
         this.sys = (window.getCurrentSystem && window.getCurrentSystem()) || { baseUrl: "https://salestrack.powerstar.co.zw" };
-        const heroCard = document.getElementById("ai-concierge-hero");
-        if (!heroCard) return;
-        heroCard.style.display = "flex"; // Show the UI container
+        const summaryEl = document.getElementById("ai-strategic-summary");
+        if (!summaryEl) return;
 
         try {
             const key = localStorage.getItem("omnis_openai_key");
-            const aiMethod = "/api/method/powerstar_salestrack.omnis_dashboard.get_omnis_ai_dashboard_insights";
-
-            // Build simple payload object since callFrappeSequenced usually takes dict
             const payload = key ? { api_key: key } : {};
 
             const res = await window.callFrappeSequenced(this.sys.baseUrl, "powerstar_salestrack.omnis_dashboard.get_omnis_ai_dashboard_insights", payload, "GET");
             if (res && res.message && res.message.ok) {
                 this.renderAIInsights(res.message);
             } else {
-                document.getElementById("ai-strategic-summary").innerHTML = `<div style="color:#ef4444;">AI Insights unavailable. ${res?.message?.error || ""}</div>`;
-                document.getElementById("ai-action-items").innerHTML = "";
+                summaryEl.innerHTML = `<div style="color:#ef4444; font-size:13px; opacity:0.8;">AI Insights currently unavailable.</div>`;
             }
         } catch (e) {
             console.error("fetchAIInsights error:", e);
-            document.getElementById("ai-strategic-summary").innerHTML = `<div style="color:#ef4444;">Failed to load AI Insights.</div>`;
-            document.getElementById("ai-action-items").innerHTML = "";
+            summaryEl.innerHTML = `<div style="color:#ef4444; font-size:13px; opacity:0.8;">Market telemetry sync failed.</div>`;
         }
     }
 
@@ -491,21 +486,11 @@ window.OmnisDashboardV6 = class OmnisDashboardV6 {
             summaryEl.innerHTML = replyText.replace(/\n/g, "<br/>"); // The reply contains the fallback/strategic summary text
         }
 
-        // 2. Efficiency Metrics
-        const quoteEff = data.efficiencies?.quote ?? data.quote_efficiency;
-        if (quoteEff !== undefined) {
-            document.getElementById("ai-metric-quote").textContent = quoteEff + "%";
-            document.getElementById("ai-metric-quote").style.color = quoteEff >= 80 ? "#4ade80" : (quoteEff >= 50 ? "#facc15" : "#f87171");
-        }
-        const orderEff = data.efficiencies?.order ?? data.order_efficiency;
-        if (orderEff !== undefined) {
-            document.getElementById("ai-metric-order").textContent = orderEff + "%";
-            document.getElementById("ai-metric-order").style.color = orderEff >= 80 ? "#4ade80" : (orderEff >= 50 ? "#facc15" : "#f87171");
-        }
+        // Metrics are now handled by the top KPI Ribbon for unified visibility.
 
-        // 2.4 Update Action Center Month Label
-        this.updateActionCenterHeader();
-        this.renderWeeklyCalendar();
+        // Removed obsolete Action Center / Calendar calls to avoid layout leakage in Command Center 2.0
+        // this.updateActionCenterHeader();
+        // this.renderWeeklyCalendar();
 
         // 3. Action Items (Strategic To-Do List)
 
@@ -580,12 +565,11 @@ window.OmnisDashboardV6 = class OmnisDashboardV6 {
     }
 
     render() {
-        // Render logic is now distributed in fetchData stages.
-        // This method remains as a potential re-render entry point if data exists.
         if (this.data) {
-            if (this.data.active_customers_total !== undefined) this.renderKPIs();
-            if (this.data.orders_at_risk) this.renderRiskCard();
-            if (this.data.latest_quotations) this.renderLists();
+            this.renderKPIs();
+            this.renderTopPerformers();
+            this.renderOrderMap();
+            this.renderRiskCard();
         }
     }
 
@@ -595,132 +579,215 @@ window.OmnisDashboardV6 = class OmnisDashboardV6 {
 
     renderKPIs() {
         const d = this.data;
-        if (!d || !d.kpis) return;
-        const k = d.kpis;
+        if (!d) return;
 
-        const setText = (id, val) => {
-            const el = document.getElementById(id);
-            if (el) el.textContent = val;
-        };
+        const ribbon = document.getElementById('dash-kpi-ribbon');
+        if (ribbon) {
+            let totalMtd = 0;
+            if (d.company_sales) {
+                Object.values(d.company_sales).forEach(c => totalMtd += (c.mtd || 0));
+            }
 
-        setText('kpi-active-customers', this.formatNumber(k.active_customers_total));
-        setText('kpi-quotations', this.formatNumber(k.quotations_total));
-        setText('kpi-products', this.formatNumber(k.products_total));
-        setText('kpi-group-sales', this.formatNumber(k.group_sales));
-        setText('kpi-orders-open', this.formatNumber(k.orders_open));
-        setText('kpi-orders-overdue', this.formatNumber(k.orders_overdue));
+            const activeQuotes = d.quote_follow_ups ? d.quote_follow_ups.length : 0;
+            const atRisk = d.orders_at_risk ? d.orders_at_risk.length : 0;
+            const convRate = activeQuotes > 0 ? ((totalMtd / (totalMtd + activeQuotes)) * 100).toFixed(1) : "0.0";
 
-        let avg = "-";
-        if (k.current_orders && k.orders_machines_total) {
-            avg = (Number(k.orders_machines_total) / Number(k.current_orders)).toFixed(1);
+            const kpiItems = [
+                { label: "Sales MTD", val: this.formatNumber(totalMtd), icon: "fa-shopping-cart", color: "#10b981", sub: "Units Sold Month-to-Date" },
+                { label: "Live Pipeline", val: this.formatNumber(activeQuotes), icon: "fa-file-invoice-dollar", color: "#3b82f6", sub: "Active Customer Quotes" },
+                { label: "At Risk Orders", val: atRisk, icon: "fa-exclamation-triangle", color: "#ef4444", sub: "Urgent Attention Needed" },
+                { label: "Efficiency", val: convRate + "%", icon: "fa-bolt", color: "#7c3aed", sub: "Market Capture Rate" }
+            ];
+
+            ribbon.innerHTML = kpiItems.map(item => `
+                <div style="background:#fff; border:1px solid #e2e8f0; border-radius:18px; padding:24px; box-shadow:0 4px 12px rgba(0,0,0,0.02); display:flex; align-items:center; gap:20px; transition:transform 0.2s;" onmouseover="this.style.transform='translateY(-2px)';" onmouseout="this.style.transform='none';">
+                    <div style="width:52px; height:52px; background:${item.color}15; color:${item.color}; border-radius:14px; display:flex; align-items:center; justify-content:center; font-size:22px;">
+                        <i class="fas ${item.icon}"></i>
+                    </div>
+                    <div>
+                        <div style="font-size:11px; font-weight:800; color:#64748b; text-transform:uppercase; letter-spacing:0.05em; margin-bottom:4px;">${item.label}</div>
+                        <div style="font-size:24px; font-weight:900; color:#0f172a; line-height:1; letter-spacing:-0.01em;">${item.val}</div>
+                        <div style="font-size:11px; color:#94a3b8; font-weight:600; margin-top:6px;">${item.sub}</div>
+                    </div>
+                </div>
+            `).join('');
         }
-        setText('kpi-orders-avg', avg);
-
-        setText('orders-leadtime-summary', k.leadtime_recommendation || "");
     }
 
-    renderLists() {
-        // 1. Latest Quotations
-        const qBody = document.getElementById('open-quotes-body');
-        if (qBody) {
-            qBody.innerHTML = "";
-            const quotes = this.data.latest_quotations || [];
-            if (quotes.length === 0) {
-                qBody.innerHTML = '<tr><td colspan="5" style="padding:10px;color:#888;">No open quotations found.</td></tr>';
-            } else {
-                quotes.slice(0, 10).forEach(q => {
-                    const tr = document.createElement("tr");
-                    tr.style.borderBottom = "1px solid #f3f4f6";
-                    tr.innerHTML = `
-                              <td><span class="ce-id">${q.name}</span></td>
-                              <td style="padding:10px;font-weight:500;">${q.customer_name || '-'}</td>
-                              <td style="padding:10px;">${this.getAgeBadge(q.transaction_date)}</td>
-                              <td style="padding:10px;color:#6b7280;">${q.custom_sales_person || '-'}</td>
-                              <td style="padding:10px;text-align:right;font-weight:600;">${this.formatNumber(q.grand_total)}</td>
-                            `;
-                    qBody.appendChild(tr);
-                });
-            }
+    renderTopPerformers() {
+        const d = this.data;
+        const container = document.getElementById('dash-top-oem-mix');
+        if (container && d.oem_sales) {
+            const top5 = d.oem_sales.slice(0, 5);
+            const total = d.oem_sales.reduce((acc, curr) => acc + (curr.total_qty || 0), 0);
+            
+            container.innerHTML = top5.map(oem => {
+                const pct = total > 0 ? ((oem.total_qty / total) * 100).toFixed(1) : 0;
+                return `
+                    <div style="margin-bottom:12px;">
+                        <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:6px;">
+                            <div style="display:flex; align-items:center; gap:10px;">
+                                <div style="width:8px; height:8px; border-radius:50%; background:#ef4444;"></div>
+                                <div style="font-size:13px; font-weight:700; color:#334155;">${oem.oem}</div>
+                            </div>
+                            <div style="display:flex; align-items:center; gap:12px;">
+                                <div style="font-size:12px; font-weight:800; color:#0f172a;">${oem.total_qty} <span style="font-size:10px; opacity:0.5; font-weight:600;">Units</span></div>
+                                <div style="font-size:11px; font-weight:700; color:#64748b; width:45px; text-align:right;">${pct}%</div>
+                            </div>
+                        </div>
+                        <div style="width:100%; height:4px; background:#f1f5f9; border-radius:2px; overflow:hidden;">
+                            <div style="width:${pct}%; height:100%; background:#ef4444; border-radius:2px;"></div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+    }
+
+    renderOrderMap() {
+        const container = document.getElementById('order-map-svg-container');
+        if (!container || !this.data) return;
+
+        const stages = this.data.order_stages || {
+            pipeline: 0,
+            confirmed: 0,
+            logistics: 0,
+            arrived: 0,
+            handover: 0
+        };
+
+        const nodes = [
+            { id: 'pipeline', label: 'Pipeline', count: stages.pipeline, icon: 'fa-file-invoice-dollar', color: '#3b82f6' },
+            { id: 'confirmed', label: 'Confirmed', count: stages.confirmed, icon: 'fa-check-double', color: '#2563eb' },
+            { id: 'logistics', label: 'Logistics', count: stages.logistics, icon: 'fa-ship', color: '#8b5cf6' },
+            { id: 'arrived', label: 'In Yard', count: stages.arrived, icon: 'fa-truck-loading', color: '#f59e0b' },
+            { id: 'handover', label: 'Handover', count: stages.handover, icon: 'fa-handshake', color: '#10b981' }
+        ];
+
+        let html = `
+            <div style="width:100%; max-width:800px; display:flex; justify-content:space-between; align-items:center; position:relative; padding:0 10px;">
+                <!-- Modern Progressive Line -->
+                <div style="position:absolute; top:35px; left:50px; right:50px; height:3px; background:#f1f5f9; z-index:1; border-radius:10px;">
+                    <div style="width:75%; height:100%; background:linear-gradient(to right, #3b82f6, #8b5cf6, #10b981); border-radius:10px; opacity:0.6;"></div>
+                </div>
+                
+                ${nodes.map((node, i) => {
+                    const isActive = node.count > 0;
+                    return `
+                    <div style="display:flex; flex-direction:column; align-items:center; gap:12px; z-index:2; position:relative; cursor:pointer;" onclick="salestrack.openOrderStageModal('${node.id}')">
+                        <div style="
+                            width:70px; height:70px; border-radius:20px; 
+                            background:#fff; border:2px solid ${isActive ? node.color : '#e2e8f0'}; 
+                            display:flex; align-items:center; justify-content:center; 
+                            box-shadow:${isActive ? '0 10px 20px rgba(0,0,0,0.08)' : '0 4px 10px rgba(0,0,0,0.02)'}; 
+                            transition:all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+                            position:relative;
+                        " class="${isActive ? 'pulse-active' : ''}" 
+                        onmouseover="this.style.transform='translateY(-5px) scale(1.05)'; this.style.boxShadow='0 15px 30px rgba(0,0,0,0.12)';" 
+                        onmouseout="this.style.transform='none'; this.style.boxShadow='${isActive ? '0 10px 20px rgba(0,0,0,0.08)' : '0 4px 10px rgba(0,0,0,0.02)'}';">
+                            <i class="fas ${node.icon}" style="font-size:24px; color:${isActive ? node.color : '#cbd5e1'};"></i>
+                            
+                            ${isActive ? `
+                            <div style="position:absolute; top:-8px; right:-8px; background:${node.color}; color:#fff; font-size:11px; font-weight:900; padding:4px 10px; border-radius:12px; border:3px solid #fff; box-shadow:0 4px 8px rgba(0,0,0,0.1);">
+                                ${node.count}
+                            </div>
+                            ` : ''}
+                        </div>
+                        <div style="text-align:center;">
+                            <div style="font-size:11px; font-weight:850; color:${isActive ? '#0f172a' : '#94a3b8'}; text-transform:uppercase; letter-spacing:0.08em;">${node.label}</div>
+                            ${isActive ? `<div style="font-size:9px; font-weight:700; color:${node.color}; margin-top:2px;">${node.count} ITEMS</div>` : ''}
+                        </div>
+                    </div>
+                    `;
+                }).join('')}
+            </div>
+            
+            <style>
+                .pulse-active::after {
+                    content: '';
+                    position: absolute;
+                    width: 100%; height: 100%;
+                    border-radius: 20px;
+                    border: 2px solid currentColor;
+                    animation: mapPulse 2s infinite;
+                    opacity: 0;
+                    color: inherit;
+                }
+                @keyframes mapPulse {
+                    0% { transform: scale(1); opacity: 0.5; }
+                    100% { transform: scale(1.3); opacity: 0; }
+                }
+            </style>
+        `;
+
+        container.innerHTML = html;
+    }
+
+    openOrderStageModal(stageId) {
+        const stageNames = {
+            pipeline: "Sales Pipeline (Quotes)",
+            confirmed: "Confirmed Orders (New)",
+            logistics: "Production & Logistics",
+            arrived: "Arrived at Local Yard",
+            handover: "Handover in Progress"
+        };
+        
+        const title = stageNames[stageId] || "Order List";
+        let content = "";
+        
+        const orders = (this.data.orders_preview || []).filter(o => {
+             const s = (o.status || '').toLowerCase();
+             if (stageId === 'confirmed' && (s.includes('new') || s.includes('pending'))) return true;
+             if (stageId === 'logistics' && (s.includes('transit') || s.includes('production') || s.includes('shipping'))) return true;
+             if (stageId === 'arrived' && (s.includes('harare') || s.includes('yard') || s.includes('ready'))) return true;
+             if (stageId === 'handover' && (s.includes('handover') || s.includes('delivered'))) return true;
+             return false;
+        });
+
+        if (stageId === 'pipeline') {
+             const quotes = this.data.quote_follow_ups || this.data.open_quotations || [];
+             content = this._generateQuoteListHtml(quotes);
+        } else if (orders.length > 0) {
+             content = this._generateOrderListHtml(orders);
+        } else {
+             content = `<div style="padding:60px 20px; text-align:center;">
+                <div style="font-size:48px; margin-bottom:16px; opacity:0.3;">📦</div>
+                <div style="font-size:15px; font-weight:600; color:#64748b;">No items currently in this stage.</div>
+                <div style="font-size:12px; color:#94a3b8; margin-top:8px;">Check the full tracking view for historical data.</div>
+             </div>`;
         }
 
-        // 2. Customer Enquiries
-        const cesTbody = document.getElementById('open-ces-body');
-        if (cesTbody) {
-            cesTbody.innerHTML = "";
-            const openCEs = this.data.latest_ces || [];
-            if (openCEs.length === 0) {
-                cesTbody.innerHTML = '<tr><td colspan="6" style="padding:10px;color:#888;">No open customer enquiries found.</td></tr>';
-            } else {
-                openCEs.slice(0, 10).forEach(ce => {
-                    const tr = document.createElement("tr");
-                    tr.style.borderBottom = "1px solid #f3f4f6";
-                    tr.innerHTML = `
-                      <td><span class="ce-id">${ce.name}</span></td>
-                      <td style="padding:10px;font-weight:500;">${ce.customer_name || ce.party_name || '-'}</td>
-                      <td style="padding:10px;color:#6b7280;" class="muted">${ce.title || '-'}</td>
-                      <td style="padding:10px;">${this.getAgeBadge(ce.transaction_date)}</td>
-                      <td style="padding:10px;color:#6b7280;" class="muted">${ce.custom_salesperson || '-'}</td>
-                      <td style="padding:10px;color:#6b7280;" class="muted">${ce.company || '-'}</td>
-                  `;
-                    cesTbody.appendChild(tr);
-                });
-            }
-        }
+        this.openListModal(`&#x1F4CD; ${title}`, content);
+    }
 
-        // 3. Orders Preview
-        const ordersPreviewDiv = document.getElementById('orders-preview-div');
-        if (ordersPreviewDiv) {
-            ordersPreviewDiv.innerHTML = "";
-            const orders = this.data.orders_preview || [];
-            if (orders.length === 0) {
-                ordersPreviewDiv.innerHTML = '<div style="padding:20px;text-align:center;color:#6b7280;font-size:12px;">No active orders found in this period.</div>';
-            } else {
-                const table = document.createElement("table");
-                table.style.width = "100%";
-                table.style.borderCollapse = "collapse";
-                table.innerHTML = `
+    _generateQuoteListHtml(quotes) {
+        if (!quotes.length) return '<div style="padding:40px; text-align:center; color:#94a3b8;">No active quotes.</div>';
+        return `
+            <div style="padding:10px;">
+                <table style="width:100%; border-collapse:collapse;">
                     <thead style="background:#f8fafc; font-size:10px; text-transform:uppercase; color:#64748b; font-weight:800;">
                         <tr style="border-bottom:1px solid #e2e8f0;">
-                            <th style="padding:10px; text-align:left;">Order ID</th>
-                            <th style="padding:10px; text-align:left;">Customer</th>
-                            <th style="padding:10px; text-align:center;">Qty</th>
-                            <th style="padding:10px; text-align:left;">Target</th>
-                            <th style="padding:10px; text-align:left;">Status</th>
-                            <th style="padding:10px; text-align:right;">Actions</th>
+                            <th style="padding:12px 16px; text-align:left;">Customer</th>
+                            <th style="padding:12px 16px; text-align:right;">Amount</th>
                         </tr>
                     </thead>
-                `;
-                const opBody = document.createElement("tbody");
-                opBody.id = "orders-preview-body";
-                table.appendChild(opBody);
-                ordersPreviewDiv.appendChild(table);
-                
-                const fmtDate = (d) => d ? d.split(' ')[0] : '-';
-
-                orders.forEach(o => {
-                    const tr = document.createElement("tr");
-                    tr.style.borderBottom = "1px solid #f1f5f9";
-                    tr.style.fontSize = "12px";
-
-                    let flags = "";
-                    if (o.is_overdue) flags += '<span style="background:#fee2e2; color:#ef4444; padding:2px 6px; border-radius:4px; font-size:9px; font-weight:700;">OVERDUE</span> ';
-                    else if (o.is_stale) flags += '<span style="background:#fef3c7; color:#f59e0b; padding:2px 6px; border-radius:4px; font-size:9px; font-weight:700;">STALE</span>';
-                    else flags = '<span style="background:#f0fdf4; color:#22c55e; padding:2px 6px; border-radius:4px; font-size:9px; font-weight:700;">ACTIVE</span>';
-
-                    tr.innerHTML = `
-                      <td style="padding:12px 10px;"><span style="font-weight:700; color:#1e293b;">${o.id || o.name}</span></td>
-                      <td style="padding:12px 10px; font-weight:500;">${o.customer_name || '-'}</td>
-                      <td style="padding:12px 10px; text-align:center;"><span style="background:#f1f5f9; padding:2px 8px; border-radius:4px;">${o.total_qty || 0}</span></td>
-                      <td style="padding:12px 10px; color:#64748b;">${fmtDate(o.delivery_date)}</td>
-                      <td style="padding:12px 10px;">${flags}</td>
-                      <td style="padding:12px 10px; text-align:right;">
-                        <button type="button" onclick="salestrack.openDoc('Sales Order', '${o.name}')" style="background:white; border:1px solid #e2e8f0; color:#1e293b; padding:4px 10px; border-radius:6px; font-size:10px; font-weight:700; cursor:pointer; transition:all 0.2s;">View</button>
-                      </td>
-                    `;
-                    opBody.appendChild(tr);
-                });
-            }
-        }
+                    <tbody>
+                        ${quotes.map(q => `
+                            <tr style="border-bottom:1px solid #f1f5f9; cursor:pointer;" onclick="salestrack.openDoc('Quotation', '${q.name}')">
+                                <td style="padding:14px 16px;">
+                                    <div style="font-size:13px; font-weight:700; color:#1e293b;">${q.customer_name}</div>
+                                    <div style="font-size:11px; color:#64748b;">${q.name}</div>
+                                </td>
+                                <td style="padding:14px 16px; text-align:right;">
+                                    <div style="font-size:13px; font-weight:800; color:#0f172a;">${this.formatNumber(q.grand_total)}</div>
+                                    <div style="font-size:10px; font-weight:700; color:#3b82f6;">${q.status.toUpperCase()}</div>
+                                </td>
+                            </tr>
+                        `).join('')}
+                    </tbody>
+                </table>
+            </div>
+        `;
     }
 
     renderAIPipeline() {
@@ -850,7 +917,9 @@ window.OmnisDashboardV6 = class OmnisDashboardV6 {
         const modalBody = document.getElementById('dash-generic-body');
         
         if (!existingHeader) {
-            this.openListModal(headerTitle, loaderHtml, "1200px");
+            this.openListModal(headerTitle, loaderHtml, "1500px");
+            const inner = document.getElementById('dash-modal-inner');
+            if (inner) inner.style.maxHeight = '95vh';
         } else {
             if (modalBody) modalBody.innerHTML = loaderHtml;
             // Sync dropdowns
@@ -884,16 +953,18 @@ window.OmnisDashboardV6 = class OmnisDashboardV6 {
                 <div class="eff-report-container" style="padding:32px; font-family:'Inter', sans-serif;">
                     <style>
                         @media print {
+                            @page { margin: 10mm; size: auto; }
                             body > *:not(#dash-generic-modal) { display: none !important; }
                             #dash-generic-modal { display: block !important; position: absolute !important; top: 0 !important; left: 0 !important; width: 100% !important; background: white !important; backdrop-filter: none !important; height: auto !important; }
                             #dash-modal-inner { width: 100% !important; max-width: none !important; max-height: none !important; border-radius: 0 !important; box-shadow: none !important; margin: 0 !important; border: none !important; }
                             #dash-modal-inner > div:first-child { display: none !important; }
                             #dash-generic-body { padding: 0 !important; overflow: visible !important; }
-                            .eff-report-container { padding: 20px !important; border: 2px solid black !important; background: white !important; }
-                            .eff-report-container table { border-collapse: collapse !important; border: 2px solid black !important; width: 100% !important; margin-top: 20px !important; }
-                            .eff-report-container th, .eff-report-container td { border: 1px solid black !important; font-size: 11px !important; padding: 8px 10px !important; }
-                            .eff-summary-grid { display: grid !important; grid-template-columns: repeat(4, 1fr) !important; gap: 0 !important; border: 2px solid black !important; background: white !important; }
-                            .eff-summary-grid > div { border: 1px solid black !important; padding: 15px !important; }
+                            .eff-report-container { padding: 0 !important; border: none !important; background: white !important; }
+                            .eff-report-container table { border-collapse: collapse !important; border: 2px solid black !important; width: 100% !important; margin-top: 20px !important; page-break-inside: auto; }
+                            .eff-report-container tr { page-break-inside: avoid; page-break-after: auto; }
+                            .eff-report-container th, .eff-report-container td { border: 1px solid black !important; font-size: 10px !important; padding: 6px 8px !important; }
+                            .eff-summary-grid { display: grid !important; grid-template-columns: repeat(4, 1fr) !important; gap: 0 !important; border: 2px solid black !important; background: white !important; margin-bottom: 20px !important; }
+                            .eff-summary-grid > div { border: 1px solid black !important; padding: 10px !important; }
                             .eff-report-container div, .eff-report-container table { box-shadow: none !important; border-radius: 0 !important; }
                             .no-print { display: none !important; }
                         }
@@ -927,6 +998,20 @@ window.OmnisDashboardV6 = class OmnisDashboardV6 {
                         </div>
                     </div>
 
+                    <!-- Efficiency Calculation Explanation -->
+                    <div class="no-print" style="background:#f8fafc; border:1px solid #e2e8f0; border-left:4px solid #3b82f6; border-radius:8px; padding:16px 20px; margin-bottom:40px; display:flex; gap:16px; align-items:flex-start;">
+                        <i class="fa fa-info-circle" style="color:#3b82f6; font-size:20px; margin-top:2px;"></i>
+                        <div style="font-size:13px; color:#475569; line-height:1.6;">
+                            <h4 style="margin:0 0 8px 0; color:#0f172a; font-size:14px; font-weight:700;">How is Efficiency Calculated?</h4>
+                            <p style="margin:0 0 8px 0;">This report uses a <strong>Weighted Efficiency Score</strong> tailored to our operational parameters:</p>
+                            <ul style="margin:0; padding-left:20px;">
+                                <li style="margin-bottom:4px;"><strong>The 3-Day Buffer:</strong> Deliveries made on time, early, or up to 3 days late are considered perfect (100% score) and are marked as <span style="background:#fef3c7; color:#b45309; padding:2px 6px; border-radius:4px; font-size:10px; font-weight:800; text-transform:uppercase;">Within Buffer</span>.</li>
+                                <li style="margin-bottom:4px;"><strong>Graduated Penalty:</strong> Orders that exceed the 3-day buffer receive a <strong>1.5% penalty per day</strong> past the buffer. (e.g., An order 10 days late is 7 days past the buffer, resulting in an 89.5% score).</li>
+                                <li><strong>Overall Efficiency %:</strong> The main percentage above is the weighted average of all individual machine scores. The <em>Delay (Days)</em> column shows the delay <strong>after</strong> applying the buffer allowance.</li>
+                            </ul>
+                        </div>
+                    </div>
+
                     <!-- Detailed Table -->
                     <div style="background:white; border:1px solid #e2e8f0; border-radius:12px; overflow:hidden; box-shadow:0 4px 20px rgba(0,0,0,0.03);">
                         <table class="eff-table" style="width:100%; border-collapse:collapse; font-size:13px; text-align:left;">
@@ -954,7 +1039,7 @@ window.OmnisDashboardV6 = class OmnisDashboardV6 {
                                         <td style="padding:14px 20px;">
                                             <span style="
                                                 padding:4px 10px; border-radius:6px; font-size:11px; font-weight:800; text-transform:uppercase; letter-spacing:0.05em;
-                                                ${r.status === 'Early' ? 'background:#dcfce7; color:#15803d;' : (r.status === 'On Time' ? 'background:#f1f5f9; color:#475569;' : 'background:#fee2e2; color:#b91c1c;')}
+                                                ${r.status === 'Early' ? 'background:#dcfce7; color:#15803d;' : (r.status === 'On Time' ? 'background:#f1f5f9; color:#475569;' : (r.status === 'Within Buffer' ? 'background:#fef3c7; color:#b45309;' : 'background:#fee2e2; color:#b91c1c;'))}
                                             ">
                                                 ${r.status}
                                             </span>
@@ -1227,7 +1312,7 @@ window.OmnisDashboardV6 = class OmnisDashboardV6 {
             chart: {
                 type: 'donut',
                 id: 'oemSummaryDonut',
-                height: 480,
+                height: 600,
                 fontFamily: 'Plus Jakarta Sans, sans-serif',
                 animations: {
                     enabled: true,
@@ -1330,6 +1415,108 @@ window.OmnisDashboardV6 = class OmnisDashboardV6 {
                 }
             }, false, true); 
         }, 4000);
+
+        // Render KPI Table
+        const kpisContainer = document.getElementById('widget-oem-kpis');
+        if (kpisContainer) {
+            kpisContainer.style.display = 'block'; // Override grid layout from index.html if present
+            
+            let kpiHtml = `
+            <div style="background:#fff; border:1px solid #e2e8f0; border-radius:12px; overflow:hidden; box-shadow:0 4px 20px rgba(0,0,0,0.03);">
+                <table style="width:100%; border-collapse:collapse; font-size:13px; text-align:left;">
+                    <thead>
+                        <tr style="background:#f8fafc; border-bottom:2px solid #e2e8f0;">
+                            <th style="padding:16px 20px; font-weight:800; color:#475569; text-transform:uppercase; letter-spacing:0.05em;">Brand</th>
+                            <th style="padding:16px 20px; font-weight:800; color:#475569; text-transform:uppercase; letter-spacing:0.05em;">Total Sales</th>
+                            <th style="padding:16px 20px; font-weight:800; color:#475569; text-transform:uppercase; letter-spacing:0.05em;">Movement /Mo</th>
+                            <th style="padding:16px 20px; font-weight:800; color:#475569; text-transform:uppercase; letter-spacing:0.05em;">Pipeline (Quotes)</th>
+                            <th style="padding:16px 20px; font-weight:800; color:#475569; text-transform:uppercase; letter-spacing:0.05em;">Conv %</th>
+                            <th style="padding:16px 20px; font-weight:800; color:#475569; text-transform:uppercase; letter-spacing:0.05em;">Top Model</th>
+                            <th style="padding:16px 20px; font-weight:800; color:#059669; text-transform:uppercase; letter-spacing:0.05em;">Suggested Order</th>
+                            <th style="padding:16px 20px; font-weight:800; color:#475569; text-transform:uppercase; letter-spacing:0.05em;">Total Target</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+            `;
+
+            oemData.forEach(d => {
+                const sales = d.sales !== undefined ? d.sales : (d.total_qty || 0);
+                const quotes = d.quotes || 0;
+                const convRate = quotes > 0 ? ((sales / quotes) * 100).toFixed(1) : 0;
+                const velocity = d.monthly_velocity || 0;
+                const suggest = d.suggested_order || 0;
+                const mostBought = d.most_bought || "N/A";
+                const recStock = d.recommended_stock || 0;
+
+                kpiHtml += `
+                        <tr style="border-bottom:1px solid #f1f5f9; transition:background 0.2s;" onmouseover="this.style.background='#f8fafc';" onmouseout="this.style.background='transparent';">
+                            <td style="padding:16px 20px; font-weight:800; color:#0f172a;">${d.oem}</td>
+                            <td style="padding:16px 20px; font-weight:700; color:#0f172a;">${sales}</td>
+                            <td style="padding:16px 20px; font-weight:700; color:#475569;">${velocity} <span style="font-size:10px; opacity:0.6;">units/mo</span></td>
+                            <td style="padding:16px 20px; font-weight:700; color:#0f172a;">${quotes}</td>
+                            <td style="padding:16px 20px;"><span style="background:#f0f9ff; color:#0369a1; padding:4px 8px; border-radius:6px; font-size:11px; font-weight:800;">${convRate}%</span></td>
+                            <td style="padding:16px 20px; color:#475569; font-weight:600; max-width:180px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;" title="${mostBought}">${mostBought}</td>
+                            <td style="padding:16px 20px;"><span style="background:linear-gradient(135deg, #059669, #047857); color:#fff; padding:6px 12px; border-radius:6px; font-size:13px; font-weight:900; box-shadow:0 2px 4px rgba(5,150,105,0.2);">${suggest} <span style="font-size:10px; font-weight:600; opacity:0.9;">Units</span></span></td>
+                            <td style="padding:16px 20px;"><span style="background:#f1f5f9; color:#475569; padding:6px 12px; border-radius:6px; font-size:12px; font-weight:800;">${recStock}</span></td>
+                        </tr>
+                `;
+            });
+            kpiHtml += `
+                    </tbody>
+                </table>
+            </div>`;
+            kpisContainer.innerHTML = kpiHtml;
+        }
+
+        // Render Quick Insights
+        const insightsContainer = document.getElementById('widget-oem-insights');
+        if (insightsContainer && oemData.length > 0) {
+            const sortedBySales = [...oemData].sort((a, b) => (b.sales || 0) - (a.sales || 0));
+            const sortedByQuotes = [...oemData].sort((a, b) => (b.quotes || 0) - (a.quotes || 0));
+            const sortedByConv = [...oemData].sort((a, b) => {
+                const bRate = (b.quotes || 0) > 0 ? (b.sales || 0) / b.quotes : 0;
+                const aRate = (a.quotes || 0) > 0 ? (a.sales || 0) / a.quotes : 0;
+                return bRate - aRate;
+            });
+
+            const topSales = sortedBySales[0];
+            const topQuotes = sortedByQuotes[0];
+            const topConv = sortedByConv[0];
+            const totalSales = oemData.reduce((acc, curr) => acc + (curr.sales || 0), 0);
+            const marketShare = totalSales > 0 ? ((topSales.sales / totalSales) * 100).toFixed(1) : 0;
+            const topConvRate = (topConv.quotes || 0) > 0 ? ((topConv.sales / topConv.quotes) * 100).toFixed(1) : 0;
+
+            insightsContainer.innerHTML = `
+                <h4 style="font-size:12px; font-weight:800; color:#475569; text-transform:uppercase; letter-spacing:0.05em; margin:0 0 16px 0; display:flex; align-items:center; gap:8px;">
+                    <i class="fas fa-lightbulb" style="color:#f59e0b;"></i> Quick Insights
+                </h4>
+                <div style="display:grid; grid-template-columns:1fr 1fr; gap:16px;">
+                    <div style="background:#fff; padding:12px; border-radius:10px; border:1px solid #e2e8f0;">
+                        <div style="font-size:10px; font-weight:700; color:#64748b; text-transform:uppercase; margin-bottom:4px;">Top Performer</div>
+                        <div style="font-size:14px; font-weight:800; color:#0f172a;">${topSales.oem}</div>
+                        <div style="font-size:11px; color:#10b981; font-weight:600; margin-top:2px;">${marketShare}% Market Share</div>
+                    </div>
+                    <div style="background:#fff; padding:12px; border-radius:10px; border:1px solid #e2e8f0;">
+                        <div style="font-size:10px; font-weight:700; color:#64748b; text-transform:uppercase; margin-bottom:4px;">Pipeline Leader</div>
+                        <div style="font-size:14px; font-weight:800; color:#0f172a;">${topQuotes.oem}</div>
+                        <div style="font-size:11px; color:#3b82f6; font-weight:600; margin-top:2px;">${topQuotes.quotes} Active Quotes</div>
+                    </div>
+                </div>
+                <div style="margin-top:16px; padding:12px; background:linear-gradient(135deg, #eff6ff, #dbeafe); border-radius:10px; border:1px solid #bfdbfe;">
+                    <div style="display:flex; align-items:center; gap:10px;">
+                        <div style="width:32px; height:32px; background:#fff; border-radius:50%; display:flex; align-items:center; justify-content:center; box-shadow:0 2px 4px rgba(0,0,0,0.05);">
+                            <i class="fas fa-chart-line" style="color:#2563eb; font-size:14px;"></i>
+                        </div>
+                        <div>
+                            <div style="font-size:11px; font-weight:800; color:#1e40af; text-transform:uppercase; letter-spacing:0.02em;">Efficiency High-Point</div>
+                            <div style="font-size:13px; color:#1e3a8a; font-weight:600;">
+                                <strong>${topConv.oem}</strong> is your most efficient brand with a <strong>${topConvRate}%</strong> conversion rate.
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
     }
 
 
@@ -1385,7 +1572,7 @@ window.OmnisDashboardV6 = class OmnisDashboardV6 {
         const inner = document.getElementById('dash-modal-inner');
         if (inner) {
             inner.style.width = '98%';
-            inner.style.maxWidth = '1400px';
+            inner.style.maxWidth = '1700px';
             inner.style.height = '96%';
             inner.style.maxHeight = '96%';
             inner.style.border = 'none';
@@ -1411,39 +1598,95 @@ window.OmnisDashboardV6 = class OmnisDashboardV6 {
             const {
                 report_month, prev_month, report_year, dynamic_summary, ai_suggestions,
                 performance_table, sales_details, oem_summary,
-                shantui_report, hitachi_report, bobcat_report, customer_analysis
+                shantui_report, hitachi_report, bobcat_report, customer_analysis,
+                performance_mxg, performance_sp
             } = payload;
 
+            const lostSalesTotal = payload.lost_sales_total || 0;
+
+            const renderOEMTable = (title, data, accentColor) => {
+                if (!data || data.length === 0) return "";
+                return `
+                    <div style="font-weight:900; color:#0f172a; margin: 30px 0 15px 0; text-transform:uppercase; font-size:13px; border-left: 4px solid ${accentColor}; padding-left: 10px; letter-spacing: 0.05em;">${title}</div>
+                    <table class="mer-table">
+                        <thead>
+                            <tr>
+                                <th rowspan="2">OEM</th>
+                                <th colspan="2" style="text-align:center;">Targets</th>
+                                <th colspan="2" style="text-align:center;">${prev_month}</th>
+                                <th colspan="2" style="text-align:center; background:#e0f2fe; color:black;">${report_month}</th>
+                                <th colspan="2" style="text-align:center;">Year to Date</th>
+                                <th colspan="2" style="text-align:center;">Conversion %</th>
+                            </tr>
+                            <tr>
+                                <th>Quotes</th><th>Sales</th>
+                                <th>Quotes</th><th>Sales</th>
+                                <th style="background:#f0fafb; color:black;">Quotes</th><th style="background:#f0fafb; color:black;">Sales</th>
+                                <th>Quotes</th><th>Sales</th>
+                                <th>MTD</th><th>YTD</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${data.map(r => `
+                                <tr>
+                                    <td style="font-weight:700;">${r.oem}</td>
+                                    <td style="color:#94a3b8;">-</td><td style="color:#94a3b8;">-</td>
+                                    <td>${r.prev_q}</td><td>${r.prev_s}</td>
+                                    <td style="font-weight:800; background:#f0f9ff;">${r.curr_q}</td>
+                                    <td style="font-weight:800; background:#f0f9ff;">${r.curr_s}</td>
+                                    <td>${r.ytd_q}</td><td>${r.ytd_s}</td>
+                                    <td style="font-weight:800; color:#0369a1;">${r.conv_mtd}%</td>
+                                    <td style="font-weight:800; color:#0f172a;">${r.conv_ytd}%</td>
+                                </tr>
+                            `).join('')}
+                            <tr class="total-row" style="background:${accentColor} !important;">
+                                <td>TOTAL</td>
+                                <td>-</td><td>-</td>
+                                <td>${data.reduce((a, b) => a + b.prev_q, 0)}</td>
+                                <td>${data.reduce((a, b) => a + b.prev_s, 0)}</td>
+                                <td>${data.reduce((a, b) => a + b.curr_q, 0)}</td>
+                                <td>${data.reduce((a, b) => a + b.curr_s, 0)}</td>
+                                <td>${data.reduce((a, b) => a + b.ytd_q, 0)}</td>
+                                <td>${data.reduce((a, b) => a + b.ytd_s, 0)}</td>
+                                <td>-</td><td>-</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                `;
+            };
+
             let html = `
-                <div class="mer-report-container" style="font-family:'Inter', sans-serif; background:var(--page-bg); color:var(--text-dark);">
+                <div class="mer-report-container" style="font-family:'Inter', sans-serif; background:var(--page-bg); color:var(--text-dark); padding: 40px 20px; display: flex; flex-direction: column; align-items: center;">
                     
                     <style>
-                        .mer-page { background: var(--card-bg); padding: 40px; margin-bottom: 30px; box-shadow: 0 4px 20px rgba(0,0,0,0.2); border-radius:4px; min-height: 800px; display: none; border: 1px solid var(--card-border); }
-                        .mer-header { display: flex; justify-content: space-between; align-items: flex-end; border-bottom: 2px solid var(--glass-border); padding-bottom: 20px; margin-bottom: 30px; }
-                        .mer-title { font-size: 24px; font-weight: 950; color: #fff; letter-spacing: -0.02em; }
-                        .mer-subtitle { font-size: 14px; color: var(--text-muted); font-weight: 600; text-transform: uppercase; margin-top: 4px; }
+                        .mer-page { background: white; padding: 40px; margin-bottom: 30px; box-shadow: 0 4px 20px rgba(0,0,0,0.08); border-radius:4px; min-height: 800px; display: none; border: 1px solid #e2e8f0; width: 100%; max-width: 1600px; }
+                        .mer-header { display: flex; justify-content: space-between; align-items: flex-end; border-bottom: 2px solid #e2e8f0; padding-bottom: 20px; margin-bottom: 30px; }
+                        .mer-title { font-size: 24px; font-weight: 950; color: #0f172a; letter-spacing: -0.02em; }
+                        .mer-subtitle { font-size: 14px; color: #64748b; font-weight: 600; text-transform: uppercase; margin-top: 4px; }
                         
-                        .mer-table { width: 100%; border-collapse: collapse; margin-bottom: 20px; font-size: 13px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); border-radius: 4px; overflow: hidden; }
-                        .mer-table th { background: rgba(128, 0, 0, 0.4); padding: 14px 12px; text-align: left; font-weight: 850; color: white; border: 1px solid var(--glass-border); text-transform: uppercase; letter-spacing: 0.05em; font-size: 14px; }
-                        .mer-table td { padding: 10px 12px; border: 1px solid var(--glass-border); color: #f8fafc; }
-                        .mer-table tr:nth-child(even) { background: rgba(255, 255, 255, 0.02); }
-                        .mer-table .total-row td { background: var(--accent-gradient) !important; color: white; font-weight: 900; font-size: 16px; padding: 14px 12px; }
+                        .mer-table { width: 100%; border-collapse: collapse; margin-bottom: 20px; font-size: 13px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); border-radius: 4px; overflow: hidden; }
+                        .mer-table th { background: rgba(128, 0, 0, 0.85); padding: 14px 12px; text-align: left; font-weight: 850; color: white; border: 1px solid rgba(128,0,0,0.6); text-transform: uppercase; letter-spacing: 0.05em; font-size: 14px; }
+                        .mer-table td { padding: 10px 12px; border: 1px solid #e2e8f0; color: #1e293b; }
+                        .mer-table tr:nth-child(even) { background: #f8fafc; }
+                        .mer-table .total-row td { background: #7f1d1d !important; color: white; font-weight: 900; font-size: 16px; padding: 14px 12px; }
                         
-                        .brand-box { padding: 12px 20px; border-radius: 4px; font-weight: 900; display: inline-flex; align-items: center; gap: 10px; margin-bottom: 15px; background: rgba(128, 0, 0, 0.1); color: #fff; border: 1px solid var(--glass-border); }
+                        .brand-box { padding: 12px 20px; border-radius: 4px; font-weight: 900; display: inline-flex; align-items: center; gap: 10px; margin-bottom: 15px; background: rgba(128, 0, 0, 0.08); color: #0f172a; border: 1px solid #e2e8f0; }
                         .highlight-red { color: #dc2626; font-weight: 800; }
                         
                         @media print {
+                            * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
                             body > *:not(#dash-generic-modal) { display: none !important; }
                             #dash-generic-modal { display: block !important; position: absolute !important; top: 0 !important; left: 0 !important; width: 100% !important; background: white !important; backdrop-filter: none !important; height: auto !important; }
                             #dash-modal-inner { width: 100% !important; max-width: none !important; max-height: none !important; border-radius: 0 !important; box-shadow: none !important; margin: 0 !important; border: none !important; }
                             #dash-modal-inner > div:first-child { display: none !important; }
                             #dash-generic-body { padding: 0 !important; overflow: visible !important; }
-                            .mer-report-container { padding: 20px !important; }
-                            .mer-page { display: block !important; margin: 0; padding: 0; box-shadow: none !important; border-radius: 0 !important; min-height: auto; page-break-after: always; border: none !important; }
-                            .mer-table { border-collapse: collapse !important; border: 2px solid black !important; width: 100% !important; margin-top: 20px !important; }
-                            .mer-table th, .mer-table td { border: 1px solid black !important; font-size: 10px !important; padding: 6px 8px !important; background: transparent !important; color: black !important; }
-                            .mer-title { border-bottom: 2px solid black !important; }
-                            .mer-header { border-bottom: 1px solid black !important; margin-bottom: 20px !important; }
+                            .mer-report-container { padding: 0 !important; display: block !important; background: white !important; }
+                            .mer-page { display: block !important; margin: 0; padding: 40px !important; box-shadow: none !important; border-radius: 0 !important; min-height: auto; page-break-after: always; border: none !important; width: 100% !important; max-width: none !important; }
+                            .mer-table { border-collapse: collapse !important; width: 100% !important; margin-top: 20px !important; border: 1px solid #000 !important; }
+                            .mer-table th { background: #7f1d1d !important; color: white !important; border: 1px solid #000 !important; -webkit-print-color-adjust: exact; }
+                            .mer-table td { border: 1px solid #000 !important; font-size: 11px !important; }
+                            .mer-table tr:nth-child(even) { background: #f8fafc !important; -webkit-print-color-adjust: exact; }
+                            .mer-table .total-row td { background: #7f1d1d !important; color: white !important; -webkit-print-color-adjust: exact; }
                             .no-print { display: none !important; }
                         }
                     </style>
@@ -1486,50 +1729,8 @@ window.OmnisDashboardV6 = class OmnisDashboardV6 {
                             </div>
                         </div>
 
-                        <table class="mer-table">
-                            <thead>
-                                <tr>
-                                    <th rowspan="2">OEM</th>
-                                    <th colspan="2" style="text-align:center;">Targets</th>
-                                    <th colspan="2" style="text-align:center;">${prev_month}</th>
-                                    <th colspan="2" style="text-align:center; background:#e0f2fe; color:black;">${report_month}</th>
-                                    <th colspan="2" style="text-align:center;">Year to Date</th>
-                                    <th colspan="2" style="text-align:center;">Conversion %</th>
-                                </tr>
-                                <tr>
-                                    <th>Quotes</th><th>Sales</th>
-                                    <th>Quotes</th><th>Sales</th>
-                                    <th style="background:#f0fafb; color:black;">Quotes</th><th style="background:#f0fafb; color:black;">Sales</th>
-                                    <th>Quotes</th><th>Sales</th>
-                                    <th>MTD</th><th>YTD</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                ${performance_table.map(r => `
-                                    <tr>
-                                        <td style="font-weight:700;">${r.oem}</td>
-                                        <td style="color:#94a3b8;">-</td><td style="color:#94a3b8;">-</td>
-                                        <td>${r.prev_q}</td><td>${r.prev_s}</td>
-                                        <td style="font-weight:800; background:#f0f9ff;">${r.curr_q}</td>
-                                        <td style="font-weight:800; background:#f0f9ff;">${r.curr_s}</td>
-                                        <td>${r.ytd_q}</td><td>${r.ytd_s}</td>
-                                        <td style="font-weight:800; color:#0369a1;">${r.conv_mtd}%</td>
-                                        <td style="font-weight:800; color:#0f172a;">${r.conv_ytd}%</td>
-                                    </tr>
-                                `).join('')}
-                                <tr class="total-row">
-                                    <td>TOTAL</td>
-                                    <td>-</td><td>-</td>
-                                    <td>${performance_table.reduce((a, b) => a + b.prev_q, 0)}</td>
-                                    <td>${performance_table.reduce((a, b) => a + b.prev_s, 0)}</td>
-                                    <td>${performance_table.reduce((a, b) => a + b.curr_q, 0)}</td>
-                                    <td>${performance_table.reduce((a, b) => a + b.curr_s, 0)}</td>
-                                    <td>${performance_table.reduce((a, b) => a + b.ytd_q, 0)}</td>
-                                    <td>${performance_table.reduce((a, b) => a + b.ytd_s, 0)}</td>
-                                    <td>-</td><td>-</td>
-                                </tr>
-                            </tbody>
-                        </table>
+                        ${performance_mxg && performance_mxg.length > 0 ? renderOEMTable("Machinery Exchange Performance", performance_mxg, "#7f1d1d") : ""}
+                        ${performance_sp && performance_sp.length > 0 ? renderOEMTable("Sinopower Performance", performance_sp, "#0369a1") : ""}
                     </div>
 
                     <!-- PAGE 3: SALES DETAILS -->
@@ -1625,27 +1826,55 @@ window.OmnisDashboardV6 = class OmnisDashboardV6 {
                                         </tr>
                                     </tbody>
                                 </table>
+                                <table style="width:100%; border-collapse:collapse; margin-top:10px;">
+                                    <tbody>
+                                        <tr>
+                                            <td style="padding:8px; background:#f1f5f9; font-weight:700; text-align:left; font-size:13px; color:#0f172a; border-radius:4px;">Lost Sales</td>
+                                            <td style="width:60px; padding:8px; font-weight:700; font-size:13px; color:#0f172a; text-align:right;">${lostSalesTotal}</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
                             </div>
                         </div>
                     </div>
 
-                    <!-- BRAND PAGES (SHANTUI, HITACHI, BOBCAT) -->
-                    ${[{ name: 'Shantui', data: shantui_report }, { name: 'Hitachi', data: hitachi_report }, { name: 'Bobcat', data: bobcat_report }].map(brand => `
+                    <!-- BRAND PAGES (DYNAMIC) -->
+                    ${(payload.brand_pages || [{ name: 'Shantui', data: shantui_report }, { name: 'Hitachi', data: hitachi_report }, { name: 'Bobcat', data: bobcat_report }]).map(brand => `
                         <div class="mer-page">
                             <div class="mer-header">
                                 <div class="mer-title">${(brand.name || 'OEM').toUpperCase()} REPORT</div>
                                 <div style="text-align:right;"><div class="mer-subtitle">MONTHLY PERFORMANCE</div></div>
                             </div>
                             <table class="mer-table">
-                                <thead><tr><th>Product Category</th><th>Model</th><th>Quotes</th><th>Orders</th></tr></thead>
+                                <thead>
+                                    <tr>
+                                        <th rowspan="2">Product Category</th>
+                                        <th rowspan="2">Model</th>
+                                        <th colspan="2" style="text-align:center; background:rgba(0,0,0,0.1);">${report_month}</th>
+                                        <th colspan="2" style="text-align:center;">Year to Date</th>
+                                    </tr>
+                                    <tr>
+                                        <th>Quotes</th><th>Orders</th>
+                                        <th>Quotes</th><th>Orders</th>
+                                    </tr>
+                                </thead>
                                 <tbody>
                                     ${brand.data.map(d => `
-                                        <tr><td>${d.category}</td><td>${d.model}</td><td style="text-align:center;">${d.quotes}</td><td style="text-align:center; font-weight:800;">${d.orders}</td></tr>
+                                        <tr>
+                                            <td>${d.category}</td>
+                                            <td>${d.model}</td>
+                                            <td style="text-align:center;">${d.quotes}</td>
+                                            <td style="text-align:center; font-weight:800;">${d.orders}</td>
+                                            <td style="text-align:center; color:#64748b;">${d.ytd_q}</td>
+                                            <td style="text-align:center; color:#64748b;">${d.ytd_s}</td>
+                                        </tr>
                                     `).join('')}
                                     <tr class="total-row">
                                         <td>TOTAL</td><td></td>
                                         <td style="text-align:center;">${brand.data.reduce((a, b) => a + b.quotes, 0)}</td>
                                         <td style="text-align:center;">${brand.data.reduce((a, b) => a + b.orders, 0)}</td>
+                                        <td style="text-align:center;">${brand.data.reduce((a, b) => a + b.ytd_q, 0)}</td>
+                                        <td style="text-align:center;">${brand.data.reduce((a, b) => a + b.ytd_s, 0)}</td>
                                     </tr>
                                 </tbody>
                             </table>
@@ -1723,10 +1952,464 @@ window.OmnisDashboardV6 = class OmnisDashboardV6 {
             btnNext.style.opacity = (newIdx === pages.length - 1) ? '0.4' : '1';
             btnNext.style.pointerEvents = (newIdx === pages.length - 1) ? 'none' : 'auto';
         }
+    }
 
-        // Scroll back to top
-        const container = document.getElementById('dash-generic-body');
-        if (container) container.scrollTop = 0;
+    // --- COMMAND CENTER: FOLLOW-UP REMINDERS ---
+
+    async openCommandCenter(isFullView = false) {
+        if (!isFullView) {
+            this.openListModal("Quotation Command Center", `<div style="padding:40px; text-align:center;"><i class="fas fa-spinner fa-spin" style="font-size:24px; color:#4f46e5;"></i><div style="margin-top:15px; font-weight:600; color:#64748b;">Scanning for follow-ups...</div></div>`, "1200px");
+        } else {
+            const fullCont = document.getElementById('command-center-full-container');
+            if (fullCont) {
+                fullCont.innerHTML = `<div style="padding:100px; text-align:center;"><i class="fas fa-spinner fa-spin" style="font-size:32px; color:#4f46e5;"></i><div style="margin-top:20px; font-weight:600; color:#64748b; font-size:18px;">Scanning systems for follow-ups...</div></div>`;
+            }
+        }
+
+        try {
+            const res = await window.callFrappeSequenced(this.sys.baseUrl, "powerstar_salestrack.omnis_dashboard.get_command_center_stats", {});
+            const payload = res.message || res;
+            
+            if ((!payload.today || payload.today.length === 0) && (!payload.tomorrow || payload.tomorrow.length === 0)) {
+                const emptyHtml = `<div style="padding:100px 60px; text-align:center; color:#94a3b8;"><i class="fas fa-check-circle" style="font-size:64px; color:#22c55e; margin-bottom:20px;"></i><h3 style="font-size:24px; color:#0f172a; margin-bottom:10px;">All Clear!</h3><div style="font-size:16px;">No quotations are due for follow-up today or tomorrow.</div></div>`;
+                if (!isFullView) {
+                    this.openListModal("Quotation Command Center", emptyHtml, "1200px");
+                } else {
+                    const fullCont = document.getElementById('command-center-full-container');
+                    if (fullCont) fullCont.innerHTML = emptyHtml;
+                }
+                return;
+            }
+
+            this.renderCommandCenter(payload, isFullView);
+        } catch (e) {
+            console.error("Command Center Error:", e);
+            if (!isFullView) {
+                this.openListModal("Command Center Error", `<div style="padding:20px; color:#ef4444;">${e.message || "Failed to load command center"}</div>`);
+            } else {
+                const fullCont = document.getElementById('command-center-full-container');
+                if (fullCont) fullCont.innerHTML = `<div style="padding:60px; text-align:center; color:#ef4444;"><i class="fas fa-exclamation-triangle" style="font-size:48px; margin-bottom:20px;"></i><div style="font-size:18px; font-weight:800;">Command Center Error</div><div style="margin-top:10px;">${e.message || "Failed to load follow-up data"}</div></div>`;
+            }
+        }
+    }
+
+    renderCommandCenter(data, isFullView = false) {
+        const renderSection = (title, items, accentColor) => {
+            if (!items || items.length === 0) {
+                return `<div style="padding:40px; text-align:center; color:#94a3b8; border:2px dashed #e2e8f0; border-radius:16px; margin-bottom:30px; background:white;">No follow-ups due.</div>`;
+            }
+
+            return `
+                <div style="margin-bottom:40px;">
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
+                        <div style="font-size:15px; font-weight:900; color:#0f172a; text-transform:uppercase; letter-spacing:0.08em; border-left:5px solid ${accentColor}; padding-left:15px; display:flex; align-items:center; gap:10px;">
+                           ${title} <span style="background:${accentColor}; color:white; font-size:11px; padding:2px 10px; border-radius:99px;">${items.length}</span>
+                        </div>
+                    </div>
+                    <div style="display:grid; grid-template-columns: repeat(auto-fill, minmax(380px, 1fr)); gap:20px;">
+                        ${items.map(q => {
+                            const isSent = q.reminder_sent;
+                            const stage = q.followup_stage || 1;
+                            return `
+                                <div class="cmd-card" style="display:flex; flex-direction:column; gap:16px; transition:all 0.3s; position:relative; padding:24px; border-radius:16px; border: 1px solid ${isSent ? 'rgba(16, 185, 129, 0.3)' : 'rgba(226, 232, 240, 0.5)'}; background: ${isSent ? 'rgba(16, 185, 129, 0.04)' : 'transparent'};">
+                                    ${isSent ? `<div style="position:absolute; top:20px; right:20px; color:#059669; font-size:10px; font-weight:900; padding:4px 12px; border-radius:99px; text-transform:uppercase; letter-spacing:0.05em; background:rgba(5, 150, 105, 0.1);">SENT TODAY</div>` : ''}
+                                    <div style="display:flex; justify-content:space-between; align-items:start;">
+                                        <div style="flex:1;">
+                                            <div style="font-size:16px; font-weight:850; color:#0f172a; margin-bottom:4px;">${q.customer_name}</div>
+                                            <div style="font-size:11px; color:#64748b; font-weight:600; display:flex; align-items:center; gap:6px;">
+                                                <span style="color:#1e40af; font-weight:800;">${q.name}</span> &bull; <span>${q.created_on}</span>
+                                            </div>
+                                        </div>
+                                        <div style="text-align:right;">
+                                            <div style="font-size:10px; font-weight:900; color:#1e40af; background:rgba(30, 64, 175, 0.05); padding:4px 10px; border-radius:6px; display:inline-block; text-transform:uppercase; letter-spacing:0.02em;">STAGE ${stage}</div>
+                                        </div>
+                                    </div>
+                                    <div style="font-size:13px; color:#475569; padding:0; font-style:normal; line-height:1.5;">
+                                        <span style="font-weight:700; color:#94a3b8; font-size:11px; text-transform:uppercase; display:block; margin-bottom:4px;">Quoted Items</span>
+                                        ${q.items_summary || 'No items listed'}
+                                    </div>
+                                    <div style="display:flex; align-items:center; gap:12px; margin-top:4px;">
+                                        <div style="width:32px; height:32px; border-radius:8px; background:#f1f5f9; display:flex; align-items:center; justify-content:center; font-size:14px;">&#x1F464;</div>
+                                        <div style="flex:1;">
+                                            <div style="font-size:12px; font-weight:800; color:#1e293b;">${q.custom_sales_person || 'No Rep'}</div>
+                                            <div style="font-size:11px; color:#64748b; font-weight:600;">${q.mobile_no}</div>
+                                        </div>
+                                    </div>
+                                    <div style="margin-top:8px; display:flex; gap:10px;">
+                                        <button onclick="window.salestrack.previewManualFollowup(${JSON.stringify(q).replace(/\"/g, '&quot;')}, event)" 
+                                                class="cmd-btn-whatsapp"
+                                                style="flex:1; padding:12px; background:${isSent ? '#059669' : '#0f172a'}; color:white; border:none; border-radius:12px; font-size:12px; font-weight:850; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:8px; transition:all 0.2s;">
+                                            <i class="fab fa-whatsapp" style="font-size:16px;"></i> ${isSent ? 'RESEND' : 'SEND REMINDER'}
+                                        </button>
+                                        <button onclick="window.salestrack.openDoc('Quotation', '${q.name}')"
+                                                style="padding:12px 18px; background:transparent; color:#64748b; border:1px solid #e2e8f0; border-radius:12px; font-size:12px; font-weight:800; cursor:pointer; transition:all 0.2s;">
+                                            VIEW
+                                        </button>
+                                        <button onclick="window.salestrack.logFollowupFeedback(${JSON.stringify(q).replace(/\"/g, '&quot;')})"
+                                                style="padding:12px 14px; background:transparent; color:#4f46e5; border:1px solid rgba(79,70,229,0.3); border-radius:12px; font-size:11px; font-weight:800; cursor:pointer; transition:all 0.2s; white-space:nowrap;"
+                                                title="Log follow-up feedback">
+                                            <i class="fas fa-clipboard-check"></i> LOG
+                                        </button>
+                                    </div>
+                                </div>
+                            `;
+                        }).join('')}
+                    </div>
+                </div>
+            `;
+        };
+
+        const html = `
+            <div class="command-center-container" style="padding:10px; font-family:'Inter', sans-serif;">
+                <style>
+                    .cmd-card:hover { background: rgba(255,255,255,0.7) !important; border-color:#cbd5e1 !important; transform:translateY(-2px); }
+                    .cmd-btn-whatsapp:hover { opacity: 0.9; transform:translateY(-1px); }
+                    .cmd-btn-whatsapp:active { transform:translateY(0); }
+                </style>
+                
+                <div style="display:flex; align-items:center; gap:20px; margin-bottom:40px; padding:10px 0;">
+                    <div style="width:50px; height:50px; border-radius:12px; background:#0f172a; display:flex; align-items:center; justify-content:center; font-size:24px; color:white;">
+                        <i class="fas fa-satellite-dish"></i>
+                    </div>
+                    <div>
+                        <div style="font-size:22px; font-weight:900; color:#0f172a; letter-spacing:-0.02em;">Tactical Follow-up Command</div>
+                        <div style="font-size:13px; color:#64748b; font-weight:600;">Real-time dispatch control for high-priority quotation reminders.</div>
+                    </div>
+                    <div style="margin-left:auto; text-align:right;">
+                        <div style="font-size:11px; font-weight:800; color:#94a3b8; text-transform:uppercase; letter-spacing:0.1em; margin-bottom:2px;">Server Telemetry</div>
+                        <div style="font-size:15px; font-weight:850; color:#1e293b;">${data.server_time}</div>
+                    </div>
+                </div>
+
+                ${renderSection("Overdue / Due Today", data.today, "#ef4444")}
+                ${renderSection("Upcoming (Tomorrow)", data.tomorrow, "#2563eb")}
+            </div>
+        `;
+
+        if (!isFullView) {
+            this.openListModal("Quotation Command Center", html, "1200px");
+        } else {
+            const fullCont = document.getElementById('command-center-full-container');
+            if (fullCont) fullCont.innerHTML = html;
+        }
+    }
+
+    previewManualFollowup(q, event) {
+        const stage = q.followup_stage || 1;
+        const itemsList = (q.items_summary || '').split(',').map(i => `• ${i.trim()}`).join('\n');
+        const frappeUrl = `${this.sys.baseUrl}/app/quotation/${encodeURIComponent(q.name)}?fu=1`;
+        
+        const messageBody = [
+            `📋 *Quotation Follow-up Reminder*`,
+            ``,
+            `Quote: *${q.name}*`,
+            `Created On: *${q.created_on}*`,
+            `Customer: *${q.customer_name}*`,
+            `Follow-up Stage: *Stage ${stage}*`,
+            ``,
+            `Items Quoted:`,
+            itemsList,
+            ``,
+            `Please contact the customer regarding this quotation.`,
+            ``,
+            `💬 *Reply directly to this message* with your feedback and it will be logged automatically.`,
+            ``,
+            `Or open the full form here:`,
+            frappeUrl
+        ].join('\n');
+
+        const html = `
+            <div style="padding:25px; font-family:'Inter', sans-serif;">
+                <div style="background:#f0fdf4; border:1px solid #bbf7d0; border-radius:12px; padding:20px; margin-bottom:20px;">
+                    <div style="font-size:12px; font-weight:800; color:#166534; text-transform:uppercase; letter-spacing:0.05em; margin-bottom:10px; display:flex; align-items:center; gap:6px;">
+                        <i class="fab fa-whatsapp" style="font-size:16px;"></i> WhatsApp Message Preview
+                    </div>
+                    <div style="background:white; border-radius:8px; padding:15px; font-size:13px; line-height:1.6; color:#1e293b; white-space:pre-wrap; border:1px solid #e2e8f0; font-family:monospace;">${messageBody}</div>
+                </div>
+                
+                <div style="display:flex; align-items:center; gap:12px; background:#f8fafc; padding:15px; border-radius:10px; margin-bottom:20px; border:1px solid #f1f5f9;">
+                    <div style="width:40px; height:40px; border-radius:50%; background:#e2e8f0; display:flex; align-items:center; justify-content:center; font-size:18px;">&#x1F464;</div>
+                    <div style="flex:1;">
+                        <div style="font-size:13px; font-weight:800; color:#0f172a;">To: ${q.custom_sales_person || 'No Rep'}</div>
+                        <div style="font-size:12px; color:#64748b; font-weight:600;">${q.mobile_no}</div>
+                    </div>
+                </div>
+
+                <div style="display:flex; gap:12px;">
+                    <button id="btn-confirm-send-reminder" 
+                            style="flex:2; padding:14px; background:#25d366; color:white; border:none; border-radius:10px; font-size:14px; font-weight:800; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:8px; box-shadow:0 10px 15px -3px rgba(37, 211, 102, 0.3);">
+                        <i class="fas fa-paper-plane"></i> CONFIRM & SEND
+                    </button>
+                    <button onclick="document.getElementById('omnis-list-modal').classList.add('hidden')" 
+                            style="flex:1; padding:14px; background:#f1f5f9; color:#475569; border:none; border-radius:10px; font-size:14px; font-weight:800; cursor:pointer;">
+                        CANCEL
+                    </button>
+                </div>
+            </div>
+        `;
+
+        this.openListModal("Preview Follow-up Reminder", html, "600px");
+
+        const confirmBtn = document.getElementById('btn-confirm-send-reminder');
+        if (confirmBtn) {
+            confirmBtn.onclick = async () => {
+                confirmBtn.disabled = true;
+                confirmBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> SENDING...';
+                
+                await this.sendManualFollowupReminders(q, messageBody, event);
+                
+                // Close modal after short delay
+                setTimeout(() => {
+                    const m = document.getElementById('dash-generic-modal');
+                    if (m) {
+                        m.style.display = 'none';
+                        const b = document.getElementById('dash-generic-body');
+                        if (b) b.innerHTML = '';
+                    }
+                    // Refresh command center
+                    const isFull = document.getElementById('view-command-center') && !document.getElementById('view-command-center').classList.contains('hidden');
+                    this.openCommandCenter(isFull);
+                }, 1500);
+            };
+        }
+    }
+
+    async sendManualFollowupReminders(q, messageBody, event) {
+        // This is now the "Silent" send called from confirmation or direct
+        const btn = event ? event.currentTarget : null;
+        const originalHtml = btn ? btn.innerHTML : '';
+        
+        if (btn) {
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> SENDING...';
+            btn.disabled = true;
+        }
+
+        try {
+            if (!q.mobile_no) {
+                throw new Error("No mobile number found for this Sales Person.");
+            }
+            if (!window.electron || !window.electron.invoke) {
+                throw new Error("Electron context not found. Cannot send local WhatsApp message.");
+            }
+
+            // 1. Send via local built-in WhatsApp client
+            const res = await window.electron.invoke('whatsapp:send-msg', { to: q.mobile_no, body: messageBody });
+            if (!res.ok) {
+                throw new Error(res.error || "Failed to send WhatsApp message via local client");
+            }
+
+            // 1b. Register pending reply so the rep can respond directly on WhatsApp
+            // Non-fatal: only works after a full app restart when the IPC handler is loaded
+            try {
+                const followupType = q.first_followup_done ? 'second' : 'first';
+                const daysPassed = q.days_old || 0;
+                const isOverdue = followupType === 'first' ? daysPassed > 3 : daysPassed > 7;
+                const overdueDays = isOverdue ? Math.max(0, daysPassed - (followupType === 'first' ? 3 : 7)) : 0;
+                await window.electron.invoke('whatsapp:register-pending-reply', {
+                    phone: q.mobile_no,
+                    quoteName: q.name,
+                    followupType,
+                    isOverdue,
+                    overdueDays,
+                    frappeBaseUrl: this.sys.baseUrl
+                });
+            } catch (replyRegErr) {
+                console.warn('[WhatsApp] Could not register pending reply (requires app restart):', replyRegErr.message);
+            }
+
+
+            // 2. Mark as sent on backend to log comment and bump stage
+            const backendRes = await window.callFrappeSequenced(this.sys.baseUrl, "powerstar_salestrack.omnis_dashboard.mark_report_state_sent", { quote_name: q.name });
+            const payload = backendRes.message || backendRes;
+            
+            if (payload.ok) {
+                this.showToast(payload.message || "Reminder sent successfully via Local WhatsApp!", "success");
+                if (btn) {
+                    btn.innerHTML = '<i class="fas fa-check"></i> SENT';
+                    btn.style.background = '#059669';
+                }
+            } else {
+                throw new Error(payload.error || "Message sent, but failed to update backend state.");
+            }
+        } catch (error) {
+            console.error(error);
+            this.showToast("WhatsApp Reminder Error: " + error.toString(), "error");
+            if (btn) {
+                btn.innerHTML = '<i class="fas fa-times"></i> FAILED';
+                btn.style.background = '#dc2626';
+                setTimeout(() => {
+                    btn.innerHTML = originalHtml;
+                    btn.disabled = false;
+                    btn.style.background = '';
+                }, 3000);
+            }
+        }
+    }
+
+    logFollowupFeedback(q) {
+        const daysPassed = q.days_old || 0;
+        const firstDone = q.first_followup_done || false;
+        const secondDone = q.second_followup_done || false;
+        const quoteName = q.name;
+
+        // Determine which follow-up stage applies
+        let followupType = null;
+        let isOverdue = false;
+        let expectedDay = 3;
+
+        if (!firstDone) {
+            followupType = 'first';
+            isOverdue = daysPassed > 3;
+            expectedDay = 3;
+        } else if (firstDone && !secondDone) {
+            followupType = 'second';
+            isOverdue = daysPassed > 7;
+            expectedDay = 7;
+        }
+
+        if (!followupType) {
+            this.showToast('All follow-up stages are already complete for this quotation.', 'info');
+            return;
+        }
+
+        const stageName = followupType === 'first' ? '1st Follow-Up' : '2nd Follow-Up';
+        const overdueLabel = isOverdue ? ` <span style="color:#ef4444;font-size:10px;font-weight:900;padding:2px 8px;background:rgba(239,68,68,0.1);border-radius:99px;">OVERDUE</span>` : '';
+        const frappeUrl = `${this.sys.baseUrl}/app/quotation/${encodeURIComponent(quoteName)}`;
+
+        const html = `
+            <div style="padding:24px; font-family:'Inter', sans-serif;">
+                <!-- Header -->
+                <div style="display:flex; align-items:center; gap:12px; margin-bottom:20px; padding-bottom:16px; border-bottom:1px solid #f1f5f9;">
+                    <div style="width:40px; height:40px; border-radius:10px; background:#4f46e5; display:flex; align-items:center; justify-content:center; color:white; font-size:18px;">
+                        <i class="fas fa-clipboard-check"></i>
+                    </div>
+                    <div>
+                        <div style="font-size:14px; font-weight:900; color:#0f172a;">Log Follow-Up Feedback ${overdueLabel}</div>
+                        <div style="font-size:12px; color:#64748b; font-weight:600;">${quoteName} &bull; ${q.customer_name}</div>
+                    </div>
+                </div>
+
+                <!-- Open in Frappe shortcut -->
+                <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:10px; padding:12px 16px; margin-bottom:20px; display:flex; align-items:center; justify-content:space-between; gap:12px;">
+                    <div style="font-size:12px; color:#64748b; font-weight:600;">Want the full Frappe experience?</div>
+                    <button onclick="window.open('${frappeUrl}', '_blank')"
+                            style="padding:8px 16px; background:#4f46e5; color:white; border:none; border-radius:8px; font-size:12px; font-weight:800; cursor:pointer; display:flex; align-items:center; gap:6px; white-space:nowrap;">
+                        <i class="fas fa-external-link-alt"></i> Open in Frappe
+                    </button>
+                </div>
+
+                <!-- Feedback area -->
+                <div style="margin-bottom:16px;">
+                    <label style="font-size:11px; font-weight:800; color:#64748b; text-transform:uppercase; letter-spacing:0.05em; display:block; margin-bottom:6px;">
+                        ${stageName} Feedback <span style="color:#ef4444;">*</span>
+                    </label>
+                    <textarea id="fu-feedback-text"
+                              placeholder="e.g. Customer is interested, wants a revised quote. Following up next week..."
+                              style="width:100%; min-height:100px; padding:12px; border:1px solid #e2e8f0; border-radius:10px; font-size:13px; font-family:'Inter', sans-serif; resize:vertical; line-height:1.6; box-sizing:border-box; outline:none; transition:border 0.2s;"
+                              onfocus="this.style.borderColor='#4f46e5'" onblur="this.style.borderColor='#e2e8f0'"></textarea>
+                </div>
+
+                ${isOverdue ? `
+                <div style="margin-bottom:20px;">
+                    <label style="font-size:11px; font-weight:800; color:#64748b; text-transform:uppercase; letter-spacing:0.05em; display:block; margin-bottom:6px;">
+                        Reason for Delay <span style="color:#ef4444;">*</span>
+                    </label>
+                    <textarea id="fu-delay-reason"
+                              placeholder="Why was this follow-up not done on Day ${expectedDay}?"
+                              style="width:100%; min-height:70px; padding:12px; border:1px solid #fca5a5; border-radius:10px; font-size:13px; font-family:'Inter', sans-serif; resize:vertical; line-height:1.6; box-sizing:border-box; outline:none; transition:border 0.2s; background:rgba(254,242,242,0.5);"
+                              onfocus="this.style.borderColor='#ef4444'" onblur="this.style.borderColor='#fca5a5'"></textarea>
+                </div>` : ''}
+
+                <!-- Action buttons -->
+                <div style="display:flex; gap:10px; margin-top:4px;">
+                    <button id="btn-submit-fu-feedback"
+                            style="flex:2; padding:13px; background:#4f46e5; color:white; border:none; border-radius:10px; font-size:13px; font-weight:800; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:8px;">
+                        <i class="fas fa-check"></i> SUBMIT FEEDBACK
+                    </button>
+                    <button onclick="document.getElementById('dash-generic-modal').style.display='none'"
+                            style="flex:1; padding:13px; background:#f1f5f9; color:#475569; border:none; border-radius:10px; font-size:13px; font-weight:800; cursor:pointer;">
+                        CANCEL
+                    </button>
+                </div>
+                <div id="fu-submit-error" style="margin-top:10px; font-size:12px; color:#ef4444; display:none;"></div>
+            </div>
+        `;
+
+        this.openListModal(`Log Follow-Up: ${quoteName}`, html, '560px');
+
+        const submitBtn = document.getElementById('btn-submit-fu-feedback');
+        if (submitBtn) {
+            submitBtn.onclick = async () => {
+                const feedback = (document.getElementById('fu-feedback-text') || {}).value?.trim();
+                const delayReason = (document.getElementById('fu-delay-reason') || {}).value?.trim();
+                const errEl = document.getElementById('fu-submit-error');
+
+                if (!feedback) {
+                    if (errEl) { errEl.textContent = 'Please enter the follow-up feedback.'; errEl.style.display = 'block'; }
+                    return;
+                }
+                if (isOverdue && !delayReason) {
+                    if (errEl) { errEl.textContent = 'Please explain the reason for the delay.'; errEl.style.display = 'block'; }
+                    return;
+                }
+                if (errEl) errEl.style.display = 'none';
+
+                submitBtn.disabled = true;
+                submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> SUBMITTING...';
+
+                try {
+                    const method = followupType === 'first'
+                        ? 'powerstar_salestrack.quotation_follow_up.handle_first_follow_up'
+                        : 'powerstar_salestrack.quotation_follow_up.handle_second_follow_up';
+
+                    const res = await window.callFrappeSequenced(this.sys.baseUrl, method, {
+                        quotation_name: quoteName,
+                        feedback,
+                        delay_reason: delayReason || '',
+                        overdue: isOverdue,
+                        overdue_days: isOverdue ? Math.max(0, daysPassed - expectedDay) : 0
+                    });
+
+                    const payload = res.message || res;
+                    if (payload && payload.exc) throw new Error(payload.exc);
+
+                    this.showToast(`${stageName} feedback logged successfully!`, 'success');
+
+                    // Close modal and refresh
+                    setTimeout(() => {
+                        const m = document.getElementById('dash-generic-modal');
+                        if (m) { m.style.display = 'none'; const b = document.getElementById('dash-generic-body'); if (b) b.innerHTML = ''; }
+                        const isFull = document.getElementById('view-command-center') && !document.getElementById('view-command-center').classList.contains('hidden');
+                        this.openCommandCenter(isFull);
+                    }, 800);
+                } catch (err) {
+                    console.error(err);
+                    submitBtn.disabled = false;
+                    submitBtn.innerHTML = '<i class="fas fa-check"></i> SUBMIT FEEDBACK';
+                    if (errEl) { errEl.textContent = 'Error: ' + (err.message || err.toString()); errEl.style.display = 'block'; }
+                }
+            };
+        }
+    }
+
+    showToast(msg, type = "info") {
+        if (window.omnisLog) window.omnisLog(`[Toast] ${msg}`, type);
+        // If there's a toast container, use it. Otherwise alert for now.
+        const toast = document.createElement('div');
+        toast.style.position = 'fixed';
+        toast.style.bottom = '20px';
+        toast.style.right = '20px';
+        toast.style.padding = '12px 24px';
+        toast.style.borderRadius = '8px';
+        toast.style.color = 'white';
+        toast.style.fontWeight = '700';
+        toast.style.fontSize = '13px';
+        toast.style.zIndex = '100000';
+        toast.style.boxShadow = '0 10px 15px -3px rgba(0,0,0,0.1)';
+        toast.style.background = type === 'success' ? '#10b981' : (type === 'error' ? '#ef4444' : '#3b82f6');
+        toast.textContent = msg;
+        document.body.appendChild(toast);
+        setTimeout(() => toast.remove(), 4000);
     }
 
     async downloadOEMReportPDF(oemName, periodLabel) {
@@ -1819,7 +2502,7 @@ window.OmnisDashboardV6 = class OmnisDashboardV6 {
         const inner = document.getElementById('dash-modal-inner');
         if (inner) {
             inner.style.width = '98%';
-            inner.style.maxWidth = '1400px';
+            inner.style.maxWidth = '1800px';
             inner.style.height = '96%';
             inner.style.maxHeight = '96%';
         }
@@ -1942,14 +2625,18 @@ window.OmnisDashboardV6 = class OmnisDashboardV6 {
                     .oem-tab-content.active { display: block; }
                     
                     .report-table { width: 100%; border-collapse: collapse; font-size: 11px; table-layout: auto; background: var(--card-bg); color: var(--text-dark); }
+                    .report-table tbody tr:nth-child(even) { background: #f8fafc; }
+                    .report-table tbody tr:nth-child(odd) { background: #ffffff; }
+                    .report-table tbody tr:hover { background: #f1f5f9; }
                     .report-table th, .report-table td { border: 1px solid var(--glass-border); padding: 8px 10px; text-align: center; }
                     .report-table th { background: rgba(255, 255, 255, 0.05); font-weight: 850; font-size: 10px; text-transform: uppercase; color: var(--text-muted); }
-                    .report-table .cat-col { text-align: left; background: rgba(255, 255, 255, 0.03); min-width: 140px; font-weight: 750; font-size: 11px; white-space: nowrap; color: #fff; }
+                    .report-table .cat-col { text-align: left; background: #f8fafc; min-width: 140px; font-weight: 750; font-size: 11px; white-space: nowrap; color: #1e293b; }
                     .report-table .month-hdr { background: #304a1a; color: #fff; font-style: italic; font-weight: 850; }
                     .report-table .ytd-hdr { background: #800000; color: #fff; font-weight: 850; }
                     .report-table .conv-hdr { background: #4a0000; color: #fff; font-weight: 850; }
-                    .report-table .total-row { background: var(--accent-gradient) !important; color: #fff !important; font-weight: 900; }
-                    .report-table .total-row td { color: #fff !important; background: var(--accent-gradient) !important; border: 1px solid var(--accent-maroon) !important; }
+                    .report-table .total-row { background: #f1f5f9; color: #0f172a; font-weight: 900; }
+                    .report-table .total-row td { font-size: 15px !important; padding: 12px 10px !important; }
+                    .report-table .total-row td:not(.cat-col) { color: #0f172a; background: #f1f5f9; border: 1px solid #cbd5e1; }
                     
                     .sub-section-title { 
                         background: #ff0000; color: #fff; padding: 8px 15px; 
@@ -2032,8 +2719,8 @@ window.OmnisDashboardV6 = class OmnisDashboardV6 {
                         </div>
                         <div class="sub-section-title">${(oemName || 'OEM').toUpperCase()} QUOTES AND SALES - MONTHLY REPORT (${(payload.period_label || 'YTD').toUpperCase()})</div>
                         
-                        <div style="display:flex; gap:20px; align-items: flex-start; flex-wrap: wrap; justify-content: center;">
-                            <div style="flex: 2; min-width: 600px;">
+                        <div style="display:flex; flex-direction: column; gap:20px;">
+                            <div style="width: 100%; overflow-x: auto; padding-bottom: 15px;">
                                 <table class="report-table">
                                     <thead>
                                         <tr>
@@ -2052,34 +2739,37 @@ window.OmnisDashboardV6 = class OmnisDashboardV6 {
             `;
 
             const categories = Object.keys(trend).sort();
-            let totalM1Q = 0, totalM1S = 0, totalM2Q = 0, totalM2S = 0, totalM3Q = 0, totalM3S = 0;
+            
+            // Initialize totals array for dynamic months
+            const monthTotals = months.map(() => ({ quotes: 0, sales: 0 }));
             let totalYTDQ = 0, totalYTDS = 0;
 
             categories.forEach(cat => {
                 const d = trend[cat];
-                const m1 = d.months[months[0]] || { quotes: 0, sales: 0 };
-                const m2 = d.months[months[1]] || { quotes: 0, sales: 0 };
-                const m3 = d.months[months[2]] || { quotes: 0, sales: 0 };
                 const ytd = d.ytd || { quotes: 0, sales: 0 };
+                
+                let rowTotal = ytd.quotes + ytd.sales;
 
-                totalM1Q += m1.quotes; totalM1S += m1.sales;
-                totalM2Q += m2.quotes; totalM2S += m2.sales;
-                totalM3Q += m3.quotes; totalM3S += m3.sales;
+                const monthHtml = months.map((m, idx) => {
+                    const mData = d.months[m] || { quotes: 0, sales: 0 };
+                    monthTotals[idx].quotes += mData.quotes;
+                    monthTotals[idx].sales += mData.sales;
+                    rowTotal += mData.quotes + mData.sales;
+                    return `<td>${mData.quotes || 0}</td><td>${mData.sales || 0}</td>`;
+                }).join('');
+
                 totalYTDQ += ytd.quotes; totalYTDS += ytd.sales;
 
-                // Check if row has any non-zero data
-                const rowTotal = m1.quotes + m1.sales + m2.quotes + m2.sales + m3.quotes + m3.sales + ytd.quotes + ytd.sales;
                 if (rowTotal === 0) return;
 
-                const mtdConv = m3.quotes > 0 ? Math.round((m3.sales / m3.quotes) * 100) : 0;
+                const lastMonthData = d.months[months[months.length - 1]] || { quotes: 0, sales: 0 };
+                const mtdConv = lastMonthData.quotes > 0 ? Math.round((lastMonthData.sales / lastMonthData.quotes) * 100) : 0;
                 const ytdConv = ytd.quotes > 0 ? Math.round((ytd.sales / ytd.quotes) * 100) : 0;
 
                 html += `
                     <tr>
                         <td class="cat-col">${cat}</td>
-                        <td>${m1.quotes || 0}</td><td>${m1.sales || 0}</td>
-                        <td>${m2.quotes || 0}</td><td>${m2.sales || 0}</td>
-                        <td>${m3.quotes || 0}</td><td>${m3.sales || 0}</td>
+                        ${monthHtml}
                         <td>${ytd.quotes || 0}</td>
                         <td>${ytd.sales || 0}</td>
                         <td>${mtdConv}%</td>
@@ -2089,15 +2779,16 @@ window.OmnisDashboardV6 = class OmnisDashboardV6 {
             });
 
             // Grand Totals
-            const mtdTotalConv = totalM3Q > 0 ? Math.round((totalM3S / totalM3Q) * 100) : 0;
+            const lastMonthTotal = monthTotals[monthTotals.length - 1] || { quotes: 0, sales: 0 };
+            const mtdTotalConv = lastMonthTotal.quotes > 0 ? Math.round((lastMonthTotal.sales / lastMonthTotal.quotes) * 100) : 0;
             const ytdTotalConv = totalYTDQ > 0 ? Math.round((totalYTDS / totalYTDQ) * 100) : 0;
+
+            const totalMonthHtml = monthTotals.map(mt => `<td>${mt.quotes}</td><td>${mt.sales}</td>`).join('');
 
             html += `
                                         <tr class="total-row">
                                             <td class="cat-col" style="background:#ff0000; color:#fff;">Total</td>
-                                            <td>${totalM1Q}</td><td>${totalM1S}</td>
-                                            <td>${totalM2Q}</td><td>${totalM2S}</td>
-                                            <td>${totalM3Q}</td><td>${totalM3S}</td>
+                                            ${totalMonthHtml}
                                             <td>${totalYTDQ}</td>
                                             <td>${totalYTDS}</td>
                                             <td>${mtdTotalConv}%</td>
@@ -2105,9 +2796,12 @@ window.OmnisDashboardV6 = class OmnisDashboardV6 {
                                         </tr>
                                     </tbody>
                                 </table>
+                            </div>
 
-                                <!-- Sales Breakdown Table -->
-                                <div style="margin-top:20px;">
+                            <div style="display:flex; gap:20px; align-items: flex-start; flex-wrap: wrap;">
+                                <div style="flex: 2; min-width: 500px;">
+                                    <!-- Sales Breakdown Table -->
+                                    <div>
                                     <div class="sub-section-title" style="width: fit-content; padding: 4px 20px;">${payload.period_label} - ${oemName} Sales Breakdown</div>
                                     <table class="report-table" style="text-align: left;">
                                         <thead>
@@ -2117,24 +2811,21 @@ window.OmnisDashboardV6 = class OmnisDashboardV6 {
                                                 <th>OEM</th>
                                                 <th>Model</th>
                                                 <th>Qty</th>
-                                                <th>Description</th>
                                             </tr>
                                         </thead>
                                         <tbody>
                                             ${salesBreakdown.length > 0 ? salesBreakdown.map(s => `
                                                 <tr>
                                                     <td style="text-align:left;">${s.customer || '-'}</td>
-                                                    <td>${s.order_date || '-'}</td>
+                                                    <td>${s.date || s.order_date || '-'}</td>
                                                     <td>${oemName}</td>
                                                     <td>${s.model || '-'}</td>
                                                     <td>${s.qty || 0}</td>
-                                                    <td style="text-align:left;">${s.description || '-'}</td>
                                                 </tr>
-                                            `).join('') : `<tr><td colspan="6">No sales recorded in this period.</td></tr>`}
+                                            `).join('') : `<tr><td colspan="5">No sales recorded in this period.</td></tr>`}
                                             <tr>
                                                 <td colspan="4" style="text-align:right; font-weight:700;">Total</td>
                                                 <td style="font-weight:700;">${salesBreakdown.reduce((acc, s) => acc + (parseFloat(s.qty) || 0), 0)}</td>
-                                                <td></td>
                                             </tr>
                                         </tbody>
                                     </table>
@@ -2153,14 +2844,14 @@ window.OmnisDashboardV6 = class OmnisDashboardV6 {
 
                             <!-- Right Column: Customer Analysis -->
                             <div style="width: 320px; min-width: 320px; display:flex; flex-direction:column; gap:20px;">
-                                <div style="border:1px solid #000; padding:1px;">
-                                    <div style="background:#d9d9d9; font-weight:700; text-align:center; padding:2px;">Customer Analysis</div>
-                                    <table class="report-table" style="border:none;">
+                                <div>
+                                    <div class="sub-section-title" style="width: fit-content; padding: 4px 20px;">Customer Analysis</div>
+                                    <table class="report-table" style="text-align: center;">
                                         <thead>
                                             <tr>
-                                                <th style="background:#ff0000; color:#fff; text-align:left;">Customer Type</th>
-                                                <th style="background:#fff;">Quantity</th>
-                                                <th style="background:#fff;">%</th>
+                                                <th style="text-align:left;">Customer Type</th>
+                                                <th>Quantity</th>
+                                                <th>%</th>
                                             </tr>
                                         </thead>
                                         <tbody>
@@ -2185,17 +2876,18 @@ window.OmnisDashboardV6 = class OmnisDashboardV6 {
 
                                 <div style="font-size:11px; font-weight:500;">
                                     <span style="text-decoration:underline; font-weight:700;">Note:</span><br>
-                                    1.) New Customer Sales Contribution % = ${custAnalysis.New.pct}% for ${months[2]} ${payload.report_year}<br>
-                                    2.) Existing Customers Sales Contribution% = ${custAnalysis.Existing.pct}% for ${months[2]} ${payload.report_year}<br>
+                                    1.) New Customer Sales Contribution % = ${custAnalysis.New.pct}% for ${payload.period_label}<br>
+                                    2.) Existing Customers Sales Contribution% = ${custAnalysis.Existing.pct}% for ${payload.period_label}<br>
                                     3.) ${note}
                                 </div>
 
-                                <div style="display:flex; align-items:center;">
-                                    <div style="background:#d9d9d9; border:1px solid #000; padding:4px 20px; font-weight:700; flex:1;">Lost Sales</div>
-                                    <div style="border:1px solid #000; border-left:none; padding:4px 20px; min-width:60px; text-align:center;">0</div>
+                                <div style="display:flex; align-items:center; margin-top:10px; border-radius:4px; overflow:hidden; border:1px solid #cbd5e1;">
+                                    <div style="background:#f1f5f9; padding:8px 20px; font-weight:700; font-size:13px; color:#0f172a; flex:1;">Lost Sales</div>
+                                    <div style="background:#fff; padding:8px 20px; min-width:60px; text-align:center; font-weight:700; font-size:13px; color:#0f172a; border-left:1px solid #cbd5e1;">0</div>
                                 </div>
                             </div>
                         </div>
+                    </div>
                     </div>
 
                     <!-- TAB 2: SALES DETAILS (YTD) -->
@@ -2219,7 +2911,7 @@ window.OmnisDashboardV6 = class OmnisDashboardV6 {
                                             <td style="text-align:left;">${s.customer || '-'}</td>
                                             <td style="text-align:left;">${s.salesperson || '-'}</td>
                                             <td style="text-align:center; font-weight:700; color:#166534;">${s.qty || 0}</td>
-                                            <td style="text-align:right;">${s.order_date || '-'}</td>
+                                            <td style="text-align:right;">${s.date || s.order_date || '-'}</td>
                                         </tr>
                                     `).join('')}
                                 </tbody>
@@ -2279,14 +2971,31 @@ window.OmnisDashboardV6 = class OmnisDashboardV6 {
                 const tabButtons = document.querySelectorAll('.oem-tab');
                 const tabContents = document.querySelectorAll('.oem-tab-content');
 
+                // Ensure explicit initial state
+                tabContents.forEach(content => {
+                    if (content.classList.contains('active')) {
+                        content.style.display = 'block';
+                    } else {
+                        content.style.display = 'none';
+                    }
+                });
+
                 tabButtons.forEach(button => {
                     button.addEventListener('click', () => {
                         const tabName = button.getAttribute('data-tab');
+                        
                         tabButtons.forEach(btn => btn.classList.remove('active'));
-                        tabContents.forEach(content => content.classList.remove('active'));
                         button.classList.add('active');
-                        const targetContent = document.querySelector(`[data-tab-content="${tabName}"]`);
-                        if (targetContent) targetContent.classList.add('active');
+
+                        tabContents.forEach(content => {
+                            if (content.getAttribute('data-tab-content') === tabName) {
+                                content.style.display = 'block';
+                                content.classList.add('active');
+                            } else {
+                                content.style.display = 'none';
+                                content.classList.remove('active');
+                            }
+                        });
                     });
                 });
             }, 100);
@@ -2843,7 +3552,7 @@ window.OmnisDashboardV6 = class OmnisDashboardV6 {
                 strokeDashArray: 4,
                 label: {
                     text: `${target} UNITS (TARGET)`,
-                    style: { color: '#fff', background: '#ef4444', fontSize: '9px', fontWeight: 800, padding: { left: 5, right: 5, top: 3, bottom: 3 } }
+                    style: { color: '#fff', background: '#ef4444', fontSize: '9px', fontWeight: 600, fontFamily: 'Inter, sans-serif', padding: { left: 6, right: 6, top: 4, bottom: 4 } }
                 }
             };
         }).filter(a => a);
@@ -2874,7 +3583,7 @@ window.OmnisDashboardV6 = class OmnisDashboardV6 {
                 type: 'bar',
                 height: 750,
                 toolbar: { show: false },
-                fontFamily: 'Plus Jakarta Sans, sans-serif',
+                fontFamily: 'Inter, system-ui, sans-serif',
             },
             plotOptions: {
                 bar: {
@@ -2891,17 +3600,8 @@ window.OmnisDashboardV6 = class OmnisDashboardV6 {
                 },
             },
             fill: {
-                type: 'gradient',
-                gradient: {
-                    shade: 'light',
-                    type: "horizontal",
-                    shadeIntensity: 0.25,
-                    gradientToColors: undefined,
-                    inverseColors: true,
-                    opacityFrom: 0.85,
-                    opacityTo: 1,
-                    stops: [50, 0, 100, 100]
-                }
+                type: 'solid',
+                opacity: 0.95
             },
             annotations: {
                 xaxis: annotations
@@ -2911,8 +3611,8 @@ window.OmnisDashboardV6 = class OmnisDashboardV6 {
                 textAnchor: 'start',
                 style: {
                     fontSize: '11px',
-                    fontFamily: 'Plus Jakarta Sans, sans-serif',
-                    fontWeight: '800',
+                    fontFamily: 'Inter, system-ui, sans-serif',
+                    fontWeight: '600',
                     colors: ["#1e293b"]
                  },
                 formatter: function (val, opt) {
@@ -2932,7 +3632,7 @@ window.OmnisDashboardV6 = class OmnisDashboardV6 {
             },
             xaxis: {
                 categories: enhancedLabels,
-                labels: { style: { fontSize: '11px', fontWeight: 600, fontFamily: 'Plus Jakarta Sans, sans-serif' } },
+                labels: { style: { fontSize: '11px', fontWeight: 600, fontFamily: 'Inter, system-ui, sans-serif' } },
                 axisBorder: { show: false },
                 axisTicks: { show: false }
             },
@@ -2941,8 +3641,8 @@ window.OmnisDashboardV6 = class OmnisDashboardV6 {
                     rotate: -90,
                     style: { 
                         fontSize: '13px', 
-                        fontWeight: 800, 
-                        fontFamily: 'Plus Jakarta Sans, sans-serif',
+                        fontWeight: 600, 
+                        fontFamily: 'Inter, system-ui, sans-serif',
                         colors: ['#475569']
                     },
                     maxWidth: 150,
@@ -2991,69 +3691,84 @@ window.OmnisDashboardV6 = class OmnisDashboardV6 {
         const chart = new ApexCharts(document.querySelector("#company-chart-canvas"), options);
         chart.render();
 
-        // Render Breakdown with Likelihood Badges in the new dedicated section
+        // Render Quote Follow-Up Dashboard in the new dedicated section
         const breakdownContainer = document.getElementById('widget-predictive-breakdown');
         if (!breakdownContainer) return;
 
+        const quoteFollowUps = this.data.quote_follow_ups || [];
+        const groupedQuotes = {};
+        
+        quoteFollowUps.forEach(q => {
+            const sp = q.sales_person || 'Unassigned';
+            if (!groupedQuotes[sp]) groupedQuotes[sp] = [];
+            groupedQuotes[sp].push(q);
+        });
+
         let breakdownHtml = `<div style="font-size:12px; font-weight:700; color:#334155; margin-bottom:12px; display:flex; align-items:center; justify-content:space-between;">
-            <span style="letter-spacing:0.02em; text-transform:uppercase;">&#x1F4C8; Predictive Performance & Sales Breakdown</span>
-            <span style="font-size:10px; color:#64748b;">*Projection based on 4-month weighted run-rate</span>
-        </div><div style="display:flex; gap:20px; flex-wrap:wrap;">`;
+            <span style="letter-spacing:0.02em; text-transform:uppercase;">&#x1F4C8; Quotation Follow-Up Dashboard</span>
+            <span style="font-size:10px; color:#64748b;">*Active quotations grouped by salesperson</span>
+        </div><div style="display:grid; grid-template-columns: repeat(auto-fit, minmax(48%, 1fr)); gap:20px; align-items:start;">`;
 
-        originalCompanies.forEach(company => {
-            const ytd = data[company].ytd || 0;
-            const target = targets[company] || 0;
-            const projection = Math.round((ytd / 4) * 12);
-            const pctOfTarget = target > 0 ? (projection / target) * 100 : 0;
+        for (const [sp, quotes] of Object.entries(groupedQuotes)) {
+            breakdownHtml += `
+                <div style="padding:16px; border:1px solid #f1f5f9; border-radius:12px; background:white; box-shadow:0 4px 6px -1px rgba(0,0,0,0.05);">
+                    <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:12px;">
+                        <span style="font-size:14px; font-weight:850; color:#1e293b; text-transform:uppercase; letter-spacing:0.02em;">
+                            &#x1F464; ${sp}
+                        </span>
+                        <span style="padding:4px 10px; border-radius:99px; font-size:10px; font-weight:800; color:#475569; background:#f1f5f9;">
+                            ${quotes.length} OPEN
+                        </span>
+                    </div>
+                    <div style="max-height: 260px; overflow-y: auto; border: 1px solid #e2e8f0; border-radius: 6px;">
+                        <table style="width:100%; border-collapse:collapse; font-size:11px;">
+                            <thead style="position: sticky; top: 0; background: #f8fafc; z-index: 1;">
+                                <tr style="border-bottom:1px solid #e2e8f0; text-align:left;">
+                                    <th style="padding:8px 10px; font-weight:800; color:#64748b; width:15%;">REF</th>
+                                    <th style="padding:8px 10px; font-weight:800; color:#64748b; width:30%;">CUSTOMER</th>
+                                    <th style="padding:8px 10px; font-weight:800; color:#64748b; width:35%;">ITEMS</th>
+                                    <th style="padding:8px 10px; font-weight:800; color:#64748b; width:20%; text-align:right;">DUE</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+            `;
             
-            let status = "UNLIKELY";
-            let sColor = "#ef4444";
-            if (pctOfTarget >= 100) { status = "EXCEEDING"; sColor = "#10b981"; }
-            else if (pctOfTarget >= 92) { status = "ON TRACK"; sColor = "#10b981"; }
-            else if (pctOfTarget >= 80) { status = "PROBABLE"; sColor = "#f59e0b"; }
-            else if (pctOfTarget >= 70) { status = "AT RISK"; sColor = "#f97316"; }
-
-            const items = data[company].breakdown || [];
+            quotes.forEach(q => {
+                let dateColor = '#334155';
+                let dateText = q.next_follow_up_date || '-';
+                
+                if (q.next_follow_up_date) {
+                    const todayStr = new Date().toISOString().split('T')[0];
+                    if (q.next_follow_up_date < todayStr) {
+                        dateColor = '#ef4444'; // Red
+                        dateText += ' <span style="font-size:9px; font-weight:800;">(OVERDUE)</span>';
+                    } else if (q.next_follow_up_date === todayStr) {
+                        dateColor = '#f59e0b'; // Orange
+                        dateText += ' <span style="font-size:9px; font-weight:800;">(TODAY)</span>';
+                    }
+                }
+                
+                breakdownHtml += `
+                                <tr style="border-bottom:1px dashed #e2e8f0; transition: background-color 0.2s;">
+                                    <td style="padding:8px 10px; font-weight:700; color:#3b82f6;">${q.quote_no || '-'}</td>
+                                    <td style="padding:8px 10px; color:#1e293b; font-weight:600;">${q.customer || '-'}</td>
+                                    <td style="padding:8px 10px; color:#475569;">${q.items || '-'}</td>
+                                    <td style="padding:8px 10px; color:${dateColor}; font-weight:700; text-align:right;">${dateText}</td>
+                                </tr>
+                `;
+            });
             
             breakdownHtml += `
-                <div style="flex:1; min-width:400px; padding:16px; border:1px solid #f1f5f9; border-radius:12px; background:white; box-shadow:0 4px 6px -1px rgba(0,0,0,0.05);">
-                    <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:16px;">
-                        <span style="font-size:14px; font-weight:850; color:#1e293b; letter-spacing:0.02em;">${company.toUpperCase()}</span>
-                        <span style="padding:4px 12px; border-radius:99px; font-size:11px; font-weight:800; color:white; background:${sColor};">${status} (${pctOfTarget.toFixed(0)}%)</span>
+                            </tbody>
+                        </table>
                     </div>
+                </div>
             `;
-            if (items.length > 0) {
-                const LIMIT = 10;
-                const visibleItems = items.slice(0, LIMIT);
-                const hasMore = items.length > LIMIT;
-
-                breakdownHtml += `
-                    <div style="flex:1; min-width:200px; background:#f8fafc; padding:10px; border-radius:8px;">
-                        <div style="font-size:11px; font-weight:800; color:#64748b; margin-bottom:6px; text-transform:uppercase;">${company}</div>
-                        <div style="display:flex; flex-direction:column; gap:4px;">
-                `;
-
-                visibleItems.forEach(item => {
-                    breakdownHtml += `
-                        <div style="display:flex; justify-content:space-between; font-size:12px; color:#334155; border-bottom:1px dashed #e2e8f0; padding-bottom:2px;">
-                            <span>${item.model}</span>
-                            <span style="font-weight:600;">${item.qty}</span>
-                        </div>
-                    `;
-                });
-
-                if (hasMore) {
-                    breakdownHtml += `
-                      <button onclick="window.salestrack.openFullBreakdownModal('${company}')" style="
-                          margin-top:8px; width:100%; padding:6px; background:#ffffff; border:1px solid #cbd5e1; 
-                          border-radius:6px; font-size:11px; font-weight:700; color:#475569; cursor:pointer;
-                      ">View More (${items.length - LIMIT} more)</button>
-                    `;
-                }
-
-                breakdownHtml += `</div></div>`;
-            }
-        });
+        }
+        
+        if (Object.keys(groupedQuotes).length === 0) {
+            breakdownHtml += `<div style="padding:20px; text-align:center; color:#64748b; font-weight:600; background:white; border-radius:12px; border:1px solid #f1f5f9;">No open quotations to follow up.</div>`;
+        }
 
         breakdownHtml += `</div>`;
         breakdownContainer.innerHTML = breakdownHtml;
@@ -3185,10 +3900,105 @@ window.OmnisDashboardV6 = class OmnisDashboardV6 {
         input.onblur = () => {
             setTimeout(() => list.classList.add('hidden'), 200);
         };
-        // Show all on focus
         input.onfocus = () => {
             fetchSuggestions(input.value);
         };
+    }
+
+    setupItemSearch() {
+        if (this._itemSearchBound) return;
+        this._itemSearchBound = true;
+
+        let list = document.getElementById('dash-item-suggest');
+        if (!list) {
+            list = document.createElement('div');
+            list.id = 'dash-item-suggest';
+            list.className = 'hidden';
+            list.style.cssText = `
+                position: absolute; background: white; border: 1px solid #e2e8f0; 
+                z-index: 100000; border-radius: 8px; 
+                box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1); 
+                max-height: 200px; overflow-y: auto;
+            `;
+            document.body.appendChild(list);
+        }
+
+        const debounce = (func, wait) => {
+            let timeout;
+            return (...args) => {
+                clearTimeout(timeout);
+                timeout = setTimeout(() => func.apply(this, args), wait);
+            };
+        };
+
+        const fetchSuggestions = async (input, query) => {
+            if (!query || query.length < 2) {
+                list.classList.add('hidden');
+                return;
+            }
+            try {
+                let baseUrl = "https://salestrack.powerstar.co.zw";
+                if (this.sys) baseUrl = this.sys.baseUrl;
+                else if (window.getCurrentSystem) baseUrl = window.getCurrentSystem().baseUrl;
+
+                const res = await window.callFrappeSequenced(baseUrl, "powerstar_salestrack.omnis_dashboard.search_item_for_omnis", { txt: query });
+                const data = res.message || res || [];
+
+                if (data.length > 0) {
+                    list.innerHTML = data.map(item => `
+                        <div class="suggest-item" data-val="${(item.description || item.value || '').replace(/\"/g, '&quot;')}" 
+                             style="padding:10px 12px; cursor:pointer; border-bottom:1px solid #f8fafc; font-size:13px; color:#334155; transition:background 0.1s;"
+                             onmouseover="this.style.background='#f1f5f9'"
+                             onmouseout="this.style.background='white'"
+                        >
+                            <div style="font-weight:600;">${item.description || item.value}</div>
+                            ${item.details ? `<div style="font-size:11px; color:#94a3b8;">${item.details}</div>` : ''}
+                        </div>
+                    `).join('');
+                    
+                    const rect = input.getBoundingClientRect();
+                    list.style.top = `${rect.bottom + window.scrollY + 2}px`;
+                    list.style.left = `${rect.left + window.scrollX}px`;
+                    list.style.width = `${rect.width}px`;
+                    list.classList.remove('hidden');
+
+                    list.querySelectorAll('.suggest-item').forEach(el => {
+                        el.onclick = (e) => {
+                            e.stopPropagation();
+                            input.value = el.getAttribute('data-val');
+                            list.classList.add('hidden');
+                        };
+                    });
+                } else {
+                    list.innerHTML = '<div style="padding:10px; color:#94a3b8; font-size:12px; text-align:center;">No items found</div>';
+                    list.classList.remove('hidden');
+                }
+            } catch (e) {
+                console.error("Item Search Error", e);
+            }
+        };
+
+        const handler = debounce((e) => fetchSuggestions(e.target, e.target.value), 300);
+
+        document.addEventListener('input', (e) => {
+            if (e.target.classList && (e.target.classList.contains('m-item') || e.target.classList.contains('new-item'))) {
+                handler(e);
+            }
+        });
+
+        document.addEventListener('focusin', (e) => {
+            if (e.target.classList && (e.target.classList.contains('m-item') || e.target.classList.contains('new-item'))) {
+                if (e.target.value.length >= 2) {
+                    fetchSuggestions(e.target, e.target.value);
+                }
+            }
+        });
+
+        document.addEventListener('focusout', (e) => {
+            if (e.target.classList && (e.target.classList.contains('m-item') || e.target.classList.contains('new-item'))) {
+                setTimeout(() => list.classList.add('hidden'), 200);
+            }
+        });
     }
 
     async submitHandover() {
@@ -3402,27 +4212,24 @@ window.OmnisDashboardV6 = class OmnisDashboardV6 {
             if (machines.length === 0) return `<tr><td colspan="6" style="padding:16px; text-align:center; color:#64748b;">No machines found.</td></tr>`;
             return machines.map((m, i) => `
                 <tr class="machine-row" data-mid="${m.name || ''}" style="background:${i % 2 === 0 ? '#ffffff' : '#f8fafc'}; border-bottom:1px solid #e2e8f0;">
-                    <td style="padding:12px; border-bottom:1px solid #f1f5f9; font-size:13px; font-weight:600; color:#1e293b;">
-                        ${m.item_name || m.machine || m.item || '-'}
-                        <div style="font-size:10px; color:#64748b; margin-top:2px; font-weight:400;">${m.item_code || m.item || ''}</div>
+                    <td style="padding:12px; border-bottom:1px solid #f1f5f9;">
+                        <input type="text" class="m-item" value="${(m.item_name || m.machine || m.item || '').replace(/\"/g, '&quot;')}" placeholder="Machine/Item" style="width:100%; padding:8px; border:1px solid #cbd5e1; border-radius:6px; font-size:12px; background:white;">
                     </td>
-                     <td style="padding:12px; border-bottom:1px solid #f1f5f9; font-size:12px; color:#475569; white-space:nowrap;">
-                        ${m.serial_no || '-'}
-                    </td>
-                    <td style="padding:12px; border-bottom:1px solid #f1f5f9; font-size:13px; font-weight:600; text-align:center; color:#0f172a;">
-                        ${m.qty || 1}
-                    </td>
-                    <td style="padding:12px; border-bottom:1px solid #f1f5f9; font-size:12px; color:#475569;">
-                        ${m.target_handover_date || m.target_handover || '-'}
+                     <td style="padding:12px; border-bottom:1px solid #f1f5f9;">
+                        <input type="text" class="m-serial" value="${(m.serial_no || '').replace(/\"/g, '&quot;')}" placeholder="Serial" style="width:100%; padding:8px; border:1px solid #cbd5e1; border-radius:6px; font-size:12px; background:white;">
                     </td>
                     <td style="padding:12px; border-bottom:1px solid #f1f5f9;">
-                        <input type="date" class="m-revised" value="${m.revised_handover_date || m.revised_handover || ''}" 
-                               style="width:100%; padding:8px; border:1px solid #cbd5e1; border-radius:6px; font-size:12px; background:white; font-family:inherit;">
+                        <input type="number" class="m-qty" value="${m.qty || 1}" style="width:100%; padding:8px; border:1px solid #cbd5e1; border-radius:6px; font-size:12px; text-align:center; background:white;">
                     </td>
                     <td style="padding:12px; border-bottom:1px solid #f1f5f9;">
-                         <textarea class="m-notes" rows="2" 
-                                   style="width:100%; padding:8px; border:1px solid #cbd5e1; border-radius:6px; font-size:12px; font-family:inherit; resize:vertical; background:white;"
-                                   placeholder="Add notes...">${m.notes || ''}</textarea>
+                        <input type="date" class="m-target" value="${m.target_handover_date || m.target_handover || ''}" style="width:100%; padding:8px; border:1px solid #cbd5e1; border-radius:6px; font-size:12px; background:white;">
+                    </td>
+                    <td style="padding:12px; border-bottom:1px solid #f1f5f9;">
+                        <input type="date" class="m-revised" value="${m.revised_handover_date || m.revised_handover || ''}" style="width:100%; padding:8px; border:1px solid #cbd5e1; border-radius:6px; font-size:12px; background:white;">
+                    </td>
+                    <td style="padding:12px; border-bottom:1px solid #f1f5f9; display:flex; gap:8px; align-items:flex-start;">
+                         <textarea class="m-notes" rows="1" style="width:100%; padding:8px; border:1px solid #cbd5e1; border-radius:6px; font-size:12px; font-family:inherit; background:white;" placeholder="Add notes...">${m.notes || ''}</textarea>
+                         <button onclick="salestrack.deleteMachineRow(this, '${m.name || ''}')" style="color:#ef4444; background:none; border:none; cursor:pointer; font-weight:bold; font-size:18px; line-height:1;">&times;</button>
                     </td>
                 </tr>
              `).join('');
@@ -3450,7 +4257,7 @@ window.OmnisDashboardV6 = class OmnisDashboardV6 {
                <div style="display:flex; justify-content:space-between; align-items:flex-start; background:white; padding:20px; border-radius:12px; border:1px solid #e2e8f0; box-shadow:0 1px 3px rgba(0,0,0,0.05);">
                     <div>
                         <div style="font-size:11px; font-weight:700; color:#64748b; margin-bottom:6px; text-transform:uppercase; letter-spacing:0.5px;">Customer</div>
-                        <div style="font-size:18px; font-weight:700; color:#0f172a;">${order ? order.customer : (fullDoc ? fullDoc.customer_name : 'Unknown')}</div>
+                        <div style="font-size:18px; font-weight:700; color:#0f172a;">${(order ? order.customer : (fullDoc ? fullDoc.customer_name : 'Unknown')).replace(/"/g, '')}</div>
                     </div>
                     <div style="width:220px;">
                        <label style="font-size:11px; font-weight:700; color:#64748b; display:block; margin-bottom:6px; text-transform:uppercase; letter-spacing:0.5px;">Order Status</label>
@@ -3553,10 +4360,10 @@ window.OmnisDashboardV6 = class OmnisDashboardV6 {
                      <!-- Right: Standard Actions -->
                      <div style="display:flex; gap:12px; flex-wrap:wrap;">
                         <button onclick="salestrack.closeListModal()" style="padding:12px 24px; border:1px solid #cbd5e1; background:white; color:#475569; border-radius:8px; font-size:14px; font-weight:600; cursor:pointer;">Cancel</button>
-                        <button id="btn-send-email-update" onclick="salestrack.initEmailUpdate('${reportId}')" style="padding:12px 24px; background:#1d4ed8; color:white; border:none; border-radius:8px; font-size:14px; font-weight:700; cursor:pointer; display:flex; align-items:center; gap:8px; box-shadow:0 10px 15px -3px rgba(29, 78, 216, 0.25); transition:all 0.2s;">
+                        <button id="btn-send-email-update" onclick="salestrack.initEmailUpdate('${(reportId||'').replace(/'/g, "\\'").replace(/"/g, '&quot;')}')" style="padding:12px 24px; background:#1d4ed8; color:white; border:none; border-radius:8px; font-size:14px; font-weight:700; cursor:pointer; display:flex; align-items:center; gap:8px; box-shadow:0 10px 15px -3px rgba(29, 78, 216, 0.25); transition:all 0.2s;">
                            <span style="font-size:18px;">&#128231;</span> Send Email
                         </button>
-                        <button id="btn-send-whatsapp-update" onclick="salestrack.initWhatsAppUpdate('${reportId}', '${machineId}')" style="padding:12px 24px; background:#25d366; color:white; border:none; border-radius:8px; font-size:14px; font-weight:700; cursor:pointer; display:flex; align-items:center; gap:8px; box-shadow:0 10px 15px -3px rgba(37, 211, 102, 0.2); transition:all 0.2s;">
+                        <button id="btn-send-whatsapp-update" onclick="salestrack.initWhatsAppUpdate('${(reportId||'').replace(/'/g, "\\'").replace(/"/g, '&quot;')}', '${(machineId||'').replace(/'/g, "\\'").replace(/"/g, '&quot;')}')" style="padding:12px 24px; background:#25d366; color:white; border:none; border-radius:8px; font-size:14px; font-weight:700; cursor:pointer; display:flex; align-items:center; gap:8px; box-shadow:0 10px 15px -3px rgba(37, 211, 102, 0.2); transition:all 0.2s;">
                            <span style="font-size:18px;">&#128172;</span> WhatsApp Update
                         </button>
                         <button id="btn-save-order-changes" class="btn-primary" style="padding:12px 32px; background:#8b2219; color:white; border:none; border-radius:8px; font-size:14px; font-weight:700; cursor:pointer; box-shadow:0 10px 15px -3px rgba(139, 34, 25, 0.25);">Save Changes</button>
@@ -3567,6 +4374,7 @@ window.OmnisDashboardV6 = class OmnisDashboardV6 {
 
         // Store contacts temporary context
         this._tempContacts = contacts;
+        this._tempDeletedMachines = [];
         this.openListModal("Edit Order Details", content, "1100px");
 
         // Bind Listeners (Safe method for quotes)
@@ -3586,6 +4394,7 @@ window.OmnisDashboardV6 = class OmnisDashboardV6 {
         });
 
         this.refreshContactsTable();
+        this.setupItemSearch();
     }
 
     // Add Contact
@@ -3625,6 +4434,15 @@ window.OmnisDashboardV6 = class OmnisDashboardV6 {
             this._tempContacts.splice(index, 1);
             this.refreshContactsTable();
         }
+    }
+
+    // Delete existing machine visually and track it
+    deleteMachineRow(btn, mid) {
+        if (mid) {
+            this._tempDeletedMachines.push(mid);
+        }
+        const tr = btn.closest('tr');
+        if (tr) tr.remove();
     }
 
     // Internal Refresh (Matches renderContactRows style)
@@ -3673,8 +4491,17 @@ window.OmnisDashboardV6 = class OmnisDashboardV6 {
             if (mid) {
                 const rev = row.querySelector('.m-revised').value;
                 const note = row.querySelector('.m-notes').value;
+                const item = row.querySelector('.m-item').value;
+                const serial = row.querySelector('.m-serial').value;
+                const qty = row.querySelector('.m-qty').value;
+                const target = row.querySelector('.m-target').value;
+                
                 machinesUpdates.push({
                     name: mid,
+                    item: item,
+                    serial_no: serial,
+                    qty: qty,
+                    target_handover_date: target,
                     revised_handover_date: rev,
                     notes: note
                 });
@@ -3737,6 +4564,7 @@ window.OmnisDashboardV6 = class OmnisDashboardV6 {
             params.append('contacts', safeEncode(this._tempContacts || []));
             params.append('machines', safeEncode(machinesUpdates));
             params.append('new_machines', safeEncode(newMachines));
+            params.append('deleted_machines', safeEncode(this._tempDeletedMachines || []));
             // params.append('notes', ""); // Legacy
 
             const url = (sys.baseUrl || "https://salestrack.powerstar.co.zw") + "/api/method/powerstar_salestrack.omnis_dashboard.update_order_details_v2";
@@ -4183,7 +5011,7 @@ window.OmnisDashboardV6 = class OmnisDashboardV6 {
                 }
             });
 
-            window.electron.on('whatsapp:status', (event, status) => {
+            window.electron.on('whatsapp:status', (event, status, errorDetail) => {
                 // 1. Update Modal (if open)
                 const statusLabels = [
                     document.getElementById('wa-scan-status'),
@@ -4198,15 +5026,15 @@ window.OmnisDashboardV6 = class OmnisDashboardV6 {
                         if (status === 'CONNECTED') {
                             statusClass = 'wa-status-connected';
                         } else if (status === 'ERROR') {
-                            displayStatus = 'INIT ERROR';
+                            displayStatus = errorDetail ? `ERROR: ${errorDetail}` : 'INIT ERROR';
                             statusClass = 'wa-status-error';
                         } else if (status === 'ERR_NO_BROWSER') {
                             displayStatus = 'NO CHROME FOUND';
                             statusClass = 'wa-status-error';
                         } else if (status === 'AUTHENTICATING') {
-                        displayStatus = 'AUTHENTICATING...';
-                        statusClass = 'wa-status-connecting';
-                    } else if (status === 'CONNECTING') {
+                            displayStatus = 'AUTHENTICATING...';
+                            statusClass = 'wa-status-connecting';
+                        } else if (status === 'CONNECTING') {
                             displayStatus = 'CONNECTING...';
                             statusClass = 'wa-status-connecting';
                         } else if (status === 'QR_READY') {
@@ -4224,12 +5052,15 @@ window.OmnisDashboardV6 = class OmnisDashboardV6 {
                 const settingsText = document.getElementById('wa-settings-status-text');
                 const qrPanel = document.getElementById('wa-settings-qr-panel');
                 
-                if (settingsText) settingsText.innerText = status;
+                if (settingsText) settingsText.innerText = (status === 'ERROR' && errorDetail) ? `ERROR: ${errorDetail}` : status;
                 if (settingsIcon) {
-                    settingsIcon.style.color = (status === 'CONNECTED' ? '#25D366' : '#64748b');
+                    settingsIcon.style.color = (status === 'CONNECTED' ? '#25D366' : (status === 'ERROR' || status === 'ERR_NO_BROWSER' ? '#ef4444' : '#64748b'));
                     if (status === 'CONNECTED') {
                         settingsIcon.style.borderColor = '#25D366';
                         settingsIcon.style.background = '#f0fdf4';
+                    } else if (status === 'ERROR' || status === 'ERR_NO_BROWSER') {
+                        settingsIcon.style.borderColor = '#ef4444';
+                        settingsIcon.style.background = '#fef2f2';
                     } else {
                         settingsIcon.style.borderColor = '#e2e8f0';
                         settingsIcon.style.background = 'white';
@@ -4243,6 +5074,38 @@ window.OmnisDashboardV6 = class OmnisDashboardV6 {
                     } else if (status === 'CONNECTED') {
                         qrPanel.style.display = 'none';
                     }
+                }
+
+                // 3. Update Global Navbar Status
+                const navbarText = document.getElementById('wa-navbar-text');
+                const navbarDot = document.getElementById('wa-navbar-dot');
+                if (navbarText && navbarDot) {
+                    let displayLabel = 'WA: DISCONNECTED';
+                    let dotColor = '#64748b'; // Slate 400
+                    let textColor = 'rgba(255,255,255,0.4)';
+
+                    if (status === 'CONNECTED') {
+                        displayLabel = 'WA: CONNECTED';
+                        dotColor = '#22c55e'; // Green 500
+                        textColor = '#22c55e';
+                    } else if (status === 'QR_READY') {
+                        displayLabel = 'WA: SCAN NEEDED';
+                        dotColor = '#f59e0b'; // Amber 500
+                        textColor = '#f59e0b';
+                    } else if (status === 'CONNECTING' || status === 'AUTHENTICATING') {
+                        displayLabel = 'WA: CONNECTING...';
+                        dotColor = '#3b82f6'; // Blue 500
+                        textColor = '#3b82f6';
+                    } else if (status === 'ERROR' || status === 'ERR_NO_BROWSER') {
+                        displayLabel = status === 'ERR_NO_BROWSER' ? 'WA: NO BROWSER' : (errorDetail ? `WA: ${errorDetail}` : 'WA: ERROR');
+                        dotColor = '#ef4444'; // Red 500
+                        textColor = '#ef4444';
+                    }
+
+                    navbarText.innerText = displayLabel;
+                    navbarText.style.color = textColor;
+                    navbarDot.style.background = dotColor;
+                    navbarDot.style.boxShadow = (status === 'CONNECTED' ? '0 0 8px #22c55e' : 'none');
                 }
 
                 if (status === 'CONNECTED') {
@@ -4335,11 +5198,18 @@ window.OmnisDashboardV6 = class OmnisDashboardV6 {
             const machines = [];
             document.querySelectorAll('#machines-tbody tr').forEach(row => {
                 if (row.cells.length < 5) return;
-                const mName   = row.cells[0]?.innerText.trim().split('\n')[0] || "";
-                const mQty    = row.cells[2]?.innerText.trim() || "1";
-                const mTarget = row.cells[3]?.innerText.trim() || "-";
-                const mRevised = row.querySelector('.m-revised')?.value || "";
-                const mNotes   = row.querySelector('.m-notes')?.value.trim() || "";
+                const itemInput = row.querySelector('.m-item');
+                const qtyInput = row.querySelector('.m-qty');
+                const targetInput = row.querySelector('.m-target');
+                const revisedInput = row.querySelector('.m-revised');
+                const notesInput = row.querySelector('.m-notes');
+
+                const mName = itemInput ? itemInput.value.trim() : (row.cells[0]?.innerText.trim().split('\n')[0] || "");
+                const mQty = qtyInput ? qtyInput.value.trim() : (row.cells[2]?.innerText.trim() || "1");
+                const mTarget = targetInput ? targetInput.value.trim() : (row.cells[3]?.innerText.trim() || "-");
+                const mRevised = revisedInput ? revisedInput.value.trim() : "";
+                const mNotes = notesInput ? notesInput.value.trim() : "";
+
                 if (mName && mName !== "Machine / Item") {
                     machines.push({ name: mName, qty: mQty, target: mTarget, revised: mRevised, notes: mNotes });
                 }
@@ -4352,21 +5222,56 @@ window.OmnisDashboardV6 = class OmnisDashboardV6 {
                 ? `${previewContact.salutation} ${previewContact.name}`
                 : previewContact.name;
 
-            let previewMsg = `Dear *${greetingName}*,\n\nPlease see below details of your order:\n\n*Machine*:\n`;
+            const company = this._currentFullDoc?.company || "";
+            let contactPerson = "Chetan Samji";
+            let contactPhone = "+263772949515";
+            let companyName = "Machinery Exchange";
+            if (company.includes("Sinopower")) {
+                contactPerson = "Brett Berry";
+                contactPhone = "+263775553862";
+                companyName = "Sinopower";
+            } else if (company.includes("Industrial Equipment")) {
+                companyName = "Industrial Equipment Group";
+            }
+
+            const daysLeft = this._currentOrderSnippet?.days_left || "";
+            let isLate = false;
+            if (daysLeft !== "" && parseInt(daysLeft) < 0) {
+                isLate = true;
+            }
+
+            const introVariations = [
+                "Here is the latest status update for your equipment order.",
+                "Please find the current progress of your equipment order below.",
+                "We've updated the status of your equipment order. See details below.",
+                "Your equipment order has a new update. Current details are below.",
+                "Sharing the latest timeline and status for your equipment order."
+            ];
+            const randomIntro = introVariations[Math.floor(Math.random() * introVariations.length)];
+
+            let previewMsg = `Dear *${greetingName}*,\n\n${randomIntro}\n\n`;
+            if (isLate) {
+                previewMsg += `_We sincerely apologize for the delay and are working diligently to expedite the process._\n\n`;
+            }
+            previewMsg += `*EQUIPMENT DETAILS*\n`;
+            
+            const numEmojis = ['1️⃣','2️⃣','3️⃣','4️⃣','5️⃣','6️⃣','7️⃣','8️⃣','9️⃣','🔟'];
             machines.forEach((m, idx) => {
+                const numEmoji = idx < 10 ? numEmojis[idx] : `${idx + 1}.`;
                 const dateToShow = m.revised ? `${m.revised} (Revised)` : m.target;
-                previewMsg += `${idx + 1}) ${m.name} x${m.qty}\n   *Status*: ${m.notes || orderStatus}\n   *Target Handover*: ${dateToShow}\n\n`;
+                previewMsg += `${numEmoji} *${m.name}* (Qty: ${m.qty})\n    ↳ Status: _${m.notes || orderStatus}_\n    ↳ Target Handover Date: *${dateToShow}*\n\n`;
             });
-            previewMsg += `For any questions or enquiries, please contact Humphrey on +263 77 799 7136.\n\nBest Regards,\nMachinery Exchange`;
+            previewMsg += `Should you have any questions or require further assistance, please do not hesitate to contact your dedicated representative:\n👤 *${contactPerson}* | Commercial Manager\n📞 ${contactPhone}\n\nBest regards,\n*The ${companyName} Team*`;
 
             const recipientLabels = validContacts.map(c =>
                 `${c.salutation ? c.salutation + ' ' : ''}${c.name} (${c.phone})`
             ).join(', ');
 
-            // 4. Render message as styled WhatsApp-like bubble (bold = **)
+            // 4. Render message as styled WhatsApp-like bubble (bold = **, italic = _)
             const styledMsg = previewMsg
                 .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
                 .replace(/\*([^*]+)\*/g, '<strong>$1</strong>')
+                .replace(/_([^_]+)_/g, '<em>$1</em>')
                 .replace(/\n/g, '<br>');
 
             // 5. Inject preview modal
@@ -4452,15 +5357,49 @@ window.OmnisDashboardV6 = class OmnisDashboardV6 {
         if (btn) { btn.disabled = true; btn.innerHTML = `<i class="fas fa-spinner fa-spin"></i> Sending...`; }
 
         try {
+            const company = this._currentFullDoc?.company || "";
+            let contactPerson = "Chetan Samji";
+            let contactPhone = "+263772949515";
+            let companyName = "Machinery Exchange";
+            if (company.includes("Sinopower")) {
+                contactPerson = "Brett Berry";
+                contactPhone = "+263775553862";
+                companyName = "Sinopower";
+            } else if (company.includes("Industrial Equipment")) {
+                companyName = "Industrial Equipment Group";
+            }
+
+            const daysLeft = this._currentOrderSnippet?.days_left || "";
+            let isLate = false;
+            if (daysLeft !== "" && parseInt(daysLeft) < 0) {
+                isLate = true;
+            }
+
             // Send personalised message to each contact
             for (const contact of validContacts) {
                 const greetingName = contact.salutation ? `${contact.salutation} ${contact.name}` : contact.name;
-                let customerMsg = `Dear *${greetingName}*,\n\nPlease see below details of your order:\n\n*Machine*:\n`;
+                const introVariations = [
+                    "Here is the latest status update for your equipment order.",
+                    "Please find the current progress of your equipment order below.",
+                    "We've updated the status of your equipment order. See details below.",
+                    "Your equipment order has a new update. Current details are below.",
+                    "Sharing the latest timeline and status for your equipment order."
+                ];
+                const randomIntro = introVariations[Math.floor(Math.random() * introVariations.length)];
+
+                let customerMsg = `Dear *${greetingName}*,\n\n${randomIntro}\n\n`;
+                if (isLate) {
+                    customerMsg += `_We sincerely apologize for the delay and are working diligently to expedite the process._\n\n`;
+                }
+                customerMsg += `*EQUIPMENT DETAILS*\n`;
+
+                const numEmojis = ['1️⃣','2️⃣','3️⃣','4️⃣','5️⃣','6️⃣','7️⃣','8️⃣','9️⃣','🔟'];
                 machines.forEach((m, idx) => {
+                    const numEmoji = idx < 10 ? numEmojis[idx] : `${idx + 1}.`;
                     const dateToShow = m.revised ? `${m.revised} (Revised)` : m.target;
-                    customerMsg += `${idx + 1}) ${m.name} x${m.qty}\n   *Status*: ${m.notes || orderStatus}\n   *Target Handover*: ${dateToShow}\n\n`;
+                    customerMsg += `${numEmoji} *${m.name}* (Qty: ${m.qty})\n    ↳ Status: _${m.notes || orderStatus}_\n    ↳ Target Handover Date: *${dateToShow}*\n\n`;
                 });
-                customerMsg += `For any questions or enquiries, please contact Humphrey on +263 77 799 7136.\n\nBest Regards,\nMachinery Exchange`;
+                customerMsg += `Should you have any questions or require further assistance, please do not hesitate to contact your dedicated representative:\n👤 *${contactPerson}* | Commercial Manager\n📞 ${contactPhone}\n\nBest regards,\n*The ${companyName} Team*`;
 
                 if (window.omnisLog) window.omnisLog(`[WhatsApp] Sending to ${contact.name} (${contact.phone})...`);
                 const res = await window.electron.invoke('whatsapp:send-msg', { to: contact.phone, body: customerMsg });
@@ -4468,30 +5407,30 @@ window.OmnisDashboardV6 = class OmnisDashboardV6 {
             }
 
             // Internal group message
-            const company = this._currentFullDoc?.company || "";
-            let teamLabel = "Team";
-            if (company.includes("Machinery Exchange")) teamLabel = "Machinery Exchange Team";
-            else if (company.includes("Sinopower")) teamLabel = "Sinopower Team";
-            else if (company.includes("Industrial Equipment")) teamLabel = "Industrial Equipment Group Team";
+            let companyShort = "IEG";
+            if (company.includes("Machinery Exchange")) companyShort = "Machinery Exchange";
+            else if (company.includes("Sinopower")) companyShort = "Sinopower";
 
-            let groupMsg = `Hi *${teamLabel}*,\n\n*Internal Update*: An order update for *${customerName}* has been sent.\n\n*Recipients*:\n`;
-            sentToNames.forEach(name => { groupMsg += `&bull; ${name}\n`; });
-            groupMsg += `\n*Current Status*: ${orderStatus}\n`;
+            let groupMsg = `*${companyShort} Internal Update*\nOrder update for *${customerName}* was sent to:\n`;
+            sentToNames.forEach(name => { groupMsg += `• ${name}\n`; });
+            groupMsg += `\n*Status*: ${orderStatus}\n`;
 
-            const daysLeft = this._currentOrderSnippet?.days_left || "";
             if (daysLeft !== "") {
                 const daysInt = parseInt(daysLeft);
-                const flag = daysInt < 0 ? "&#x1F6A9; OVERDUE" : (daysInt <= 7 ? "&#x2705; SOON" : "...");
-                groupMsg += `*Days Left*: ${daysLeft} ${flag}\n`;
+                let flag = "";
+                if (daysInt < 0) flag = "🚨 *OVERDUE*";
+                else if (daysInt <= 7) flag = "⚠️ *LATE RISK*";
+                else flag = "✅ *ON TRACK*";
+                groupMsg += `*Timeline*: ${daysLeft} days left ${flag}\n`;
             }
 
             const allNotes = machines.map(m => m.notes).filter(n => n && n.trim() !== "");
             if (allNotes.length > 0) groupMsg += `*Notes*: ${[...new Set(allNotes)].join("; ")}\n`;
 
-            groupMsg += `\n*Machine Details*:\n`;
+            groupMsg += `\n*Target Handovers*:\n`;
             machines.forEach((m, idx) => {
                 const dateToShow = m.revised ? `${m.revised} (Revised)` : m.target;
-                groupMsg += `${idx + 1}) ${m.name} x${m.qty} (Target: ${dateToShow})\n`;
+                groupMsg += `• ${m.name} x${m.qty} ➔ *${dateToShow}*\n`;
             });
 
             if (window.omnisLog) window.omnisLog("[WhatsApp] Group Message:\n" + groupMsg);
