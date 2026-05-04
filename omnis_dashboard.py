@@ -62,8 +62,13 @@ def extract_params(payload=None, **kwargs):
             if k not in ["cmd", "method"]:
                 params[k] = v
     
-    # 2. Direct Payload (Bypass 417)
-    p_str = payload or params.get("payload")
+    # 1.5 Header Payload (Ultimate Stealth)
+    h_data = frappe.get_request_header("X-Omnis-Data")
+    if h_data:
+        p_str = h_data
+    else:
+        # 2. Direct Payload (Bypass 417)
+        p_str = payload or params.get("payload") or params.get("d") or params.get("data")
     if p_str and isinstance(p_str, str) and len(p_str) > 5:
         try:
             # Try Base64 then direct
@@ -638,7 +643,36 @@ def get_omnis_home():
     except Exception:
         enquiries_timeseries = []
 
+    # ---- Order Stage Counts for Map ----
+    order_stages = {
+        "pipeline": quotations_total,
+        "confirmed": 0,
+        "logistics": 0,
+        "arrived": 0,
+        "handover": 0
+    }
+    try:
+        fmb_data = frappe.db.sql("""
+            SELECT m.status, COUNT(*) as count
+            FROM `tabFMB Report Machine` m
+            JOIN `tabFMB Report` f ON f.name = m.parent
+            WHERE f.docstatus < 2
+              AND (m.actual_handover_date IS NULL OR m.actual_handover_date = '')
+            GROUP BY m.status
+        """, as_dict=True)
+        
+        for r in fmb_data:
+            s = (r.get("status") or "").lower()
+            cnt = r.get("count") or 0
+            if "new" in s or "pending" in s: order_stages["confirmed"] += cnt
+            elif "transit" in s or "production" in s or "shipping" in s: order_stages["logistics"] += cnt
+            elif "harare" in s or "yard" in s or "ready" in s: order_stages["arrived"] += cnt
+            else: order_stages["logistics"] += cnt
+    except Exception:
+        pass
+
     return {
+        "order_stages": order_stages,
         "kpis": {
             # main values (totals)
             "active_customers_total": active_total,
@@ -4186,7 +4220,10 @@ def get_omnis_group_sales(start: int = 0, page_length: int = 50, search: str = "
         if "oem" not in fields and "brand" in actual_cols: fields.append("brand as oem")
 
         # Calculate Total Count for high-fidelity pagination
-        total_count = frappe.db.count("Group Sales", filters=filters, or_filters=or_filters if search else None)
+        try:
+            total_count = frappe.db.count("Group Sales", filters=filters, or_filters=or_filters if search else None)
+        except TypeError:
+            total_count = len(frappe.get_all("Group Sales", filters=filters, or_filters=or_filters if search else None, fields=["name"]))
 
         data = frappe.get_list(
             "Group Sales",
@@ -4516,10 +4553,15 @@ def get_dashboard_charts(period="This Year", payload=None):
         
         # Period Logic
         start_date, end_date = s_this_year, e_this_year
+        months_in_period = today.month # Default for "This Year"
+        
         if period == "This Month":
             start_date = str(get_first_day(today))
             end_date = str(get_last_day(today))
-        # ... (keep simple for now, can expand period logic if needed)
+            months_in_period = 1
+        elif period == "Last Month":
+            # Add logic for last month if needed, but for now defaulting
+            months_in_period = 1
 
         # 1. Orders at Risk
         orders_at_risk = frappe.db.sql("""
@@ -4541,12 +4583,23 @@ def get_dashboard_charts(period="This Year", payload=None):
             if r.get("last_notification_date"): r["last_notification_date"] = str(r["last_notification_date"])
             if r.get("target_date"): r["target_date"] = str(r["target_date"])
 
-        # 2. Quote Follow-up & Pipeline Units
-        quote_follow_ups = frappe.db.sql("""
-            SELECT custom_sales_person as sales_person, COUNT(name) as count
-            FROM `tabQuotation` WHERE docstatus < 2 AND status IN ('Open', 'Draft')
-            GROUP BY custom_sales_person HAVING count > 0 ORDER BY count DESC
+        # 2. Quote Follow-up Details
+        quote_follow_ups_list = frappe.db.sql("""
+            SELECT 
+                q.name as quote_no, 
+                q.customer_name as customer, 
+                q.custom_sales_person as sales_person, 
+                q.custom_next_follow_up_date as next_follow_up_date,
+                GROUP_CONCAT(qi.item_name SEPARATOR ', ') as items
+            FROM `tabQuotation` q
+            LEFT JOIN `tabQuotation Item` qi ON qi.parent = q.name
+            WHERE q.docstatus < 2 AND q.status IN ('Open', 'Draft')
+            GROUP BY q.name, q.customer_name, q.custom_sales_person, q.custom_next_follow_up_date
+            ORDER BY q.custom_next_follow_up_date ASC
         """, as_dict=True)
+        
+        for q in quote_follow_ups_list:
+            if q.get("next_follow_up_date"): q["next_follow_up_date"] = str(q["next_follow_up_date"])
 
         # 🎯 High-Fidelity Pipeline Aggregation
         quote_pipeline_rows = frappe.db.sql("""
@@ -4573,14 +4626,28 @@ def get_dashboard_charts(period="This Year", payload=None):
         top_items_map = {}
         hot_cust_map = {}
         company_sales = {}
-        oem_sales_map = {}
+        oem_stats_map = {}
         curr_month_start = str(get_first_day(today))
+
+        # Add Quote Details for OEM Stats
+        quotes_rows = frappe.db.sql("""
+            SELECT i.brand as oem, qi.item_name as model, qi.qty as qty
+            FROM `tabQuotation` q
+            JOIN `tabQuotation Item` qi ON qi.parent = q.name
+            JOIN `tabItem` i ON i.name = qi.item_code
+            WHERE q.docstatus < 2 AND q.transaction_date >= %s AND q.transaction_date <= %s
+        """, (start_date, end_date), as_dict=True)
 
         for r in sales_rows:
             q = float(r.qty or 0)
             top_items_map[r.model] = top_items_map.get(r.model, 0) + q
             hot_cust_map[r.customer] = hot_cust_map.get(r.customer, 0) + q
-            oem_sales_map[r.oem] = oem_sales_map.get(r.oem, 0) + q
+            oem = r.oem or "Unknown"
+            
+            if oem not in oem_stats_map:
+                oem_stats_map[oem] = {"oem": oem, "sales": 0, "quotes": 0, "top_bought": {}, "top_quoted": {}}
+            oem_stats_map[oem]["sales"] += q
+            oem_stats_map[oem]["top_bought"][r.model] = oem_stats_map[oem]["top_bought"].get(r.model, 0) + q
             
             if r.company not in company_sales:
                 company_sales[r.company] = {"ytd": 0.0, "mtd": 0.0, "breakdown": {}}
@@ -4591,9 +4658,45 @@ def get_dashboard_charts(period="This Year", payload=None):
             if len(company_sales[r.company]["breakdown"]) < 50:
                 company_sales[r.company]["breakdown"][r.model] = company_sales[r.company]["breakdown"].get(r.model, 0) + q
 
+        for r in quotes_rows:
+            q = float(r.qty or 0)
+            oem = r.oem or "Unknown"
+            if oem not in oem_stats_map:
+                oem_stats_map[oem] = {"oem": oem, "sales": 0, "quotes": 0, "top_bought": {}, "top_quoted": {}}
+            oem_stats_map[oem]["quotes"] += q
+            oem_stats_map[oem]["top_quoted"][r.model] = oem_stats_map[oem]["top_quoted"].get(r.model, 0) + q
+
         top_items = sorted([{"item_name": k, "total_qty": v} for k, v in top_items_map.items()], key=lambda x: x["total_qty"], reverse=True)[:5]
         hot_customers = sorted([{"customer_name": k, "total_value": v} for k, v in hot_cust_map.items()], key=lambda x: x["total_value"], reverse=True)[:5]
-        oem_sales = sorted([{"oem": k, "total_qty": v} for k, v in oem_sales_map.items()], key=lambda x: x["total_qty"], reverse=True)
+        
+        # Calculate OEM Stats
+        enriched_oem_stats = []
+        for k, v in oem_stats_map.items():
+            if v["sales"] == 0 and v["quotes"] == 0:
+                continue
+            
+            most_bought = max(v["top_bought"], key=v["top_bought"].get) if v["top_bought"] else "N/A"
+            most_quoted = max(v["top_quoted"], key=v["top_quoted"].get) if v["top_quoted"] else "N/A"
+            
+            # Recommended Stock Logic
+            import math
+            velocity = v["sales"] / max(1, months_in_period)
+            suggested_batch = math.ceil(velocity * 1.5) # 1.5 months supply
+            recommended = math.ceil(v["sales"] + (v["quotes"] * 0.25))
+            
+            enriched_oem_stats.append({
+                "oem": k,
+                "total_qty": v["sales"], # Maintain backwards compatibility for doughnut chart
+                "sales": v["sales"],
+                "quotes": v["quotes"],
+                "most_bought": most_bought,
+                "most_quoted": most_quoted,
+                "monthly_velocity": round(velocity, 1),
+                "suggested_order": suggested_batch,
+                "recommended_stock": recommended
+            })
+            
+        oem_sales = sorted(enriched_oem_stats, key=lambda x: x["total_qty"], reverse=True)
         
         for c in company_sales:
             comp = company_sales[c]
@@ -4609,7 +4712,7 @@ def get_dashboard_charts(period="This Year", payload=None):
 
         res_data = {
             "orders_at_risk": orders_at_risk,
-            "quote_follow_ups": quote_follow_ups,
+            "quote_follow_ups": quote_follow_ups_list,
             "top_items": top_items,
             "hot_customers": hot_customers,
             "company_sales": company_sales,
@@ -4625,44 +4728,54 @@ def get_dashboard_charts(period="This Year", payload=None):
         return {"ok": False, "error": str(e)}
 
 @frappe.whitelist(allow_guest=True)
-def get_dashboard_lists(period="This Year"):
+def get_dashboard_lists(period="This Year", payload=None):
     """
     Step 3: Lists (Quotes, CEs, Orders Preview, Hot Leads)
     """
     import frappe
+    import json
     from frappe.utils import nowdate, date_diff
     
-    cache_key = f"omnis_dash_lists_{period}"
-    cached_data = frappe.cache().get_value(cache_key)
-    if cached_data: return {"ok": True, "data": frappe.parse_json(cached_data)}
+    # Extract params (company, period)
+    params = extract_params(payload)
+    if params:
+        period = params.get("period") or period
+    company = params.get("company") if params else None
+    if company == "all" or company == "all companies": company = None
 
     try:
         today_str = nowdate()
         
         # 1. Latest Quotations
-        latest_quotations = frappe.db.sql("""
+        qtn_where = "docstatus < 2 AND status IN ('Open', 'Draft')"
+        if target_company: qtn_where += f" AND company = '{target_company}'"
+        latest_quotations = frappe.db.sql(f"""
             SELECT name, customer_name, transaction_date, grand_total, custom_sales_person
-            FROM `tabQuotation` WHERE docstatus < 2 AND status IN ('Open', 'Draft')
+            FROM `tabQuotation` WHERE {qtn_where}
             ORDER BY transaction_date DESC LIMIT 10
         """, as_dict=True)
         for q in latest_quotations:
              if q.get("transaction_date"): q["transaction_date"] = str(q["transaction_date"])
         
         # 2. Latest CEs
-        latest_ces = frappe.db.sql("""
+        ce_where = "status NOT IN ('Closed', 'Converted')"
+        if target_company: ce_where += f" AND company = '{target_company}'"
+        latest_ces = frappe.db.sql(f"""
             SELECT name, customer_name, title, transaction_date, custom_salesperson, company
-            FROM `tabOpportunity` WHERE status NOT IN ('Closed', 'Converted')
+            FROM `tabOpportunity` WHERE {ce_where}
             ORDER BY transaction_date DESC LIMIT 10
         """, as_dict=True)
         for c in latest_ces:
              if c.get("transaction_date"): c["transaction_date"] = str(c["transaction_date"])
 
         # 3. Orders Preview
-        orders_preview = frappe.db.sql("""
+        fmb_where = "f.docstatus < 2"
+        if target_company: fmb_where += f" AND f.company = '{target_company}'"
+        orders_preview = frappe.db.sql(f"""
             SELECT f.name, f.customer_name, f.modified, COALESCE(SUM(m.qty), 0) AS total_qty, MIN(m.target_handover_date) AS delivery_date
             FROM `tabFMB Report` f
             LEFT JOIN `tabFMB Report Machine` m ON m.parent = f.name
-            WHERE f.docstatus < 2 GROUP BY f.name, f.customer_name, f.modified
+            WHERE {fmb_where} GROUP BY f.name, f.customer_name, f.modified
             ORDER BY f.modified DESC LIMIT 10
         """, as_dict=True)
         for o in orders_preview:
@@ -4677,35 +4790,72 @@ def get_dashboard_lists(period="This Year"):
         lead_table = "tabHot Lead"
         try: frappe.db.sql("SELECT 1 FROM `tabHot Lead` LIMIT 1")
         except: lead_table = "tabHot Leads"
+        
+        lead_where = "1=1"
+        if target_company: lead_where += f" AND company = '{target_company}'"
 
-        hot_leads = frappe.db.sql(f"""
-            SELECT hl.name, hl.customer, hl.salesperson, hl.ted as date, hl.status, 
-                c.customer_name, s.sales_person_name,
-                (SELECT GROUP_CONCAT(CONCAT(IFNULL(i.item_name, hli.machine), ' (', hli.quantity, ')') SEPARATOR ', ')
-                 FROM `tabHot Lead Items` hli LEFT JOIN `tabItem` i ON hli.machine = i.name
-                 WHERE hli.parent = hl.name) as equipment
-            FROM `{lead_table}` hl
-            LEFT JOIN `tabCustomer` c ON c.name = hl.customer
-            LEFT JOIN `tabSales Person` s ON s.name = hl.salesperson
-            ORDER BY hl.creation DESC LIMIT 50
+        try:
+            hot_leads = frappe.db.sql(f"""
+                SELECT name, lead_name, party_name, status, territory, owner, creation
+                FROM `{lead_table}` WHERE {lead_where} ORDER BY creation DESC LIMIT 10
+            """, as_dict=True)
+        except:
+            # Fallback if company column doesn't exist in Hot Lead
+            hot_leads = frappe.db.sql(f"""
+                SELECT name, lead_name, party_name, status, territory, owner, creation
+                FROM `{lead_table}` ORDER BY creation DESC LIMIT 10
+            """, as_dict=True)
+
+        # 5. Order Stages for Map (Link to Order Tracking)
+        # Use helper for robust company matching
+        target_company = _company_value(company) if company else None
+        
+        pipe_filters = {"docstatus": ("<", 2), "status": ("in", ["Open", "Draft"])}
+        if target_company: pipe_filters["company"] = target_company
+        
+        order_stages = {
+            "pipeline": frappe.db.count("Quotation", pipe_filters),
+            "confirmed": 0, "logistics": 0, "arrived": 0, "handover": 0
+        }
+        
+        # Use f.status (from tabFMB Report) as it's the standard status field
+        f_where = "f.docstatus < 2 AND (m.actual_handover_date IS NULL OR m.actual_handover_date = '')"
+        if target_company: f_where += f" AND f.company = '{target_company}'"
+        
+        fmb_data = frappe.db.sql(f"""
+            SELECT f.status, COUNT(*) as count
+            FROM `tabFMB Report Machine` m
+            JOIN `tabFMB Report` f ON f.name = m.parent
+            WHERE {f_where}
+            GROUP BY f.status
         """, as_dict=True)
-
-        for l in hot_leads:
-            if l.get("date"): l["date"] = str(l["date"])
+        
+        for r in fmb_data:
+            s = (r.get("status") or "").lower()
+            cnt = r.get("count") or 0
+            # Broad mapping for robustness
+            if any(x in s for x in ["new", "pending", "confirmed", "order"]):
+                order_stages["confirmed"] += cnt
+            elif any(x in s for x in ["transit", "shipping", "production", "progress", "active", "delay", "issue"]):
+                order_stages["logistics"] += cnt
+            elif any(x in s for x in ["harare", "yard", "arrived", "port"]):
+                order_stages["arrived"] += cnt
+            elif any(x in s for x in ["ready", "handover", "delivered", "collect"]):
+                order_stages["handover"] += cnt
+            else:
+                order_stages["logistics"] += cnt
 
         res_data = {
             "latest_quotations": latest_quotations,
             "latest_ces": latest_ces,
             "orders_preview": orders_preview,
-            "hot_leads": hot_leads
+            "hot_leads": hot_leads,
+            "order_stages": order_stages
         }
-        
-        frappe.cache().set_value(cache_key, frappe.as_json(res_data), expires_in_sec=300)
         return {"ok": True, "data": res_data}
-
-    except Exception as e:
-        frappe.log_error(frappe.get_traceback(), "get_dashboard_lists Error")
-        return {"ok": False, "error": str(e)}
+    except Exception:
+        frappe.log_error(frappe.get_traceback(), "Omnis Dashboard Lists Error")
+        return {"ok": False, "error": "Internal Error"}
 
 def get_period_dates(period):
     from frappe.utils import nowdate, getdate
@@ -4767,13 +4917,19 @@ def get_omnis_oem_details_v2(oem=None, period="This Year", custom_start=None, cu
             period_label = f"{getdate(start_date).strftime('%d %b')} - {getdate(end_date).strftime('%d %b %y')}"
 
         # 2. Fetch Sales Data (Group Sales)
+        # We fetch FULL YTD regardless of period for consistent YTD columns
+        ytd_sql_start = f"{getdate(start_date).year}-01-01"
+        ytd_sql_end = end_date
+        if getdate(start_date).year == today_dt.year:
+            ytd_sql_end = nowdate()
+
         # Using _has_col for extra resiliency
         gs_brand_col = "brand" if _has_col("Group Sales", "brand", log_missing=False) else "oem"
         
         sales = frappe.db.sql(f"""
             SELECT 
-                gs.name, gs.customer, gs.qty, gs.order_date as date, gs.model,
-                c.creation as customer_creation, i.brand
+                gs.name, gs.customer, gs.qty, gs.order_date as date, gs.model, i.item_group,
+                c.creation as customer_creation, i.brand, gs.owner as salesperson
             FROM `tabGroup Sales` gs
             LEFT JOIN `tabCustomer` c ON c.name = gs.customer
             LEFT JOIN `tabItem` i ON i.name = gs.model
@@ -4781,13 +4937,13 @@ def get_omnis_oem_details_v2(oem=None, period="This Year", custom_start=None, cu
               AND (gs.{gs_brand_col} = %s OR i.brand = %s)
               AND gs.order_date BETWEEN %s AND %s
             ORDER BY gs.order_date DESC
-        """, (oem, oem, start_date, end_date), as_dict=True)
+        """, (oem, oem, ytd_sql_start, ytd_sql_end), as_dict=True)
 
         # 3. Fetch Quotation Data
         quotes = frappe.db.sql("""
             SELECT 
-                qi.qty, q.transaction_date as date, qi.item_name as model, 
-                qi.parent as quote_no, q.customer_name as customer, i.brand
+                qi.qty, q.transaction_date as date, qi.item_name as model, i.item_group,
+                q.name, q.customer_name as customer, i.brand, q.owner as person
             FROM `tabQuotation` q
             JOIN `tabQuotation Item` qi ON qi.parent = q.name
             JOIN `tabItem` i ON i.name = qi.item_code
@@ -4795,7 +4951,7 @@ def get_omnis_oem_details_v2(oem=None, period="This Year", custom_start=None, cu
               AND i.brand = %s 
               AND q.transaction_date BETWEEN %s AND %s
             ORDER BY q.transaction_date DESC
-        """, (oem, start_date, end_date), as_dict=True)
+        """, (oem, ytd_sql_start, ytd_sql_end), as_dict=True)
 
         # 4. Process Trends & Analysis (Hierarchical Structure for Table)
         month_labels = []
@@ -4818,7 +4974,7 @@ def get_omnis_oem_details_v2(oem=None, period="This Year", custom_start=None, cu
 
         # Aggregate Sales
         for s in sales:
-            cat = s.get("model") or "Unknown"
+            cat = s.get("item_group") or s.get("model") or "Unknown"
             ensure_cat(cat)
             q_val = float(s.qty or 0)
             trend_data[cat]["ytd"]["sales"] += q_val
@@ -4829,7 +4985,7 @@ def get_omnis_oem_details_v2(oem=None, period="This Year", custom_start=None, cu
 
         # Aggregate Quotes
         for q in quotes:
-            cat = q.get("model") or "Unknown"
+            cat = q.get("item_group") or q.get("model") or "Unknown"
             ensure_cat(cat)
             q_val = float(q.qty or 0)
             trend_data[cat]["ytd"]["quotes"] += q_val
@@ -4864,6 +5020,10 @@ def get_omnis_oem_details_v2(oem=None, period="This Year", custom_start=None, cu
             if models:
                 most_quoted = models.most_common(1)[0][0]
 
+        # 7. Filtered lists for Breakdown and Tabs (matching the period labels)
+        filtered_sales = [s for s in sales if str(s.date) >= str(start_date) and str(s.date) <= str(end_date)]
+        filtered_quotes = [q for q in quotes if str(q.date) >= str(start_date) and str(q.date) <= str(end_date)]
+
         return {
             "ok": True,
             "oem": oem,
@@ -4871,10 +5031,11 @@ def get_omnis_oem_details_v2(oem=None, period="This Year", custom_start=None, cu
             "trend_data": trend_data,
             "month_labels": month_labels,
             "customer_analysis": cust_analysis,
-            "sales_breakdown": sales[:50], # Top 50 recent sales
-            "all_sales_ytd": sales,
-            "all_quotes_ytd": quotes,
-            "most_quoted_note": f"Top Quoted Model: {most_quoted}"
+            "sales_breakdown": filtered_sales[:50], 
+            "all_sales_ytd": filtered_sales,
+            "all_quotes_ytd": filtered_quotes,
+            "most_quoted_note": f"Top Quoted Model: {most_quoted}",
+            "report_year": today_dt.year
         }
 
     except Exception as e:
@@ -4964,8 +5125,27 @@ def get_mer_report_data(period="This Year", company="Machinery Exchange", payloa
               AND q.transaction_date >= %s AND q.transaction_date <= %s
         """, (company_filter, ytd_start, today), as_dict=True)
 
-        # 2. Process Performance Table
-        oems = ["Shantui", "Bobcat", "Wirtgen", "Hitachi", "Rokbak", "Bendi", "Shacman", "Sinotruk"]
+        # 2. Process Performance Table - Dynamic OEM Discovery
+        known_oems = ["Shantui", "Bobcat", "Wirtgen", "Hitachi", "Rokbak", "Bendi", "Shacman", "Sinotruk"]
+        
+        # Discover additional OEMs from data
+        discovered_oems = set()
+        for s in all_sales:
+            if s.oem and s.oem.strip():
+                discovered_oems.add(s.oem.strip())
+        for q in all_quotes:
+            if q.oem and q.oem.strip():
+                discovered_oems.add(q.oem.strip())
+        
+        # Build final OEM list: known first (in order), then any newly discovered ones
+        oems = [o for o in known_oems if o in discovered_oems]
+        for d in sorted(discovered_oems):
+            if d not in oems:
+                oems.append(d)
+        
+        # If no OEMs discovered at all, fallback to known list
+        if not oems:
+            oems = known_oems
         
         def get_blank_stats():
             return {"quotes": {o: 0.0 for o in oems + ["Others"]}, "sales": {o: 0.0 for o in oems + ["Others"]}}
@@ -5002,7 +5182,12 @@ def get_mer_report_data(period="This Year", company="Machinery Exchange", payloa
             elif dt >= str(prev_month_start) and dt <= str(prev_month_end):
                 stats["prev"]["quotes"][o] += val
 
-        performance_table = []
+        performance_mxg = []
+        performance_sp = []
+        
+        mxg_brands = ["Shantui", "Bobcat", "Wirtgen", "Hitachi", "Rokbak", "Bendi"]
+        sp_brands = ["Sinotruk", "Shacman", "Foton", "Henred", "Asia Star", "Baoli", "Crown", "Etnyre", "Everstar Industries", "Genie", "HAMM", "Lombardini", "Powerstar", "Weichai"]
+
         for oem in oems + ["Others"]:
             o_prev_q = stats["prev"]["quotes"][oem]
             o_prev_s = stats["prev"]["sales"][oem]
@@ -5011,54 +5196,108 @@ def get_mer_report_data(period="This Year", company="Machinery Exchange", payloa
             o_ytd_q = stats["ytd"]["quotes"][oem]
             o_ytd_s = stats["ytd"]["sales"][oem]
             
+            # Skip OEMs with zero activity across all periods
+            if o_prev_q == 0 and o_prev_s == 0 and o_curr_q == 0 and o_curr_s == 0 and o_ytd_q == 0 and o_ytd_s == 0:
+                continue
+            
             conv_mtd = round((o_curr_s / o_curr_q * 100), 1) if o_curr_q > 0 else 0
             conv_ytd = round((o_ytd_s / o_ytd_q * 100), 1) if o_ytd_q > 0 else 0
 
-            performance_table.append({
+            row = {
                 "oem": oem,
                 "target_q": 0, "target_s": 0,
                 "prev_q": o_prev_q, "prev_s": o_prev_s,
                 "curr_q": o_curr_q, "curr_s": o_curr_s,
                 "ytd_q": o_ytd_q, "ytd_s": o_ytd_s,
                 "conv_mtd": conv_mtd, "conv_ytd": conv_ytd
-            })
+            }
+
+            if oem in mxg_brands:
+                performance_mxg.append(row)
+            elif oem in sp_brands:
+                performance_sp.append(row)
+            else:
+                # Assign to group based on company context
+                if "Sinopower" in company:
+                    performance_sp.append(row)
+                else:
+                    performance_mxg.append(row)
 
         # 3. OEM Summary & Brand Reports (In-Memory Processing)
         cat_data = {} # category -> {q: 0, s: 0}
-        brand_reports = {"Shantui": {}, "Hitachi": {}, "Bobcat": {}} # brand -> {(cat, model) -> {q: 0, s: 0}}
+        # brand_reports: brand -> {(cat, model) -> {curr_q, curr_s, ytd_q, ytd_s}}
+        brand_reports = {o: {} for o in oems + ["Others"]}
         
-        # Process current month data for summary/brand reports
+        # Process ALL data for summary/brand reports
         for s in all_sales:
-            if s.order_date < curr_month_start: continue
             cat = s.item_group or "Others"
-            if cat not in cat_data: cat_data[cat] = {"q": 0, "s": 0}
-            cat_data[cat]["s"] += float(s.qty or 0)
+            oem_key = s.oem if s.oem in brand_reports else "Others"
             
-            # Brand reports
-            for b_name in brand_reports:
-                if s.oem == b_name:
-                    key = (cat, s.model)
-                    if key not in brand_reports[b_name]: brand_reports[b_name][key] = {"q": 0, "s": 0}
-                    brand_reports[b_name][key]["s"] += float(s.qty or 0)
+            # Current month summary
+            if s.order_date >= curr_month_start:
+                if cat not in cat_data: cat_data[cat] = {"q": 0, "s": 0}
+                cat_data[cat]["s"] += float(s.qty or 0)
+            
+            # Brand reports (always track YTD)
+            key = (cat, s.model)
+            if key not in brand_reports[oem_key]: 
+                brand_reports[oem_key][key] = {"curr_q": 0, "curr_s": 0, "ytd_q": 0, "ytd_s": 0}
+            
+            brand_reports[oem_key][key]["ytd_s"] += float(s.qty or 0)
+            if s.order_date >= curr_month_start:
+                brand_reports[oem_key][key]["curr_s"] += float(s.qty or 0)
 
         for q in all_quotes:
-            if q.date < curr_month_start: continue
             cat = q.item_group or "Others"
-            if cat not in cat_data: cat_data[cat] = {"q": 0, "s": 0}
-            cat_data[cat]["q"] += float(q.qty or 0)
+            oem_key = q.oem if q.oem in brand_reports else "Others"
             
-            # Brand reports
-            for b_name in brand_reports:
-                if q.oem == b_name:
-                    key = (cat, q.model)
-                    if key not in brand_reports[b_name]: brand_reports[b_name][key] = {"q": 0, "s": 0}
-                    brand_reports[b_name][key]["q"] += float(q.qty or 0)
+            # Current month summary
+            if q.date >= curr_month_start:
+                if cat not in cat_data: cat_data[cat] = {"q": 0, "s": 0}
+                cat_data[cat]["q"] += float(q.qty or 0)
+            
+            # Brand reports (always track YTD)
+            key = (cat, q.model)
+            if key not in brand_reports[oem_key]: 
+                brand_reports[oem_key][key] = {"curr_q": 0, "curr_s": 0, "ytd_q": 0, "ytd_s": 0}
+            
+            brand_reports[oem_key][key]["ytd_q"] += float(q.qty or 0)
+            if q.date >= curr_month_start:
+                brand_reports[oem_key][key]["curr_q"] += float(q.qty or 0)
 
         oem_summary = [{"category": k, "quotes": v["q"], "sales": v["s"]} for k, v in cat_data.items()]
         
         def format_brand(b_name):
-            return [{"category": k[0], "model": k[1], "quotes": v["q"], "orders": v["s"]} 
-                    for k, v in brand_reports[b_name].items()]
+            if b_name not in brand_reports: return []
+            res = []
+            for k, v in brand_reports[b_name].items():
+                res.append({
+                    "category": k[0], "model": k[1], 
+                    "quotes": v["curr_q"], "orders": v["curr_s"],
+                    "ytd_q": v["ytd_q"], "ytd_s": v["ytd_s"]
+                })
+            return res
+
+        # Build dynamic brand pages list - Include if there's any activity at all
+        all_brand_pages = []
+        for oem_name in oems + ["Others"]:
+            brand_data = format_brand(oem_name)
+            if brand_data:
+                # Check if it has ANY non-zero values
+                has_data = any(d["ytd_q"] > 0 or d["ytd_s"] > 0 for d in brand_data)
+                if has_data:
+                    all_brand_pages.append({"name": oem_name, "data": brand_data})
+
+        # Final Company Separation logic: If a specific company is selected, only return that group
+        if company and company != "All":
+            if "Sinopower" in company:
+                performance_mxg = []
+                # Filter brand pages to only Sinopower ones
+                all_brand_pages = [p for p in all_brand_pages if p["name"] in sp_brands or p["name"] == "Others"]
+            else:
+                performance_sp = []
+                # Filter brand pages to only MXG ones
+                all_brand_pages = [p for p in all_brand_pages if p["name"] in mxg_brands or p["name"] == "Others"]
 
         # 4. Customer Analysis
         cust_counts = {"New": 0, "Existing": 0}
@@ -5131,12 +5370,15 @@ def get_mer_report_data(period="This Year", company="Machinery Exchange", payloa
             "report_year": today.year,
             "dynamic_summary": dynamic_summary,
             "ai_suggestions": ai_suggestions,
-            "performance_table": performance_table,
+            "performance_table": performance_mxg + performance_sp,
+            "performance_mxg": performance_mxg,
+            "performance_sp": performance_sp,
             "sales_details": sales_details,
             "oem_summary": oem_summary,
             "shantui_report": format_brand("Shantui"),
             "hitachi_report": format_brand("Hitachi"),
             "bobcat_report": format_brand("Bobcat"),
+            "brand_pages": all_brand_pages,
             "customer_analysis": cust_counts
         }
 
@@ -5246,7 +5488,8 @@ def get_eff_final_v10(payload=None, **kwargs):
         data = frappe.db.sql(sql_query, tuple(args), as_dict=True)
         
         total_machines = 0
-        on_time_qty = 0
+        total_efficiency_score = 0
+        perfect_qty = 0
         total_delay_days = 0
         late_count = 0
         rows = []
@@ -5257,16 +5500,33 @@ def get_eff_final_v10(payload=None, **kwargs):
             total_machines += qty
             delay = 0
             status = "N/A"
+            machine_score = 0.0
+
             if d.target_date and d.actual_date:
                 delay = date_diff(d.actual_date, d.target_date)
+                
                 if delay <= 0:
                     status = "On Time" if delay == 0 else "Early"
-                    on_time_qty += qty
+                    machine_score = 1.0
+                    perfect_qty += qty
+                elif delay <= 3:
+                    status = "Within Buffer"
+                    machine_score = 1.0
+                    perfect_qty += qty
+                    delay = 0  # Adjusted delay for UI
                 else:
                     status = "Late"
+                    # 1.5% penalty per day over the 3-day buffer
+                    days_over = delay - 3
+                    penalty = days_over * 0.015
+                    machine_score = max(0.0, 1.0 - penalty)
+                    
+                    delay = days_over  # Adjusted delay for UI
                     total_delay_days += delay
                     late_count += 1
             
+            total_efficiency_score += (machine_score * qty)
+
             rows.append({
                 "customer": d.customer,
                 "machine": d.machine,
@@ -5275,11 +5535,12 @@ def get_eff_final_v10(payload=None, **kwargs):
                 "delay": delay,
                 "status": status,
                 "qty": qty,
-                "report_id": d.report_id
+                "report_id": d.report_id,
+                "score_pct": round(machine_score * 100, 1)
             })
 
         # Safe division handling
-        efficiency_pct = round((on_time_qty / total_machines * 100), 2) if total_machines > 0 else 0
+        efficiency_pct = round((total_efficiency_score / total_machines * 100), 1) if total_machines > 0 else 0
         avg_delay = round(total_delay_days / late_count, 1) if late_count > 0 else 0
 
         return {
@@ -5287,7 +5548,7 @@ def get_eff_final_v10(payload=None, **kwargs):
             "label": label,
             "summary": {
                 "total_machines": total_machines,
-                "on_time_or_early": on_time_qty,
+                "on_time_or_early": perfect_qty,
                 "efficiency_pct": efficiency_pct,
                 "avg_delay": avg_delay
             },
@@ -5573,6 +5834,7 @@ def update_order_details_v2(payload=None, **kwargs):
         contacts_raw = params.get("contacts")
         machines_raw = params.get("machines")
         new_machines_raw = params.get("new_machines")
+        deleted_machines_raw = params.get("deleted_machines")
         
         # helper for string decode
         def safe_string_decode(val):
@@ -5604,6 +5866,7 @@ def update_order_details_v2(payload=None, **kwargs):
         contacts = safe_json_decode(contacts_raw)
         machines = safe_json_decode(machines_raw)
         new_machines = safe_json_decode(new_machines_raw)
+        deleted_machines = safe_json_decode(deleted_machines_raw)
 
         log_debug(f"update_order_details called. ReportID={report_id} kwargs={kwargs.keys()}")
         
@@ -5642,6 +5905,10 @@ def update_order_details_v2(payload=None, **kwargs):
                             val = m["target_handover_date"]
                             upd["target_handover_date"] = val if val else None
                         if "notes" in m: upd["notes"] = m["notes"]
+                        if "item" in m: upd["item"] = m["item"]
+                        if "serial_no" in m: upd["serial_no"] = m["serial_no"]
+                        if "qty" in m: upd["qty"] = m["qty"]
+                        
                         if upd:
                             frappe.db.set_value("FMB Report Machine", m_id, upd)
             except Exception as e:
@@ -5694,6 +5961,15 @@ def update_order_details_v2(payload=None, **kwargs):
             if update_dict:
                 frappe.db.set_value("FMB Report Machine", machine_id, update_dict)
 
+        # Process Deleted Machines
+        if deleted_machines:
+            for m_id in deleted_machines:
+                if m_id:
+                    try:
+                        frappe.delete_doc("FMB Report Machine", m_id, ignore_permissions=True)
+                    except Exception as e:
+                        frappe.log_error(str(e), f"Delete Machine Error {m_id}")
+          
         # Update Contacts if provided
         if contacts:
             import json
@@ -6329,21 +6605,30 @@ def get_stock_pipeline():
     previous_user = frappe.session.user
     frappe.set_user("Administrator")
     try:
-        records = frappe.get_all("Stock Pipeline", fields=[
-            "oem", "model", "proposed_order", "quantity", 
-            "production_completion", "shipping_date", "eta_durban", 
-            "ted", "eta_harare", "name"
-        ], limit_page_length=500)
+        records = frappe.get_all("Stock Pipeline", fields=["*"], limit_page_length=500)
         
         # Fetch potential customers for all records in one go (Efficiency)
         all_names = [r.get("name") for r in records if r.get("name")]
         if all_names:
-            # We omit 'parenttype' filter to be robust against "Stock Pipeline" vs "Stock Sheet" naming
-            pcs = frappe.get_all("Potential Customers", 
-                filters={"parent": ["in", all_names]},
-                fields=["parent", "customer_name"],
-                limit_page_length=5000
-            )
+            # Dynamically determine child table name to prevent DoesNotExistError
+            child_table = "Stock Pipeline Potential Customer"
+            try:
+                meta = frappe.get_meta("Stock Pipeline")
+                df = meta.get_field("potential_customers")
+                if df and df.options:
+                    child_table = df.options
+            except Exception:
+                pass
+
+            try:
+                pcs = frappe.get_all(child_table, 
+                    filters={"parent": ["in", all_names]},
+                    fields=["parent", "customer_name"],
+                    limit_page_length=5000
+                )
+            except Exception:
+                pcs = []
+            
             # Group by parent
             pc_map = {}
             for pc in pcs:
@@ -6755,11 +7040,11 @@ def _send_whapi_interactive(to, body, buttons, footer=None):
             f"{WHAPI_BASE}/messages/interactive",
             headers=_whapi_headers(),
             data=json.dumps(payload),
-            timeout=15,
+            timeout=20,
         )
         return {"ok": resp.ok, "status": resp.status_code, "text": resp.text}
     except Exception as e:
-        frappe.log_error(f"Whapi interactive exception: {str(e)}", "Whapi send failed")
+        frappe.log_error(message=f"Whapi interactive exception: {str(e)}", title="Whapi send failed")
         return {"ok": False, "error": str(e)}
 
 @frappe.whitelist(allow_guest=True)
@@ -6855,6 +7140,8 @@ def save_stock_pipeline(payload=None, **kwargs):
         is_new = True
         # Check both keys as extract_params often standardizes 'name' to 'report_id'
         doc_id = params.get("name") or params.get("report_id")
+        if doc_id in ("null", "undefined", "", "None"):
+            doc_id = None
         
         if doc_id:
             if frappe.db.exists("Stock Pipeline", doc_id):
@@ -6874,11 +7161,13 @@ def save_stock_pipeline(payload=None, **kwargs):
             "oem": params.get("oem"),
             "model": params.get("model"),
             "proposed_order": frappe.utils.cint(params.get("proposed_order") or 0),
+            "proposed_order_quantity": frappe.utils.cint(params.get("proposed_order") or 0),
             "quantity": frappe.utils.cint(params.get("quantity") or 0),
             "production_completion": safe_date(params.get("production_completion")),
             "shipping_date": safe_date(params.get("shipping_date")),
             "eta_durban": safe_date(params.get("eta_durban")),
             "ted": safe_date(params.get("ted")), # ETA Beira
+            "eta_beira": safe_date(params.get("ted")),
             "eta_harare": safe_date(params.get("eta_harare"))
         })
 
@@ -6952,6 +7241,226 @@ def delete_group_sale(name):
             return {"ok": True}
         return {"ok": False, "error": "Record not found"}
     except Exception as e:
+        return {"ok": False, "error": str(e)}
+    finally:
+        frappe.set_user(previous_user)
+
+@frappe.whitelist(allow_guest=True)
+def get_command_center_stats(payload=None, **kwargs):
+    """Fetch follow-ups due today and tomorrow for the Command Center."""
+    from frappe.utils import today, add_days, format_date
+    
+    # Robust parameter extraction (standard pattern in this dashboard)
+    params = extract_params(payload=payload, **kwargs)
+    
+    current_date = today()
+    tomorrow_date = add_days(current_date, 1)
+    
+    def fetch_quotes(date_str):
+        quotes = frappe.get_all(
+            "Quotation",
+            filters={
+                "custom_next_follow_up_date": date_str,
+                "status": ["not in", ["Cancelled", "Closed"]]
+            },
+            fields=["name", "customer_name", "custom_sales_person", "grand_total", "custom_next_follow_up_date as followup_date", "company"]
+        )
+        
+        # Bulk check for reminders sent today
+        all_q_names = [q.name for q in quotes]
+        reminders_sent = []
+        if all_q_names:
+            reminders_sent = frappe.get_all("Comment", filters={
+                "reference_doctype": "Quotation",
+                "reference_name": ["in", all_q_names],
+                "content": ["like", "%WhatsApp Follow-up reminder sent manually by Administrator%"],
+                "creation": [">", frappe.utils.today()]
+            }, fields=["reference_name"])
+        
+        sent_names = [r.reference_name for r in reminders_sent]
+
+        # Bulk check for reminders sent (all time) to calculate stage
+        all_q_names = [q.name for q in quotes]
+        reminder_history = []
+        if all_q_names:
+            reminder_history = frappe.get_all("Comment", filters={
+                "reference_doctype": "Quotation",
+                "reference_name": ["in", all_q_names],
+                "content": ["like", "%WhatsApp Follow-up reminder sent manually by Administrator%"]
+            }, fields=["reference_name", "creation"])
+        
+        from collections import Counter
+        reminder_counts = Counter([r.reference_name for r in reminder_history])
+        
+        # Check specifically for reminders sent TODAY
+        today_str = frappe.utils.today()
+        sent_today = [r.reference_name for r in reminder_history if str(r.creation).startswith(today_str)]
+
+        for q in quotes:
+            # Get sales person mobile
+            sales_person = q.get("custom_sales_person")
+            q["mobile_no"] = "No Number"
+            if sales_person:
+                q["mobile_no"] = frappe.db.get_value("Sales Person", sales_person, "custom_mobile")
+                if not q["mobile_no"]:
+                    employee = frappe.db.get_value("Sales Person", sales_person, "employee")
+                    if employee:
+                        q["mobile_no"] = frappe.db.get_value("Employee", employee, "cell_number") or \
+                                       frappe.db.get_value("Employee", employee, "mobile_no")
+
+            # Reminder Status & Stage
+            q["reminder_sent"] = q.name in sent_today
+            q["followup_stage"] = reminder_counts.get(q.name, 0) + 1
+
+            # Get items - fetch limit=4 so we can detect >3 without a second query
+            items = frappe.get_all("Quotation Item", filters={"parent": q.name}, fields=["item_name", "qty"], limit=4)
+            q["items_summary"] = ", ".join([i.item_name for i in items[:3]])
+            if len(items) == 4:
+                q["items_summary"] += "..."
+
+            # Format dates
+            q["created_on"] = format_date(q.creation)
+            q["formatted_total"] = frappe.format(q.grand_total, "Currency", q.company)
+
+            # Days since creation (for logFollowupFeedback stage detection)
+            q["days_old"] = frappe.utils.date_diff(today(), q.creation)
+
+            # Placeholders - filled by bulk query below
+            q["first_followup_done"] = False
+            q["second_followup_done"] = False
+
+        # Bulk follow-up stage detection - single query for all quotes
+        if quotes:
+            q_names = [q.name for q in quotes]
+            followup_comments = frappe.get_all("Comment", filters={
+                "reference_doctype": "Quotation",
+                "reference_name": ["in", q_names],
+                "content": ["like", "%Follow-Up%"]
+            }, fields=["reference_name", "content"])
+
+            first_done_set = set()
+            second_done_set = set()
+            for c in followup_comments:
+                content_lower = (c.content or "").lower()
+                if "first follow-up" in content_lower:
+                    first_done_set.add(c.reference_name)
+                if "second follow-up" in content_lower:
+                    second_done_set.add(c.reference_name)
+
+            for q in quotes:
+                q["first_followup_done"] = q.name in first_done_set
+                q["second_followup_done"] = q.name in second_done_set
+
+        return quotes
+
+
+    return {
+        "today": fetch_quotes(current_date),
+        "tomorrow": fetch_quotes(tomorrow_date),
+        "server_time": frappe.utils.now_datetime().strftime("%H:%M")
+    }
+
+@frappe.whitelist(allow_guest=True)
+def update_report_state(quote_name=None, payload=None, **kwargs):
+    """Manually trigger a WhatsApp reminder for a specific quotation."""
+    from frappe.utils import format_date
+    
+    previous_user = frappe.session.user
+    frappe.set_user("Administrator")
+    try:
+        params = extract_params(payload=payload, **kwargs)
+        quote_name = quote_name or params.get("quote_name")
+        
+        if not quote_name:
+            return {"ok": False, "error": "Missing quotation name."}
+
+        if not frappe.db.exists("Quotation", quote_name):
+            return {"ok": False, "error": f"Quotation {quote_name} not found."}
+
+        q = frappe.get_doc("Quotation", quote_name)
+        sales_person = q.get("custom_sales_person")
+        if not sales_person:
+            return {"ok": False, "error": "No Sales Person assigned to this quote."}
+            
+        # Try custom_mobile directly on Sales Person first
+        mobile_no = frappe.db.get_value("Sales Person", sales_person, "custom_mobile")
+        
+        if not mobile_no:
+            employee = frappe.db.get_value("Sales Person", sales_person, "employee")
+            if employee:
+                mobile_no = frappe.db.get_value("Employee", employee, "cell_number") or \
+                            frappe.db.get_value("Employee", employee, "mobile_no") or \
+                            frappe.db.get_value("Employee", employee, "personal_mobile")
+        
+        if not mobile_no:
+            return {"ok": False, "error": f"No mobile number found for Sales Person {sales_person}."}
+
+        # Calculate Follow-up Stage
+        previous_reminders = frappe.db.count("Comment", filters={
+            "reference_doctype": "Quotation",
+            "reference_name": q.name,
+            "content": ["like", "%WhatsApp Follow-up reminder sent manually by Administrator%"]
+        })
+        stage = previous_reminders + 1
+
+        # Get items
+        items = frappe.get_all("Quotation Item", filters={"parent": q.name}, fields=["item_name", "qty"])
+        items_text = "\n".join([f"• {i.qty}x {i.item_name}" for i in items])
+
+        body = (
+            f"📋 *Quotation Follow-up Reminder*\n\n"
+            f"Quote: *{q.name}*\n"
+            f"Created On: *{format_date(q.creation)}*\n"
+            f"Customer: *{q.customer_name}*\n"
+            f"Follow-up Stage: *Stage {stage}*\n\n"
+            f"Items Quoted:\n{items_text}\n\n"
+            f"Please contact the customer for a tactical follow-up regarding this quotation."
+        )
+        
+        buttons = [
+            {"id": f"view_quote_{q.name}", "text": "View Quote"},
+            {"id": f"followed_up_{q.name}", "text": "Mark Followed Up"}
+        ]
+        
+        res = _send_whapi_interactive(mobile_no, body, buttons, footer="Omnis Command Center")
+        if res.get("ok"):
+            # Log to communication or a comment? Let's add a comment to the quote
+            q.add_comment("Comment", f"WhatsApp Follow-up reminder sent manually by Administrator. (Stage {stage})")
+            return {"ok": True, "message": f"Reminder sent to {sales_person} ({mobile_no})"}
+        else:
+            return {"ok": False, "error": f"Whapi Error: {res.get('text')}"}
+    except Exception as e:
+        frappe.log_error(message=frappe.get_traceback(), title="update_report_state failed")
+        return {"ok": False, "error": str(e)}
+    finally:
+        frappe.set_user(previous_user)
+
+@frappe.whitelist(allow_guest=True)
+def mark_report_state_sent(quote_name=None, payload=None, **kwargs):
+    """Mark that a WhatsApp reminder was sent via the local client."""
+    previous_user = frappe.session.user
+    frappe.set_user("Administrator")
+    try:
+        params = extract_params(payload=payload, **kwargs)
+        quote_name = quote_name or params.get("quote_name")
+        
+        if not quote_name or not frappe.db.exists("Quotation", quote_name):
+            return {"ok": False, "error": "Invalid quotation name."}
+
+        q = frappe.get_doc("Quotation", quote_name)
+        
+        previous_reminders = frappe.db.count("Comment", filters={
+            "reference_doctype": "Quotation",
+            "reference_name": q.name,
+            "content": ["like", "%WhatsApp Follow-up reminder sent manually via Local Client%"]
+        })
+        stage = previous_reminders + 1
+        
+        q.add_comment("Comment", f"WhatsApp Follow-up reminder sent manually via Local Client. (Stage {stage})")
+        frappe.db.commit()
+        return {"ok": True, "message": f"Reminder successfully logged (Stage {stage})"}
+    except Exception as e:
+        frappe.log_error(message=f"Local WhatsApp logging exception: {str(e)}", title="WhatsApp Local log failed")
         return {"ok": False, "error": str(e)}
     finally:
         frappe.set_user(previous_user)

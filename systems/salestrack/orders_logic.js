@@ -423,65 +423,69 @@ function renderOrdersList() {
         const statusBadge = `<span style="display:inline-block; padding:4px 10px; border-radius:99px; font-size:10px; font-weight:800; text-transform:uppercase; ${statusStyle}">${r.status || "PENDING"}</span>`;
 
         // 3. Action Button
-        const btnHtml = `<button class="btn-text-action" onclick="window.dashManager.openOrderModal('${r.report_id}', '${r.machine_id}')">DETAILS</button>`;
+        const escapeJs = (s) => (s || '').replace(/\\/g, "\\\\").replace(/'/g, "\\'").replace(/"/g, "&quot;").replace(/\n/g, "\\n").replace(/\r/g, "");
+        const safeReportId = escapeJs(r.report_id);
+        const safeMachineId = escapeJs(r.machine_id);
+
+        const btnHtml = `<button class="btn-text-action" onclick="window.dashManager.openOrderModal('${safeReportId}', '${safeMachineId}')">DETAILS</button>`;
 
         return `
           <div class="ai-order-row ${riskClass} ${(r.status || "").toLowerCase().includes("new sale") ? 'is-new-entry' : ''}" data-id="${r.report_id}">
-            <div class="ai-order-cell" onclick="window.dashManager.openOrderModal('${r.report_id}', '${r.machine_id}')">
+            <div class="ai-order-cell" onclick="window.dashManager.openOrderModal('${safeReportId}', '${safeMachineId}')">
               <span class="cell-label">Customer / Risk</span>
-              <div style="font-weight:700; font-size:15px; color:#000000; margin-bottom:4px; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden;" title="${r.customer}">${r.customer || "-"}</div>
+              <div style="font-weight:700; font-size:15px; color:#000000; margin-bottom:4px; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden;" title="${(r.customer || '').replace(/\"/g, '')}">${(r.customer || "-").replace(/\"/g, '')}</div>
               <div style="display:flex; align-items:center; gap:6px; font-size:11px; font-weight:800; color:${riskColor}">
                 <i class="fas ${riskIcon}"></i> ${riskLabel}
               </div>
             </div>
 
-            <div class="ai-order-cell" onclick="window.dashManager.openOrderModal('${r.report_id}', '${r.machine_id}')">
+            <div class="ai-order-cell" onclick="window.dashManager.openOrderModal('${safeReportId}', '${safeMachineId}')">
               <span class="cell-label">Machine Product</span>
-              <div style="font-weight:800; font-size:14px; color:#000000; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden;" title="${r.machine}">${r.machine || "-"}</div>
+              <div style="font-weight:800; font-size:14px; color:#000000; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden;" title="${(r.machine || '').replace(/\"/g, '')}">${(r.machine || "-").replace(/\"/g, '')}</div>
             </div>
 
-            <div class="ai-order-cell" style="text-align:center;" onclick="window.dashManager.openOrderModal('${r.report_id}', '${r.machine_id}')">
+            <div class="ai-order-cell" style="text-align:center;" onclick="window.dashManager.openOrderModal('${safeReportId}', '${safeMachineId}')">
               <span class="cell-label">Qty</span>
               <div style="font-weight:800; font-size:15px; color:#000000;">${r.qty || "1"}</div>
             </div>
 
-            <div class="ai-order-cell" onclick="window.dashManager.openOrderModal('${r.report_id}', '${r.machine_id}')">
+            <div class="ai-order-cell" onclick="window.dashManager.openOrderModal('${safeReportId}', '${safeMachineId}')">
               <span class="cell-label">Status</span>
               <div>${statusBadge}</div>
             </div>
 
             <div class="ai-order-cell" 
                  title="Double-click to edit notes"
-                 ondblclick="editOrderField(this, '${r.machine_id}', 'notes', '${(r.notes || "").replace(/'/g, "\\'")}')">
+                 ondblclick="editOrderField(this, '${safeMachineId}', 'notes', '${escapeJs(r.notes)}')">
               <span class="cell-label">Notes</span>
               <div style="font-size:14px; color:#000000; font-weight:500; line-height:1.4; word-break:break-word;">${r.notes || "—"}</div>
             </div>
 
             <div class="ai-order-cell" 
                  title="Double-click to edit internal notes"
-                 ondblclick="editOrderField(this, '${r.machine_id}', 'internal_notes', '${(r.internal_notes || "").replace(/'/g, "\\'")}')">
+                 ondblclick="editOrderField(this, '${safeMachineId}', 'internal_notes', '${escapeJs(r.internal_notes)}')">
               <span class="cell-label">Internal Notes</span>
               <div class="ai-internal-notes-pill">${r.internal_notes || "—"}</div>
             </div>
 
-            <div class="ai-order-cell" style="text-align:center;" onclick="window.dashManager.openOrderModal('${r.report_id}', '${r.machine_id}')">
+            <div class="ai-order-cell" style="text-align:center;" onclick="window.dashManager.openOrderModal('${safeReportId}', '${safeMachineId}')">
               <span class="cell-label">Committed LT</span>
               <div style="font-size:13px; color:#000000; font-weight:800;">${r.committed_lead_time || "—"}</div>
             </div>
 
-            <div class="ai-order-cell" style="text-align:center;" onclick="window.dashManager.openOrderModal('${r.report_id}', '${r.machine_id}')">
+            <div class="ai-order-cell" style="text-align:center;" onclick="window.dashManager.openOrderModal('${safeReportId}', '${safeMachineId}')">
               <span class="cell-label">Target Date</span>
               <div style="font-size:14px; color:#000000; font-weight:800;">${r.target_handover || "—"}</div>
             </div>
 
             <div class="ai-order-cell" style="text-align:center;"
                  title="Double-click to edit revised date"
-                 ondblclick="editOrderField(this, '${r.machine_id}', 'revised_handover_date', '${r.revised_handover || ''}')">
+                 ondblclick="editOrderField(this, '${safeMachineId}', 'revised_handover_date', '${escapeJs(r.revised_handover)}')">
               <span class="cell-label">Revised Date</span>
               <div style="font-size:14px; color:#4f46e5; font-weight:700;">${r.revised_handover || "—"}</div>
             </div>
 
-            <div class="ai-order-cell" style="text-align:center;" onclick="window.dashManager.openOrderModal('${r.report_id}', '${r.machine_id}')">
+            <div class="ai-order-cell" style="text-align:center;" onclick="window.dashManager.openOrderModal('${safeReportId}', '${safeMachineId}')">
               <span class="cell-label">Days Left</span>
               <div style="font-size:20px; font-weight:800; color:${riskColor};">${r.days_left || "0"}</div>
             </div>
