@@ -127,6 +127,7 @@ window.initOrdersLogic = initOrdersLogic; // Expose global
 
 
 async function loadOrdersList(force = false) {
+    window.loadOrdersList = loadOrdersList; // Expose globally
     if (!window._ordersLogicInitialized) initOrdersLogic();
 
     console.log("[OrdersLogic] loadOrdersList called (force=" + force + ")");
@@ -190,6 +191,22 @@ async function loadOrdersList(force = false) {
 
         if (data && data.current_orders) {
             olOrdersData = data.current_orders;
+            olOrdersData.forEach(o => o.is_payment_terms = false);
+
+            // Augment with Supabase Payment Terms status
+            try {
+                let sbRes = await window.electron.invoke('supabase:query', {
+                    table: 'fmb_reports', method: 'select', params:{columns:'frappe_id, is_payment_terms'}
+                });
+                if(sbRes.ok && sbRes.data) {
+                    const termsSet = new Set(sbRes.data.filter(d => d.is_payment_terms === true || d.is_payment_terms === 'true').map(d => d.frappe_id));
+                    olOrdersData.forEach(o => {
+                        o.is_payment_terms = termsSet.has(o.report_id);
+                    });
+                }
+            } catch(e) { console.error('[OrdersLogic] Failed to augment terms from Supabase', e); }
+
+            window.olOrdersData = olOrdersData; // Expose globally for Aftersales
             if (window.dashManager) window.dashManager.ordersData = olOrdersData;
             renderOrdersList();
         } else {
@@ -417,6 +434,7 @@ function renderOrdersList() {
         if (s.includes("handover") || s.includes("ready") || s.includes("delivered")) statusStyle = "background:#dcfce7; color:#166534; border:1px solid #bbf7d0;";
         else if (s.includes("delay") || s.includes("issue") || s.includes("on hold")) statusStyle = "background:#fff7ed; color:#9a3412; border:1px solid #ffedd5;";
         else if (s.includes("customer to collect")) statusStyle = "background:#f0fdf4; color:#166534; border:1px solid #dcfce7;";
+        else if (s.includes("awaiting customer")) statusStyle = "background:#fffbeb; color:#92400e; border:1px solid #fef3c7;";
         else if (s.includes("in progress") || s.includes("transit") || s.includes("active")) statusStyle = "background:#e0f2fe; color:#075985; border:1px solid #bae6fd;";
         else if (s.includes("new sale")) statusStyle = "background:#faf5ff; color:#6b21a8; border:1px solid #e9d5ff; font-weight:900; box-shadow: 0 0 12px rgba(168, 85, 247, 0.25);";
 
@@ -427,7 +445,11 @@ function renderOrdersList() {
         const safeReportId = escapeJs(r.report_id);
         const safeMachineId = escapeJs(r.machine_id);
 
-        const btnHtml = `<button class="btn-text-action" onclick="window.dashManager.openOrderModal('${safeReportId}', '${safeMachineId}')">DETAILS</button>`;
+        let btnHtml = '';
+        if (r.is_payment_terms === true) {
+            btnHtml += `<span style="display:inline-block; white-space:nowrap; color:#10b981; font-weight:800; font-size:10px; margin-right:8px; border:1px solid #10b981; padding:2px 6px; border-radius:6px; background:#ecfdf5;">ON TERMS</span>`;
+        }
+        btnHtml += `<button class="btn-text-action" onclick="window.dashManager.openOrderModal('${safeReportId}', '${safeMachineId}')">DETAILS</button>`;
 
         return `
           <div class="ai-order-row ${riskClass} ${(r.status || "").toLowerCase().includes("new sale") ? 'is-new-entry' : ''}" data-id="${r.report_id}">

@@ -622,18 +622,35 @@
   <!-- SECURITY REMINDER MODAL -->
   <div id="security-reminder">
     <div class="security-modal">
-      <div class="security-header" style="-webkit-app-region: no-drag;">
-        <div class="security-icon" style="-webkit-app-region: no-drag;">🛡️</div>
-        <div class="security-title" style="-webkit-app-region: no-drag;">Security Awareness</div>
-      </div>
-      <div class="security-content" style="-webkit-app-region: no-drag;">
-        Protecting institutional data is our top priority. Please remember:
-        <div class="security-tip-box" id="security-tip" style="-webkit-app-region: no-drag;">
-          Never share your system credentials. Use strong, unique passwords and change them regularly to stay protected.
+      <div class="security-header">
+        <div class="security-icon">
+          <i class="fas fa-shield-alt"></i>
         </div>
-        Your session is automatically monitored for inactivity to ensure unauthorized access is prevented.
+        <div class="security-title">Security Briefing</div>
       </div>
-      <button class="security-button" onclick="acknowledgeSecurity()" style="-webkit-app-region: no-drag;">I Understand</button>
+      <div class="security-content">
+        Before you enter the Command Center, please review today's operational security protocol. Maintaining system integrity is everyone's responsibility.
+      </div>
+      <div class="security-tip-box">
+        <span id="security-tip">Loading secure protocol...</span>
+      </div>
+      <button class="security-button" onclick="acknowledgeSecurity()">I Understand & Proceed</button>
+    </div>
+  </div>
+
+  <!-- INACTIVITY WARNING MODAL -->
+  <div id="inactivity-warning-overlay" class="hidden" style="position:fixed; inset:0; background:rgba(0,0,0,0.8); z-index:20000; display:flex; align-items:center; justify-content:center; backdrop-filter:blur(8px);">
+    <div style="background:white; width:400px; padding:32px; border-radius:12px; text-align:center; box-shadow:0 20px 40px rgba(0,0,0,0.4);">
+        <div style="width:60px; height:60px; background:#fef2f2; color:#ef4444; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:24px; margin:0 auto 20px;">
+            <i class="fas fa-clock"></i>
+        </div>
+        <h2 style="font-size:20px; font-weight:800; color:#1e293b; margin-bottom:12px;">Inactivity Warning</h2>
+        <p style="color:#64748b; font-size:14px; line-height:1.6; margin-bottom:24px;">
+            Your session is about to expire due to inactivity. You will be logged out in <span id="inactivity-countdown" style="font-weight:800; color:#ef4444;">60</span> seconds.
+        </p>
+        <button onclick="dismissInactivityWarning()" style="width:100%; padding:14px; background:#0f172a; color:white; border:none; border-radius:8px; font-weight:700; cursor:pointer; transition:all 0.2s;">
+            Stay Logged In
+        </button>
     </div>
   </div>
 
@@ -746,17 +763,50 @@
     const splashBar = document.getElementById("splash-bar-inner");
 
     /* ---------- SECURITY & IDLE LOGIC ---------- */
-    const IDLE_TIMEOUT = 30 * 60 * 1000; // 30 minutes in ms
+    const IDLE_TIMEOUT = 15 * 60 * 1000; // 15 minutes
+    const WARNING_BUFFER = 60 * 1000; // 1 minute warning
     let idleTimer;
+    let warningTimer;
 
     function resetIdleTimer() {
-        if (!loginView.classList.contains('hidden')) return; // Don't track idle on login screen
+        if (!loginView.classList.contains('hidden')) return; 
         
         clearTimeout(idleTimer);
+        clearTimeout(warningTimer);
+
+        // Warning at 14 minutes
+        warningTimer = setTimeout(() => {
+            showInactivityWarning();
+        }, IDLE_TIMEOUT - WARNING_BUFFER);
+
+        // Logout at 15 minutes
         idleTimer = setTimeout(() => {
             console.log("Idle timeout reached. Logging out...");
-            window.frappeAPI.close(); // Force application close/logout
+            window.frappeAPI.close(); 
         }, IDLE_TIMEOUT);
+    }
+
+    function showInactivityWarning() {
+        const overlay = document.getElementById('inactivity-warning-overlay');
+        if (overlay) overlay.classList.remove('hidden');
+        
+        let secondsLeft = 60;
+        const countdownEl = document.getElementById('inactivity-countdown');
+        if (countdownEl) countdownEl.innerText = secondsLeft;
+
+        const countdownInterval = setInterval(() => {
+            secondsLeft--;
+            if (countdownEl) countdownEl.innerText = secondsLeft;
+            if (secondsLeft <= 0 || overlay.classList.contains('hidden')) {
+                clearInterval(countdownInterval);
+            }
+        }, 1000);
+    }
+
+    function dismissInactivityWarning() {
+        const overlay = document.getElementById('inactivity-warning-overlay');
+        if (overlay) overlay.classList.add('hidden');
+        resetIdleTimer();
     }
 
     // Interaction listeners for idle tracking
@@ -857,6 +907,16 @@
           }, 2500);
         }
       });
+
+      // SAFETY: Hide update text after 5s regardless of auto-updater status
+      setTimeout(() => {
+          const updaterUI = document.getElementById('inline-updater');
+          if (updaterUI && updaterUI.style.display !== 'none') {
+              updaterUI.style.transition = 'opacity 0.5s ease';
+              updaterUI.style.opacity = '0';
+              setTimeout(() => { updaterUI.style.display = 'none'; }, 500);
+          }
+      }, 5000);
     }
 
     // ✅ Dynamic Version Update
@@ -934,7 +994,35 @@
 
     /* Login interactions */
     showPw.addEventListener("change", () => { pwdInput.type = showPw.checked ? "text" : "password"; });
-    forgotLink.addEventListener("click", (e) => { e.preventDefault(); window.open("https://salestrack.powerstar.co.zw/#forgot", "_blank"); });
+    forgotLink.addEventListener("click", async (e) => { 
+        e.preventDefault(); 
+        const email = prompt("Please enter your normal system email address to receive password reset instructions:");
+        if (!email) return;
+
+        setStatus("Sending reset instructions...", "info");
+        try {
+            const sys = OMNIS_SYSTEMS.find(s => s.key === "salestrack") || OMNIS_SYSTEMS[0];
+            const url = sys.baseUrl + "/api/method/powerstar_salestrack.omnis_dashboard.trigger_password_reset";
+            
+            const params = new URLSearchParams();
+            params.append('user_email', email);
+
+            const res = await fetch(url, { 
+                method: "POST", 
+                headers: { "Content-Type": "application/x-www-form-urlencoded" }, 
+                body: params.toString() 
+            });
+            const data = await res.json();
+            
+            if (data.message && data.message.ok) {
+                setStatus("Instructions sent! Check your inbox.", "success");
+            } else {
+                setStatus("Error: " + (data.message?.error || "User not found"), "error");
+            }
+        } catch (err) {
+            setStatus("Could not connect to reset service.", "error");
+        }
+    });
 
     form.addEventListener("submit", (e) => {
       e.preventDefault();
@@ -1035,15 +1123,18 @@
             throw new Error("Invalid");
           }
         } catch (err) {
+          console.error("[Login] System failure:", sys.name, err);
           if (row) {
             row.classList.remove('active');
             row.classList.add('error');
             
-            // Extract meaningful error message if available
+            // Extract meaningful error message if available safely
             let errorMsg = 'DEFERRED';
-            if (err.message && err.message.includes('417')) errorMsg = 'SERVER ERR (417)';
-            else if (err.message && err.message.includes('500')) errorMsg = 'SERVER ERR (500)';
-            else if (err.message && err.message.includes('403')) errorMsg = 'FORBIDDEN (403)';
+            const msg = (err && err.message) ? String(err.message) : '';
+            if (msg.includes('417')) errorMsg = 'SERVER ERR (417)';
+            else if (msg.includes('500')) errorMsg = 'SERVER ERR (500)';
+            else if (msg.includes('403')) errorMsg = 'FORBIDDEN (403)';
+            else if (msg.includes('BRIDGE_TIMEOUT')) errorMsg = 'TIMEOUT';
             
             row.querySelector('.status-indicator').textContent = errorMsg;
           }
@@ -1054,7 +1145,7 @@
       clearInterval(jargonInterval);
       hideSplash();
       if (!silentAuto) {
-        setStatus("Access Denied: Invalid Credentials Provided", "error");
+        setStatus("Access Denied: Invalid Credentials or System Timeout", "error");
         submitBtn.disabled = false;
         // Shake animation for the form
         form.style.animation = 'none';
