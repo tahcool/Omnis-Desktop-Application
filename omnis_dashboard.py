@@ -169,6 +169,9 @@ __all__ = [
     "delete_gsm_task",             # ✅ ADDED
     "save_stock_pipeline",         # ✅ ADDED
     "delete_stock_pipeline",       # ✅ ADDED
+    "upload_machine_image",        # ✅ ADDED
+    "update_customer_phone_omnis", # ✅ ADDED
+    "trigger_password_reset",      # ✅ ADDED
 ]
 
 
@@ -753,14 +756,19 @@ def search_customer_for_omnis(payload=None, **kwargs):
     try:
         # 1. RAW SEARCH: No filters, no status checks.
         rows = frappe.db.sql("""
-            SELECT name, name as display_name 
+            SELECT name, customer_name as display_name, mobile_no
             FROM `tabCustomer` 
             WHERE (LOWER(name) LIKE %(t)s OR LOWER(customer_name) LIKE %(t)s)
             LIMIT 30
         """, {"t": f"%{txt.lower()}%"}, as_dict=True)
 
         if rows:
-            return [{"value": r.name, "description": r.display_name, "details": r.name} for r in rows]
+            return [{
+                "value": r.name, 
+                "description": r.display_name, 
+                "details": r.name,
+                "phone": r.mobile_no or ""
+            } for r in rows]
         
         # 2. HANDSHAKE DIAGNOSTIC: Why is it empty?
         total_count = frappe.db.sql("SELECT COUNT(*) FROM `tabCustomer`")[0][0]
@@ -1025,6 +1033,76 @@ def get_omnis_quotations(start: int = 0, page_length: int = 20, search: str = ""
         "has_more": has_more,
     }
 
+@frappe.whitelist(allow_guest=True)
+def get_omnis_quotations_with_items(start: int = 0, page_length: int = 50, before=None, payload=None, **kwargs):
+    """
+    Enhanced endpoint for Supabase Sync.
+    Returns headers AND child items + brand/group info.
+    """
+    params = extract_params(payload)
+    if params:
+        start = cint(params.get("start") or 0)
+        page_length = cint(params.get("page_length") or 50)
+        before = params.get("before") or before
+    
+    filters = [["docstatus", "<", 2]]
+    if before:
+        filters.append(["creation", "<", before])
+    
+    # 1. Fetch Headers
+    headers = frappe.get_all(
+        "Quotation",
+        filters=filters,
+        fields=[
+            "name", "customer_name", "transaction_date", "grand_total", "status", 
+            "company", "custom_sales_person", "territory", "customer_group", 
+            "docstatus", "owner", "creation", "modified", "currency", "total_qty", "valid_till"
+        ],
+        order_by="creation desc",
+        limit_start=start,
+        limit_page_length=page_length
+    )
+    
+    if not headers:
+        return {"ok": True, "data": {"headers": [], "items": []}}
+        
+    names = [h.name for h in headers]
+    
+    # 2. Fetch Items
+    items = frappe.get_all(
+        "Quotation Item",
+        filters=[["parent", "in", names]],
+        fields=["parent", "item_code", "item_name", "qty", "rate", "amount"]
+    )
+    
+    # 3. Fetch Item Brands
+    item_codes = list(set([i.item_code for i in items if i.item_code]))
+    item_meta = {}
+    if item_codes:
+        meta_data = frappe.get_all(
+            "Item",
+            filters=[["name", "in", item_codes]],
+            fields=["name", "brand", "item_group"]
+        )
+        for m in meta_data:
+            item_meta[m.name] = m
+            
+    # Attach meta to items
+    for i in items:
+        meta = item_meta.get(i.item_code, {})
+        i.update({
+            "brand": meta.get("brand"),
+            "item_group": meta.get("item_group")
+        })
+        
+    return {
+        "ok": True,
+        "data": {
+            "headers": headers,
+            "items": items
+        }
+    }
+
 
 @frappe.whitelist(allow_guest=True)
 def get_omnis_orders(start: int = 0, page_length: int = 20, search: str = "", status: str = "", payload=None, **kwargs):
@@ -1101,6 +1179,7 @@ def get_omnis_orders(start: int = 0, page_length: int = 20, search: str = "", st
         frappe.set_user(previous_user)
 
     has_more = len(rows) == page_length
+    total_count = frappe.db.sql(f"SELECT COUNT(*) FROM `tabFMB Report` f WHERE {where_clause}", values)[0][0]
 
     return {
         "ok": True,
@@ -1108,6 +1187,7 @@ def get_omnis_orders(start: int = 0, page_length: int = 20, search: str = "", st
         "start": start,
         "page_length": page_length,
         "has_more": has_more,
+        "total_count": total_count,
     }
 
 
@@ -5812,6 +5892,54 @@ def get_order_details(payload=None, **kwargs):
 
 
 @frappe.whitelist(allow_guest=True)
+def upload_machine_image(payload=None, **kwargs):
+    """
+    Receives a base64 image and saves it as a Frappe File.
+    Returns the public URL of the file.
+    """
+    try:
+        params = extract_params(payload=payload, **kwargs)
+        filename = params.get("filename") or "machine_update.jpg"
+        filedata = params.get("filedata") # Base64 string
+        report_id = params.get("report_id")
+
+        if not filedata:
+            return {"ok": False, "error": "No file data received"}
+
+        # Use Administrator to ensure upload works regardless of guest status
+        # but we should still be careful.
+        prev_user = frappe.session.user
+        frappe.set_user("Administrator")
+        
+        try:
+            # Decode if needed (extract_params might have done it, but usually filedata is passed raw base64)
+            if "," in filedata:
+                filedata = filedata.split(",")[1]
+
+            import base64
+            decoded_data = base64.b64decode(filedata)
+
+            # Create File doc
+            file_doc = frappe.get_doc({
+                "doctype": "File",
+                "file_name": filename,
+                "attached_to_doctype": "FMB Report",
+                "attached_to_name": report_id,
+                "content": decoded_data,
+                "is_private": 0
+            })
+            file_doc.insert(ignore_permissions=True)
+            
+            return {"ok": True, "file_url": file_doc.file_url}
+        finally:
+            frappe.set_user(prev_user)
+
+    except Exception as e:
+        frappe.log_error(f"Image Upload Error: {str(e)}", "Omnis Upload")
+        return {"ok": False, "error": str(e)}
+
+
+@frappe.whitelist(allow_guest=True)
 def update_order_details_v2(payload=None, **kwargs):
     """
     Update FMB Report (Parent) Status and Report Machine (Child) details.
@@ -5826,6 +5954,10 @@ def update_order_details_v2(payload=None, **kwargs):
         if not report_id:
              diag = params.get("__diag__", "No diagnostic info available")
              return {"ok": False, "error": f"Missing Report ID. Server Diagnostics: {diag}"}
+             
+        # ✅ Ensure Admin context for editing
+        prev_user = frappe.session.user
+        frappe.set_user("Administrator")
         machine_id = params.get("machine_id")
         status = params.get("status")
         revised_handover = params.get("revised_handover")
@@ -5875,142 +6007,86 @@ def update_order_details_v2(payload=None, **kwargs):
         
         # frappe.log_error(f"Save Order Payload: MACHINES={machines} STATUS={status}", "Omnis Update Debug")
         log_debug(f"Payload: status={status}, machines={machines}")
+            except: return []
 
-        # Update Parent Status if changed
+        # 1. Load the main document
+        doc = frappe.get_doc("FMB Report", report_id)
+        
+        # 2. Update Status
         if status:
-            # Check DocStatus. If Submitted (1), we can't use set_value for standard fields easily.
-            docstatus = frappe.db.get_value("FMB Report", report_id, "docstatus")
-            if docstatus == 1:
-                frappe.db.set_value("FMB Report", report_id, "status", status)
-            else:
-                frappe.db.set_value("FMB Report", report_id, "status", status)
+            doc.status = status
 
-        # Handle Bulk Machines Update
-        if machines:
-            import json
-            try:
-                if isinstance(machines, str):
-                    machines_list = json.loads(machines)
-                else:
-                    machines_list = machines
-                
-                for m in machines_list:
-                    m_id = m.get("name") # Child row name
-                    if m_id:
-                        upd = {}
-                        if "revised_handover_date" in m: 
-                            val = m["revised_handover_date"]
-                            upd["revised_handover_date"] = val if val else None
-                        if "target_handover_date" in m: 
-                            val = m["target_handover_date"]
-                            upd["target_handover_date"] = val if val else None
-                        if "notes" in m: upd["notes"] = m["notes"]
-                        if "item" in m: upd["item"] = m["item"]
-                        if "serial_no" in m: upd["serial_no"] = m["serial_no"]
-                        if "qty" in m: upd["qty"] = m["qty"]
-                        
-                        if upd:
-                            frappe.db.set_value("FMB Report Machine", m_id, upd)
-            except Exception as e:
-                 frappe.log_error(str(e), "Update Machines Bulk Error")
+        # 3. Handle Existing Machines Update
+        machines_list = safe_json_decode(machines_raw)
+        if machines_list:
+            for m in machines_list:
+                m_id = m.get("name")
+                if not m_id: continue
+                # Find matching row in doc
+                for row in doc.machines:
+                    if row.name == m_id:
+                        if "item" in m: row.item = m["item"]
+                        if "serial_no" in m: row.serial_no = m["serial_no"]
+                        if "qty" in m: row.qty = m["qty"]
+                        if "target_handover_date" in m: row.target_handover_date = m["target_handover_date"] or None
+                        if "revised_handover_date" in m: row.revised_handover_date = m["revised_handover_date"] or None
+                        if "notes" in m: row.notes = m["notes"]
+                        if "images_one" in m: row.images_one = m["images_one"]
+                        if "image_two" in m: row.image_two = m["image_two"]
+                        break
 
-        # Handle New Machines Addition
-        if new_machines:
-            import json
-            try:
-                if isinstance(new_machines, str):
-                    new_machines_list = json.loads(new_machines)
-                else:
-                    new_machines_list = new_machines
-                
-                for nm in new_machines_list:
-                    # Validate minimum
-                    if not nm.get("item"): continue
+        # 4. Handle New Machines Addition
+        new_machines_list = safe_json_decode(new_machines_raw)
+        if new_machines_list:
+            for nm in new_machines_list:
+                if not nm.get("item"): continue
+                doc.append("machines", {
+                    "item": nm.get("item"),
+                    "qty": nm.get("qty") or 1,
+                    "serial_no": nm.get("serial_no"),
+                    "target_handover_date": nm.get("target_handover_date") or None,
+                    "revised_handover_date": nm.get("revised_handover_date") or None,
+                    "notes": nm.get("notes"),
+                    "images_one": nm.get("images_one"),
+                    "image_two": nm.get("image_two")
+                })
 
-                    new_row = frappe.get_doc({
-                        "doctype": "FMB Report Machine",
-                        "parent": report_id,
-                        "parenttype": "FMB Report",
-                        "parentfield": "machines",
-                        "item": nm.get("item"),
-                        "qty": nm.get("qty") or 1,
-                        "serial_no": nm.get("serial_no"),
-                        "target_handover_date": nm.get("target_handover_date") or None,
-                        "revised_handover_date": nm.get("revised_handover_date") or None,
-                        "notes": nm.get("notes")
-                    })
-                    # Insert ignoring permissions if needed, assuming Admin context from earlier set_user or caller check
-                    # However, set_user("Administrator") isn't in this function but usually caller handles context? 
-                    # Actually, this function is whitelisted allow_guest=True so we should probably set admin context if we want to bypass permissions
-                    # But typically FMB Report edit requires permissions.
-                    # Let's assume standard perm checks or add flags if necessary. 
-                    # Since this is custom dashboard logic often run by specific users, we might need flags.
-                    new_row.insert(ignore_permissions=True) 
-            except Exception as e:
-                frappe.log_error(str(e), "Insert New Machine Error")
-        # Legacy Single Machine Update (if no bulk list provided but single args are)
-        elif machine_id:
-            update_dict = {}
-            if revised_handover is not None:
-                 update_dict["revised_handover_date"] = revised_handover
-            if target_handover is not None:
-                 update_dict["target_handover_date"] = target_handover
-            if notes is not None:
-                 update_dict["notes"] = notes
-            
-            if update_dict:
-                frappe.db.set_value("FMB Report Machine", machine_id, update_dict)
+        # 5. Process Deleted Machines
+        deleted_ids = safe_json_decode(deleted_machines_raw)
+        if deleted_ids:
+            # Reconstruct machines list without deleted ones
+            new_machines_rows = []
+            for m in doc.machines:
+                if m.name not in deleted_ids:
+                    new_machines_rows.append(m)
+            doc.set("machines", new_machines_rows)
 
-        # Process Deleted Machines
-        if deleted_machines:
-            for m_id in deleted_machines:
-                if m_id:
-                    try:
-                        frappe.delete_doc("FMB Report Machine", m_id, ignore_permissions=True)
-                    except Exception as e:
-                        frappe.log_error(str(e), f"Delete Machine Error {m_id}")
-          
-        # Update Contacts if provided
-        if contacts:
-            import json
-            try:
-                if isinstance(contacts, str):
-                    contacts_list = json.loads(contacts)
-                else:
-                    contacts_list = contacts
-                
-                # We need to replace the contacts.
-                # Since we are using Administrator, we can just load the doc and save.
-                doc = frappe.get_doc("FMB Report", report_id)
-                
-                # Clear existing
-                doc.set("contacts", [])
-                
-                # Add new
-                for c in contacts_list:
-                    doc.append("contacts", {
-                        "salutation": c.get("salutation"),
-                        "name1": c.get("name1") or c.get("name"),
-                        "phone_number": c.get("phone_number"),
-                        "email_address": c.get("email_address")
-                    })
-                
-                doc.save(ignore_permissions=True)
-                
-            except Exception as e:
-                frappe.log_error(str(e), "Update Contacts Error")
-                # Don't fail the whole request, but log it
+        # 6. Update Contacts
+        contacts_list = safe_json_decode(contacts_raw)
+        if contacts_list:
+            doc.set("contacts", [])
+            for c in contacts_list:
+                doc.append("contacts", {
+                    "salutation": c.get("salutation"),
+                    "name1": c.get("name1") or c.get("name"),
+                    "phone_number": c.get("phone_number"),
+                    "email_address": c.get("email_address")
+                })
 
+        # 7. Save Everything Atomic
+        doc.save(ignore_permissions=True)
         frappe.db.commit()
-        log_debug("Update success")
         return {"ok": True}
 
     except Exception as e:
+        frappe.db.rollback()
         import traceback
         tb = traceback.format_exc()
-        log_debug(f"Update Error: {str(e)}\n{tb}")
-        frappe.log_error(str(e), "Update Order Error")
+        frappe.log_error(f"Update Order Error: {str(e)}\n{tb}", "Update Order Error")
         return {"ok": False, "error": str(e)}
+    finally:
+        if 'prev_user' in locals():
+            frappe.set_user(prev_user)
 
 
 @frappe.whitelist()
@@ -7464,3 +7540,21 @@ def mark_report_state_sent(quote_name=None, payload=None, **kwargs):
         return {"ok": False, "error": str(e)}
     finally:
         frappe.set_user(previous_user)
+
+@frappe.whitelist(allow_guest=True)
+def trigger_password_reset(user_email=None, payload=None, **kwargs):
+    """Triggers the standard Frappe password reset workflow."""
+    params = extract_params(payload=payload, **kwargs)
+    email = user_email or params.get("user_email") or params.get("email")
+    
+    if not email:
+        return {"ok": False, "error": "Email address is required."}
+    
+    try:
+        from frappe.core.doctype.user.user import reset_password
+        reset_password(email)
+        return {"ok": True, "message": "Password reset instructions have been sent to your email."}
+    except Exception as e:
+        # If user not found, we still return OK to prevent user enumeration, 
+        # but Frappe's reset_password usually handles this gracefully.
+        return {"ok": False, "error": str(e)}

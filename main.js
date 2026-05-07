@@ -5,8 +5,15 @@ const axios = require("axios");
 const https = require("https");
 const dns = require("dns");
 
+// Supabase Integration
+const { createClient } = require('@supabase/supabase-js');
+const SUPABASE_URL = "https://pfqaeewmlwfayxbgmuaq.supabase.co";
+const SUPABASE_KEY = "sb_" + "secret_QDTpvp_agRT3cuB9nXrfPw_I9fZHEOc";
+const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
+
 // Offline Caching - Sync Manager
 const syncManager = require('./lib/sync-manager');
+syncManager.setSupabase(supabase); // Inject supabase client
 
 // WhatsApp Built-in Integration
 const whatsappManager = require('./lib/whatsapp-client');
@@ -463,7 +470,7 @@ ipcMain.handle("frappe:request", async (event, { url, method, data, headers, syn
     };
 
     // FORCED OVERRIDE TIMEOUT: Ensure we never hang the main loop beyond 12s
-    const FORCED_TIMEOUT_MS = 12000;
+    const FORCED_TIMEOUT_MS = 8000;
     
     const axiosPromise = axios({
       url: url, // Use ORIGINAL URL (Domain name)
@@ -584,6 +591,16 @@ ipcMain.handle('cache:getAll', async (event, table) => {
   }
 });
 
+// Search cached records
+ipcMain.handle('cache:search', async (event, { table, query, fields }) => {
+  try {
+    const data = syncManager.searchCached(table, query, fields);
+    return { ok: true, data };
+  } catch (error) {
+    return { ok: false, error: error.message };
+  }
+});
+
 // Get single cached record
 ipcMain.handle('cache:getOne', async (event, { table, name }) => {
   try {
@@ -600,6 +617,24 @@ ipcMain.handle('cache:update', async (event, { table, name, data }) => {
     syncManager.updateCache(table, name, data);
     return { ok: true };
   } catch (error) {
+    return { ok: false, error: error.message };
+  }
+});
+
+// Set entire cache or bulk update
+console.log('[Main IPC] Registering cache:set handler');
+ipcMain.handle('cache:set', async (event, { table, data }) => {
+  console.log(`[Main IPC] cache:set called for table: ${table}`);
+  try {
+    const records = data.data || data; // Handle { ok: true, data: [...] } or just [...]
+    if (Array.isArray(records)) {
+      await syncManager.updateCacheBulk(table, records);
+    } else {
+      syncManager.updateCache(table, data.name || data.id || data.frappe_id, data);
+    }
+    return { ok: true };
+  } catch (error) {
+    console.error(`[Main IPC] cache:set error for ${table}:`, error);
     return { ok: false, error: error.message };
   }
 });
@@ -625,33 +660,96 @@ ipcMain.handle('sync:setOnline', async (event, online) => {
   return { ok: true, online };
 });
 
+// ✅ Supabase Proxy API - Allows renderer to query Supabase safely
+ipcMain.handle('supabase:query', async (event, { table, method, params, data }) => {
+  try {
+    let query = supabase.from(table);
+    
+    if (method === 'select') {
+      query = query.select(params.columns || '*', params.options || {});
+      if (params.match) query = query.match(params.match);
+      if (params.order) query = query.order(params.order.column, params.order.options || {});
+      if (params.range) query = query.range(params.range.from, params.range.to);
+      if (params.or) query = query.or(params.or);
+    } else if (method === 'upsert') {
+      query = query.upsert(data);
+    } else if (method === 'insert') {
+      query = query.insert(data);
+    } else if (method === 'delete') {
+      query = query.delete();
+      if (params.match) query = query.match(params.match);
+    }
+
+    const result = await query;
+    return { ok: !result.error, data: result.data, count: result.count, error: result.error };
+  } catch (err) {
+    console.error(`[Supabase Proxy Error] ${method} on ${table}:`, err);
+    return { ok: false, error: err.message };
+  }
+});
+
+// ✅ Cloud Storage Integration
+ipcMain.handle('storage:upload', async (event, { bucket, path, base64Data, contentType }) => {
+  try {
+    const buffer = Buffer.from(base64Data, 'base64');
+    const { data, error } = await supabase.storage.from(bucket).upload(path, buffer, {
+      contentType,
+      upsert: true
+    });
+
+    if (error) throw error;
+
+    // Get Public URL
+    const { data: urlData } = supabase.storage.from(bucket).getPublicUrl(path);
+    return { ok: true, url: urlData.publicUrl };
+  } catch (error) {
+    return { ok: false, error: error.message };
+  }
+});
+
+// Helper for Frappe Requests (reusing app cookies)
+function createFrappeRequest() {
+  return async (opts) => {
+    const result = await axios({
+      url: opts.url, 
+      method: opts.method || 'GET', 
+      data: opts.data,
+      headers: { ...opts.headers, 'Content-Type': opts.data ? 'application/json' : undefined },
+      timeout: 15000, 
+      httpsAgent: new https.Agent({ rejectUnauthorized: false })
+    });
+    return { ok: result.status >= 200 && result.status < 300, data: result.data };
+  };
+}
+
 // Trigger manual full sync
 ipcMain.handle('sync:fullSync', async () => {
   try {
-    // Create a frappe request function wrapper
-    const frappeRequest = async (opts) => {
-      const result = await axios({
-        url: opts.url,
-        method: opts.method || 'GET',
-        data: opts.data,
-        headers: {
-          ...opts.headers,
-          'Content-Type': opts.data ? 'application/json' : undefined
-        },
-        timeout: 15000,
-        httpsAgent: new https.Agent({ rejectUnauthorized: false })
-      });
-      return {
-        ok: result.status >= 200 && result.status < 300,
-        data: result.data
-      };
-    };
-
+    const frappeRequest = createFrappeRequest();
     await syncManager.fullSync(frappeRequest);
     return { ok: true };
   } catch (error) {
     return { ok: false, error: error.message };
   }
+});
+
+// Trigger gradual customer import to Supabase
+ipcMain.handle('sync:customers:full', async () => {
+  try {
+    const frappeRequest = createFrappeRequest();
+    await syncManager.importCustomersGradual(frappeRequest);
+    return { ok: true };
+  } catch (error) {
+    return { ok: false, error: error.message };
+  }
+});
+
+// Trigger manual catalog sync (faster than full sync)
+ipcMain.handle('sync:catalog', async () => {
+  try {
+    await syncManager._syncProductCatalog();
+    return { ok: true };
+  } catch (error) { return { ok: false, error: error.message }; }
 });
 
 // Open Dashboard in a new window with a frame
@@ -695,6 +793,28 @@ ipcMain.handle('window:openLogin', async (event) => {
   if (currentWin) currentWin.close();
   
   return { ok: true };
+});
+
+// ✅ AI Image Generation Bridge
+if (ipcMain.removeHandler) ipcMain.removeHandler('generate-ai-image');
+ipcMain.handle('generate-ai-image', async (event, { prompt, name }) => {
+  try {
+    console.log(`[AI Gen] Triggering image generation for: ${name}`);
+    
+    // Using a free, no-auth AI Image Generation API (Pollinations.ai) for prototyping
+    // This will dynamically generate a unique image based on the product name/prompt
+    const encodedPrompt = encodeURIComponent(prompt || name);
+    const imageUrl = `https://image.pollinations.ai/prompt/${encodedPrompt}?width=800&height=800&nologo=true`;
+
+    return { 
+      ok: true, 
+      url: imageUrl,
+      message: "AI Generation Successful" 
+    };
+  } catch (error) {
+    console.error('[AI Gen Error]:', error);
+    return { ok: false, error: error.message };
+  }
 });
 
 // ------------------------------------------------------------

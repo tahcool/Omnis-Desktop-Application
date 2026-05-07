@@ -3,20 +3,21 @@
  * Omnis Statistical Dashboard Logic
  * Handles fetching stats and rendering "cool" widgets.
  */
- 
+
 window.OmnisDashboardV6 = class OmnisDashboardV6 {
     constructor() {
         if (window.omnisLog) window.omnisLog("[Dashboard] OmnisDashboardV6 Constructing...", "info");
         this.data = null;
         this.selectedDate = new Date(); // Track current view date for Action Center
-        
+
         // * Immediate Global Aliases (Self-Registration)
         window.salestrack = this;
         window.dashManager = this;
-        
+
         // &#x1F44B; Listeners
         this.initWhatsAppListeners();
     }
+
 
     getAgeBadge(dateStr) {
         if (!dateStr) return '<span class="badge badge-light">N/A</span>';
@@ -24,10 +25,10 @@ window.OmnisDashboardV6 = class OmnisDashboardV6 {
             const d = new Date(dateStr);
             const now = new Date();
             const diffDays = Math.floor((now - d) / (1000 * 60 * 60 * 24));
-            
+
             let cls = "badge-success";
             let label = "Today";
-            
+
             if (diffDays > 14) {
                 cls = "badge-danger";
                 label = "Old";
@@ -35,10 +36,10 @@ window.OmnisDashboardV6 = class OmnisDashboardV6 {
                 cls = "badge-warning";
                 label = "Recent";
             }
-            
+
             // Modern pill style
             return `<span class="badge ${cls}" style="font-size:10px;padding:2px 8px;border-radius:4px;color:white;display:inline-block;background-color:${cls === 'badge-success' ? '#22c55e' : (cls === 'badge-warning' ? '#f59e0b' : '#ef4444')}">${label}</span>`;
-        } catch(e) {
+        } catch (e) {
             return '<span class="badge badge-light">-</span>';
         }
     }
@@ -52,13 +53,14 @@ window.OmnisDashboardV6 = class OmnisDashboardV6 {
             this.initNavigationIntelligence();
             await this.fetchData();
             this.render();
+            this.initInactivityTimer();
 
             // ... Dynamic Versioning from Electron
             if (window.electron && window.electron.getVersion) {
                 window.electron.getVersion().then(v => {
                     const label = document.getElementById('app-version-label');
                     if (label) label.innerText = `V${v}-NEXUS`;
-                    
+
                     const sLabel = document.getElementById('update-settings-status');
                     if (sLabel) sLabel.innerText = `Version ${v} Nexus`;
                 });
@@ -67,21 +69,65 @@ window.OmnisDashboardV6 = class OmnisDashboardV6 {
             // ... Update Message Listener (Toasts)
             if (window.electron && window.electron.on) {
                 window.electron.on('update-message', (event, data) => {
-                    // Update settings UI text if present
                     const sStatus = document.getElementById('update-settings-status');
                     if (sStatus && data.text) sStatus.innerText = data.text;
 
+                    const progContainer = document.getElementById('update-progress-container');
+
                     if (data.type === 'uptodate') {
                         this.showToast("System is up to date", "success");
+                        if (progContainer) progContainer.style.display = 'none';
+                        this.loadReleaseNotes(); // Always load current notes
                     } else if (data.type === 'available') {
                         this.showToast("New Update Found! Downloading...", "success");
+                        if (progContainer) progContainer.style.display = 'block';
+                        this.loadReleaseNotes();
                     } else if (data.type === 'error') {
                         this.showToast("Update Check Failed", "error");
                     } else if (data.type === 'downloaded') {
                         this.showToast("Update Downloaded. Restarting...", "success");
+                        if (progContainer) {
+                            const bar = document.getElementById('update-progress-bar');
+                            if (bar) bar.style.width = '100%';
+                            const pct = document.getElementById('update-progress-percent');
+                            if (pct) pct.innerText = '100%';
+                        }
+                    }
+                });
+
+                // New Progress Listener
+                window.electron.on('download-progress', (event, info) => {
+                    const progContainer = document.getElementById('update-progress-container');
+                    if (progContainer) progContainer.style.display = 'block';
+
+                    const bar = document.getElementById('update-progress-bar');
+                    const pct = document.getElementById('update-progress-percent');
+                    const stats = document.getElementById('update-progress-stats');
+                    const eta = document.getElementById('update-progress-eta');
+
+                    if (info) {
+                        const p = Math.floor(info.percent || 0);
+                        if (bar) bar.style.width = p + '%';
+                        if (pct) pct.innerText = p + '%';
+
+                        const speed = (info.bytesPerSecond / 1024 / 1024).toFixed(2); // MB/s
+                        const transferred = (info.transferred / 1024 / 1024).toFixed(1);
+                        const total = (info.total / 1024 / 1024).toFixed(1);
+
+                        if (stats) stats.innerText = `${transferred} MB / ${total} MB • ${speed} MB/s`;
+
+                        if (eta && info.bytesPerSecond > 0) {
+                            const remaining = info.total - info.transferred;
+                            const seconds = Math.round(remaining / info.bytesPerSecond);
+                            if (seconds < 60) eta.innerText = `ETA: ${seconds}s`;
+                            else eta.innerText = `ETA: ${Math.floor(seconds / 60)}m ${seconds % 60}s`;
+                        }
                     }
                 });
             }
+
+            // Initial load of release notes
+            setTimeout(() => this.loadReleaseNotes(), 1000);
         } catch (e) {
             console.error("Dashboard init failed:", e);
             const el = document.querySelector('.dash-grid');
@@ -96,6 +142,107 @@ window.OmnisDashboardV6 = class OmnisDashboardV6 {
 
     showError(msg) {
         console.warn("Dashboard Display Error:", msg);
+    }
+
+    removeMachineImage(btn, event) {
+        if (event) event.stopPropagation();
+        const slot = btn.closest('.photo-slot');
+        if (!slot) return;
+
+        const field = slot.dataset.field;
+        const isNew = slot.closest('tr')?.classList.contains('new-machine-row');
+        const cls = isNew ? (field === 'images_one' ? 'new-img-one' : 'new-img-two') : (field === 'images_one' ? 'm-img-one' : 'm-img-two');
+
+        slot.innerHTML = `
+            <span style="font-size:16px; color:#94a3b8;">+</span>
+            <input type="hidden" class="${cls}" value="">
+        `;
+
+        slot.style.borderStyle = 'dashed';
+        slot.style.borderColor = '#cbd5e1';
+        this.showToast("Image removed", "info");
+    }
+
+    // Machine Photo Upload Logic
+    // --- HELPERS ---
+    async urlToBase64(url) {
+        try {
+            const res = await fetch(url);
+            const blob = await res.blob();
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.onloadend = () => {
+                    const base64 = reader.result.split(',')[1]; // Strip prefix
+                    resolve(base64);
+                };
+                reader.onerror = reject;
+                reader.readAsDataURL(blob);
+            });
+        } catch (e) {
+            console.error("Base64 Convert Error:", e);
+            return null;
+        }
+    }
+
+    triggerMachineImageUpload(slot) {
+        const input = document.createElement('input');
+        input.type = 'file';
+        input.accept = 'image/*';
+        input.onchange = (e) => {
+            const file = e.target.files[0];
+            if (file) {
+                this.uploadMachineImage(slot, file);
+            }
+        };
+        input.click();
+    }
+
+    async uploadMachineImage(slot, file) {
+        const originalContent = slot.innerHTML;
+        slot.innerHTML = `<i class="fas fa-spinner fa-spin" style="color:#3b82f6;"></i>`;
+        slot.style.borderStyle = 'solid';
+        slot.style.borderColor = '#3b82f6';
+
+        try {
+            const reader = new FileReader();
+            reader.onload = async (e) => {
+                const base64 = e.target.result;
+                const sys = window.getCurrentSystem ? window.getCurrentSystem() : { baseUrl: "https://salestrack.powerstar.co.zw" };
+                const reportId = this._currentFullDoc ? this._currentFullDoc.name : '';
+
+                const res = await window.callFrappeSequenced(sys.baseUrl, "powerstar_salestrack.omnis_dashboard.upload_machine_image", {
+                    filedata: base64,
+                    filename: file.name,
+                    report_id: reportId
+                });
+
+                const payload = res.message || res;
+                if (payload.ok && payload.file_url) {
+                    const fullUrl = payload.file_url.startsWith('/') ? (sys.baseUrl.replace(/\/$/, '') + payload.file_url) : payload.file_url;
+
+                    slot.innerHTML = `
+                        <img src="${fullUrl}" style="width:100%; height:100%; object-fit:cover;">
+                        <div class="delete-photo" onclick="salestrack.removeMachineImage(this, event)" style="position:absolute; top:2px; right:2px; background:rgba(239, 68, 68, 0.9); color:white; width:14px; height:14px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:10px; font-weight:bold; cursor:pointer; z-index:5;">&times;</div>
+                        <input type="hidden" class="${slot.classList.contains('new-img-one') || slot.querySelector('.new-img-one') ? 'new-img-one' : (slot.querySelector('.m-img-one') ? 'm-img-one' : 'm-img-two')}" value="${payload.file_url}">
+                    `;
+
+                    // Re-inject correct hidden input class based on field
+                    const field = slot.dataset.field;
+                    const isNew = slot.closest('tr').classList.contains('new-machine-row');
+                    const cls = isNew ? (field === 'images_one' ? 'new-img-one' : 'new-img-two') : (field === 'images_one' ? 'm-img-one' : 'm-img-two');
+                    slot.querySelector('input').className = cls;
+
+                    this.showToast("Image uploaded successfully", "success");
+                } else {
+                    throw new Error(payload.error || "Upload failed");
+                }
+            };
+            reader.readAsDataURL(file);
+        } catch (err) {
+            console.error("Upload Error:", err);
+            slot.innerHTML = originalContent;
+            this.showToast("Upload failed: " + err.message, "error");
+        }
     }
 
     checkUpdatesManually() {
@@ -180,10 +327,10 @@ window.OmnisDashboardV6 = class OmnisDashboardV6 {
             hideTimeout = setTimeout(() => {
                 // Don't hide if mouse is hovering over the dots area
                 if (!dots.matches(':hover')) {
-                  dots.classList.remove('visible');
+                    dots.classList.remove('visible');
                 } else {
-                  // If hovering, wait another 3 seconds before trying again
-                  pingNav();
+                    // If hovering, wait another 3 seconds before trying again
+                    pingNav();
                 }
             }, 3000);
         };
@@ -201,7 +348,7 @@ window.OmnisDashboardV6 = class OmnisDashboardV6 {
         }
 
         document.addEventListener('touchstart', () => pingNav());
-        
+
         // Initial ping
         setTimeout(() => pingNav(), 1000);
     }
@@ -620,7 +767,7 @@ window.OmnisDashboardV6 = class OmnisDashboardV6 {
         if (container && d.oem_sales) {
             const top5 = d.oem_sales.slice(0, 5);
             const total = d.oem_sales.reduce((acc, curr) => acc + (curr.total_qty || 0), 0);
-            
+
             container.innerHTML = top5.map(oem => {
                 const pct = total > 0 ? ((oem.total_qty / total) * 100).toFixed(1) : 0;
                 return `
@@ -646,81 +793,271 @@ window.OmnisDashboardV6 = class OmnisDashboardV6 {
 
     renderOrderMap() {
         const container = document.getElementById('order-map-svg-container');
-        if (!container || !this.data) return;
+        if (!container) return;
 
-        const stages = this.data.order_stages || {
-            pipeline: 0,
-            confirmed: 0,
-            logistics: 0,
-            arrived: 0,
-            handover: 0
+        // If data is not yet available, show a placeholder but don't crash
+        if (!this.data) {
+            container.innerHTML = `<div style="padding:40px; color:#94a3b8; font-size:12px; font-style:italic;">Initializing logistics engine...</div>`;
+            return;
+        }
+
+        const orders = this.data.orders_preview || [];
+        const quotes = this.data.quote_follow_ups || this.data.open_quotations || [];
+
+        // Define Locations & Distances - GEOGRAPHICALLY ACCURATE RELATIVE POSITIONS
+        const LOCATIONS = {
+            'pipeline': { label: 'Global Pipeline', x: 10, y: 25, dist: 8500, icon: 'fa-globe-africa', color: '#64748b' },
+            'transit': { label: 'In Transit', x: 35, y: 60, dist: 2400, icon: 'fa-ship', color: '#8b5cf6' },
+            'durban': { label: 'Durban Port', x: 68, y: 88, dist: 1650, icon: 'fa-anchor', color: '#3b82f6' },
+            'beira': { label: 'Beira Port', x: 92, y: 40, dist: 560, icon: 'fa-anchor', color: '#3b82f6' },
+            'yard': { label: 'Harare HQ', x: 68, y: 35, dist: 0, icon: 'fa-warehouse', color: '#10b981' }
         };
 
-        const nodes = [
-            { id: 'pipeline', label: 'Pipeline', count: stages.pipeline, icon: 'fa-file-invoice-dollar', color: '#3b82f6' },
-            { id: 'confirmed', label: 'Confirmed', count: stages.confirmed, icon: 'fa-check-double', color: '#2563eb' },
-            { id: 'logistics', label: 'Logistics', count: stages.logistics, icon: 'fa-ship', color: '#8b5cf6' },
-            { id: 'arrived', label: 'In Yard', count: stages.arrived, icon: 'fa-truck-loading', color: '#f59e0b' },
-            { id: 'handover', label: 'Handover', count: stages.handover, icon: 'fa-handshake', color: '#10b981' }
-        ];
+        // Categorize items by location
+        const clusters = { yard: [], beira: [], durban: [], transit: [], pipeline: [] };
+
+        // Filter for "In Progress" orders as requested
+        const inProgressOrders = orders.filter(o => (o.phase || '').toLowerCase() === 'in progress');
+
+        // Map Orders with enhanced status intelligence
+        inProgressOrders.forEach(o => {
+            const status = (o.status || '').toLowerCase();
+            const eta = (o.eta || '').toLowerCase();
+            const combined = (status + ' ' + eta).toLowerCase();
+
+            // 📍 HARARE HQ (Yard): Look for PDI, Ready, Arrived, or direct city mentions
+            if (combined.includes('yard') || combined.includes('arrived') || combined.includes('ready') ||
+                combined.includes('pdi') || combined.includes('harare')) {
+                clusters.yard.push(o);
+            }
+            // ⚓ BEIRA PORT: Specific port tracking
+            else if (combined.includes('beira')) {
+                clusters.beira.push(o);
+            }
+            // ⚓ DURBAN PORT: Specific port tracking
+            else if (combined.includes('durban')) {
+                clusters.durban.push(o);
+            }
+            // 🚚 IN TRANSIT: Shipping, En route, Port-side handling, or General transit
+            else if (combined.includes('transit') || combined.includes('shipping') ||
+                combined.includes('en route') || combined.includes('port') || combined.includes('route')) {
+                clusters.transit.push(o);
+            }
+            // ⚙️ GLOBAL PIPELINE: All other In-Progress items starting their journey
+            else {
+                clusters.pipeline.push(o);
+            }
+        });
+
+        // Map Quotes to Pipeline (represents the pre-order volume)
+        const activeQuotes = quotes.filter(q => {
+            const status = (q.status || '').toLowerCase();
+            return status.includes('new') || status.includes('pending') || status.includes('sent');
+        });
+        activeQuotes.forEach(q => clusters.pipeline.push(q));
 
         let html = `
-            <div style="width:100%; max-width:800px; display:flex; justify-content:space-between; align-items:center; position:relative; padding:0 10px;">
-                <!-- Modern Progressive Line -->
-                <div style="position:absolute; top:35px; left:50px; right:50px; height:3px; background:#f1f5f9; z-index:1; border-radius:10px;">
-                    <div style="width:75%; height:100%; background:linear-gradient(to right, #3b82f6, #8b5cf6, #10b981); border-radius:10px; opacity:0.6;"></div>
-                </div>
+            <div style="width:100%; height:100%; min-height:650px; position:relative; overflow:hidden; border-radius:18px; border:1px solid #e2e8f0; box-shadow: 0 4px 15px rgba(0,0,0,0.05); font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;">
                 
-                ${nodes.map((node, i) => {
-                    const isActive = node.count > 0;
-                    return `
-                    <div style="display:flex; flex-direction:column; align-items:center; gap:12px; z-index:2; position:relative; cursor:pointer;" onclick="salestrack.openOrderStageModal('${node.id}')">
-                        <div style="
-                            width:70px; height:70px; border-radius:20px; 
-                            background:#fff; border:2px solid ${isActive ? node.color : '#e2e8f0'}; 
-                            display:flex; align-items:center; justify-content:center; 
-                            box-shadow:${isActive ? '0 10px 20px rgba(0,0,0,0.08)' : '0 4px 10px rgba(0,0,0,0.02)'}; 
-                            transition:all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-                            position:relative;
-                        " class="${isActive ? 'pulse-active' : ''}" 
-                        onmouseover="this.style.transform='translateY(-5px) scale(1.05)'; this.style.boxShadow='0 15px 30px rgba(0,0,0,0.12)';" 
-                        onmouseout="this.style.transform='none'; this.style.boxShadow='${isActive ? '0 10px 20px rgba(0,0,0,0.08)' : '0 4px 10px rgba(0,0,0,0.02)'}';">
-                            <i class="fas ${node.icon}" style="font-size:24px; color:${isActive ? node.color : '#cbd5e1'};"></i>
-                            
-                            ${isActive ? `
-                            <div style="position:absolute; top:-8px; right:-8px; background:${node.color}; color:#fff; font-size:11px; font-weight:900; padding:4px 10px; border-radius:12px; border:3px solid #fff; box-shadow:0 4px 8px rgba(0,0,0,0.1);">
-                                ${node.count}
+                <style>
+                    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
+                    @keyframes satPulse { 0% { transform: scale(1); opacity: 1; } 50% { transform: scale(1.1); opacity: 0.8; } 100% { transform: scale(1); opacity: 1; } }
+                    @keyframes pulseNode { 0% { opacity: 1; transform:scale(1); } 50% { opacity: 0.5; transform:scale(1.2); } 100% { opacity: 1; transform:scale(1); } }
+                </style>
+
+                <!-- 🗺️ Map Background: Ocean + Land Mass -->
+                <div style="position:absolute; inset:0; background: #dce8f5;"></div>
+                
+                <!-- Southern Africa Land Mass (simplified) -->
+                <svg viewBox="0 0 800 650" style="position:absolute; inset:0; width:100%; height:100%; pointer-events:none;">
+                    <!-- Ocean base is the container bg -->
+                    <!-- Land mass - stylized Southern/East Africa -->
+                    <path d="M 320,0 L 450,0 L 520,20 L 580,10 L 650,30 L 720,20 L 800,40 L 800,350 L 780,380 L 750,360 L 720,370 L 700,400 L 680,420 L 650,410 L 620,440 L 580,460 L 540,500 L 500,530 L 470,560 L 440,590 L 420,620 L 400,650 L 350,650 L 330,620 L 310,580 L 280,540 L 260,500 L 250,460 L 260,420 L 270,380 L 290,340 L 300,300 L 280,260 L 270,220 L 280,180 L 300,140 L 310,100 L 300,60 L 310,30 Z" 
+                          fill="#e8efe2" stroke="#c5d4ba" stroke-width="1.5"/>
+                    <!-- Zimbabwe highlighted region -->
+                    <path d="M 450,130 L 550,110 L 600,140 L 620,180 L 610,220 L 580,250 L 540,260 L 500,250 L 460,230 L 440,190 L 440,160 Z" 
+                          fill="#d5e3cc" stroke="#aec5a0" stroke-width="1"/>
+                    <!-- Mozambique coastal strip -->
+                    <path d="M 600,140 L 650,120 L 700,130 L 740,160 L 760,200 L 770,250 L 760,300 L 740,340 L 720,370 L 700,400 L 680,420 L 650,410 L 620,380 L 610,340 L 620,300 L 610,260 L 610,220 L 620,180 Z" 
+                          fill="#dde9d5" stroke="#b8cead" stroke-width="1"/>
+                    <!-- South Africa -->
+                    <path d="M 260,420 L 300,400 L 340,380 L 400,370 L 450,360 L 500,380 L 540,400 L 560,430 L 540,500 L 500,530 L 470,560 L 440,590 L 420,620 L 400,650 L 350,650 L 330,620 L 310,580 L 280,540 L 260,500 L 250,460 Z" 
+                          fill="#e2edd9" stroke="#bccfaf" stroke-width="1"/>
+                </svg>
+
+                <!-- Topo Grid Lines -->
+                <svg width="100%" height="100%" style="position:absolute; top:0; left:0; pointer-events:none; opacity:0.06;">
+                    <defs>
+                        <pattern id="mapGridV9" width="60" height="60" patternUnits="userSpaceOnUse">
+                            <path d="M 60 0 L 0 0 0 60" fill="none" stroke="#334155" stroke-width="0.5" />
+                        </pattern>
+                    </defs>
+                    <rect width="100%" height="100%" fill="url(#mapGridV9)" />
+                </svg>
+
+                <!-- Lat/Long Labels -->
+                <div style="position:absolute; top:8px; left:50%; transform:translateX(-50%); font-size:8px; color:#94a3b8; font-weight:600; letter-spacing:0.1em; text-transform:uppercase; opacity:0.5;">30°E</div>
+                <div style="position:absolute; top:30%; left:8px; font-size:8px; color:#94a3b8; font-weight:600; letter-spacing:0.1em; text-transform:uppercase; opacity:0.5; writing-mode:vertical-lr;">20°S</div>
+                <div style="position:absolute; top:70%; left:8px; font-size:8px; color:#94a3b8; font-weight:600; letter-spacing:0.1em; text-transform:uppercase; opacity:0.5; writing-mode:vertical-lr;">30°S</div>
+
+                <!-- 🚀 Action Control Overlay -->
+                <div style="position:absolute; top:20px; right:20px; z-index:15;">
+                    <button onclick="salestrack.openOrdersList()" style="background:#0f172a; color:#fff; border:none; padding:10px 20px; border-radius:12px; font-size:10px; font-weight:700; cursor:pointer; transition:all 0.3s; box-shadow:0 4px 12px rgba(15,23,42,0.2); text-transform:uppercase; letter-spacing:0.08em; display:flex; align-items:center; gap:8px;">
+                        <i class="fas fa-crosshairs"></i> Open Tracker
+                    </button>
+                </div>
+
+                <!-- 🧪 Light Tech Layering -->
+                <div style="position:absolute; top:0; left:0; width:100%; height:100%; background: radial-gradient(circle at 68% 35%, rgba(16,185,129,0.05), transparent 70%); pointer-events:none;"></div>
+
+                <!-- 🌍 Unified Strategic Logistics View (Faint Tech) -->
+                <svg viewBox="0 0 800 450" style="position:absolute; top:0; left:0; width:100%; height:100%; pointer-events:none;">
+                    <defs>
+                        <marker id="arrowheadBlueV8" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="4" markerHeight="4" orient="auto">
+                            <path d="M 0 0 L 10 5 L 0 10 z" fill="#3b82f6" fill-opacity="0.3" />
+                        </marker>
+                        <marker id="arrowheadPurpleV8" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="4" markerHeight="4" orient="auto">
+                            <path d="M 0 0 L 10 5 L 0 10 z" fill="#8b5cf6" fill-opacity="0.3" />
+                        </marker>
+                        <marker id="arrowheadGoldV8" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="4" markerHeight="4" orient="auto">
+                            <path d="M 0 0 L 10 5 L 0 10 z" fill="#f59e0b" fill-opacity="0.3" />
+                        </marker>
+                    </defs>
+
+                    <!-- Framework Silhouette (Spectral) -->
+                    <path d="M 400,120 L 550,50 L 720,80 L 800,280 L 760,420 L 550,490 L 380,440 L 320,280 Z" 
+                          fill="rgba(203,213,225,0.04)" 
+                          stroke="none"
+                          transform="scale(0.95) translate(40, -10)" />
+
+                    <!-- STAGE 1: GLOBAL (Gold) -->
+                    <path d="M 80,112 L 280,270" fill="none" stroke="rgba(245,158,11,0.03)" stroke-width="1.8" />
+                    <path d="M 80,112 L 280,270" fill="none" stroke="#f59e0b" stroke-width="1.8" stroke-dasharray="4,12" stroke-opacity="0.25" marker-end="url(#arrowheadGoldV8)">
+                        <animate attributeName="stroke-dashoffset" from="300" to="0" dur="10s" repeatCount="indefinite" />
+                    </path>
+
+                    <!-- STAGE 2: TRANSIT (Purple) -->
+                    <path d="M 280,270 L 544,157" fill="none" stroke="rgba(139,92,246,0.03)" stroke-width="1.8" />
+                    <path d="M 280,270 L 544,157" fill="none" stroke="#8b5cf6" stroke-width="1.8" stroke-dasharray="4,12" stroke-opacity="0.25" marker-end="url(#arrowheadPurpleV8)">
+                        <animate attributeName="stroke-dashoffset" from="300" to="0" dur="9s" repeatCount="indefinite" />
+                    </path>
+
+                    <!-- STAGE 3: PORT LOGISTICS (Blue) -->
+                    <!-- Durban -->
+                    <path d="M 544,396 L 544,157" fill="none" stroke="rgba(59,130,246,0.03)" stroke-width="1.8" />
+                    <path d="M 544,396 L 544,157" fill="none" stroke="#3b82f6" stroke-width="1.8" stroke-dasharray="4,14" stroke-opacity="0.25" marker-end="url(#arrowheadBlueV8)">
+                        <animate attributeName="stroke-dashoffset" from="400" to="0" dur="8s" repeatCount="indefinite" />
+                    </path>
+
+                    <!-- Beira -->
+                    <path d="M 736,180 L 544,157" fill="none" stroke="rgba(59,130,246,0.03)" stroke-width="1.8" />
+                    <path d="M 736,180 L 544,157" fill="none" stroke="#3b82f6" stroke-width="1.8" stroke-dasharray="4,14" stroke-opacity="0.25" marker-end="url(#arrowheadBlueV8)">
+                        <animate attributeName="stroke-dashoffset" from="400" to="0" dur="7s" repeatCount="indefinite" />
+                    </path>
+                    
+                    <!-- Hub Pulse (Ghost) -->
+                    <circle cx="544" cy="157" r="100" fill="rgba(16,185,129,0.005)" stroke="rgba(16,185,129,0.05)" stroke-width="1" stroke-dasharray="2,10">
+                        <animate attributeName="r" values="95;105;95" dur="15s" repeatCount="indefinite" />
+                    </circle>
+                </svg>
+
+                <!-- 🚢 Pathway Metadata Badges -->
+                <div style="position:absolute; left:68%; top:61%; transform:translate(-50%, -50%); z-index:11;">
+                    ${clusters.durban.length > 0 ? `
+                    <div style="background:#3b82f6; color:#fff; font-size:10px; font-weight:700; padding:4px 12px; border-radius:20px; box-shadow:0 4px 12px rgba(59,130,246,0.3); border:2px solid #fff; white-space:nowrap;">
+                        <i class="fas fa-truck-moving"></i> ${clusters.durban.length} INCOMING
+                    </div>
+                    ` : ''}
+                </div>
+
+                <div style="position:absolute; left:82%; top:37.5%; transform:translate(-50%, -50%); z-index:11;">
+                    ${clusters.beira.length > 0 ? `
+                    <div style="background:#3b82f6; color:#fff; font-size:10px; font-weight:700; padding:4px 12px; border-radius:20px; box-shadow:0 4px 12px rgba(59,130,246,0.3); border:2px solid #fff; white-space:nowrap;">
+                        <i class="fas fa-truck-moving"></i> ${clusters.beira.length} INCOMING
+                    </div>
+                    ` : ''}
+                </div>
+
+                <!-- 📍 Strategic Location Nodes -->
+                ${Object.keys(LOCATIONS).map(key => {
+            const loc = LOCATIONS[key];
+            const count = clusters[key].length;
+            const isActive = count > 0;
+            const isHub = key === 'yard';
+
+            return `
+                    <div style="position:absolute; left:${loc.x}%; top:${loc.y}%; transform:translate(-50%, -50%); z-index:10; cursor:pointer;" onclick="salestrack.openLocationModal('${key}')">
+                            <div style="margin-bottom:12px; text-align:center;">
+                                <div style="font-size:11px; font-weight:700; color:#1e293b; text-transform:uppercase; letter-spacing:0.05em;">${loc.label}</div>
+                                ${isHub ? `<div style="font-size:9px; color:#10b981; font-weight:700; text-transform:uppercase; margin-top:2px; display:flex; align-items:center; gap:4px; justify-content:center;"><span style="width:5px; height:5px; background:#10b981; border-radius:50%; display:inline-block; animation: pulseNode 2s infinite;"></span> OPS HUB</div>` : `<div style="font-size:9px; color:#94a3b8; font-weight:600; text-transform:uppercase; margin-top:2px;">${loc.dist} KM</div>`}
                             </div>
-                            ` : ''}
-                        </div>
-                        <div style="text-align:center;">
-                            <div style="font-size:11px; font-weight:850; color:${isActive ? '#0f172a' : '#94a3b8'}; text-transform:uppercase; letter-spacing:0.08em;">${node.label}</div>
-                            ${isActive ? `<div style="font-size:9px; font-weight:700; color:${node.color}; margin-top:2px;">${node.count} ITEMS</div>` : ''}
+
+                            <!-- Glassmorphic Marker -->
+                            <!-- Tech Marker -->
+                            <div style="
+                                width:${isHub ? '90px' : '64px'}; 
+                                height:${isHub ? '90px' : '64px'}; 
+                                background:#fff; 
+                                border:1.5px solid ${isActive ? loc.color : '#e2e8f0'};
+                                border-radius:${isHub ? '24px' : '18px'}; 
+                                display:flex; 
+                                align-items:center; 
+                                justify-content:center;
+                                box-shadow: 0 10px 25px rgba(0,0,0,0.06);
+                                transition:all 0.3s;
+                                position:relative;
+                            " onmouseover="this.style.transform='scale(1.1) translateY(-5px)'; this.style.borderColor='${loc.color}';">
+                                
+                                ${isActive ? `<div style="position:absolute; top:-8px; right:-8px; background:${loc.color}; color:#fff; width:24px; height:24px; border-radius:8px; display:flex; align-items:center; justify-content:center; font-size:12px; font-weight:900; border:2.5px solid #fff; box-shadow:0 4px 10px ${loc.color}44;">${count}</div>` : ''}
+                                
+                                <i class="fas ${loc.icon}" style="font-size:${isHub ? '32px' : '20px'}; color:${isActive ? loc.color : '#475569'};"></i>
+                            </div>
                         </div>
                     </div>
                     `;
-                }).join('')}
+        }).join('')}
+                
+                <style>
+                    @keyframes pulseNode { 0% { opacity: 1; transform:scale(1); } 50% { opacity: 0.5; transform:scale(1.2); } 100% { opacity: 1; transform:scale(1); } }
+                </style>
             </div>
-            
-            <style>
-                .pulse-active::after {
-                    content: '';
-                    position: absolute;
-                    width: 100%; height: 100%;
-                    border-radius: 20px;
-                    border: 2px solid currentColor;
-                    animation: mapPulse 2s infinite;
-                    opacity: 0;
-                    color: inherit;
-                }
-                @keyframes mapPulse {
-                    0% { transform: scale(1); opacity: 0.5; }
-                    100% { transform: scale(1.3); opacity: 0; }
-                }
-            </style>
         `;
 
         container.innerHTML = html;
+    }
+
+    openLocationModal(locationKey) {
+        const LOC_MAP = {
+            'yard': 'In Yard (Machinery Exchange)',
+            'beira': 'Arrived at Beira Port',
+            'durban': 'Arrived at Durban Port',
+            'transit': 'In Global Transit',
+            'pipeline': 'Active Quotes & Pipeline'
+        };
+
+        const orders = this.data.orders_preview || [];
+        const quotes = this.data.quote_follow_ups || this.data.open_quotations || [];
+
+        let filtered = [];
+        if (locationKey === 'pipeline') {
+            // Only quotes for pipeline
+            filtered = quotes;
+        } else {
+            filtered = orders.filter(o => {
+                const status = (o.status || '').toLowerCase();
+                const eta = (o.eta || '').toLowerCase();
+                if (locationKey === 'yard') return status.includes('yard') || status.includes('arrived') || status.includes('ready');
+                if (locationKey === 'beira') return eta.includes('beira');
+                if (locationKey === 'durban') return eta.includes('durban');
+                if (locationKey === 'transit') return status.includes('transit') || status.includes('shipping');
+                return false;
+            });
+        }
+
+        const title = LOC_MAP[locationKey];
+        const content = locationKey === 'pipeline' ? this._generateQuoteListHtml(filtered) : this._generateOrderListHtml(filtered);
+
+        this.openListModal(`&#x1F4CD; ${title}`, content || '<div style="padding:40px; text-align:center;">No items found.</div>');
     }
 
     openOrderStageModal(stageId) {
@@ -731,26 +1068,26 @@ window.OmnisDashboardV6 = class OmnisDashboardV6 {
             arrived: "Arrived at Local Yard",
             handover: "Handover in Progress"
         };
-        
+
         const title = stageNames[stageId] || "Order List";
         let content = "";
-        
+
         const orders = (this.data.orders_preview || []).filter(o => {
-             const s = (o.status || '').toLowerCase();
-             if (stageId === 'confirmed' && (s.includes('new') || s.includes('pending'))) return true;
-             if (stageId === 'logistics' && (s.includes('transit') || s.includes('production') || s.includes('shipping'))) return true;
-             if (stageId === 'arrived' && (s.includes('harare') || s.includes('yard') || s.includes('ready'))) return true;
-             if (stageId === 'handover' && (s.includes('handover') || s.includes('delivered'))) return true;
-             return false;
+            const s = (o.status || '').toLowerCase();
+            if (stageId === 'confirmed' && (s.includes('new') || s.includes('pending'))) return true;
+            if (stageId === 'logistics' && (s.includes('transit') || s.includes('production') || s.includes('shipping'))) return true;
+            if (stageId === 'arrived' && (s.includes('harare') || s.includes('yard') || s.includes('ready'))) return true;
+            if (stageId === 'handover' && (s.includes('handover') || s.includes('delivered'))) return true;
+            return false;
         });
 
         if (stageId === 'pipeline') {
-             const quotes = this.data.quote_follow_ups || this.data.open_quotations || [];
-             content = this._generateQuoteListHtml(quotes);
+            const quotes = this.data.quote_follow_ups || this.data.open_quotations || [];
+            content = this._generateQuoteListHtml(quotes);
         } else if (orders.length > 0) {
-             content = this._generateOrderListHtml(orders);
+            content = this._generateOrderListHtml(orders);
         } else {
-             content = `<div style="padding:60px 20px; text-align:center;">
+            content = `<div style="padding:60px 20px; text-align:center;">
                 <div style="font-size:48px; margin-bottom:16px; opacity:0.3;">📦</div>
                 <div style="font-size:15px; font-weight:600; color:#64748b;">No items currently in this stage.</div>
                 <div style="font-size:12px; color:#94a3b8; margin-top:8px;">Check the full tracking view for historical data.</div>
@@ -915,7 +1252,7 @@ window.OmnisDashboardV6 = class OmnisDashboardV6 {
 
         const existingHeader = document.getElementById('eff-report-header');
         const modalBody = document.getElementById('dash-generic-body');
-        
+
         if (!existingHeader) {
             this.openListModal(headerTitle, loaderHtml, "1500px");
             const inner = document.getElementById('dash-modal-inner');
@@ -1324,8 +1661,8 @@ window.OmnisDashboardV6 = class OmnisDashboardV6 {
                 events: {
                     dataPointSelection: (event, chartContext, config) => {
                         // &#x270F; Only open the modal if the selection was a REAL user click
-                        if (!event) return; 
-                        
+                        if (!event) return;
+
                         const oemName = labels[config.dataPointIndex];
                         if (oemName) {
                             this.openOEMBreakdownModal(oemName);
@@ -1413,14 +1750,14 @@ window.OmnisDashboardV6 = class OmnisDashboardV6 {
                         }
                     }
                 }
-            }, false, true); 
+            }, false, true);
         }, 4000);
 
         // Render KPI Table
         const kpisContainer = document.getElementById('widget-oem-kpis');
         if (kpisContainer) {
             kpisContainer.style.display = 'block'; // Override grid layout from index.html if present
-            
+
             let kpiHtml = `
             <div style="background:#fff; border:1px solid #e2e8f0; border-radius:12px; overflow:hidden; box-shadow:0 4px 20px rgba(0,0,0,0.03);">
                 <table style="width:100%; border-collapse:collapse; font-size:13px; text-align:left;">
@@ -1969,7 +2306,7 @@ window.OmnisDashboardV6 = class OmnisDashboardV6 {
         try {
             const res = await window.callFrappeSequenced(this.sys.baseUrl, "powerstar_salestrack.omnis_dashboard.get_command_center_stats", {});
             const payload = res.message || res;
-            
+
             if ((!payload.today || payload.today.length === 0) && (!payload.tomorrow || payload.tomorrow.length === 0)) {
                 const emptyHtml = `<div style="padding:100px 60px; text-align:center; color:#94a3b8;"><i class="fas fa-check-circle" style="font-size:64px; color:#22c55e; margin-bottom:20px;"></i><h3 style="font-size:24px; color:#0f172a; margin-bottom:10px;">All Clear!</h3><div style="font-size:16px;">No quotations are due for follow-up today or tomorrow.</div></div>`;
                 if (!isFullView) {
@@ -2008,9 +2345,9 @@ window.OmnisDashboardV6 = class OmnisDashboardV6 {
                     </div>
                     <div style="display:grid; grid-template-columns: repeat(auto-fill, minmax(380px, 1fr)); gap:20px;">
                         ${items.map(q => {
-                            const isSent = q.reminder_sent;
-                            const stage = q.followup_stage || 1;
-                            return `
+                const isSent = q.reminder_sent;
+                const stage = q.followup_stage || 1;
+                return `
                                 <div class="cmd-card" style="display:flex; flex-direction:column; gap:16px; transition:all 0.3s; position:relative; padding:24px; border-radius:16px; border: 1px solid ${isSent ? 'rgba(16, 185, 129, 0.3)' : 'rgba(226, 232, 240, 0.5)'}; background: ${isSent ? 'rgba(16, 185, 129, 0.04)' : 'transparent'};">
                                     ${isSent ? `<div style="position:absolute; top:20px; right:20px; color:#059669; font-size:10px; font-weight:900; padding:4px 12px; border-radius:99px; text-transform:uppercase; letter-spacing:0.05em; background:rgba(5, 150, 105, 0.1);">SENT TODAY</div>` : ''}
                                     <div style="display:flex; justify-content:space-between; align-items:start;">
@@ -2053,7 +2390,7 @@ window.OmnisDashboardV6 = class OmnisDashboardV6 {
                                     </div>
                                 </div>
                             `;
-                        }).join('')}
+            }).join('')}
                     </div>
                 </div>
             `;
@@ -2098,7 +2435,7 @@ window.OmnisDashboardV6 = class OmnisDashboardV6 {
         const stage = q.followup_stage || 1;
         const itemsList = (q.items_summary || '').split(',').map(i => `• ${i.trim()}`).join('\n');
         const frappeUrl = `${this.sys.baseUrl}/app/quotation/${encodeURIComponent(q.name)}?fu=1`;
-        
+
         const messageBody = [
             `📋 *Quotation Follow-up Reminder*`,
             ``,
@@ -2155,9 +2492,9 @@ window.OmnisDashboardV6 = class OmnisDashboardV6 {
             confirmBtn.onclick = async () => {
                 confirmBtn.disabled = true;
                 confirmBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> SENDING...';
-                
+
                 await this.sendManualFollowupReminders(q, messageBody, event);
-                
+
                 // Close modal after short delay
                 setTimeout(() => {
                     const m = document.getElementById('dash-generic-modal');
@@ -2178,7 +2515,7 @@ window.OmnisDashboardV6 = class OmnisDashboardV6 {
         // This is now the "Silent" send called from confirmation or direct
         const btn = event ? event.currentTarget : null;
         const originalHtml = btn ? btn.innerHTML : '';
-        
+
         if (btn) {
             btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> SENDING...';
             btn.disabled = true;
@@ -2221,7 +2558,7 @@ window.OmnisDashboardV6 = class OmnisDashboardV6 {
             // 2. Mark as sent on backend to log comment and bump stage
             const backendRes = await window.callFrappeSequenced(this.sys.baseUrl, "powerstar_salestrack.omnis_dashboard.mark_report_state_sent", { quote_name: q.name });
             const payload = backendRes.message || backendRes;
-            
+
             if (payload.ok) {
                 this.showToast(payload.message || "Reminder sent successfully via Local WhatsApp!", "success");
                 if (btn) {
@@ -2739,7 +3076,7 @@ window.OmnisDashboardV6 = class OmnisDashboardV6 {
             `;
 
             const categories = Object.keys(trend).sort();
-            
+
             // Initialize totals array for dynamic months
             const monthTotals = months.map(() => ({ quotes: 0, sales: 0 }));
             let totalYTDQ = 0, totalYTDS = 0;
@@ -2747,7 +3084,7 @@ window.OmnisDashboardV6 = class OmnisDashboardV6 {
             categories.forEach(cat => {
                 const d = trend[cat];
                 const ytd = d.ytd || { quotes: 0, sales: 0 };
-                
+
                 let rowTotal = ytd.quotes + ytd.sales;
 
                 const monthHtml = months.map((m, idx) => {
@@ -2983,7 +3320,7 @@ window.OmnisDashboardV6 = class OmnisDashboardV6 {
                 tabButtons.forEach(button => {
                     button.addEventListener('click', () => {
                         const tabName = button.getAttribute('data-tab');
-                        
+
                         tabButtons.forEach(btn => btn.classList.remove('active'));
                         button.classList.add('active');
 
@@ -3018,8 +3355,8 @@ window.OmnisDashboardV6 = class OmnisDashboardV6 {
         try {
             const res = await window.callFrappeSequenced(this.sys.baseUrl, "powerstar_salestrack.omnis_dashboard.debug_oem_breakdown", {});
             const log = res.message || res;
-            
-            const errHtml = log.last_errors && log.last_errors.length > 0 
+
+            const errHtml = log.last_errors && log.last_errors.length > 0
                 ? log.last_errors.map(e => `<div style="text-align:left; margin-bottom:15px; padding:12px; background:#fff; border:1px solid #ddd; border-left:4px solid #ef4444; font-family:monospace; font-size:11px; white-space:pre-wrap; overflow-x:auto;"><b>${e.creation}</b><br>${e.message}</div>`).join('')
                 : '<div style="padding:20px; color:#64748b;">No recent Error Logs found for this method.</div>';
 
@@ -3562,7 +3899,7 @@ window.OmnisDashboardV6 = class OmnisDashboardV6 {
             const ytd = data[company].ytd || 0;
             const target = targets[company] || 0;
             const pct = target > 0 ? Math.round((ytd / target) * 100) : 0;
-            return [company.toUpperCase(), `${pct}% TARGET` ];
+            return [company.toUpperCase(), `${pct}% TARGET`];
         });
 
         const options = {
@@ -3614,7 +3951,7 @@ window.OmnisDashboardV6 = class OmnisDashboardV6 {
                     fontFamily: 'Inter, system-ui, sans-serif',
                     fontWeight: '600',
                     colors: ["#1e293b"]
-                 },
+                },
                 formatter: function (val, opt) {
                     if (opt.seriesIndex === 2 && val > 0) { // Potential (Quotes)
                         return val + " [Pipeline]";
@@ -3637,11 +3974,11 @@ window.OmnisDashboardV6 = class OmnisDashboardV6 {
                 axisTicks: { show: false }
             },
             yaxis: {
-                labels: { 
+                labels: {
                     rotate: -90,
-                    style: { 
-                        fontSize: '13px', 
-                        fontWeight: 600, 
+                    style: {
+                        fontSize: '13px',
+                        fontWeight: 600,
                         fontFamily: 'Inter, system-ui, sans-serif',
                         colors: ['#475569']
                     },
@@ -3664,25 +4001,25 @@ window.OmnisDashboardV6 = class OmnisDashboardV6 {
                 yaxis: { lines: { show: false } }
             },
             colors: ['#0f172a', '#dc2626', '#059669', '#cbd5e1'],
-            legend: { 
-                position: 'top', 
+            legend: {
+                position: 'top',
                 horizontalAlign: 'right',
                 fontSize: '12px',
                 fontWeight: 600,
                 fontFamily: 'Plus Jakarta Sans, sans-serif'
             },
-            tooltip: { 
+            tooltip: {
                 theme: 'light',
-                y: { 
-                    formatter: function(val, opt) {
-                         const company = originalCompanies[opt.dataPointIndex];
-                         const target = targets[company];
-                         if (opt.seriesIndex === 3 && target) {
-                             const gap = target - val;
-                             const msg = gap > 0 ? `(${gap} units remaining)` : `(Goal reached!)`;
-                             return val + " Units " + msg;
-                         }
-                         return val + ' Units';
+                y: {
+                    formatter: function (val, opt) {
+                        const company = originalCompanies[opt.dataPointIndex];
+                        const target = targets[company];
+                        if (opt.seriesIndex === 3 && target) {
+                            const gap = target - val;
+                            const msg = gap > 0 ? `(${gap} units remaining)` : `(Goal reached!)`;
+                            return val + " Units " + msg;
+                        }
+                        return val + ' Units';
                     }
                 }
             }
@@ -3697,7 +4034,7 @@ window.OmnisDashboardV6 = class OmnisDashboardV6 {
 
         const quoteFollowUps = this.data.quote_follow_ups || [];
         const groupedQuotes = {};
-        
+
         quoteFollowUps.forEach(q => {
             const sp = q.sales_person || 'Unassigned';
             if (!groupedQuotes[sp]) groupedQuotes[sp] = [];
@@ -3732,11 +4069,11 @@ window.OmnisDashboardV6 = class OmnisDashboardV6 {
                             </thead>
                             <tbody>
             `;
-            
+
             quotes.forEach(q => {
                 let dateColor = '#334155';
                 let dateText = q.next_follow_up_date || '-';
-                
+
                 if (q.next_follow_up_date) {
                     const todayStr = new Date().toISOString().split('T')[0];
                     if (q.next_follow_up_date < todayStr) {
@@ -3747,7 +4084,7 @@ window.OmnisDashboardV6 = class OmnisDashboardV6 {
                         dateText += ' <span style="font-size:9px; font-weight:800;">(TODAY)</span>';
                     }
                 }
-                
+
                 breakdownHtml += `
                                 <tr style="border-bottom:1px dashed #e2e8f0; transition: background-color 0.2s;">
                                     <td style="padding:8px 10px; font-weight:700; color:#3b82f6;">${q.quote_no || '-'}</td>
@@ -3757,7 +4094,7 @@ window.OmnisDashboardV6 = class OmnisDashboardV6 {
                                 </tr>
                 `;
             });
-            
+
             breakdownHtml += `
                             </tbody>
                         </table>
@@ -3765,7 +4102,7 @@ window.OmnisDashboardV6 = class OmnisDashboardV6 {
                 </div>
             `;
         }
-        
+
         if (Object.keys(groupedQuotes).length === 0) {
             breakdownHtml += `<div style="padding:20px; text-align:center; color:#64748b; font-weight:600; background:white; border-radius:12px; border:1px solid #f1f5f9;">No open quotations to follow up.</div>`;
         }
@@ -3955,7 +4292,7 @@ window.OmnisDashboardV6 = class OmnisDashboardV6 {
                             ${item.details ? `<div style="font-size:11px; color:#94a3b8;">${item.details}</div>` : ''}
                         </div>
                     `).join('');
-                    
+
                     const rect = input.getBoundingClientRect();
                     list.style.top = `${rect.bottom + window.scrollY + 2}px`;
                     list.style.left = `${rect.left + window.scrollX}px`;
@@ -4033,6 +4370,21 @@ window.OmnisDashboardV6 = class OmnisDashboardV6 {
             if (payload.status === "success" || (payload.message && payload.message.toString().toLowerCase().includes("success")) || payload.message.includes("Handed Over")) {
                 alert("Success: " + (payload.message || "Order Handed Over"));
                 document.getElementById('handover-modal').classList.add('hidden');
+
+                // ── AUTO-CREATE AFTERSALES RECORD ──
+                try {
+                    if (typeof window.createAftersalesFromHandover === 'function') {
+                        await window.createAftersalesFromHandover({
+                            order_name: this.currentHandoverOrder,
+                            handover_date: date,
+                            salesperson: salesperson
+                        });
+                        console.log('[Handover] Aftersales record created for:', this.currentHandoverOrder);
+                    }
+                } catch (asErr) {
+                    console.error('[Handover] Failed to create aftersales record:', asErr);
+                }
+
                 // Refresh Data
                 await this.init();
             } else {
@@ -4057,7 +4409,7 @@ window.OmnisDashboardV6 = class OmnisDashboardV6 {
                 backdrop-filter: blur(5px);
             ">
                 <div id="dash-modal-inner" style="
-                    background:white; width:90%; max-width:900px; max-height:85vh;
+                    background:white; width:95%; max-width:1100px; max-height:90vh;
                     border-radius:16px; display:flex; flex-direction:column;
                     box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
                     animation: dashModalIn 0.2s ease-out;
@@ -4183,14 +4535,16 @@ window.OmnisDashboardV6 = class OmnisDashboardV6 {
 
         // Prepare Contacts
         const contacts = fullDoc ? (fullDoc.contacts || []) : [];
+        this._tempContacts = [...contacts]; // Spread to clone
+        this._tempDeletedMachines = [];
         this._currentFullDoc = fullDoc;
         this._currentOrderSnippet = order;
 
         // Render
-        this.renderOrderModalContent(reportId, machineId, order, fullDoc, contacts);
+        this.renderOrderModalContent(reportId, machineId, order, fullDoc);
     }
 
-    renderOrderModalContent(reportId, machineId, order, fullDoc, contacts) {
+    renderOrderModalContent(reportId, machineId, order, fullDoc) {
         // Machines Data Preparation
         let machines = [];
         if (fullDoc && fullDoc.machines && Array.isArray(fullDoc.machines)) {
@@ -4210,16 +4564,22 @@ window.OmnisDashboardV6 = class OmnisDashboardV6 {
         // Render Machines Table Rows
         const renderMachineRows = () => {
             if (machines.length === 0) return `<tr><td colspan="6" style="padding:16px; text-align:center; color:#64748b;">No machines found.</td></tr>`;
-            return machines.map((m, i) => `
+            const baseUrl = (window.getCurrentSystem ? window.getCurrentSystem().baseUrl : "https://salestrack.powerstar.co.zw").replace(/\/$/, '');
+
+            return machines.map((m, i) => {
+                const img1 = m.images_one ? (m.images_one.startsWith('/') ? baseUrl + m.images_one : m.images_one) : null;
+                const img2 = m.image_two ? (m.image_two.startsWith('/') ? baseUrl + m.image_two : m.image_two) : null;
+
+                return `
                 <tr class="machine-row" data-mid="${m.name || ''}" style="background:${i % 2 === 0 ? '#ffffff' : '#f8fafc'}; border-bottom:1px solid #e2e8f0;">
                     <td style="padding:12px; border-bottom:1px solid #f1f5f9;">
-                        <input type="text" class="m-item" value="${(m.item_name || m.machine || m.item || '').replace(/\"/g, '&quot;')}" placeholder="Machine/Item" style="width:100%; padding:8px; border:1px solid #cbd5e1; border-radius:6px; font-size:12px; background:white;">
+                        <input type="text" class="m-item" data-item="${m.item || ''}" value="${(m.item_name || m.machine || m.item || '').replace(/\"/g, '&quot;')}" placeholder="Machine/Item" style="width:100%; padding:8px; border:1px solid #cbd5e1; border-radius:6px; font-size:12px; background:white;">
                     </td>
                      <td style="padding:12px; border-bottom:1px solid #f1f5f9;">
                         <input type="text" class="m-serial" value="${(m.serial_no || '').replace(/\"/g, '&quot;')}" placeholder="Serial" style="width:100%; padding:8px; border:1px solid #cbd5e1; border-radius:6px; font-size:12px; background:white;">
                     </td>
                     <td style="padding:12px; border-bottom:1px solid #f1f5f9;">
-                        <input type="number" class="m-qty" value="${m.qty || 1}" style="width:100%; padding:8px; border:1px solid #cbd5e1; border-radius:6px; font-size:12px; text-align:center; background:white;">
+                        <input type="number" class="m-qty" value="${m.qty || 1}" style="width:100%; padding:10px 8px; border:1px solid #cbd5e1; border-radius:8px; font-size:14px; font-weight:700; text-align:center; background:white; color:#0f172a; box-shadow:inset 0 1px 2px rgba(0,0,0,0.02);">
                     </td>
                     <td style="padding:12px; border-bottom:1px solid #f1f5f9;">
                         <input type="date" class="m-target" value="${m.target_handover_date || m.target_handover || ''}" style="width:100%; padding:8px; border:1px solid #cbd5e1; border-radius:6px; font-size:12px; background:white;">
@@ -4227,29 +4587,34 @@ window.OmnisDashboardV6 = class OmnisDashboardV6 {
                     <td style="padding:12px; border-bottom:1px solid #f1f5f9;">
                         <input type="date" class="m-revised" value="${m.revised_handover_date || m.revised_handover || ''}" style="width:100%; padding:8px; border:1px solid #cbd5e1; border-radius:6px; font-size:12px; background:white;">
                     </td>
-                    <td style="padding:12px; border-bottom:1px solid #f1f5f9; display:flex; gap:8px; align-items:flex-start;">
-                         <textarea class="m-notes" rows="1" style="width:100%; padding:8px; border:1px solid #cbd5e1; border-radius:6px; font-size:12px; font-family:inherit; background:white;" placeholder="Add notes...">${m.notes || ''}</textarea>
-                         <button onclick="salestrack.deleteMachineRow(this, '${m.name || ''}')" style="color:#ef4444; background:none; border:none; cursor:pointer; font-weight:bold; font-size:18px; line-height:1;">&times;</button>
+                    <td style="padding:10px 12px; border-bottom:1px solid #f1f5f9;">
+                         <div style="display:flex; gap:8px; align-items:stretch; width:100%;">
+                            <textarea class="m-notes" rows="2" style="flex:1; min-height:60px; padding:8px; border:1px solid #cbd5e1; border-radius:8px; font-size:12px; font-family:inherit; background:white; line-height:1.4; resize:vertical; border-color:#d1d5db;" placeholder="Machine status...">${m.notes || ''}</textarea>
+                            <div style="display:flex; flex-direction:column; gap:4px; flex-shrink:0;">
+                                <div class="photo-slot" data-field="images_one" onclick="salestrack.triggerMachineImageUpload(this)" title="Attach Photo 1" style="width:34px; height:34px; border:1.5px dashed #cbd5e1; border-radius:6px; display:flex; align-items:center; justify-content:center; cursor:pointer; background:white; position:relative; overflow:hidden; transition:all 0.2s;">
+                                    ${img1 ? `
+                                        <img src="${img1}" style="width:100%; height:100%; object-fit:cover;">
+                                        <div class="delete-photo" onclick="salestrack.removeMachineImage(this, event)" style="position:absolute; top:2px; right:2px; background:rgba(239, 68, 68, 0.9); color:white; width:14px; height:14px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:10px; font-weight:bold; cursor:pointer; z-index:5;">&times;</div>
+                                    ` : `<span style="font-size:16px; color:#94a3b8;">+</span>`}
+                                    <input type="hidden" class="m-img-one" value="${m.images_one || ''}">
+                                </div>
+                                <div class="photo-slot" data-field="image_two" onclick="salestrack.triggerMachineImageUpload(this)" title="Attach Photo 2" style="width:34px; height:34px; border:1.5px dashed #cbd5e1; border-radius:6px; display:flex; align-items:center; justify-content:center; cursor:pointer; background:white; position:relative; overflow:hidden; transition:all 0.2s;">
+                                    ${img2 ? `
+                                        <img src="${img2}" style="width:100%; height:100%; object-fit:cover;">
+                                        <div class="delete-photo" onclick="salestrack.removeMachineImage(this, event)" style="position:absolute; top:2px; right:2px; background:rgba(239, 68, 68, 0.9); color:white; width:14px; height:14px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:10px; font-weight:bold; cursor:pointer; z-index:5;">&times;</div>
+                                    ` : `<span style="font-size:16px; color:#94a3b8;">+</span>`}
+                                    <input type="hidden" class="m-img-two" value="${m.image_two || ''}">
+                                </div>
+                            </div>
+                            <button onclick="salestrack.deleteMachineRow(this, '${m.name || ''}')" title="Delete Row" style="color:#ef4444; background:none; border:none; cursor:pointer; font-weight:bold; font-size:16px; line-height:1; margin-top:4px; opacity:0.4; transition:opacity 0.2s; hover:opacity:1;">&times;</button>
+                         </div>
                     </td>
                 </tr>
-             `).join('');
+                `;
+            }).join('');
         };
 
-        // Render Contacts Rows
-        const renderContactRows = () => {
-            if (contacts.length === 0) return `<tr><td colspan="5" style="text-align:center; padding:16px; color:#94a3b8; font-style:italic;">No contacts added.</td></tr>`;
-            return contacts.map((c, i) => `
-                <tr style="background:${i % 2 === 0 ? '#ffffff' : '#f8fafc'}; border-bottom:1px solid #e2e8f0;">
-                    <td style="padding:8px;"><input type="text" data-idx="${i}" data-field="salutation" value="${c.salutation || ''}" placeholder="Title" style="width:100%; padding:8px; border:1px solid #e2e8f0; border-radius:6px; font-size:13px; background:white;"></td>
-                    <td style="padding:8px;"><input type="text" data-idx="${i}" data-field="name1" value="${c.name1 || c.name || ''}" placeholder="Name" style="width:100%; padding:8px; border:1px solid #e2e8f0; border-radius:6px; font-size:13px; background:white;"></td>
-                    <td style="padding:8px;"><input type="text" data-idx="${i}" data-field="phone_number" value="${c.phone_number || ''}" placeholder="Phone" style="width:100%; padding:8px; border:1px solid #e2e8f0; border-radius:6px; font-size:13px; background:white;"></td>
-                    <td style="padding:8px;"><input type="text" data-idx="${i}" data-field="email_address" value="${c.email_address || ''}" placeholder="Email" style="width:100%; padding:8px; border:1px solid #e2e8f0; border-radius:6px; font-size:13px; background:white;"></td>
-                    <td style="text-align:center;">
-                        <button class="btn-remove-contact" data-idx="${i}" style="color:#94a3b8; background:none; border:none; cursor:pointer; font-weight:bold; padding:8px; font-size:14px; transition:color 0.2s; hover:text-red-500;">&times;</button>
-                    </td>
-                </tr>
-            `).join('');
-        };
+        // Initial tbody content will be set by refreshContactsTable
 
         const content = `
            <div style="padding: 24px; display:flex; flex-direction:column; gap:24px; background:#f8fafc;">
@@ -4259,6 +4624,15 @@ window.OmnisDashboardV6 = class OmnisDashboardV6 {
                         <div style="font-size:11px; font-weight:700; color:#64748b; margin-bottom:6px; text-transform:uppercase; letter-spacing:0.5px;">Customer</div>
                         <div style="font-size:18px; font-weight:700; color:#0f172a;">${(order ? order.customer : (fullDoc ? fullDoc.customer_name : 'Unknown')).replace(/"/g, '')}</div>
                     </div>
+
+                    <div style="width:160px; display:flex; flex-direction:column; justify-content:center;">
+                       <label style="font-size:11px; font-weight:700; color:#64748b; display:block; margin-bottom:8px; text-transform:uppercase; letter-spacing:0.5px;">Payment Terms Deal</label>
+                       <label style="display:flex; align-items:center; gap:8px; cursor:pointer;">
+                           <input type="checkbox" id="edit-order-is-terms" ${order && order.is_payment_terms === true ? 'checked' : ''} style="width:18px; height:18px; accent-color:#10b981; cursor:pointer;">
+                           <span style="font-size:13px; font-weight:700; color:#10b981;">On Terms</span>
+                       </label>
+                    </div>
+
                     <div style="width:220px;">
                        <label style="font-size:11px; font-weight:700; color:#64748b; display:block; margin-bottom:6px; text-transform:uppercase; letter-spacing:0.5px;">Order Status</label>
                        <select id="edit-order-status" style="width:100%; padding:10px; border:1px solid #cbd5e1; border-radius:8px; font-size:14px; background:white; font-weight:600; color:#334155; cursor:pointer;">
@@ -4266,6 +4640,7 @@ window.OmnisDashboardV6 = class OmnisDashboardV6 {
                             <option value="In Progress" ${order && order.status === 'In Progress' ? 'selected' : ''}>In Progress</option>
                             <option value="On Hold" ${order && order.status === 'On Hold' ? 'selected' : ''}>On Hold</option>
                             <option value="Customer To Collect" ${order && order.status === 'Customer To Collect' ? 'selected' : ''}>Customer To Collect</option>
+                            <option value="Awaiting Customer" ${order && order.status === 'Awaiting Customer' ? 'selected' : ''}>Awaiting Customer</option>
                             <option value="Handed Over" ${order && order.status === 'Handed Over' ? 'selected' : ''}>Handed Over</option>
                             <option value="Delivered" ${order && order.status === 'Delivered' ? 'selected' : ''}>Delivered</option>
                             <option value="Pending" ${order && order.status === 'Pending' ? 'selected' : ''}>Pending</option>
@@ -4300,12 +4675,12 @@ window.OmnisDashboardV6 = class OmnisDashboardV6 {
                        <table style="width:100%; border-collapse:collapse; font-size:13px;">
                            <thead style="background:#8b2219; color:white; font-weight:800; font-size:11px; text-transform:uppercase; letter-spacing:0.05em;">
                                <tr>
-                                   <th style="padding:16px 12px; text-align:left; width:22%; color:white;">Machine / Item</th>
-                                   <th style="padding:16px 12px; text-align:left; width:15%; color:white;">Serial No</th>
-                                   <th style="padding:16px 12px; text-align:center; width:6%; color:white;">Qty</th>
-                                   <th style="padding:16px 12px; text-align:left; width:15%; color:white;">Target Date</th>
-                                   <th style="padding:16px 12px; text-align:left; width:15%; color:white;">Revised Date</th>
-                                   <th style="padding:16px 12px; text-align:left; width:27%; color:white;">Status</th>
+                                   <th style="padding:16px 12px; text-align:left; width:18%; color:white;">Machine / Item</th>
+                                   <th style="padding:16px 12px; text-align:left; width:16%; color:white;">Serial No</th>
+                                   <th style="padding:16px 12px; text-align:center; width:8%; color:white;">Qty</th>
+                                   <th style="padding:16px 12px; text-align:left; width:13%; color:white;">Target Date</th>
+                                   <th style="padding:16px 12px; text-align:left; width:13%; color:white;">Revised Date</th>
+                                   <th style="padding:16px 12px; text-align:left; width:32%; color:white;">Status</th>
                                </tr>
                            </thead>
                            <tbody id="machines-tbody">
@@ -4334,7 +4709,7 @@ window.OmnisDashboardV6 = class OmnisDashboardV6 {
                                 </tr>
                             </thead>
                             <tbody id="contacts-tbody">
-                                ${renderContactRows()}
+                                <!-- Populated by refreshContactsTable -->
                             </tbody>
                         </table>
                     </div>
@@ -4360,10 +4735,10 @@ window.OmnisDashboardV6 = class OmnisDashboardV6 {
                      <!-- Right: Standard Actions -->
                      <div style="display:flex; gap:12px; flex-wrap:wrap;">
                         <button onclick="salestrack.closeListModal()" style="padding:12px 24px; border:1px solid #cbd5e1; background:white; color:#475569; border-radius:8px; font-size:14px; font-weight:600; cursor:pointer;">Cancel</button>
-                        <button id="btn-send-email-update" onclick="salestrack.initEmailUpdate('${(reportId||'').replace(/'/g, "\\'").replace(/"/g, '&quot;')}')" style="padding:12px 24px; background:#1d4ed8; color:white; border:none; border-radius:8px; font-size:14px; font-weight:700; cursor:pointer; display:flex; align-items:center; gap:8px; box-shadow:0 10px 15px -3px rgba(29, 78, 216, 0.25); transition:all 0.2s;">
+                        <button id="btn-send-email-update" onclick="salestrack.initEmailUpdate('${(reportId || '').replace(/'/g, "\\'").replace(/"/g, '&quot;')}')" style="padding:12px 24px; background:#1d4ed8; color:white; border:none; border-radius:8px; font-size:14px; font-weight:700; cursor:pointer; display:flex; align-items:center; gap:8px; box-shadow:0 10px 15px -3px rgba(29, 78, 216, 0.25); transition:all 0.2s;">
                            <span style="font-size:18px;">&#128231;</span> Send Email
                         </button>
-                        <button id="btn-send-whatsapp-update" onclick="salestrack.initWhatsAppUpdate('${(reportId||'').replace(/'/g, "\\'").replace(/"/g, '&quot;')}', '${(machineId||'').replace(/'/g, "\\'").replace(/"/g, '&quot;')}')" style="padding:12px 24px; background:#25d366; color:white; border:none; border-radius:8px; font-size:14px; font-weight:700; cursor:pointer; display:flex; align-items:center; gap:8px; box-shadow:0 10px 15px -3px rgba(37, 211, 102, 0.2); transition:all 0.2s;">
+                        <button id="btn-send-whatsapp-update" onclick="salestrack.initWhatsAppUpdate('${(reportId || '').replace(/'/g, "\\'").replace(/"/g, '&quot;')}', '${(machineId || '').replace(/'/g, "\\'").replace(/"/g, '&quot;')}')" style="padding:12px 24px; background:#25d366; color:white; border:none; border-radius:8px; font-size:14px; font-weight:700; cursor:pointer; display:flex; align-items:center; gap:8px; box-shadow:0 10px 15px -3px rgba(37, 211, 102, 0.2); transition:all 0.2s;">
                            <span style="font-size:18px;">&#128172;</span> WhatsApp Update
                         </button>
                         <button id="btn-save-order-changes" class="btn-primary" style="padding:12px 32px; background:#8b2219; color:white; border:none; border-radius:8px; font-size:14px; font-weight:700; cursor:pointer; box-shadow:0 10px 15px -3px rgba(139, 34, 25, 0.25);">Save Changes</button>
@@ -4372,10 +4747,8 @@ window.OmnisDashboardV6 = class OmnisDashboardV6 {
            </div>
        `;
 
-        // Store contacts temporary context
-        this._tempContacts = contacts;
-        this._tempDeletedMachines = [];
         this.openListModal("Edit Order Details", content, "1100px");
+        this.refreshContactsTable(); // ✅ Populate contacts and bind listeners immediately
 
         // Bind Listeners (Safe method for quotes)
         const btnSave = document.getElementById('btn-save-order-changes');
@@ -4414,9 +4787,21 @@ window.OmnisDashboardV6 = class OmnisDashboardV6 {
             <td style="padding:12px; border-bottom:1px solid #f1f5f9;"><input type="number" class="new-qty" value="1" style="width:100%; padding:8px; border:1px solid #cbd5e1; border-radius:6px; font-size:12px; text-align:center; background:white;"></td>
             <td style="padding:12px; border-bottom:1px solid #f1f5f9;"><input type="date" class="new-target" style="width:100%; padding:8px; border:1px solid #cbd5e1; border-radius:6px; font-size:12px; background:white;"></td>
             <td style="padding:12px; border-bottom:1px solid #f1f5f9;"><input type="date" class="new-revised" style="width:100%; padding:8px; border:1px solid #cbd5e1; border-radius:6px; font-size:12px; background:white;"></td>
-            <td style="padding:12px; border-bottom:1px solid #f1f5f9; display:flex; gap:8px; align-items:flex-start;">
-                <textarea class="new-notes" rows="1" placeholder="Notes" style="width:100%; padding:8px; border:1px solid #cbd5e1; border-radius:6px; font-size:12px; font-family:inherit; background:white;"></textarea>
-                <button onclick="this.closest('tr').remove()" style="color:#ef4444; background:none; border:none; cursor:pointer; font-weight:bold; font-size:18px; line-height:1;">&times;</button>
+            <td style="padding:10px 12px; border-bottom:1px solid #f1f5f9;">
+                <div style="display:flex; gap:8px; align-items:stretch; width:100%;">
+                    <textarea class="new-notes" rows="2" placeholder="Notes" style="flex:1; min-height:60px; padding:8px; border:1px solid #cbd5e1; border-radius:8px; font-size:12px; font-family:inherit; background:white; line-height:1.4; resize:vertical;"></textarea>
+                    <div style="display:flex; flex-direction:column; gap:4px; flex-shrink:0;">
+                        <div class="photo-slot" data-field="images_one" onclick="salestrack.triggerMachineImageUpload(this)" title="Attach Photo 1" style="width:34px; height:34px; border:1.5px dashed #cbd5e1; border-radius:6px; display:flex; align-items:center; justify-content:center; cursor:pointer; background:white; position:relative; overflow:hidden;">
+                            <span style="font-size:16px; color:#94a3b8;">+</span>
+                            <input type="hidden" class="new-img-one" value="">
+                        </div>
+                        <div class="photo-slot" data-field="image_two" onclick="salestrack.triggerMachineImageUpload(this)" title="Attach Photo 2" style="width:34px; height:34px; border:1.5px dashed #cbd5e1; border-radius:6px; display:flex; align-items:center; justify-content:center; cursor:pointer; background:white; position:relative; overflow:hidden;">
+                            <span style="font-size:16px; color:#94a3b8;">+</span>
+                            <input type="hidden" class="new-img-two" value="">
+                        </div>
+                    </div>
+                    <button onclick="this.closest('tr').remove()" title="Remove Row" style="color:#ef4444; background:none; border:none; cursor:pointer; font-weight:bold; font-size:16px; line-height:1; margin-top:4px; opacity:0.4;">&times;</button>
+                </div>
             </td>
         `;
         tbody.appendChild(row);
@@ -4479,50 +4864,61 @@ window.OmnisDashboardV6 = class OmnisDashboardV6 {
     async saveOrderFull(reportId, machineId) {
         // 1. Get Parent Status
         const status = document.getElementById('edit-order-status').value;
-        // const revised = document.getElementById('edit-order-revised').value; // OLD (single)
-        // const notes = document.getElementById('edit-order-notes').value; // OLD (single)
+        const isTermsCheckbox = document.getElementById('edit-order-is-terms');
+        const is_payment_terms = isTermsCheckbox ? isTermsCheckbox.checked : false;
 
         // 2. Gather Machines Data
         const machinesUpdates = [];
         const mRows = document.querySelectorAll('.machine-row');
         mRows.forEach(row => {
             const mid = row.dataset.mid;
-            console.log("Processing Row:", mid, row);
             if (mid) {
-                const rev = row.querySelector('.m-revised').value;
-                const note = row.querySelector('.m-notes').value;
-                const item = row.querySelector('.m-item').value;
-                const serial = row.querySelector('.m-serial').value;
-                const qty = row.querySelector('.m-qty').value;
-                const target = row.querySelector('.m-target').value;
-                
+                const mInput = row.querySelector('.m-item');
+                const mCode = mInput?.dataset.item || mInput?.value;
+                const mSerial = row.querySelector('.m-serial')?.value;
+                const mQty = row.querySelector('.m-qty')?.value;
+                const mTarget = row.querySelector('.m-target')?.value;
+                const mRevised = row.querySelector('.m-revised')?.value;
+                const mNotes = row.querySelector('.m-notes')?.value;
+                const mImg1 = row.querySelector('.m-img-one')?.value;
+                const mImg2 = row.querySelector('.m-img-two')?.value;
+
                 machinesUpdates.push({
                     name: mid,
-                    item: item,
-                    serial_no: serial,
-                    qty: qty,
-                    target_handover_date: target,
-                    revised_handover_date: rev,
-                    notes: note
+                    item: mCode,
+                    serial_no: mSerial,
+                    qty: mQty,
+                    target_handover_date: mTarget,
+                    revised_handover_date: mRevised,
+                    notes: mNotes,
+                    images_one: mImg1,
+                    image_two: mImg2
                 });
-            } else {
-                console.warn("Row missing mid!", row);
             }
         });
-        console.log("Machines Updates Payload:", machinesUpdates);
 
-        // 3. Gather New Machines
+        // 3. New Machines
         const newMachines = [];
         document.querySelectorAll('.new-machine-row').forEach(row => {
-            const item = row.querySelector('.new-item').value;
-            if (item) {
+            const mName = row.querySelector('.new-item')?.value;
+            const mSerial = row.querySelector('.new-serial')?.value;
+            const mQty = row.querySelector('.new-qty')?.value;
+            const mTarget = row.querySelector('.new-target')?.value;
+            const mRevised = row.querySelector('.new-revised')?.value;
+            const mNotes = row.querySelector('.new-notes')?.value;
+            const mImg1 = row.querySelector('.new-img-one')?.value;
+            const mImg2 = row.querySelector('.new-img-two')?.value;
+
+            if (mName) {
                 newMachines.push({
-                    item: item,
-                    serial_no: row.querySelector('.new-serial').value,
-                    qty: row.querySelector('.new-qty').value,
-                    target_handover_date: row.querySelector('.new-target').value,
-                    revised_handover_date: row.querySelector('.new-revised').value,
-                    notes: row.querySelector('.new-notes').value
+                    item: mName,
+                    serial_no: mSerial,
+                    qty: mQty,
+                    target_handover_date: mTarget,
+                    revised_handover_date: mRevised,
+                    notes: mNotes,
+                    images_one: mImg1,
+                    image_two: mImg2
                 });
             }
         });
@@ -4534,45 +4930,29 @@ window.OmnisDashboardV6 = class OmnisDashboardV6 {
         try {
             const sys = window.getCurrentSystem ? window.getCurrentSystem() : { baseUrl: "https://salestrack.powerstar.co.zw" };
 
-            // Use Custom Backend Endpoint
-            // Base64 Encode payloads to bypass WAF 417 Errors on special chars
-            console.log("Encoding payload with Base64...");
-            // alert("DEBUG: Code override active. Saving..."); // Temporary debug
-
-            const safeEncode = (obj) => {
-                try {
-                    return btoa(unescape(encodeURIComponent(JSON.stringify(obj || []))));
-                } catch (e) { return "[]"; }
+            const params = {
+                report_id: reportId || "",
+                machine_id: machineId || "",
+                status: status || "",
+                is_payment_terms: is_payment_terms,
+                contacts: this._tempContacts || [],
+                machines: machinesUpdates,
+                new_machines: newMachines,
+                deleted_machines: this._tempDeletedMachines || []
             };
 
-            // BYPASS MAIN.JS AXIOS TO FIX 417 EXPECT ERROR
-            // Browser fetch does not send Expect: 100-continue, unlike the stale main.js process
-            console.log("Using Direct Fetch Bypass for Save... ReportID:", reportId);
-            
-            if (!reportId) {
-                console.error("CRITICAL: saveOrderFull called without a valid Report ID!");
-                this.showToast("Save Failed: Missing Report ID in context", "error");
-                if (btn) { btn.textContent = "Save Changes"; btn.disabled = false; }
-                return;
-            }
-
-            const params = new URLSearchParams();
-            // params.append('cmd', 'powerstar_salestrack.omnis_dashboard.update_order_details_v2'); // Not needed if in URL
-            params.append('report_id', reportId || "");
-            params.append('machine_id', machineId || "");
-            params.append('status', status || "");
-            params.append('contacts', safeEncode(this._tempContacts || []));
-            params.append('machines', safeEncode(machinesUpdates));
-            params.append('new_machines', safeEncode(newMachines));
-            params.append('deleted_machines', safeEncode(this._tempDeletedMachines || []));
-            // params.append('notes', ""); // Legacy
-
-            const url = (sys.baseUrl || "https://salestrack.powerstar.co.zw") + "/api/method/powerstar_salestrack.omnis_dashboard.update_order_details_v2";
-
-            const res = await window.callFrappeSequenced(sys.baseUrl || "https://salestrack.powerstar.co.zw", "powerstar_salestrack.omnis_dashboard.update_order_details_v2", Object.fromEntries(params));
+            const res = await window.callFrappeSequenced(sys.baseUrl || "https://salestrack.powerstar.co.zw", "powerstar_salestrack.omnis_dashboard.update_order_details_v2", params);
             const payload = res.message || res;
             if (payload && payload.ok) {
                 this.showToast("Order Saved Successfully", "success");
+
+                // --- Supabase Dual-Write ---
+                try {
+                    await this.syncToSupabase(reportId, params);
+                } catch(err) {
+                    console.error("[Supabase Sync Error]", err);
+                }
+
                 this.closeListModal();
                 const refreshBtn = document.getElementById('ol-refresh-btn');
                 if (refreshBtn) refreshBtn.click();
@@ -4585,6 +4965,100 @@ window.OmnisDashboardV6 = class OmnisDashboardV6 {
             console.error("Save Error", e);
             alert("Error saving: " + e.message);
             if (btn) { btn.textContent = "Save Changes"; btn.disabled = false; }
+        }
+    }
+
+    async syncToSupabase(reportId, params) {
+        if (!window.supabase) return;
+        try {
+            console.log("[Supabase] Syncing Order...", reportId);
+
+            // 1. Upsert Parent
+            // Intelligent Company Mapping
+            const rawOwner = (params.owner || "").toLowerCase();
+            const rawCompany = (params.company || "").toLowerCase();
+            let companyTag = "Sinopower"; // Default
+            if (rawOwner.includes("machinery") || rawCompany.includes("machinery")) {
+                companyTag = "Machinery Exchange";
+            } else if (rawOwner.includes("sinopower") || rawCompany.includes("sinopower")) {
+                companyTag = "Sinopower";
+            }
+
+            // Fetch the ID because upsert proxy doesn't support onConflict chaining
+            const getRes = await window.supabase.from('fmb_reports').select('id, frappe_id');
+            const parentRow = getRes.data ? getRes.data.find(r => r.frappe_id === reportId) : null;
+            
+            const parentPayload = {
+                frappe_id: reportId,
+                status: params.status,
+                is_payment_terms: params.is_payment_terms === true,
+                customer_id: params.customer_id || (this.data && this.data.customer_name),
+                company: companyTag
+            };
+
+            if (parentRow && parentRow.id) {
+                parentPayload.id = parentRow.id;
+            }
+
+            const upsertRes = await window.supabase.from('fmb_reports').upsert(parentPayload);
+
+            if (upsertRes.error) {
+                console.error("Supabase Parent Sync Error:", upsertRes.error);
+                throw new Error(`Supabase Error: ${upsertRes.error.message || upsertRes.error.details}`);
+            }
+
+            let supaParentId = parentRow ? parentRow.id : null;
+            if (!supaParentId) {
+                // If it was a fresh insert, we need to fetch the generated ID
+                const freshRes = await window.supabase.from('fmb_reports').select('id, frappe_id');
+                const freshRow = freshRes.data ? freshRes.data.find(r => r.frappe_id === reportId) : null;
+                if (freshRow) supaParentId = freshRow.id;
+            }
+
+            if (!supaParentId) {
+                throw new Error("Supabase accepted the request but could not retrieve the ID.");
+            }
+
+            // 2. Sync Machines
+            if (params.machines && params.machines.length > 0) {
+                const machinesRes = await window.supabase.from('order_machines').select('id, frappe_row_id');
+                const existingMachines = machinesRes.data || [];
+
+                const machinePayloads = params.machines.map(m => {
+                    const existing = existingMachines.find(em => em.frappe_row_id === m.name);
+                    const payload = {
+                        order_id: supaParentId,
+                        frappe_row_id: m.name,
+                        item_code: m.item,
+                        serial_no: m.serial_no,
+                        quantity: m.qty || 1,
+                        target_date: m.target_handover_date || null,
+                        revised_date: m.revised_handover_date || null,
+                        notes: m.notes,
+                        image_1_url: m.images_one,
+                        image_2_url: m.image_two
+                    };
+                    if (existing && existing.id) payload.id = existing.id;
+                    return payload;
+                });
+                await window.supabase.from('order_machines').upsert(machinePayloads);
+            }
+
+            // 3. Sync Contacts (Batch Insert/Replace approach)
+            if (params.contacts && params.contacts.length > 0) {
+                const contactPayloads = params.contacts.map(c => ({
+                    order_id: supaParentId,
+                    salutation: c.salutation,
+                    name: c.name1 || c.name,
+                    phone: c.phone_number,
+                    email: c.email_address
+                }));
+                await window.supabase.from('order_contacts').insert(contactPayloads);
+            }
+
+            console.log("[Supabase] Sync Complete.");
+        } catch (e) {
+            console.error("[Supabase] Sync failed:", e);
         }
     }
 
@@ -4815,26 +5289,11 @@ window.OmnisDashboardV6 = class OmnisDashboardV6 {
 
         try {
             localStorage.setItem('omnis_openai_key', key);
-
-            // Provide feedback
-            msgEl.style.display = 'block';
-            msgEl.style.background = '#f0fdf4';
-            msgEl.style.color = '#15803d';
-            msgEl.style.border = '1px solid #bbf7d0';
-            msgEl.textContent = '... Settings saved successfully!';
-
-            setTimeout(() => {
-                msgEl.style.display = 'none';
-            }, 3000);
-
+            this.updateSettingsStatus('... Settings saved successfully!', 'success');
             this.showToast("Settings Saved", "success");
         } catch (e) {
             console.error("Save Settings Error", e);
-            msgEl.style.display = 'block';
-            msgEl.style.background = '#fef2f2';
-            msgEl.style.color = '#b91c1c';
-            msgEl.style.border = '1px solid #fecaca';
-            msgEl.textContent = '&#x274C; Failed to save settings.';
+            this.updateSettingsStatus('&#x274C; Failed to save settings.', 'error');
         }
     }
 
@@ -4851,6 +5310,10 @@ window.OmnisDashboardV6 = class OmnisDashboardV6 {
             const user = (typeof frappe !== "undefined" && frappe.session && frappe.session.user) ? frappe.session.user : "Guest";
             adminLogs.style.display = (user === "Administrator") ? "block" : "none";
         }
+
+        // --- API HEALTH UI ---
+        window.updateApiMetricsUI = () => this.updateApiMetricsUI();
+        this.updateApiMetricsUI();
     }
 
     async fetchErrorLogs() {
@@ -4858,11 +5321,11 @@ window.OmnisDashboardV6 = class OmnisDashboardV6 {
         if (!container) return;
 
         container.innerHTML = '<div style="padding:40px; text-align:center; color:#64748b;"><i class="fas fa-spinner fa-spin"></i> Fetching system logs...</div>';
-        
+
         try {
             const sys = window.CURRENT_SYSTEM;
             const res = await window.callFrappeSequenced(sys.baseUrl, "powerstar_salestrack.omnis_dashboard.get_omnis_error_logs", { limit: 30 });
-            
+
             if (res.message && res.message.ok) {
                 this.renderErrorLogs(res.message.logs);
             } else {
@@ -4877,7 +5340,7 @@ window.OmnisDashboardV6 = class OmnisDashboardV6 {
     renderErrorLogs(logs) {
         const container = document.getElementById('settings-logs-container');
         if (!container) return;
-        
+
         if (!logs || logs.length === 0) {
             container.innerHTML = '<div style="padding:40px; text-align:center; color:#94a3b8;">No error logs found. System is healthy! ...</div>';
             return;
@@ -4940,37 +5403,24 @@ window.OmnisDashboardV6 = class OmnisDashboardV6 {
 
             const data = await res.json();
 
-            msgEl.style.display = 'block';
             if (res.ok) {
-                msgEl.style.background = '#f0fdf4';
-                msgEl.style.color = '#15803d';
-                msgEl.style.border = '1px solid #bbf7d0';
-                msgEl.textContent = '... Connection successful! Your API key is valid.';
+                this.updateSettingsStatus('... Connection successful! Your API key is valid.', 'success');
                 this.showToast("API Key Validated", "success");
             } else {
                 // If it's a 404 model not found, the key itself IS valid, just restricted models.
                 if (data.error && data.error.code === 'model_not_found') {
-                    msgEl.style.background = '#f0fdf4';
-                    msgEl.style.color = '#15803d';
-                    msgEl.style.border = '1px solid #bbf7d0';
-                    msgEl.textContent = '... API key is valid (Model access restricted: ' + (data.error.message || 'model_not_found') + ')';
+                    this.updateSettingsStatus('... API key is valid (Model access restricted: ' + (data.error.message || 'model_not_found') + ')', 'success');
                     this.showToast("API Key Validated", "success");
                 } else {
-                    msgEl.style.background = '#fef2f2';
-                    msgEl.style.color = '#b91c1c';
-                    msgEl.style.border = '1px solid #fecaca';
-                    msgEl.textContent = '&#x274C; ' + (data.error ? data.error.message : 'Connection failed.');
+                    const failMsg = data.error ? data.error.message : 'Connection failed.';
+                    this.updateSettingsStatus('&#x274C; ' + failMsg, 'error');
                     this.showToast("Connection Failed", "error");
                 }
             }
 
         } catch (e) {
             console.error("Test Connection Error", e);
-            msgEl.style.display = 'block';
-            msgEl.style.background = '#fef2f2';
-            msgEl.style.color = '#b91c1c';
-            msgEl.style.border = '1px solid #fecaca';
-            msgEl.textContent = '&#x274C; Connection error: ' + e.message;
+            this.updateSettingsStatus('&#x274C; Connection error: ' + e.message, 'error');
             this.showToast("Error testing key", "error");
         } finally {
             btn.innerHTML = originalBtnContent;
@@ -4978,8 +5428,40 @@ window.OmnisDashboardV6 = class OmnisDashboardV6 {
         }
     }
 
+    /**
+     * Shows a status message in the Intelligence tab
+     * @param {string} text - The message text
+     * @param {string} type - success or error
+     */
+    updateSettingsStatus(text, type) {
+        const msgEl = document.getElementById('settings-status-msg');
+        const textEl = document.getElementById('settings-status-text');
+        if (!msgEl || !textEl) return;
+
+        textEl.innerHTML = text;
+        msgEl.style.display = 'flex';
+
+        if (type === 'success') {
+            msgEl.style.background = '#f0fdf4';
+            msgEl.style.color = '#15803d';
+            msgEl.style.borderColor = '#bbf7d0';
+        } else {
+            msgEl.style.background = '#fef2f2';
+            msgEl.style.color = '#b91c1c';
+            msgEl.style.borderColor = '#fecaca';
+        }
+
+        // Clear existing timer if any
+        if (this._settingsStatusTimer) clearTimeout(this._settingsStatusTimer);
+
+        // Auto-dismiss after 8 seconds
+        this._settingsStatusTimer = setTimeout(() => {
+            msgEl.style.display = 'none';
+        }, 8000);
+    }
+
     /* ---------- WHATSAPP BUILT-IN INTEGRATION LOGIC ---------- */
-    
+
     // Listen for WhatsApp Events from Electron
     initWhatsAppListeners() {
         if (window.electron && window.electron.on) {
@@ -5017,12 +5499,12 @@ window.OmnisDashboardV6 = class OmnisDashboardV6 {
                     document.getElementById('wa-scan-status'),
                     document.getElementById('order-modal-wa-status')
                 ];
-                
+
                 statusLabels.forEach(statusLabel => {
                     if (statusLabel) {
                         let displayStatus = status;
                         let statusClass = 'wa-status-disconnected';
-                        
+
                         if (status === 'CONNECTED') {
                             statusClass = 'wa-status-connected';
                         } else if (status === 'ERROR') {
@@ -5041,17 +5523,17 @@ window.OmnisDashboardV6 = class OmnisDashboardV6 {
                             displayStatus = 'READY TO SCAN';
                             statusClass = 'wa-status-ready';
                         }
-                        
+
                         statusLabel.innerText = displayStatus;
                         statusLabel.className = 'whatsapp-status-pill ' + statusClass;
                     }
                 });
-                
+
                 // 2. Update Settings Page Status
                 const settingsIcon = document.getElementById('wa-settings-icon');
                 const settingsText = document.getElementById('wa-settings-status-text');
                 const qrPanel = document.getElementById('wa-settings-qr-panel');
-                
+
                 if (settingsText) settingsText.innerText = (status === 'ERROR' && errorDetail) ? `ERROR: ${errorDetail}` : status;
                 if (settingsIcon) {
                     settingsIcon.style.color = (status === 'CONNECTED' ? '#25D366' : (status === 'ERROR' || status === 'ERR_NO_BROWSER' ? '#ef4444' : '#64748b'));
@@ -5066,7 +5548,7 @@ window.OmnisDashboardV6 = class OmnisDashboardV6 {
                         settingsIcon.style.background = 'white';
                     }
                 }
-                
+
                 // Toggle QR Panel visibility in Settings
                 if (qrPanel) {
                     if (status === 'QR_READY') {
@@ -5120,7 +5602,7 @@ window.OmnisDashboardV6 = class OmnisDashboardV6 {
 
     async logoutWhatsApp() {
         if (!confirm("Are you sure you want to hard reset the WhatsApp connection? This will wipe the session and require re-linking.")) return;
-        
+
         try {
             if (window.omnisLog) window.omnisLog("[WhatsApp] Requesting session wipe...");
             const res = await window.electron.invoke('whatsapp:logout');
@@ -5196,6 +5678,9 @@ window.OmnisDashboardV6 = class OmnisDashboardV6 {
 
             // 2. Extract Machines
             const machines = [];
+            const sys = window.getCurrentSystem ? window.getCurrentSystem() : { baseUrl: "https://salestrack.powerstar.co.zw" };
+            const baseUrl = sys.baseUrl.replace(/\/$/, '');
+
             document.querySelectorAll('#machines-tbody tr').forEach(row => {
                 if (row.cells.length < 5) return;
                 const itemInput = row.querySelector('.m-item');
@@ -5210,10 +5695,22 @@ window.OmnisDashboardV6 = class OmnisDashboardV6 {
                 const mRevised = revisedInput ? revisedInput.value.trim() : "";
                 const mNotes = notesInput ? notesInput.value.trim() : "";
 
+                let mImg1 = row.querySelector('.m-img-one')?.value || row.querySelector('.new-img-one')?.value || "";
+                let mImg2 = row.querySelector('.m-img-two')?.value || row.querySelector('.new-img-two')?.value || "";
+
+                // ✅ Ensure Absolute URLs for WhatsApp Client
+                if (mImg1 && mImg1.startsWith('/')) mImg1 = baseUrl + mImg1;
+                if (mImg2 && mImg2.startsWith('/')) mImg2 = baseUrl + mImg2;
+
                 if (mName && mName !== "Machine / Item") {
-                    machines.push({ name: mName, qty: mQty, target: mTarget, revised: mRevised, notes: mNotes });
+                    machines.push({
+                        name: mName, qty: mQty, target: mTarget, revised: mRevised,
+                        notes: mNotes, img1: mImg1, img2: mImg2
+                    });
                 }
             });
+
+            const totalAttachments = machines.reduce((acc, m) => acc + (m.img1 ? 1 : 0) + (m.img2 ? 1 : 0), 0);
 
             // 3. Build customer message preview (personalised for first contact)
             const customerName = document.querySelector('#dash-generic-body div[style*="font-size:18px"]')?.textContent.trim() || "Customer";
@@ -5226,12 +5723,16 @@ window.OmnisDashboardV6 = class OmnisDashboardV6 {
             let contactPerson = "Chetan Samji";
             let contactPhone = "+263772949515";
             let companyName = "Machinery Exchange";
+            let signOff = `*The ${companyName} Team*`;
+
             if (company.includes("Sinopower")) {
                 contactPerson = "Brett Berry";
                 contactPhone = "+263775553862";
                 companyName = "Sinopower";
+                signOff = `*Sinopower*`;
             } else if (company.includes("Industrial Equipment")) {
                 companyName = "Industrial Equipment Group";
+                signOff = `*The IEG Team*`;
             }
 
             const daysLeft = this._currentOrderSnippet?.days_left || "";
@@ -5254,14 +5755,14 @@ window.OmnisDashboardV6 = class OmnisDashboardV6 {
                 previewMsg += `_We sincerely apologize for the delay and are working diligently to expedite the process._\n\n`;
             }
             previewMsg += `*EQUIPMENT DETAILS*\n`;
-            
-            const numEmojis = ['1️⃣','2️⃣','3️⃣','4️⃣','5️⃣','6️⃣','7️⃣','8️⃣','9️⃣','🔟'];
+
+            const numEmojis = ['1️⃣', '2️⃣', '3️⃣', '4️⃣', '5️⃣', '6️⃣', '7️⃣', '8️⃣', '9️⃣', '🔟'];
             machines.forEach((m, idx) => {
                 const numEmoji = idx < 10 ? numEmojis[idx] : `${idx + 1}.`;
                 const dateToShow = m.revised ? `${m.revised} (Revised)` : m.target;
                 previewMsg += `${numEmoji} *${m.name}* (Qty: ${m.qty})\n    ↳ Status: _${m.notes || orderStatus}_\n    ↳ Target Handover Date: *${dateToShow}*\n\n`;
             });
-            previewMsg += `Should you have any questions or require further assistance, please do not hesitate to contact your dedicated representative:\n👤 *${contactPerson}* | Commercial Manager\n📞 ${contactPhone}\n\nBest regards,\n*The ${companyName} Team*`;
+            previewMsg += `Should you have any questions or require further assistance, please do not hesitate to contact your dedicated representative:\n👤 *${contactPerson}* | Commercial Manager\n📞 ${contactPhone}\n\nBest regards,\n${signOff}`;
 
             const recipientLabels = validContacts.map(c =>
                 `${c.salutation ? c.salutation + ' ' : ''}${c.name} (${c.phone})`
@@ -5330,6 +5831,16 @@ window.OmnisDashboardV6 = class OmnisDashboardV6 {
 
                         ${validContacts.length > 1 ? `<div style="background:#eff6ff; border:1px solid #bfdbfe; border-radius:10px; padding:12px 16px; font-size:12px; color:#1e40af;">&#x2139; A personalised message will be sent to each of the <strong>${validContacts.length} contacts</strong> individually.</div>` : ''}
 
+                        <!-- Attachment Indicator -->
+                        ${totalAttachments > 0 ? `
+                            <div style="background:#f0f9ff; border:1px solid #bae6fd; border-radius:10px; padding:12px 16px; display:flex; align-items:center; gap:12px;">
+                                <div style="font-size:20px;">&#x1F4CE;</div>
+                                <div style="font-size:12px; color:#0369a1; font-weight:600;">
+                                    ${totalAttachments} photo${totalAttachments > 1 ? 's' : ''} will be attached to this update.
+                                </div>
+                            </div>
+                        ` : ''}
+
                         <!-- Actions -->
                         <div style="display:flex; gap:12px; justify-content:flex-end; padding-top:8px; border-top:1px solid #f1f5f9;">
                             <button onclick="document.getElementById('wa-preview-modal').remove()" style="padding:10px 24px; border:1px solid #e2e8f0; background:white; color:#64748b; border-radius:8px; font-size:14px; font-weight:600; cursor:pointer;">Cancel</button>
@@ -5361,12 +5872,16 @@ window.OmnisDashboardV6 = class OmnisDashboardV6 {
             let contactPerson = "Chetan Samji";
             let contactPhone = "+263772949515";
             let companyName = "Machinery Exchange";
+            let signOff = `*The ${companyName} Team*`;
+
             if (company.includes("Sinopower")) {
                 contactPerson = "Brett Berry";
                 contactPhone = "+263775553862";
                 companyName = "Sinopower";
+                signOff = `*Sinopower*`;
             } else if (company.includes("Industrial Equipment")) {
                 companyName = "Industrial Equipment Group";
+                signOff = `*The IEG Team*`;
             }
 
             const daysLeft = this._currentOrderSnippet?.days_left || "";
@@ -5393,16 +5908,39 @@ window.OmnisDashboardV6 = class OmnisDashboardV6 {
                 }
                 customerMsg += `*EQUIPMENT DETAILS*\n`;
 
-                const numEmojis = ['1️⃣','2️⃣','3️⃣','4️⃣','5️⃣','6️⃣','7️⃣','8️⃣','9️⃣','🔟'];
+                const numEmojis = ['1️⃣', '2️⃣', '3️⃣', '4️⃣', '5️⃣', '6️⃣', '7️⃣', '8️⃣', '9️⃣', '🔟'];
                 machines.forEach((m, idx) => {
                     const numEmoji = idx < 10 ? numEmojis[idx] : `${idx + 1}.`;
                     const dateToShow = m.revised ? `${m.revised} (Revised)` : m.target;
                     customerMsg += `${numEmoji} *${m.name}* (Qty: ${m.qty})\n    ↳ Status: _${m.notes || orderStatus}_\n    ↳ Target Handover Date: *${dateToShow}*\n\n`;
                 });
-                customerMsg += `Should you have any questions or require further assistance, please do not hesitate to contact your dedicated representative:\n👤 *${contactPerson}* | Commercial Manager\n📞 ${contactPhone}\n\nBest regards,\n*The ${companyName} Team*`;
+                customerMsg += `Should you have any questions or require further assistance, please do not hesitate to contact your dedicated representative:\n👤 *${contactPerson}* | Commercial Manager\n📞 ${contactPhone}\n\nBest regards,\n${signOff}`;
 
                 if (window.omnisLog) window.omnisLog(`[WhatsApp] Sending to ${contact.name} (${contact.phone})...`);
                 const res = await window.electron.invoke('whatsapp:send-msg', { to: contact.phone, body: customerMsg });
+
+                // Send machine images if present
+                for (const m of machines) {
+                    if (m.img1) {
+                        if (window.omnisLog) window.omnisLog(`[WhatsApp] Preparing Photo 1 for ${m.name}...`);
+                        const b64 = await this.urlToBase64(m.img1);
+                        if (b64) {
+                            await window.electron.invoke('whatsapp:send-media', { to: contact.phone, base64: b64, filename: `photo1_${m.name}.jpg` });
+                        } else {
+                            if (window.omnisLog) window.omnisLog(`[WhatsApp] Failed to process Photo 1 for ${m.name}`, "error");
+                        }
+                    }
+                    if (m.img2) {
+                        if (window.omnisLog) window.omnisLog(`[WhatsApp] Preparing Photo 2 for ${m.name}...`);
+                        const b64 = await this.urlToBase64(m.img2);
+                        if (b64) {
+                            await window.electron.invoke('whatsapp:send-media', { to: contact.phone, base64: b64, filename: `photo2_${m.name}.jpg` });
+                        } else {
+                            if (window.omnisLog) window.omnisLog(`[WhatsApp] Failed to process Photo 2 for ${m.name}`, "error");
+                        }
+                    }
+                }
+
                 if (!res.ok) console.warn(`Failed to send to ${contact.name}: ${res.error}`);
             }
 
@@ -5468,8 +6006,8 @@ window.OmnisDashboardV6 = class OmnisDashboardV6 {
 
         const emailContacts = [];
         document.querySelectorAll('#contacts-tbody tr').forEach(row => {
-            const sal   = row.querySelector('input[data-field="salutation"]')?.value.trim() || '';
-            const name  = row.querySelector('input[data-field="name1"]')?.value.trim() || '';
+            const sal = row.querySelector('input[data-field="salutation"]')?.value.trim() || '';
+            const name = row.querySelector('input[data-field="name1"]')?.value.trim() || '';
             const email = row.querySelector('input[data-field="email_address"]')?.value.trim() || '';
             if (email && email.includes('@')) {
                 emailContacts.push({ salutation: sal, name: name || 'Valued Customer', email });
@@ -5495,8 +6033,8 @@ window.OmnisDashboardV6 = class OmnisDashboardV6 {
             internalTeamLabel = "Sinopower";
             // --- TESTING MODE ---
             ccList = [
-                "takunda@industrial-exchange.group", 
-                "rutendo@industrial-exchange.group", 
+                "takunda@industrial-exchange.group",
+                "rutendo@industrial-exchange.group",
                 "omnis@industrial-exchange.group"
             ];
             // --- ORIGINAL SINOPOWER LIST ---
@@ -5510,8 +6048,8 @@ window.OmnisDashboardV6 = class OmnisDashboardV6 {
             internalTeamLabel = "Machinery Exchange";
             // --- TESTING MODE ---
             ccList = [
-                "takunda@industrial-exchange.group", 
-                "rutendo@industrial-exchange.group", 
+                "takunda@industrial-exchange.group",
+                "rutendo@industrial-exchange.group",
                 "omnis@industrial-exchange.group"
             ];
             // --- ORIGINAL MXG LIST ---
@@ -5528,9 +6066,9 @@ window.OmnisDashboardV6 = class OmnisDashboardV6 {
         const machines = [];
         document.querySelectorAll('#machines-tbody tr').forEach(row => {
             if (row.cells.length < 5) return;
-            const mName    = row.cells[0]?.innerText.trim().split('\n')[0] || '';
-            const mQty     = row.cells[2]?.innerText.trim() || '1';
-            const mTarget  = row.cells[3]?.innerText.trim() || '-';
+            const mName = row.cells[0]?.innerText.trim().split('\n')[0] || '';
+            const mQty = row.cells[2]?.innerText.trim() || '1';
+            const mTarget = row.cells[3]?.innerText.trim() || '-';
             const mRevised = row.querySelector('.m-revised')?.value || '';
             if (mName && mName !== 'Machine / Item') {
                 machines.push({ name: mName, qty: mQty, target: mTarget, revised: mRevised });
@@ -5542,7 +6080,7 @@ window.OmnisDashboardV6 = class OmnisDashboardV6 {
                 ? `<span style="color:#ef4444;">${m.revised}</span> <em style="font-size:11px;">(Revised)</em>`
                 : m.target;
             return `<tr style="border-bottom:1px solid #f1f5f9;">
-                <td style="padding:8px 12px; font-size:13px; font-weight:600; color:#0f172a;">${i+1}. ${m.name}</td>
+                <td style="padding:8px 12px; font-size:13px; font-weight:600; color:#0f172a;">${i + 1}. ${m.name}</td>
                 <td style="padding:8px 12px; font-size:13px; color:#475569; text-align:center;">&times;${m.qty}</td>
                 <td style="padding:8px 12px; font-size:13px; color:#475569; white-space:nowrap;">${date}</td>
             </tr>`;
@@ -5646,7 +6184,7 @@ window.OmnisDashboardV6 = class OmnisDashboardV6 {
                 recipient_name: recipientNames || 'Customer'
             });
             const payload = res.message || res;
-            
+
             if (payload && payload.ok) {
                 if (btn) btn.innerHTML = `<span>&#9989;</span> Sent!`;
                 this.showToast(`Email report sent to ${emailContacts.length} contact${emailContacts.length > 1 ? 's' : ''}!`, 'success');
@@ -5667,6 +6205,375 @@ window.OmnisDashboardV6 = class OmnisDashboardV6 {
                 setTimeout(() => { btn.disabled = false; btn.innerHTML = originalHtml || `<span style="font-size:18px;">&#128231;</span> Send Email`; }, 3000);
             }
         }
+    }
+
+    /**
+     * Dynamically parses RELEASE_NOTES.md and updates the settings UI
+     */
+    async loadReleaseNotes() {
+        const container = document.getElementById('update-changelog');
+        if (!container) return;
+
+        try {
+            // Fetch relative to app root
+            const response = await fetch('../../RELEASE_NOTES.md');
+            if (!response.ok) throw new Error("Stream unreachable");
+
+            const text = await response.text();
+
+            // Extract "What's New" section
+            const startMarker = "## 🚀 What's New";
+            const endMarker = "---";
+
+            const startIndex = text.indexOf(startMarker);
+            if (startIndex === -1) throw new Error("Changelog format mismatch");
+
+            let relevantContent = text.substring(startIndex + startMarker.length);
+            const endIndex = relevantContent.indexOf(endMarker);
+            if (endIndex !== -1) {
+                relevantContent = relevantContent.substring(0, endIndex);
+            }
+
+            // Simple parser for markdown-ish lines
+            const lines = relevantContent.split('\n').filter(l => l.trim() !== "");
+            let html = "";
+
+            lines.forEach(line => {
+                const trimmed = line.trim();
+                if (trimmed.startsWith('###')) {
+                    const title = trimmed.replace('###', '').trim();
+                    html += `<div style="font-size:12px; font-weight:850; color:#0f172a; margin-top:8px; border-left:3px solid #2563eb; padding-left:8px; text-transform:uppercase; letter-spacing:0.5px;">${title}</div>`;
+                } else if (trimmed.startsWith('*')) {
+                    const content = trimmed.replace('*', '').trim();
+                    // Basic bold parsing
+                    const boldContent = content.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
+                    html += `
+                        <div style="display:flex; gap:10px; align-items:flex-start; background:white; padding:12px; border-radius:10px; border:1px solid #e2e8f0; transition:all 0.2s; cursor:default;" onmouseover="this.style.borderColor='#2563eb'; this.style.transform='translateX(4px)'" onmouseout="this.style.borderColor='#e2e8f0'; this.style.transform='translateX(0)'">
+                            <div style="color:#2563eb; font-size:10px; margin-top:2px;">&#x2714;</div>
+                            <div style="font-size:12px; color:#475569; line-height:1.5; font-weight:500;">${boldContent}</div>
+                        </div>
+                    `;
+                }
+            });
+
+            if (html === "") html = `<div style="padding:20px; text-align:center; color:#94a3b8; font-size:12px;">No specific features listed for this version.</div>`;
+            container.innerHTML = html;
+
+        } catch (err) {
+            console.warn("[ReleaseNotes] Fetch failed:", err.message);
+            container.innerHTML = `<div style="padding:20px; text-align:center; color:#94a3b8; font-size:12px;">Operational log unavailable (${err.message}).</div>`;
+        }
+    }
+
+    /**
+     * Switches between settings tabs
+     * @param {string} tabId - connectivity, maintenance, intelligence, security
+     */
+    setSettingsTab(tabId) {
+        // 1. Toggle Content
+        const contents = document.querySelectorAll('.settings-tab-content');
+        contents.forEach(c => c.classList.add('hidden'));
+
+        const activeContent = document.getElementById(`settings-tab-${tabId}`);
+        if (activeContent) activeContent.classList.remove('hidden');
+
+        // 2. Toggle Button Styles
+        const buttons = document.querySelectorAll('.settings-tab-btn');
+        buttons.forEach(btn => {
+            if (btn.dataset.tab === tabId) {
+                btn.style.background = 'white';
+                btn.style.color = '#0f172a';
+                btn.style.boxShadow = '0 2px 4px rgba(0,0,0,0.05)';
+            } else {
+                btn.style.background = 'transparent';
+                btn.style.color = '#64748b';
+                btn.style.boxShadow = 'none';
+            }
+        });
+
+        if (window.omnisLog) window.omnisLog(`[Settings] Switched to tab: ${tabId.toUpperCase()}`);
+    }
+
+    /* ---------- SECURITY & INACTIVITY LOGIC ---------- */
+
+    initInactivityTimer() {
+        this.IDLE_TIMEOUT = 15 * 60 * 1000; // 15 mins
+        this.WARNING_BUFFER = 60 * 1000; // 1 min warning
+        this.idleTimer = null;
+        this.warningTimer = null;
+
+        ['mousemove', 'mousedown', 'keypress', 'touchstart', 'scroll'].forEach(evt => {
+            window.addEventListener(evt, () => this.resetIdleTimer(), true);
+        });
+
+        this.resetIdleTimer();
+    }
+
+    resetIdleTimer() {
+        clearTimeout(this.idleTimer);
+        clearTimeout(this.warningTimer);
+
+        // Warning at 14 minutes
+        this.warningTimer = setTimeout(() => {
+            this.showInactivityWarning();
+        }, this.IDLE_TIMEOUT - this.WARNING_BUFFER);
+
+        // Logout at 15 minutes
+        this.idleTimer = setTimeout(() => {
+            console.log("Forced logout due to inactivity.");
+            if (window.frappeAPI && window.frappeAPI.logout) {
+                window.frappeAPI.logout();
+            } else {
+                window.location.href = "../../index.html"; // Redirect to login
+            }
+        }, this.IDLE_TIMEOUT);
+    }
+
+    showInactivityWarning() {
+        const overlay = document.getElementById('inactivity-warning-overlay');
+        if (overlay) overlay.classList.remove('hidden');
+
+        let secondsLeft = 60;
+        const countdownEl = document.getElementById('inactivity-countdown');
+        if (countdownEl) countdownEl.innerText = secondsLeft;
+
+        const countdownInterval = setInterval(() => {
+            secondsLeft--;
+            if (countdownEl) countdownEl.innerText = secondsLeft;
+            if (secondsLeft <= 0 || !overlay || overlay.classList.contains('hidden')) {
+                clearInterval(countdownInterval);
+            }
+        }, 1000);
+    }
+
+    dismissInactivityWarning() {
+        const overlay = document.getElementById('inactivity-warning-overlay');
+        if (overlay) overlay.classList.add('hidden');
+        this.resetIdleTimer();
+    }
+
+    async requestPasswordReset() {
+        const userEmail = localStorage.getItem("omnisUser") || (typeof frappe !== "undefined" && frappe.session && frappe.session.user);
+
+        if (!userEmail || userEmail === "Guest") {
+            this.showToast("Could not identify user for password reset.", "error");
+            return;
+        }
+
+        const confirmReset = await this.confirm("Reset Password", `Are you sure you want to request a password reset for ${userEmail}? A link will be sent to your email.`);
+        if (!confirmReset) return;
+
+        try {
+            const baseUrl = window.CURRENT_SYSTEM ? window.CURRENT_SYSTEM.baseUrl : "https://salestrack.powerstar.co.zw";
+            const url = baseUrl + "/api/method/powerstar_salestrack.omnis_dashboard.trigger_password_reset";
+
+            const params = new URLSearchParams();
+            params.append('user_email', userEmail);
+
+            const res = await fetch(url, {
+                method: "POST",
+                headers: { "Content-Type": "application/x-www-form-urlencoded" },
+                body: params.toString()
+            });
+            const data = await res.json();
+
+            if (data.message && data.message.ok) {
+                this.showToast("Reset instructions sent! Check your email.", "success");
+            } else {
+                this.showToast("Error: " + (data.message?.error || "Failed to trigger reset"), "error");
+            }
+        } catch (err) {
+            console.error("Password reset error:", err);
+            this.showToast("Could not connect to security service.", "error");
+        }
+    }
+
+    updateApiMetricsUI() {
+        if (!window.apiMetrics) return;
+
+        const dot = document.getElementById("api-health-dot");
+        const status = document.getElementById("api-health-status");
+        const latency = document.getElementById("api-health-latency");
+        const success = document.getElementById("api-health-success");
+        const requests = document.getElementById("api-health-requests");
+        const last = document.getElementById("api-health-last");
+        const error = document.getElementById("api-health-error");
+
+        if (status) status.innerText = window.apiMetrics.status;
+        if (latency) latency.innerText = window.apiMetrics.avgLatency || 0;
+        if (requests) requests.innerText = window.apiMetrics.totalRequests;
+        if (last) last.innerText = window.apiMetrics.lastRequestAt || "Never";
+        if (error) error.innerText = window.apiMetrics.lastError || "";
+
+        if (success) {
+            const rate = window.apiMetrics.totalRequests > 0
+                ? Math.round((window.apiMetrics.successfulRequests / window.apiMetrics.totalRequests) * 100)
+                : 100;
+            success.innerText = rate;
+            success.style.color = rate < 90 ? "#ef4444" : "#0f172a";
+        }
+
+        if (dot) {
+            if (window.apiMetrics.status === "Healthy") dot.style.background = "#10b981";
+            else if (window.apiMetrics.status === "Degraded") dot.style.background = "#f59e0b";
+            else dot.style.background = "#ef4444";
+        }
+    }
+
+    async pingApiHandshake() {
+        this.showToast("Pinging Command Center...", "info");
+        try {
+            const sys = window.CURRENT_SYSTEM;
+            const res = await window.callFrappeSequenced(sys.baseUrl, "frappe.auth.get_logged_user", {});
+            if (res) {
+                this.showToast("API Handshake Successful", "success");
+            }
+        } catch (e) {
+            this.showToast("Ping Failed: " + e.message, "error");
+        }
+        this.updateApiMetricsUI();
+    }
+
+    // --- Migration Engine ---
+    async startFullMigration() {
+        if (this._migrationRunning) {
+            this._migrationPaused = false;
+            this.updateMigrationUI("Resuming...");
+            return;
+        }
+
+        const btnStart = document.getElementById('btn-start-migration');
+        const btnPause = document.getElementById('btn-pause-migration');
+        const pill = document.getElementById('migration-status-pill');
+
+        try {
+            this._migrationRunning = true;
+            this._migrationPaused = false;
+            this._migrationStartTime = Date.now();
+            this._migrationSyncedCount = 0;
+            this._migrationFailedCount = 0;
+
+            if (btnStart) { btnStart.disabled = true; btnStart.innerHTML = '<i class="fas fa-spinner fa-spin"></i> SYNCING...'; }
+            if (btnPause) { btnPause.disabled = false; btnPause.style.cursor = 'pointer'; }
+            if (pill) { pill.innerText = "In Progress"; pill.style.background = "#dcfce7"; pill.style.color = "#166534"; }
+
+            this.updateMigrationUI("Initializing Connection...");
+
+            // 1. Get Total Count
+            const sys = window.getCurrentSystem ? window.getCurrentSystem() : { baseUrl: "https://salestrack.powerstar.co.zw" };
+            const countRes = await window.callFrappeSequenced(sys.baseUrl, "powerstar_salestrack.omnis_dashboard.get_omnis_orders", { start: 0, page_length: 1 });
+            const total = countRes.message?.total_count || 4500; // Fallback
+            this._migrationTotal = total;
+
+            const totalEl = document.getElementById('migration-stat-total');
+            if (totalEl) totalEl.innerText = total.toLocaleString();
+
+            // 2. Loop Batches
+            let offset = 0;
+            const batchSize = 50;
+
+            while (offset < total) {
+                if (this._migrationPaused) {
+                    this.updateMigrationUI("Paused");
+                    break;
+                }
+
+                const batchLabel = document.getElementById('migration-batch-label');
+                if (batchLabel) batchLabel.innerText = `Batch ${Math.floor(offset / batchSize) + 1} / ${Math.ceil(total / batchSize)}`;
+
+                // Fetch Batch
+                this.updateMigrationUI(`Fetching records ${offset} to ${offset + batchSize}...`);
+                const batchRes = await window.callFrappeSequenced(sys.baseUrl, "powerstar_salestrack.omnis_dashboard.get_omnis_orders", {
+                    start: offset,
+                    page_length: batchSize
+                });
+
+                const orders = batchRes.message?.data || [];
+                if (orders.length === 0) break;
+
+                // Sync each order in batch
+                for (const order of orders) {
+                    if (this._migrationPaused) break;
+
+                    try {
+                        const detailRes = await window.callFrappeSequenced(sys.baseUrl, "powerstar_salestrack.omnis_dashboard.get_order_details", {
+                            report_id: order.name
+                        });
+
+                        if (detailRes.message?.ok) {
+                            await this.syncToSupabase(order.name, {
+                                status: detailRes.message.data.status,
+                                customer_id: detailRes.message.data.customer_name,
+                                owner: detailRes.message.data.owner,
+                                company: detailRes.message.data.company,
+                                contacts: detailRes.message.data.contacts || [],
+                                machines: detailRes.message.data.machines || []
+                            });
+                            this._migrationSyncedCount++;
+                        } else {
+                            this._migrationFailedCount++;
+                        }
+                    } catch (err) {
+                        console.error("Batch item sync failed", err);
+                        this._migrationFailedCount++;
+                    }
+
+                    // Update Progress UI
+                    this.refreshMigrationProgress(offset + orders.indexOf(order) + 1, total);
+                }
+
+                offset += batchSize;
+                await new Promise(r => setTimeout(r, 1000)); // Delay
+            }
+
+            if (!this._migrationPaused) {
+                this.updateMigrationUI("Migration Complete!");
+                if (pill) { pill.innerText = "Completed"; pill.style.background = "#10b981"; pill.style.color = "white"; }
+            }
+
+        } catch (e) {
+            console.error("Migration Fatal Error", e);
+            this.updateMigrationUI("Fatal Error: " + e.message);
+        } finally {
+            this._migrationRunning = false;
+            if (btnStart) { btnStart.disabled = false; btnStart.innerHTML = '<i class="fas fa-play"></i> START HISTORICAL SYNC'; }
+        }
+    }
+
+    pauseMigration() {
+        this._migrationPaused = true;
+        const pill = document.getElementById('migration-status-pill');
+        if (pill) { pill.innerText = "Paused"; pill.style.background = "#fef9c3"; pill.style.color = "#854d0e"; }
+    }
+
+    refreshMigrationProgress(current, total) {
+        const pct = Math.floor((current / total) * 100);
+        const bar = document.getElementById('migration-progress-bar');
+        const pctText = document.getElementById('migration-percent');
+        const syncedStat = document.getElementById('migration-stat-synced');
+        const failedStat = document.getElementById('migration-stat-failed');
+        const etaText = document.getElementById('migration-eta');
+
+        if (bar) bar.style.width = pct + '%';
+        if (pctText) pctText.innerText = pct + '%';
+        if (syncedStat) syncedStat.innerText = this._migrationSyncedCount.toLocaleString();
+        if (failedStat) failedStat.innerText = this._migrationFailedCount.toLocaleString();
+
+        const elapsed = (Date.now() - this._migrationStartTime) / 1000;
+        const rate = current / elapsed;
+        if (rate > 0) {
+            const remaining = total - current;
+            const secondsLeft = Math.round(remaining / rate);
+            const h = Math.floor(secondsLeft / 3600);
+            const m = Math.floor((secondsLeft % 3600) / 60);
+            const s = secondsLeft % 60;
+            if (etaText) etaText.innerText = `${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
+        }
+    }
+
+    updateMigrationUI(msg) {
+        const detail = document.getElementById('migration-detail-text');
+        if (detail) detail.innerText = msg;
     }
 }
 
@@ -5890,16 +6797,16 @@ function bindGsmAiRiskButton() {
 window.toggleAIArea = toggleAIArea;
 
 // Global Initialization Handler
-window.initDashboard = async function(period) {
+window.initDashboard = async function (period) {
     if (window.omnisLog) window.omnisLog("[Dashboard] initDashboard invoked for period: " + period);
-    
+
     if (!window.salestrack) {
         if (window.omnisLog) window.omnisLog("[Dashboard] Creating new OmnisDashboardV6 instance...");
         window.salestrack = new window.OmnisDashboardV6();
     }
-    
+
     try {
-        await window.salestrack.init(); 
+        await window.salestrack.init();
         if (period) await window.salestrack.fetchData(period);
     } catch (e) {
         console.error("[Dashboard] Boot Failure:", e);

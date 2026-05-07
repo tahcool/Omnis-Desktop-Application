@@ -30,6 +30,7 @@ contextBridge.exposeInMainWorld("settingsAPI", {
 contextBridge.exposeInMainWorld("frappeAPI", {
   request: (options) => ipcRenderer.invoke("frappe:request", options),
   getCached: (table) => ipcRenderer.invoke("cache:getAll", table),
+  setCached: (table, data) => ipcRenderer.invoke("cache:set", { table, data }),
   minimize: () => ipcRenderer.invoke("window:minimize"),
   close: () => ipcRenderer.invoke("window:close"),
   maximize: () => ipcRenderer.invoke("window:maximize"),
@@ -42,6 +43,7 @@ contextBridge.exposeInMainWorld("cacheAPI", {
   getAll: (table) => ipcRenderer.invoke("cache:getAll", table),
   getOne: (table, name) => ipcRenderer.invoke("cache:getOne", { table, name }),
   update: (table, name, data) => ipcRenderer.invoke("cache:update", { table, name, data }),
+  search: (table, query, fields) => ipcRenderer.invoke("cache:search", { table, query, fields }),
 });
 
 // ✅ Sync API - Added for offline sync management
@@ -51,6 +53,7 @@ contextBridge.exposeInMainWorld("syncAPI", {
   queue: (doctype, docName, operation, payload) =>
     ipcRenderer.invoke("sync:queue", { doctype, docName, operation, payload }),
   fullSync: () => ipcRenderer.invoke("sync:fullSync"),
+  catalogSync: () => ipcRenderer.invoke("sync:catalog"),
 
   // Listen for status updates from main process
   onStatusChange: (callback) => {
@@ -66,4 +69,32 @@ contextBridge.exposeInMainWorld("electron", {
   checkForUpdates: () => ipcRenderer.invoke("app:checkForUpdates"),
   on: (channel, func) => ipcRenderer.on(channel, (event, ...args) => func(event, ...args)),
   removeAllListeners: (channel) => ipcRenderer.removeAllListeners(channel)
+});
+
+contextBridge.exposeInMainWorld("storageAPI", {
+  upload: (bucket, path, base64Data, contentType) => 
+    ipcRenderer.invoke("storage:upload", { bucket, path, base64Data, contentType }),
+});
+contextBridge.exposeInMainWorld("supabase", {
+  from: (table) => {
+    return {
+      select: (columns = '*', options = {}) => {
+        const params = { columns, options };
+        const chain = {
+          order: (column, opts) => { params.order = { column, options: opts }; return chain; },
+          range: (from, to) => { params.range = { from, to }; return chain; },
+          or: (val) => { params.or = val; return chain; },
+          // Make it thenable to work with await
+          then: (onSuccess, onError) => {
+            return ipcRenderer.invoke('supabase:query', { table, method: 'select', params })
+              .then(onSuccess, onError);
+          }
+        };
+        return chain;
+      },
+      upsert: (data) => ipcRenderer.invoke('supabase:query', { table, method: 'upsert', data }),
+      insert: (data) => ipcRenderer.invoke('supabase:query', { table, method: 'insert', data }),
+      delete: (match) => ipcRenderer.invoke('supabase:query', { table, method: 'delete', params: { match } })
+    };
+  }
 });
