@@ -1,0 +1,163 @@
+{
+ "actions": [],
+ "allow_import": 1,
+ "allow_rename": 1,
+ "autoname": "format:{YYYY}-{MM}-{DD}-{#####}",
+ "creation": "2022-10-08 14:22:27.672089",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "machine",
+  "column_break_2",
+  "model",
+  "section_break_2",
+  "previous_service_date",
+  "service_hmr",
+  "column_break_7",
+  "previous_service_hmr",
+  "service_type",
+  "column_break_5",
+  "service_date",
+  "column_break_13",
+  "technician",
+  "technician_name",
+  "section_break_8",
+  "notes"
+ ],
+ "fields": [
+  {
+   "fieldname": "machine",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Machine",
+   "options": "FT Machine",
+   "reqd": 1
+  },
+  {
+   "fieldname": "section_break_2",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "service_date",
+   "fieldtype": "Date",
+   "in_list_view": 1,
+   "label": "Service Date",
+   "reqd": 1
+  },
+  {
+   "fieldname": "technician",
+   "fieldtype": "Link",
+   "label": "Technician",
+   "options": "FT Technician",
+   "reqd": 1
+  },
+  {
+   "fieldname": "column_break_5",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "service_hmr",
+   "fieldtype": "Float",
+   "in_list_view": 1,
+   "label": "Service HMR",
+   "reqd": 1
+  },
+  {
+   "fieldname": "service_type",
+   "fieldtype": "Float",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "Service Type",
+   "precision": "2",
+   "read_only": 1
+  },
+  {
+   "fieldname": "section_break_8",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fetch_from": "machine.last_service_date",
+   "fieldname": "previous_service_date",
+   "fieldtype": "Date",
+   "label": "Previous Service Date",
+   "read_only": 1
+  },
+  {
+   "fetch_from": "machine.last_service_hmr",
+   "fieldname": "previous_service_hmr",
+   "fieldtype": "Float",
+   "label": "Previous Service HMR",
+   "read_only": 1
+  },
+  {
+   "fieldname": "notes",
+   "fieldtype": "Small Text",
+   "in_list_view": 1,
+   "label": "Notes/Defects",
+   "reqd": 1
+  },
+  {
+   "fieldname": "column_break_2",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fetch_from": "machine.model",
+   "fetch_if_empty": 1,
+   "fieldname": "model",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Model",
+   "options": "FT Machine Model",
+   "read_only": 1
+  },
+  {
+   "fetch_from": "technician.technician_name",
+   "fieldname": "technician_name",
+   "fieldtype": "Data",
+   "hidden": 1,
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "Technician Name",
+   "read_only": 1
+  },
+  {
+   "fieldname": "column_break_7",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "column_break_13",
+   "fieldtype": "Column Break"
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "links": [],
+ "modified": "2022-11-12 07:12:55.757628",
+ "modified_by": "Administrator",
+ "module": "MXG Fleet Track",
+ "name": "FT Service Log",
+ "naming_rule": "Expression",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "quick_entry": 1,
+ "search_fields": "machine",
+ "show_title_field_in_link": 1,
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": [],
+ "title_field": "machine",
+ "track_changes": 1
+}

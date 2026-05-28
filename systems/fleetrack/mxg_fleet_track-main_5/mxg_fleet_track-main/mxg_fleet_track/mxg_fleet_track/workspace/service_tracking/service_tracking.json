@@ -1,0 +1,109 @@
+{
+ "charts": [],
+ "content": "[{\"id\":\"6Hmwm2-QsQ\",\"type\":\"header\",\"data\":{\"text\":\"<span class=\\\"h2\\\">Service Tracking</span>\",\"col\":12}},{\"id\":\"XSE0DrRB4D\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Service Tracking Summary (STS)\",\"col\":3}},{\"id\":\"Pj_8bWDybK\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Due for Service\",\"col\":3}},{\"id\":\"8HunKMNVas\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Activity List\",\"col\":3}},{\"id\":\"FuoPLJqqFw\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Field Service Planner\",\"col\":3}},{\"id\":\"HRZpSWB7jS\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Workshop Planner\",\"col\":3}},{\"id\":\"6taGcpEdCg\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Customers on Fleetrack\u2122\",\"col\":5}},{\"id\":\"sA3IALSkKp\",\"type\":\"spacer\",\"data\":{\"col\":12}},{\"id\":\"GUaBGzQQB9\",\"type\":\"header\",\"data\":{\"text\":\"<span style=\\\"font-size: 18px;\\\"><b>Pending Alerts &amp; Warnings</b></span>\",\"col\":12}},{\"id\":\"B1m4iretM4\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Quote Alerts\",\"col\":3}},{\"id\":\"Bnb9VW07eL\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Quote Follow Ups\",\"col\":3}},{\"id\":\"vtbFppk-GI\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Maintenance Warnings\",\"col\":3}},{\"id\":\"fBLWth4pZk\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Stop Machine\",\"col\":3}}]",
+ "creation": "2022-10-09 00:43:13.229345",
+ "custom_blocks": [],
+ "docstatus": 0,
+ "doctype": "Workspace",
+ "for_user": "",
+ "hide_custom": 0,
+ "icon": "setting-gear",
+ "idx": 0,
+ "is_hidden": 0,
+ "label": "Service Tracking",
+ "links": [],
+ "modified": "2023-09-24 20:42:56.821503",
+ "modified_by": "Administrator",
+ "module": "MXG Fleet Track",
+ "name": "Service Tracking",
+ "number_cards": [],
+ "owner": "Administrator",
+ "parent_page": "",
+ "public": 1,
+ "quick_lists": [],
+ "roles": [],
+ "sequence_id": 2.0,
+ "shortcuts": [
+  {
+   "color": "Grey",
+   "doc_view": "List",
+   "label": "Field Service Planner",
+   "link_to": "Field Service Planner",
+   "type": "Report"
+  },
+  {
+   "color": "Grey",
+   "doc_view": "List",
+   "label": "Due for Service",
+   "link_to": "Machines Due for Service",
+   "type": "Report"
+  },
+  {
+   "color": "Grey",
+   "doc_view": "List",
+   "label": "Workshop Planner",
+   "link_to": "Workshop Planner",
+   "type": "Report"
+  },
+  {
+   "color": "Grey",
+   "doc_view": "List",
+   "format": "{}",
+   "label": "Quote Alerts",
+   "link_to": "FT Alert",
+   "stats_filter": "{\"status\":[\"=\",\"Pending\"],\"alert_type\":[\"=\",\"Quote Alert\"]}",
+   "type": "DocType"
+  },
+  {
+   "color": "Grey",
+   "doc_view": "List",
+   "format": "{} found",
+   "label": "Customers on Fleetrack\u2122",
+   "link_to": "FT Customer",
+   "stats_filter": "{\"on_fleetrack\":[\"=\",\"Yes\"]}",
+   "type": "DocType"
+  },
+  {
+   "color": "Grey",
+   "doc_view": "List",
+   "label": "Service Tracking Summary (STS)",
+   "link_to": "Service Tracking Summary (STS)",
+   "type": "Report"
+  },
+  {
+   "color": "Grey",
+   "doc_view": "List",
+   "label": "Activity List",
+   "link_to": "Fleetrack Activity List",
+   "type": "Report"
+  },
+  {
+   "color": "Grey",
+   "doc_view": "List",
+   "format": "{}",
+   "label": "Quote Follow Ups",
+   "link_to": "FT Alert",
+   "stats_filter": "{\"status\":[\"=\",\"Pending\"],\"alert_type\":[\"=\",\"Quote Follow Up\"]}",
+   "type": "DocType"
+  },
+  {
+   "color": "Grey",
+   "doc_view": "List",
+   "format": "{}",
+   "label": "Maintenance Warnings",
+   "link_to": "FT Alert",
+   "stats_filter": "{\"status\":[\"=\",\"Pending\"],\"alert_type\":[\"=\",\"Maintenance Warning\"]}",
+   "type": "DocType"
+  },
+  {
+   "color": "Grey",
+   "doc_view": "List",
+   "format": "{}",
+   "label": "Stop Machine",
+   "link_to": "FT Alert",
+   "stats_filter": "{\"status\":[\"=\",\"Pending\"],\"alert_type\":[\"=\",\"Stop Machine\"]}",
+   "type": "DocType"
+  }
+ ],
+ "title": "Service Tracking"
+}

@@ -1,0 +1,11 @@
+const fs=require('fs');
+const c=fs.readFileSync('index.html','utf8');
+const mainEnd=c.indexOf('</main>');
+const mainEndLine=c.substring(0,mainEnd).split('\n').length;
+const isrLine=c.substring(0,c.indexOf('id="view-isr"')).split('\n').length;
+const svcDueLine=c.substring(0,c.indexOf('id="view-service-due"')).split('\n').length;
+const custLine=c.substring(0,c.indexOf('id="view-customers"')).split('\n').length;
+console.log('</main> at line',mainEndLine);
+console.log('view-isr at line',isrLine,'(',isrLine<mainEndLine?'INSIDE main':'OUTSIDE main',')');
+console.log('view-service-due at line',svcDueLine,'(',svcDueLine<mainEndLine?'INSIDE main':'OUTSIDE main',')');
+console.log('view-customers at line',custLine,'(',custLine<mainEndLine?'INSIDE main':'OUTSIDE main',')');

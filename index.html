@@ -3,7 +3,10 @@
 
 <head>
   <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
   <title>Omnis – Login</title>
+  <link rel="apple-touch-icon" href="assets/images/omnis-icon.png" />
+  <link rel="icon" type="image/png" href="assets/images/omnis-icon.png" />
   <style>
     :root {
       --bg-main: #f4f6fb;
@@ -996,24 +999,26 @@
     showPw.addEventListener("change", () => { pwdInput.type = showPw.checked ? "text" : "password"; });
     forgotLink.addEventListener("click", async (e) => { 
         e.preventDefault(); 
-        const email = prompt("Please enter your normal system email address to receive password reset instructions:");
+        const email = prompt("Please enter your email address to receive password reset instructions:");
         if (!email) return;
 
         setStatus("Sending reset instructions...", "info");
         try {
+            // Try Supabase reset first (for Fleetrack users)
+            if (window.electron && window.electron.invoke) {
+                const res = await window.electron.invoke('supabase:resetPwd', { email });
+                if (res.ok) {
+                    setStatus("Reset instructions sent! Check your inbox.", "success");
+                    return;
+                }
+            }
+            // Fallback: Salestrack Frappe reset
             const sys = OMNIS_SYSTEMS.find(s => s.key === "salestrack") || OMNIS_SYSTEMS[0];
             const url = sys.baseUrl + "/api/method/powerstar_salestrack.omnis_dashboard.trigger_password_reset";
-            
             const params = new URLSearchParams();
             params.append('user_email', email);
-
-            const res = await fetch(url, { 
-                method: "POST", 
-                headers: { "Content-Type": "application/x-www-form-urlencoded" }, 
-                body: params.toString() 
-            });
+            const res = await fetch(url, { method: "POST", headers: { "Content-Type": "application/x-www-form-urlencoded" }, body: params.toString() });
             const data = await res.json();
-            
             if (data.message && data.message.ok) {
                 setStatus("Instructions sent! Check your inbox.", "success");
             } else {
@@ -1055,6 +1060,8 @@
         updateSplash(getRandomJargon());
       }, 1500);
 
+      let successfulLogins = [];
+      
       for (let i = 0; i < OMNIS_SYSTEMS.length; i++) {
         const sys = OMNIS_SYSTEMS[i];
         const row = document.getElementById(`sys-row-${sys.key}`);
@@ -1064,6 +1071,35 @@
         updateSplash(null, ((i + 1) / total) * 100);
 
         try {
+          // 🔐 FLEETRACK: Auth via Supabase (not Frappe)
+          if (sys.key === "fleetrack") {
+            if (!window.electron || !window.electron.invoke) throw new Error("Electron bridge not available");
+            const res = await window.electron.invoke('supabase:signIn', { email: usr, password: pwd });
+            if (!res.ok) throw new Error(res.error || "Invalid credentials");
+
+            clearInterval(jargonInterval);
+            if (row) {
+              row.classList.remove('active');
+              row.classList.add('done');
+              row.querySelector('.status-indicator').innerHTML = 'AUTHORIZED';
+            }
+
+            localStorage.setItem("omnisUser", usr);
+            localStorage.setItem("omnisSystemKey", sys.key);
+            localStorage.setItem("ft_user_email", res.user.email);
+            localStorage.setItem("supabase_access_token", res.access_token);
+            localStorage.setItem("supabase_refresh_token", res.refresh_token);
+            if (rememberMe.checked || silentAuto) {
+              localStorage.setItem(LS_REMEMBER, "1");
+              localStorage.setItem(LS_USER, usr);
+              localStorage.setItem(LS_PWD, pwd);
+            }
+
+            successfulLogins.push(sys);
+            continue;
+          }
+
+          // 🏢 ALL OTHER SYSTEMS: Auth via Frappe (existing behaviour)
           const loginUrl = sys.baseUrl + "/api/method/login";
           let data = {};
           
@@ -1076,7 +1112,11 @@
             const params = new URLSearchParams();
             params.append('usr', usr);
             params.append('pwd', pwd);
-            const res = await fetch(loginUrl, { method: "POST", headers: { "Content-Type": "application/x-www-form-urlencoded" }, body: params.toString(), credentials: "include" });
+            let fetchUrl = loginUrl;
+            if (!window.frappeAPI && window.location.protocol.startsWith('http')) {
+              fetchUrl = 'omnis-proxy.php?url=' + encodeURIComponent(loginUrl);
+            }
+            const res = await fetch(fetchUrl, { method: "POST", headers: { "Content-Type": "application/x-www-form-urlencoded" }, body: params.toString(), credentials: "include" });
             const txt = await res.text();
             try { data = JSON.parse(txt); } catch { }
           }
@@ -1096,31 +1136,13 @@
               localStorage.setItem(LS_USER, usr);
               localStorage.setItem(LS_PWD, pwd);
             }
-            if (sys.key === "fleetrack") localStorage.setItem("ft_user_email", usr);
 
-            setTimeout(() => {
-                updateSplash("Handshake Finalized. Redirecting...", 100);
-                setTimeout(() => {
-                  let url = "";
-                  if (sys.key === "powertrack") {
-                    url = "systems/powertrack/dashboard.html";
-                  } else if (sys.key === "fleetrack") {
-                    url = "systems/fleetrack/index.html";
-                  } else if (sys.key === "salestrack") {
-                    url = "systems/salestrack/index.html";
-                  } else {
-                    url = "systems/group_accounts/index.html";
-                  }
-
-                  // Store the URL and check for security briefing
-                  pendingUrl = url;
-                  hideSplash();
-                  checkSecurityReminder();
-                }, 800);
-            }, 600);
-            return;
+            successfulLogins.push(sys);
+            continue;
           } else {
-            throw new Error("Invalid");
+            if (data && data.error) throw new Error("PROXY_ERR: " + data.error);
+            else if (data && data.message) throw new Error(data.message);
+            else throw new Error("Invalid");
           }
         } catch (err) {
           console.error("[Login] System failure:", sys.name, err);
@@ -1130,11 +1152,17 @@
             
             // Extract meaningful error message if available safely
             let errorMsg = 'DEFERRED';
-            const msg = (err && err.message) ? String(err.message) : '';
-            if (msg.includes('417')) errorMsg = 'SERVER ERR (417)';
+            const msg = (err && err.message) ? String(err.message).toUpperCase() : '';
+            if (msg.includes('PROXY_ERR:')) {
+               errorMsg = msg.replace('PROXY_ERR:', '').trim();
+            }
+            else if (msg.includes('INVALID') || msg.includes('401') || msg.includes('INCOMPLETE')) errorMsg = 'AUTH FAILED';
+            else if (msg.includes('417')) errorMsg = 'SERVER ERR (417)';
             else if (msg.includes('500')) errorMsg = 'SERVER ERR (500)';
             else if (msg.includes('403')) errorMsg = 'FORBIDDEN (403)';
             else if (msg.includes('BRIDGE_TIMEOUT')) errorMsg = 'TIMEOUT';
+            else if (msg.includes('FETCH')) errorMsg = 'NETWORK ERR';
+            else errorMsg = 'AUTH FAILED';
             
             row.querySelector('.status-indicator').textContent = errorMsg;
           }
@@ -1142,16 +1170,50 @@
         }
       }
 
+      // After checking all systems, handle redirects
+      if (successfulLogins.length > 0) {
+        clearInterval(jargonInterval);
+        
+        // Use the primary successful login for redirection
+        const primarySys = successfulLogins[0];
+        
+        localStorage.setItem("omnisSystemKey", primarySys.key);
+        
+        setTimeout(() => {
+            updateSplash(`Handshake Finalized. Redirecting to ${primarySys.name}...`, 100);
+            setTimeout(() => {
+              let url = "";
+              if (primarySys.key === "powertrack") {
+                url = "systems/powertrack/dashboard.html";
+              } else if (primarySys.key === "fleetrack") {
+                url = "systems/fleetrack/index.html";
+              } else if (primarySys.key === "salestrack") {
+                url = "systems/salestrack/index.html";
+              } else {
+                url = "systems/group_accounts/index.html";
+              }
+
+              pendingUrl = url;
+              hideSplash();
+              checkSecurityReminder();
+            }, 800);
+        }, 600);
+        return;
+      }
+
+      // If we reach here, ALL systems failed
       clearInterval(jargonInterval);
       hideSplash();
       if (!silentAuto) {
-        setStatus("Access Denied: Invalid Credentials or System Timeout", "error");
-        submitBtn.disabled = false;
+        setStatus(`Access Denied: Invalid Credentials for all modules. Last checked: ${lastError}`, "error");
         // Shake animation for the form
         form.style.animation = 'none';
         form.offsetHeight; // trigger reflow
         form.style.animation = 'shake 0.5s cubic-bezier(.36,.07,.19,.97) both';
+      } else {
+        setStatus("Auto-login failed. Please sign in manually.", "error");
       }
+      submitBtn.disabled = false;
     }
 
     (function autoLoginIfRemembered() {

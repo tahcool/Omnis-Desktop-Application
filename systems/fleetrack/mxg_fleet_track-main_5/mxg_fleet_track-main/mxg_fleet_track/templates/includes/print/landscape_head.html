@@ -1,0 +1,465 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <title>{% block page_title %}</title>
+    <meta name="pdfkit-orientation" content="Landscape" />
+    <link rel="stylesheet" href="/assets/mxg_fleet_track/css/tailwind.css" />
+    <style>
+      body {
+        text-rendering: geometricPrecision;
+      }
+
+      .print-format.landscape {
+        /* reset font size */
+        font-size: initial !important;
+      }
+
+      .tiny-td-padding,
+      .tiny-th-padding {
+        padding: 2px 5px !important;
+      }
+      .bg-mxg-alt {
+        background-color: #4c4847 !important;
+        color: #fff !important;
+      }
+      .text-mxg-alt {
+        color: #4c4847 !important;
+      }
+      .document,
+      .cover-page {
+        font-family: "Atkinson Hyperlegible", sans-serif;
+        display: block;
+        clear: both;
+        page-break-after: always;
+      }
+
+      .logo-summary {
+        width: 80px;
+      }
+
+      .logo-machine {
+        width: 80px;
+      }
+
+      body {
+        height: 260mm;
+      }
+
+      .print-format img {
+        max-width: none;
+      }
+
+      .text-mxg {
+        color: #4b4b4d !important;
+      }
+
+      .text-mxg-red {
+        color: #ec1c24 !important;
+      }
+
+      .text-nowrap {
+        white-space: nowrap;
+      }
+
+      .text-xxs {
+        font-size: 0.55rem;
+      }
+
+      .table-bordered {
+        border-collapse: collapse;
+        border: 1px solid #111017 !important;
+      }
+
+      .table-bordered th,
+      .table-bordered td {
+        border: 1px solid #111017 !important;
+      }
+
+      .table-bordered thead th,
+      .table-bordered thead td {
+        border-bottom-width: 1px;
+      }
+
+      .table-bordered thead th,
+      .table-bordered thead td {
+        border-bottom-width: 1px;
+      }
+
+      .table-bordered th,
+      .table-bordered td {
+        border: 1px solid #111017 !important;
+      }
+
+      .table-bordered thead th,
+      .table-bordered thead td {
+        border-bottom-width: 1px;
+      }
+
+      .table-bordered th,
+      .table-bordered td {
+        border: 1px solid #111017 !important;
+      }
+
+      .table-bordered thead th,
+      .table-bordered thead td {
+        border-bottom-width: 1px;
+      }
+
+      .table-bordered th,
+      .table-bordered td {
+        border: 1px solid #111017 !important;
+      }
+
+      .table-bordered thead th,
+      .table-bordered thead td {
+        border-bottom-width: 1px;
+      }
+
+      .table-bordered th,
+      .table-bordered td {
+        border: 1px solid #111017 !important;
+      }
+
+      .text-black {
+        color: #111017 !important;
+      }
+
+      .bg-black {
+        background-color: #111017 !important;
+      }
+
+      .px-0 {
+        padding-left: 0 !important;
+        padding-right: 0 !important;
+      }
+      .watermark {
+        position: fixed;
+        /* bottom: 5px;
+                right: 5px; */
+        opacity: 0.08;
+        z-index: 99;
+        color: black;
+        left: 50%;
+        top: 50%;
+        transform: translate(-50%, -50%);
+      }
+
+      .text-ft-red {
+        color: #d60000;
+      }
+
+      .bg-ft-red {
+        background-color: #d60000;
+        color: #fff !important;
+      }
+
+      .border-ft-red {
+        border-color: #d60000;
+      }
+    </style>
+  </head>
+
+  <body class="document">
+    <div class="flex items-center justify-between gap-4">
+      <div class="flex gap-4 items-center flex-col">
+        <img style="width: 250px" src="/assets/mxg_fleet_track/img/fleetrack-logo.png" alt="Fleetrack Logo" />
+      </div>
+      <div>
+        <table style="border-collapse: separate">
+          <thead>
+            <tr>
+              <th style="padding: 0 !important" colspan="7" class="text-right px-0">
+                <h1 class="text-3xl text-nowrap font-bold text-black m-0 p-0">Warranty & Maintenance Notification</h1>
+              </th>
+            </tr>
+          </thead>
+          <tr>
+            <th style="padding: 0 0 5px 0 !important" colspan="7" class="text-right px-0">
+              <h1 style="color: #a3a4a5" class="text-2xl text-mxg-alt font-bold my-0 m-0 p-0">{{ machine.model }}</h1>
+              <div class="flex items-center justify-end gap-1">
+                <h5 style="color: #a3a4a5" class="text-base text-mxg-alt font-bold my-0 m-0 p-0">{{ machine.type }}</h5>
+              </div>
+            </th>
+          </tr>
+          <tr>
+            <td class="text-ft-red tiny-td-padding font-bold text-lg uppercase px-2"></td>
+            <td class="bg-ft-red tiny-td-padding border border-ft-red px-2 text-xs font-bold text-nowrap">
+              Machine SRN
+            </td>
+            <td class="px-2 tiny-td-padding border border-black uppercase text-xs font-bold text-nowrap">
+              {{ doc.machine }}
+            </td>
+            <td class="bg-ft-red tiny-td-padding border border-ft-red px-2 text-xs font-bold text-nowrap">
+              Customer Ref
+            </td>
+            <td class="text-sm tiny-td-padding border border-black px-1 text-xs font-bold text-nowrap">
+              {{ machine.fleet_no }}
+            </td>
+            <td class="bg-ft-red tiny-td-padding border border-ft-red py-1 px-4 text-center text-xs text-nowrap">
+              <div class="flex flex-col">
+                <span class="text-white">Fleet No</span>
+              </div>
+            </td>
+            <td class="text-sm tiny-td-padding border border-black px-1 text-xs font-bold text-nowrap">
+              {{ machine.mxg_fleet_no|default("&nbsp;", True) }}
+            </td>
+          </tr>
+          <tr>
+            <td class="text-black tiny-td-padding text-lg uppercase px-2 text-nowrap"></td>
+            <td class="bg-ft-red tiny-td-padding border border-ft-red px-2 py-0 text-xs font-bold text-nowrap">
+              Engine Make
+            </td>
+            <td class="px-2 border tiny-td-padding border-black uppercase text-xs font-bold text-nowrap">
+              {{ machine.engine_type }}
+            </td>
+            <td class="bg-ft-red tiny-td-padding border border-ft-red px-2 text-xs font-bold text-nowrap">
+              Engine SRN
+            </td>
+            <td colspan="3" class="text-sm tiny-td-padding border border-black px-1 text-xs font-bold text-nowrap">
+              {{ machine.esn }}
+            </td>
+          </tr>
+          <tr>
+            <td class="text-black tiny-td-padding text-sm px-2"></td>
+            <td class="bg-ft-red tiny-td-padding border border-ft-red px-2 py-0 text-xs font-bold text-nowrap">
+              Warranty Hours
+            </td>
+            <td class="px-2 border tiny-td-padding border-black uppercase text-xs font-bold text-nowrap">
+              {{ machine.warranty_hours }}
+              <span style="color: #a3a4a5">HRS</span>
+            </td>
+            <td class="bg-ft-red tiny-td-padding border border-ft-red px-2 text-xs font-bold text-nowrap">
+              Warranty Period
+            </td>
+            <td colspan="3" class="text-sm tiny-td-padding border border-black px-1 text-xs font-bold">
+              {{machine.warranty_period}}
+              <span style="color: #a3a4a5">MONTHS</span>
+            </td>
+          </tr>
+          <tr>
+            <td class="text-black tiny-td-padding text-sm px-2"></td>
+            <td class="bg-mxg-alt tiny-td-padding border border-ft-red px-2 py-0 text-xs font-bold text-nowrap">
+              Handover Date
+            </td>
+            <td class="px-2 border tiny-td-padding border-black uppercase text-xs font-bold text-nowrap">
+              {{ frappe.format_date(machine.handover_date) }}
+            </td>
+            <td class="bg-mxg-alt tiny-td-padding border border-ft-red px-2 text-xs font-bold text-nowrap">
+              Warranty Expiry Date
+            </td>
+            <td colspan="3" class="text-sm tiny-td-padding border border-black px-1 text-xs font-bold">
+              {{frappe.format_date(machine.expiry_date)}}
+            </td>
+          </tr>
+
+          <tr>
+            <td class="text-black text-nowrap tiny-td-padding text-lg font-bold px-2"></td>
+
+            <td colspan="5" class="text-sm tiny-td-padding px-1 text-xxs">
+              fleetrack@machinery-exchange.com | https://fleetrack.machinery-exchange.com | +263 784 488 801
+            </td>
+          </tr>
+        </table>
+      </div>
+    </div>
+    <table style="border-collapse: separate">
+      <tr>
+        <th colspan="6" class="text-left" style="padding: 0 !important">
+          <h1 style="padding-right: 5px" class="text-xl flex items-center font-bold text-black my-0">
+            <svg
+              width="24px"
+              height="24px"
+              viewBox="0 0 24 24"
+              stroke-width="2"
+              fill="none"
+              xmlns="http://www.w3.org/2000/svg"
+              color="#000000">
+              <path
+                d="M12 12a4 4 0 100-8 4 4 0 000 8z"
+                stroke="#000000"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"></path>
+              <path
+                d="M5 20v-1a7 7 0 0110-6.326M21 22l1-6-3.5 1.8L17 16l-1.5 1.8L12 16l1 6h8z"
+                stroke="#000000"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"></path>
+            </svg>
+            <span class="pl-2">{{ machine.customer }}</span>
+          </h1>
+        </th>
+      </tr>
+    </table>
+    <table class="text-sm mt-3">
+      <tr>
+        <td style="padding: 2px 3px !important" class="text-right">Printed by</td>
+        <td style="padding: 2px 3px !important">
+          {{ frappe.db.get_value("User",{"name":frappe.session.user}, "full_name") }}
+        </td>
+      </tr>
+      <tr>
+        <td style="padding: 2px 3px !important" class="text-right">Date</td>
+        <td style="padding: 2px 3px !important">{{ frappe.format_date(frappe.utils.today()) }}</td>
+      </tr>
+    </table>
+
+    <table style="border-collapse: collapse !important" class="w-full mt-10 mb-3">
+      <tbody>
+        <tr>
+          <td style="padding: 0 !important" class="tiny-td-padding">
+            <div class="">
+              Dear valued customer, Welcome to MXG Fleetrack&trade;!
+
+              <p>We wish to take this opportunity to thank you for doing business with us.</p>
+              <p>
+                Kindly utilise this notification for relevant information pertaining to
+                <span class="text-mxg-red font-bold">Equipment maintenance, Warranty & Aftersales Support.</span>
+              </p>
+            </div>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+
+    <table style="border-collapse: collapse !important" class="w-full">
+      <thead>
+        <tr>
+          <th class="bg-ft-red border text-lg border-ft-red text-white uppercase font-bold text-center">
+            Important Notice
+          </th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td style="padding: 16px 0px !important" class="tiny-td-padding">
+            <div class="">
+              Please note: To maintain an active warranty status, all service and repairs of machines/equipment are to
+              be carried out by
+              <b class="text-mxg-red">Machinery Exchange</b>
+              .
+
+              <p>
+                Make use of the attached daily/weekly
+                <b class="text-mxg-red">Operators Daily Checklist</b>
+                (To be completed daily by the Operator before starting the machine)
+              </p>
+
+              <p>If you have any questions or enquiries, do not hesitate to call.</p>
+            </div>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+
+    <table style="border-collapse: collapse !important" class="w-full">
+      <thead>
+        <tr>
+          <th colspan="3" class="bg-mxg-alt border text-lg border-mxg-alt text-white uppercase font-bold text-center">
+            Other details
+          </th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr class="text-lg">
+          <td style="padding: 2px 0px !important" class="tiny-td-padding">
+            Warranty Type ~ {{ machine.warranty_type }}
+          </td>
+          <td style="padding: 2px 5px !important" class="tiny-td-padding">
+            Service Interval (HRS) ~ {{ machine.service_interval_hours }}
+          </td>
+          <td style="padding: 2px 5px !important" class="tiny-td-padding">
+            Standard Fuel Cons. (LPH) ~ {{ machine.standard_fuel_consumption }}
+          </td>
+        </tr>
+      </tbody>
+    </table>
+
+    <p class="mt-5">Thank you for your support</p>
+
+    <p>
+      Best Regards,
+      <br />
+
+      <b>
+        <span class="text-black">MXG</span>
+        |
+        <span class="text-mxg-red">Fleetrack</span>
+      </b>
+    </p>
+
+    <table class="w-full">
+      <thead>
+        <tr>
+          <th colspan="3" class="text-center border border-ft-red bg-ft-red text-white uppercase">
+            Photographic Detail
+          </th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td style="padding: 0 !important" class="w-1/3">
+            <div class="flex justify-center flex-col border border-mxg-alt">
+              <div class="w-full bg-mxg-alt text-white py-1 px-4 text-center">Machine</div>
+              <div style="height: 11rem" class="w-auto py-1">
+                <img src="{{ machine.machine_picture|default("/assets/mxg_fleet_track/img/placeholder-image.webp", True)
+                }}" style="height: 100%; object-fit: contain" class="w-full" alt="" />
+              </div>
+            </div>
+          </td>
+          <td style="padding: 0 !important" class="w-1/3">
+            <div class="flex justify-center flex-col border border-mxg-alt">
+              <div class="w-full bg-mxg-alt text-white py-1 px-4 text-center">Data Plate</div>
+              <div style="height: 11rem" class="w-full py-1">
+                <img src="{{ machine.machine_data_plate|default("/assets/mxg_fleet_track/img/placeholder-image.webp",
+                True) }}" style="height: 100%; object-fit: contain" class="w-full" alt="" />
+              </div>
+            </div>
+          </td>
+          <td style="padding: 0 !important" class="w-1/3">
+            <div class="flex justify-center flex-col border border-mxg-alt">
+              <div class="w-full bg-mxg-alt text-white py-1 px-4 text-center">Engine Name Plate</div>
+              <div style="height: 11rem" class="w-full py-1">
+                <img src="{{ machine.engine_data_plate|default("/assets/mxg_fleet_track/img/placeholder-image.webp",
+                True) }}" style="height: 100%; object-fit: contain" class="w-full" alt="" />
+              </div>
+            </div>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+
+    <!-- Signatures -->
+    <table class="w-full mt-4">
+      <thead>
+        <tr>
+          <th style="padding: 2px 5px !important" class="text-center border border-ft-red bg-ft-red text-white">
+            Fleetrack
+          </th>
+          <th style="padding: 2px 5px !important" class="text-center border border-ft-red bg-ft-red text-white">
+            Customer Service Coordinator
+          </th>
+          <th style="padding: 2px 5px !important" class="text-center border border-ft-red bg-ft-red text-white">
+            CSD Manager
+          </th>
+          <th style="padding: 2px 5px !important" class="text-center border border-ft-red bg-ft-red text-white">
+            SRD Manager
+          </th>
+          <th style="padding: 2px 5px !important" class="text-center border border-ft-red bg-ft-red text-white">
+            Managing Director
+          </th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td class="border border-ft-red pt-5">&nbsp;</td>
+          <td class="border border-ft-red pt-5"></td>
+          <td class="border border-ft-red pt-5"></td>
+          <td class="border border-ft-red pt-5"></td>
+          <td class="border border-ft-red pt-5"></td>
+        </tr>
+      </tbody>
+    </table>
+  </body>
+</html>

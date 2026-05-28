@@ -1,0 +1,63 @@
+{
+ "charts": [],
+ "content": "[{\"id\":\"bHIMGpNIP-\",\"type\":\"header\",\"data\":{\"text\":\"<span class=\\\"h2\\\">Workforce</span>\",\"col\":12}},{\"id\":\"qDBV72KaZq\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Add Technician\",\"col\":3}},{\"id\":\"17WavpWrGN\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Techinicians\",\"col\":3}},{\"id\":\"uC1MJehgjt\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Hour Log History\",\"col\":3}},{\"id\":\"q2stNHCAQB\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Technician Efficiency Reports\",\"col\":3}}]",
+ "creation": "2023-09-24 20:42:51.829047",
+ "custom_blocks": [],
+ "docstatus": 0,
+ "doctype": "Workspace",
+ "for_user": "",
+ "hide_custom": 0,
+ "icon": "share-people",
+ "idx": 0,
+ "is_hidden": 0,
+ "label": "Workforce",
+ "links": [],
+ "modified": "2023-10-22 16:52:43.885675",
+ "modified_by": "Administrator",
+ "module": "Workforce",
+ "name": "Workforce",
+ "number_cards": [],
+ "owner": "Administrator",
+ "parent_page": "",
+ "public": 1,
+ "quick_lists": [],
+ "roles": [],
+ "sequence_id": 5.0,
+ "shortcuts": [
+  {
+   "color": "Grey",
+   "doc_view": "List",
+   "format": "{}",
+   "label": "Technician Efficiency Reports",
+   "link_to": "FT Technician Efficiency Report",
+   "stats_filter": "{\"name\":[\"is\",\"set\"]}",
+   "type": "DocType"
+  },
+  {
+   "color": "Grey",
+   "doc_view": "List",
+   "format": "{}",
+   "label": "Hour Log History",
+   "link_to": "FT Technician Hour Log",
+   "stats_filter": "{\"name\":[\"is\",\"set\"]}",
+   "type": "DocType"
+  },
+  {
+   "color": "Grey",
+   "doc_view": "New",
+   "label": "Add Technician",
+   "link_to": "FT Technician",
+   "type": "DocType"
+  },
+  {
+   "color": "Grey",
+   "doc_view": "List",
+   "format": "{}",
+   "label": "Techinicians",
+   "link_to": "FT Technician",
+   "stats_filter": "{\"name\":[\"is\",\"set\"]}",
+   "type": "DocType"
+  }
+ ],
+ "title": "Workforce"
+}

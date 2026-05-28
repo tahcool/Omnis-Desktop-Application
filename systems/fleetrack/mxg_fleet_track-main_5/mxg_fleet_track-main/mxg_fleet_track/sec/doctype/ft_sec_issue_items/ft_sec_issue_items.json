@@ -1,0 +1,61 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "creation": "2023-12-07 15:24:47.731308",
+ "default_view": "List",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "item_reference",
+  "column_break_mrfkx",
+  "origin_reference",
+  "column_break_roetp",
+  "sn"
+ ],
+ "fields": [
+  {
+   "fieldname": "item_reference",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Item Ref (Sys)",
+   "options": "FT SEC Item",
+   "reqd": 1
+  },
+  {
+   "fetch_from": "item_reference.item_reference",
+   "fieldname": "origin_reference",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Origin Ref.",
+   "read_only": 1
+  },
+  {
+   "fetch_from": "item_reference.serial",
+   "fieldname": "sn",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "SN"
+  },
+  {
+   "fieldname": "column_break_mrfkx",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "column_break_roetp",
+   "fieldtype": "Column Break"
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "istable": 1,
+ "links": [],
+ "modified": "2023-12-07 15:27:08.817456",
+ "modified_by": "Administrator",
+ "module": "SEC",
+ "name": "FT SEC Issue Items",
+ "owner": "Administrator",
+ "permissions": [],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": []
+}

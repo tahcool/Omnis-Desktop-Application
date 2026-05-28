@@ -1,0 +1,79 @@
+.web-footer {
+    padding: 0 !important;
+    min-height: auto !important;
+    background-color: unset !important;
+}
+
+.for-login, .for-forgot, .for-signup, .for-email-login {
+    /*padding: max(9vh, 60px) 0 !important;*/
+}
+
+.login-content.page-card {
+    box-shadow: none !important;
+}
+
+body > nav {
+    border-bottom-left-radius: 60px !important;
+    border-bottom-right-radius: 60px !important;
+}
+
+.navbar-light {
+    border-bottom: 11px solid #d60000 !important;
+    background: #f3f3f3 !important;
+    /*background: #fff !important;*/
+}
+
+.navbar {
+    padding: 0.2rem 1rem 1rem 1rem !important;
+}
+
+
+body > nav > div > a > img {
+    display: inline-block !important;
+    max-width: 245px !important;
+    max-height: 50px !important;
+}
+
+.footer-logo {
+    padding-top: 5px !important;
+    height: 2.5rem !important;
+}
+
+@media (min-width: 576px) {
+    .section-padding-top {
+        padding-top: 3rem !important;
+    }
+}
+
+@media (min-width: 576px) {
+    .section-padding-bottom {
+        padding-bottom: 3rem !important;
+    }
+}
+
+.for-login .page-card, .for-forgot .page-card, .for-signup .page-card, .for-email-login .page-card {
+    max-width: 500px !important;
+    margin: 0 0 0 auto !important;
+}
+
+.for-login, .for-forgot, .for-signup, .for-email-login {
+    padding: max(4vh, 36px) 0 !important;
+}
+
+@media (min-width: 576px) {
+    .for-login .page-card, .for-forgot .page-card, .for-signup .page-card, .for-email-login .page-card {
+        padding-bottom: 25px !important;
+        padding-top: 23px !important;
+    }
+}
+
+body > nav > div > a > div > img {
+    margin-left: 30px !important;
+}
+
+#navbarSupportedContent > a.navbar-cta {
+    margin-left: 30px !important;
+    background-color: #d60000 !important;
+    color: #fbf801 !important;
+    font-weight: bold !important;
+}

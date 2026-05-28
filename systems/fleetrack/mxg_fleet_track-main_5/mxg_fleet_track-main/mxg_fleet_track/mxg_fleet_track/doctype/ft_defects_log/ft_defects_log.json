@@ -1,0 +1,271 @@
+{
+ "actions": [],
+ "allow_import": 1,
+ "allow_rename": 1,
+ "autoname": "format:",
+ "creation": "2022-10-09 23:45:14.846386",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "on_hold",
+  "ted_status",
+  "section_break_22",
+  "defect_type",
+  "machine",
+  "customer",
+  "fleetrack_managed",
+  "column_break_3",
+  "oem",
+  "model",
+  "location",
+  "warranty_status",
+  "defect_details_section",
+  "start_date",
+  "category",
+  "description",
+  "priority",
+  "ted",
+  "parts_eta",
+  "column_break_8",
+  "end_date",
+  "defect_days",
+  "solution",
+  "red",
+  "status"
+ ],
+ "fields": [
+  {
+   "fieldname": "machine",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "Machine (S/N)",
+   "options": "FT Machine",
+   "reqd": 1
+  },
+  {
+   "fetch_from": "machine.customer",
+   "fieldname": "customer",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Customer",
+   "options": "FT Customer",
+   "read_only": 1
+  },
+  {
+   "fieldname": "column_break_3",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fetch_from": "machine.oem",
+   "fieldname": "oem",
+   "fieldtype": "Link",
+   "label": "OEM",
+   "options": "FT Machine OEM",
+   "read_only": 1
+  },
+  {
+   "fieldname": "defect_details_section",
+   "fieldtype": "Section Break",
+   "hide_border": 1,
+   "label": "Defect Details"
+  },
+  {
+   "fieldname": "description",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "Description",
+   "reqd": 1
+  },
+  {
+   "fetch_from": "machine.location",
+   "fieldname": "location",
+   "fieldtype": "Link",
+   "label": "Location",
+   "options": "FT Location",
+   "read_only": 1
+  },
+  {
+   "fieldname": "column_break_8",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "start_date",
+   "fieldtype": "Date",
+   "label": "Start Date",
+   "reqd": 1
+  },
+  {
+   "fieldname": "end_date",
+   "fieldtype": "Date",
+   "label": "End Date"
+  },
+  {
+   "fieldname": "solution",
+   "fieldtype": "Data",
+   "label": "Solution for Defect",
+   "reqd": 1
+  },
+  {
+   "fieldname": "priority",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "label": "Priority",
+   "options": "\nLow\nMedium\nHigh",
+   "reqd": 1
+  },
+  {
+   "fieldname": "defect_days",
+   "fieldtype": "Int",
+   "in_list_view": 1,
+   "label": "Defect Days",
+   "read_only": 1
+  },
+  {
+   "fieldname": "defect_type",
+   "fieldtype": "Select",
+   "in_standard_filter": 1,
+   "label": "Defect Type",
+   "options": "\nMinor\nMajor\nTelematics Alert",
+   "reqd": 1
+  },
+  {
+   "fetch_from": "machine.model",
+   "fieldname": "model",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Model",
+   "options": "FT Machine Model",
+   "read_only": 1
+  },
+  {
+   "fetch_from": "machine.fleetrack_managed",
+   "fieldname": "fleetrack_managed",
+   "fieldtype": "Select",
+   "label": "On Fleetrack&trade;?",
+   "options": "No\nYes",
+   "read_only": 1
+  },
+  {
+   "fieldname": "status",
+   "fieldtype": "Data",
+   "label": "Status"
+  },
+  {
+   "fieldname": "ted",
+   "fieldtype": "Date",
+   "label": "TED",
+   "mandatory_depends_on": "eval:(!doc.on_hold && doc.ted_status !== \"TBA\")",
+   "read_only_depends_on": "eval:doc.ted"
+  },
+  {
+   "fieldname": "parts_eta",
+   "fieldtype": "Date",
+   "label": "Parts ETA"
+  },
+  {
+   "fetch_from": "machine.warranty_status",
+   "fieldname": "warranty_status",
+   "fieldtype": "Select",
+   "in_standard_filter": 1,
+   "label": "Warranty Status",
+   "options": "N/A\nUnder Warranty\nOut of Warranty",
+   "read_only": 1
+  },
+  {
+   "fieldname": "red",
+   "fieldtype": "Date",
+   "label": "RED"
+  },
+  {
+   "fieldname": "section_break_22",
+   "fieldtype": "Section Break"
+  },
+  {
+   "default": "0",
+   "fieldname": "on_hold",
+   "fieldtype": "Check",
+   "label": "On Hold?"
+  },
+  {
+   "depends_on": "eval:!doc.on_hold",
+   "fieldname": "ted_status",
+   "fieldtype": "Select",
+   "label": "TED Status",
+   "mandatory_depends_on": "eval:!doc.on_hold",
+   "options": "Available\nTBA"
+  },
+  {
+   "description": "Standardized defect repository",
+   "fieldname": "category",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Category",
+   "options": "FT Defect Category",
+   "reqd": 1
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "links": [],
+ "modified": "2024-01-25 22:09:51.467306",
+ "modified_by": "Administrator",
+ "module": "MXG Fleet Track",
+ "name": "FT Defects Log",
+ "naming_rule": "Expression",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "MXG-CONTROLLER",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "MXG-READ-ONLY",
+   "share": 1
+  },
+  {
+   "create": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "MXG-STANDARD",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "quick_entry": 1,
+ "search_fields": "oem,machine,customer",
+ "sort_field": "start_date",
+ "sort_order": "DESC",
+ "states": [],
+ "title_field": "description",
+ "track_changes": 1
+}

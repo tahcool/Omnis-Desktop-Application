@@ -1,0 +1,241 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "autoname": "format:MCAR{#####}",
+ "creation": "2023-09-10 11:39:12.347541",
+ "default_view": "List",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "machine",
+  "machine_type",
+  "machine_model",
+  "column_break_l2js4",
+  "customer",
+  "customer_ref",
+  "fleet_no",
+  "column_break_pcs0c",
+  "engine_srn",
+  "engine_make",
+  "current_hmr",
+  "total_running_hours",
+  "specific_job_details_section",
+  "inspecting_technician",
+  "job_no",
+  "column_break_a12qj",
+  "date_of_inspection",
+  "column_break_m43ps",
+  "site_of_inspection",
+  "inspection_checklist_section",
+  "load_from_template_btn",
+  "checklist",
+  "clear_checklist_btn",
+  "section_break_e8voq",
+  "general_comments"
+ ],
+ "fields": [
+  {
+   "fieldname": "machine",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Machine",
+   "options": "FT Machine",
+   "reqd": 1
+  },
+  {
+   "fetch_from": "machine.type",
+   "fieldname": "machine_type",
+   "fieldtype": "Link",
+   "label": "Machine Type",
+   "options": "FT Machine Type",
+   "read_only": 1
+  },
+  {
+   "fetch_from": "machine.esn",
+   "fieldname": "engine_srn",
+   "fieldtype": "Data",
+   "label": "Engine SRN",
+   "read_only": 1
+  },
+  {
+   "fetch_from": "machine.engine_type",
+   "fieldname": "engine_make",
+   "fieldtype": "Data",
+   "label": "Engine Make",
+   "read_only": 1
+  },
+  {
+   "fetch_from": "machine.customer",
+   "fieldname": "customer",
+   "fieldtype": "Link",
+   "label": "Customer",
+   "options": "FT Customer",
+   "read_only": 1
+  },
+  {
+   "fetch_from": "machine.fleet_no",
+   "fieldname": "customer_ref",
+   "fieldtype": "Data",
+   "label": "Customer Ref",
+   "read_only": 1
+  },
+  {
+   "fetch_from": "machine.mxg_fleet_no",
+   "fieldname": "fleet_no",
+   "fieldtype": "Data",
+   "label": "Fleet No",
+   "read_only": 1
+  },
+  {
+   "fetch_from": "machine.current_hmr",
+   "fieldname": "current_hmr",
+   "fieldtype": "Float",
+   "label": "Current HMR",
+   "read_only": 1
+  },
+  {
+   "fetch_from": "machine.warranty_hours",
+   "fieldname": "total_running_hours",
+   "fieldtype": "Float",
+   "label": "Total Running Hours"
+  },
+  {
+   "fetch_from": "machine.model",
+   "fieldname": "machine_model",
+   "fieldtype": "Link",
+   "label": "Machine Model",
+   "options": "FT Machine Model",
+   "read_only": 1
+  },
+  {
+   "fieldname": "column_break_l2js4",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "column_break_pcs0c",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "specific_job_details_section",
+   "fieldtype": "Section Break",
+   "label": "Specific Job Details"
+  },
+  {
+   "fieldname": "inspecting_technician",
+   "fieldtype": "Data",
+   "label": "Inspecting Technician"
+  },
+  {
+   "fieldname": "job_no",
+   "fieldtype": "Data",
+   "label": "Job No"
+  },
+  {
+   "fieldname": "column_break_a12qj",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "date_of_inspection",
+   "fieldtype": "Date",
+   "label": "Date of Inspection"
+  },
+  {
+   "fieldname": "column_break_m43ps",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "site_of_inspection",
+   "fieldtype": "Data",
+   "label": "Site of Inspection"
+  },
+  {
+   "fieldname": "inspection_checklist_section",
+   "fieldtype": "Section Break",
+   "label": "Inspection Checklist"
+  },
+  {
+   "fieldname": "checklist",
+   "fieldtype": "Table",
+   "options": "FT MCA Inspection Checklist"
+  },
+  {
+   "fieldname": "load_from_template_btn",
+   "fieldtype": "Button",
+   "label": "Load from Template"
+  },
+  {
+   "fieldname": "clear_checklist_btn",
+   "fieldtype": "Button",
+   "label": "Clear Checklist"
+  },
+  {
+   "fieldname": "section_break_e8voq",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "general_comments",
+   "fieldtype": "Long Text",
+   "label": "General Commment/Recommendation"
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "links": [],
+ "modified": "2024-01-23 11:48:34.925245",
+ "modified_by": "Administrator",
+ "module": "MXG Fleet Track",
+ "name": "FT Machine Condition Assessment",
+ "name_case": "UPPER CASE",
+ "naming_rule": "Expression",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "MXG-CONTROLLER",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "create": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "MXG-STANDARD",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "MXG-READ-ONLY",
+   "share": 1
+  }
+ ],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": [],
+ "track_changes": 1
+}

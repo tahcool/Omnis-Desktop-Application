@@ -1,0 +1,335 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>FSD DBR</title>
+
+    <meta name="pdfkit-orientation" content="Landscape"/>
+
+    <style>
+        :root {
+            --ft-red: #f02510;
+        }
+
+        .print-format.landscape {
+            /* reset font size */
+            font-size: initial !important;
+        }
+
+        .justify-content-between {
+            -webkit-box-pack: justify !important;
+            -ms-flex-pack: justify !important;
+            justify-content: space-between !important;
+        }
+
+        .d-flex {
+            display: -webkit-box !important;
+            display: -ms-flexbox !important;
+            display: flex !important;
+        }
+
+        .ft-logo {
+            width: 250px;
+        }
+
+        .ft-table td, .ft-table th {
+            padding: 5px !important;
+        }
+
+        .ft-table.ft-table.ft-customer {
+            border: 3px solid #000;
+            border-radius: 3px;
+        }
+
+        .ft-table.ft-table.ft-customer th, .ft-table.ft-table.ft-customer td {
+            padding: 5px 10px
+        }
+
+        .ft-table th {
+            text-align: left;
+        }
+
+        .ft-container {
+            margin: 1rem 1.8rem 1rem 1.8rem;
+        }
+
+        .text-white {
+            color: #fff !important;
+        }
+
+        table.ft-main thead th {
+            background-color: var(--ft-red);
+            color: #fff;
+            padding: 5px 5px;
+        }
+
+        table.ft-main tbody td {
+            border-bottom: 1px solid #9aa0a61f;
+        }
+
+        .text-right {
+            text-align: right !important;
+        }
+
+        .ft-bg-green {
+            background-color: green;
+            color: #fff;
+        }
+
+        .ft-bg-red {
+            background-color: var(--ft-red);
+            color: #fff;
+        }
+
+        .ft-bg-yellow {
+            background-color: #ffc000;
+        }
+
+        .text-center {
+            text-align: center !important;
+        }
+
+        .ft-bold {
+            font-weight: 700;
+        }
+
+        .ft-defects-ul {
+            font-size: 0.8em !important;
+            list-style: none !important;
+            padding-left: 0 !important;
+        }
+
+        table.ft-main thead tr:nth-of-type(2) th {
+            border-right: 1px solid #fff;
+        }
+
+        .ft-cell {
+            padding-left: 0 !important;
+            padding-right: 0 !important;
+        }
+
+        table.ft-main thead tr:nth-of-type(2) th:last-of-type {
+            border-top-left-radius: 3px;
+            border-right: 1px solid var(--ft-red);
+        }
+
+        table.ft-main thead th {
+            font-weight: 600 !important;
+        }
+
+        .no-fold {
+            width: 1px !important;
+            white-space: nowrap !important;
+        }
+
+        .ft-middle {
+            vertical-align: middle !important;
+        }
+
+        .ft-main > tfoot > tr > td, .ft-main > tfoot > tr > th {
+            border-top: none !important;
+            border-bottom: none !important;
+            padding: 5px 10px !important;
+            font-size: 0.8rem !important;
+        }
+
+        .ft-main > tbody > tr:last-of-type > td {
+            border-bottom: none !important;
+        }
+
+        tr {
+            page-break-inside: avoid !important;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container-fluid">
+    <div class="d-flex justify-content-between">
+        <div class="d-flex" style="flex-direction: column; justify-content: center;">
+        <img class="ft-logo"
+            src="/assets/mxg_fleet_track/img/fleetrack-logo.png"
+            alt="Fleetrack Logo">
+        </div>
+        <div class="d-flex" style="display: flex; flex-direction: column; justify-content: center;">
+            <h1 style="font-size: 2rem; margin-left: auto !important;">Daily Breakdown Report (DBR) - {%= filters.region %}</h1>
+        </div>
+    </div>
+    <div class="flex">
+        <table class="ml-auto">
+            <tr>
+                <th style="background-color: #000; font-weight: bold; border: 1px solid #000 !important" class="text-white text-center">
+                    % Efficiency
+                </th>
+                <td style="border: 1px solid #000 !important" class="font-weight-bold text-black border border-black">
+                    {%= data[0]["efficiency"] %}
+                </td>
+            </tr>
+        </table>
+       </div>
+    <hr>
+    <div class="d-flex justify-content-between">
+        <div>
+
+            <div>
+                <table>
+                    <tr>
+                        <th style="padding: 2px 5px !important;" class="lead">Prepared by</th>
+                        <td style="padding: 2px 5px !important;" class="font-weight-bold lead">
+                            {%= frappe.user_info().fullname %}
+                        </td>
+                    </tr>
+                    <tr>
+                        <th style="padding: 2px 5px !important;">Date</th>
+                        <td style="padding: 2px 5px !important;">
+                            {%=frappe.datetime.now_date(true).toLocaleDateString("en-GB") %}
+                        </td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <div class="">
+        <table class="table table-responsive-sm ft-main">
+            <thead>
+            <tr>
+                <th style="vertical-align: middle !important;background-color: #f02510 !important;width: 10% !important;"
+                    class="no-fold">
+                    Customer
+                </th>
+                <th style="vertical-align: middle !important;background-color: #f02510 !important; width: 15% !important;"
+                    class="no-fold">
+                    Machine
+                </th>
+                <th style="vertical-align: middle !important;background-color: #f02510 !important; width: 5% !important;"
+                    class="no-fold">
+                    Reported
+                </th>
+                <th style="vertical-align: middle !important;background-color: #f02510 !important; width: 16% !important;"
+                    class="no-fold">
+                    Description
+                </th>
+                <th style="vertical-align: middle !important;background-color: #f02510 !important;width: 7% !important;"
+                    class="no-fold">
+                    TED
+                </th>
+                <th style="vertical-align: middle !important;background-color: #f02510 !important;width: 7% !important;"
+                    class="no-fold">
+                    RED
+                </th>
+                <th style="vertical-align: middle !important;background-color: #f02510 !important; width: 11% !important;"
+                    class="no-fold">
+                    Status
+                </th>
+                <th style="vertical-align: middle !important;background-color: #f02510 !important; width: 5% !important;"
+                    class="text-center no-fold">
+                    Days on BD
+                </th>
+                <th style="vertical-align: middle !important;background-color: #f02510 !important;width: 8% !important;"
+                    class="no-fold">
+                    ETA
+                </th>
+                <th style="vertical-align: middle !important;background-color: #f02510 !important;width: 16% !important;"
+                    class="no-fold">
+                    Manager's Comments
+                </th>
+            </tr>
+            </thead>
+            <tbody>
+            {% for(var i=0, l=data.length; i < l ; i++) { %}
+            <tr>
+                <td class="">
+                    {%= data[i].Customer %} <br>
+                    {% if(data[i]["Customer Ref"] != "") { %}
+                    <span style="font-size: 0.8em">
+                        <b class="text-muted">Ref &blacktriangleright;</b> <b>{%= data[i]["Customer Ref"] %}</b>
+                    </span>
+                    {% } %}
+                    <br>
+                    <div class="d-flex" style="font-size: 0.95em">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor"
+                             style="width:16px; height:16px; color: gray">
+                            <path fill-rule="evenodd"
+                                  d="M9.69 18.933l.003.001C9.89 19.02 10 19 10 19s.11.02.308-.066l.002-.001.006-.003.018-.008a5.741 5.741 0 00.281-.14c.186-.096.446-.24.757-.433.62-.384 1.445-.966 2.274-1.765C15.302 14.988 17 12.493 17 9A7 7 0 103 9c0 3.492 1.698 5.988 3.355 7.584a13.731 13.731 0 002.273 1.765 11.842 11.842 0 00.976.544l.062.029.018.008.006.003zM10 11.25a2.25 2.25 0 100-4.5 2.25 2.25 0 000 4.5z"
+                                  clip-rule="evenodd"/>
+                        </svg>
+                        <span>{%= data[i].Location %}</span>
+                    </div>
+                </td>
+                <td class="">
+                    {%= data[i].Model %} <br>
+                    <span style="font-size: 0.8em">
+                        <b class="text-muted">SRN &blacktriangleright;</b> {%= data[i]["SN"] %}
+                    </span>
+                    {% if(data[i]["Fleet No"] != "") { %}
+                    <br>
+                    <span style="font-size: 0.8em">
+                        <b class="text-muted">Fleet No &blacktriangleright;</b> <b>{%= data[i]["Fleet No"] %}</b>
+                    </span>
+                    {% } %}
+                    <br>
+                    <span style="font-size: 0.8em">
+                        <b class="text-muted">Current HMR &blacktriangleright;</b> <b>{%= data[i]["HMR"] %}</b>
+                    </span><br>
+                    <span style="font-size: 0.8em">
+                                <b class="text-muted">Machine Running? &blacktriangleright;</b> {%= data[i]["Machine Running?"] %}
+                            </span>
+                    {% if(["Under Warranty", "Out of Warranty"].indexOf(data[i]["Warranty Status"]) !== -1) { %}
+                    <br>
+                    <span class="badge badge-danger" style="font-size: 0.7em; border-radius: 0 !important;">{%= data[i]["Warranty Status"] %}</span>
+                    {% } %}
+                </td>
+                <td class="">{%= data[i].Date %}</td>
+                <td>{%= data[i].Description %}</td>
+                <td class="">
+                    {% if(data[i]["On Hold"] === 1) { %}
+                        <span>On Hold</span>
+                    {% } else { %}
+                        {% if (data[i].Ted) { %}
+                            <span>{%= data[i].Ted %}</span>
+                        {% } else { %}
+                            {% if (data[i]["Ted Status"] !== "Available") { %}
+                                <span>{%= data[i]["Ted Status"] %}</span>
+                            {% } %}
+                        {% } %}
+                    {% } %}
+                </td>
+                <td class="">{%= data[i].Red %}</td>
+
+                <!-- STATUS + QUOTATION SENT DATE -->
+                <td class="">
+                  <div>{%= data[i]["Status"] %}</div>
+                  {% if (data[i]["Quotation Sent Date"]) { %}
+                    <div style="font-size:0.8em; color:#555; margin-top:3px;">
+                      <b>Quoted:</b> {%= data[i]["Quotation Sent Date"] %}
+                    </div>
+                  {% } %}
+                </td>
+
+                <td class="text-center">{%= data[i]["Days on BD"] %}</td>
+                <td class="">
+                    <b style="font-size: 0.7rem !important;" class="text-muted">Parts &dtrif;</b> <br>
+                    {%= data[i]["Parts ETA"] %} <br>
+
+                    <b style="font-size: 0.7rem !important;" class="pt-2 text-muted">Outwork &dtrif;</b> <br>
+                    <span style="font-size: 0.8rem">
+                        {%= data[i]["Outwork ETA"] %}
+                    </span>
+                </td>
+                <td class=""></td>
+            </tr>
+            {% } %}
+            </tbody>
+        </table>
+
+        {% if (String(filters.region).toLowerCase() === "south") { %}
+        {% include "mxg_fleet_track/report/_regional_signatures/southern.html" %}
+        {% } else { %}
+        {% include "mxg_fleet_track/report/_regional_signatures/nothern.html" %}
+        {% } %}
+    </div>
+</body>
+</html>
+
+

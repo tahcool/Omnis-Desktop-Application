@@ -1,0 +1,250 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "creation": "2023-12-07 13:59:23.529464",
+ "default_view": "List",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "component",
+  "item_reference",
+  "column_break_p0esu",
+  "part_number",
+  "location",
+  "section_break_19cjx",
+  "ted_status",
+  "on_hold",
+  "column_break_dxt6j",
+  "ted",
+  "column_break_vvcxo",
+  "section_break_d2y7g",
+  "date",
+  "tech_assigned",
+  "parts_eta",
+  "column_break_1eevv",
+  "description",
+  "status",
+  "outwork_eta",
+  "section_break_1cpqo",
+  "machine_model",
+  "job_number",
+  "column_break_86fiu",
+  "customer",
+  "end_date",
+  "column_break_vo3mh",
+  "inventory_transfer"
+ ],
+ "fields": [
+  {
+   "default": "0",
+   "fieldname": "on_hold",
+   "fieldtype": "Check",
+   "label": "On Hold"
+  },
+  {
+   "fieldname": "column_break_dxt6j",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "ted_status",
+   "fieldtype": "Select",
+   "label": "TED Status",
+   "mandatory_depends_on": "eval:!doc.on_hold",
+   "options": "\nTBA\nAvailable"
+  },
+  {
+   "fieldname": "column_break_vvcxo",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "ted",
+   "fieldtype": "Date",
+   "label": "TED",
+   "mandatory_depends_on": "eval:doc.ted_status === \"Available\""
+  },
+  {
+   "fieldname": "section_break_d2y7g",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "job_number",
+   "fieldtype": "Data",
+   "label": "Job Number"
+  },
+  {
+   "default": "Today",
+   "fieldname": "date",
+   "fieldtype": "Date",
+   "label": "Date"
+  },
+  {
+   "fieldname": "status",
+   "fieldtype": "Data",
+   "label": "Status"
+  },
+  {
+   "fieldname": "tech_assigned",
+   "fieldtype": "Select",
+   "label": "Tech Assigned",
+   "options": "\nYes\nNo"
+  },
+  {
+   "fieldname": "location",
+   "fieldtype": "Link",
+   "label": "Location",
+   "options": "FT Location"
+  },
+  {
+   "fieldname": "end_date",
+   "fieldtype": "Date",
+   "label": "End Date"
+  },
+  {
+   "fieldname": "parts_eta",
+   "fieldtype": "Date",
+   "label": "Parts ETA"
+  },
+  {
+   "fieldname": "outwork_eta",
+   "fieldtype": "Date",
+   "label": "Outwork ETA"
+  },
+  {
+   "fieldname": "column_break_1eevv",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "section_break_1cpqo",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "column_break_86fiu",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "column_break_vo3mh",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "description",
+   "fieldtype": "Data",
+   "label": "Description"
+  },
+  {
+   "default": "Pending",
+   "fieldname": "inventory_transfer",
+   "fieldtype": "Select",
+   "label": "Inventory Transfer",
+   "options": "Pending\nDone\nScrap",
+   "read_only": 1
+  },
+  {
+   "fieldname": "component",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Component",
+   "options": "FT SEC Component",
+   "reqd": 1
+  },
+  {
+   "fetch_from": "component.part_number",
+   "fieldname": "column_break_p0esu",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fetch_from": "component.part_number",
+   "fieldname": "part_number",
+   "fieldtype": "Data",
+   "label": "Part Number",
+   "read_only": 1
+  },
+  {
+   "fieldname": "section_break_19cjx",
+   "fieldtype": "Section Break"
+  },
+  {
+   "description": "e.g. Ex-Masima",
+   "fieldname": "item_reference",
+   "fieldtype": "Data",
+   "label": "Item Reference"
+  },
+  {
+   "fieldname": "machine_model",
+   "fieldtype": "Link",
+   "label": "Machine Model",
+   "options": "FT Machine Model"
+  },
+  {
+   "fieldname": "customer",
+   "fieldtype": "Link",
+   "label": "Customer",
+   "options": "FT Customer"
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "links": [],
+ "modified": "2024-02-28 20:58:18.452188",
+ "modified_by": "Administrator",
+ "module": "SEC",
+ "name": "FT SEC Repair",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "select": 1,
+   "share": 1,
+   "write": 1
+  },
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "MXG-CONTROLLER",
+   "select": 1,
+   "share": 1,
+   "write": 1
+  },
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "MXG-SEC",
+   "select": 1,
+   "share": 1,
+   "write": 1
+  },
+  {
+   "create": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "MXG-STANDARD",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "search_fields": "part_number,job_number",
+ "show_title_field_in_link": 1,
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": [],
+ "title_field": "description"
+}

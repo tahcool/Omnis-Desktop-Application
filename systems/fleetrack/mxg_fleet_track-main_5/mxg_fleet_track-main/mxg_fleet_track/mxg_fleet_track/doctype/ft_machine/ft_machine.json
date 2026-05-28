@@ -1,0 +1,1031 @@
+{
+ "actions": [],
+ "allow_import": 1,
+ "allow_rename": 1,
+ "autoname": "field:sn",
+ "creation": "2022-10-08 12:45:54.434999",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "section_break_2",
+  "fleetrack_managed",
+  "colb1",
+  "supplied",
+  "colb2",
+  "customer",
+  "colbr6",
+  "mxg_fleet_no",
+  "colbr_nre_fleet",
+  "sn",
+  "customer_file_section",
+  "prepare_welcome_report",
+  "column_break_duu5t",
+  "machine_welcome_report_status",
+  "btn_prepare_machine_welcome_report",
+  "column_break_4ctjf",
+  "section_break_4",
+  "model",
+  "esn",
+  "chassis_number",
+  "operating_weight",
+  "colbr3",
+  "oem",
+  "gearbox",
+  "has_telematics_device",
+  "bin_capacity",
+  "colbr4",
+  "type",
+  "location",
+  "epr_entry_date",
+  "standard_fuel_consumption",
+  "working_voltage",
+  "column_break_7",
+  "fleet_no",
+  "region",
+  "engine_type",
+  "tyre_size",
+  "cbroemreg",
+  "oem_registered",
+  "supplier",
+  "canbus_enabled",
+  "unique_attachments_fitted",
+  "btn_view_unique_attachments",
+  "warranty_details_section",
+  "warranty_status",
+  "column_break_24",
+  "warranty_type",
+  "cb1",
+  "warranty_period",
+  "cbbb2",
+  "handover_date",
+  "cb2",
+  "expiry_date",
+  "column_break_19",
+  "warranty_hours",
+  "hmr_section",
+  "starting_hmr",
+  "column_break_32",
+  "last_hmr_date",
+  "column_break_34",
+  "last_hmr_log",
+  "column_break_23",
+  "current_hmr",
+  "total_running_hours",
+  "column_break_38",
+  "days_since_last_hmr",
+  "initial_service_section",
+  "track_initial_service",
+  "column_break_37",
+  "initial_service_type",
+  "column_break_44",
+  "initial_service_status",
+  "service_details_section",
+  "service_obligation",
+  "col_br_service_hdr",
+  "service_interval_hours",
+  "section_break_57",
+  "last_service_date",
+  "column_break_27",
+  "last_service_hmr",
+  "column_break_47",
+  "last_service_type",
+  "column_break_49",
+  "next_service_hmr",
+  "column_break_54",
+  "next_service_type",
+  "col_br_nst",
+  "hours_remaining_to_service",
+  "section_break_10",
+  "notes",
+  "library_section",
+  "compatible_get",
+  "belt_dimensions",
+  "equipment_information_form",
+  "machine_picture",
+  "misc_files",
+  "rpc_list",
+  "parts_manuals",
+  "column_break_81",
+  "lube_types",
+  "filters_list",
+  "pdi_checklist",
+  "machine_data_plate",
+  "parts_manuals_2",
+  "column_break_83",
+  "hyd_filters_dimensions",
+  "wty_certificate",
+  "nei_checklist",
+  "engine_data_plate",
+  "parts_manuals_3",
+  "madr_section",
+  "mobility",
+  "track_components",
+  "other_uc_info",
+  "under_carriage_section",
+  "chain_make",
+  "column_break_gwqvk",
+  "chain_length",
+  "column_break_jociq",
+  "chain_width",
+  "sprokects_section",
+  "sproket_lhs_teeth",
+  "sproket_lhs_holes",
+  "column_break_guec2",
+  "sproket_rhs_teeth",
+  "sproket_rhs_holes",
+  "get_components_section",
+  "get_components",
+  "fb_section",
+  "filters_and_belts",
+  "telematics_section",
+  "telematics_device",
+  "sim_card",
+  "column_break_yztmf",
+  "telematics_device_sn",
+  "enabled_parameters",
+  "service_guide_section",
+  "standard_service_configuration"
+ ],
+ "fields": [
+  {
+   "fieldname": "model",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Model",
+   "options": "FT Machine Model",
+   "reqd": 1
+  },
+  {
+   "fetch_from": "model.oem",
+   "fieldname": "oem",
+   "fieldtype": "Link",
+   "label": "OEM",
+   "options": "FT Machine OEM",
+   "read_only": 1,
+   "reqd": 1
+  },
+  {
+   "fieldname": "sn",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "SN",
+   "reqd": 1,
+   "unique": 1
+  },
+  {
+   "fieldname": "type",
+   "fieldtype": "Link",
+   "label": "Type",
+   "options": "FT Machine Type",
+   "reqd": 1
+  },
+  {
+   "fieldname": "esn",
+   "fieldtype": "Data",
+   "label": "ESN"
+  },
+  {
+   "collapsible": 1,
+   "fieldname": "section_break_4",
+   "fieldtype": "Section Break",
+   "hide_border": 1,
+   "label": "Machine Details"
+  },
+  {
+   "fieldname": "column_break_7",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "gearbox",
+   "fieldtype": "Data",
+   "label": "Gearbox"
+  },
+  {
+   "collapsible": 1,
+   "fieldname": "section_break_10",
+   "fieldtype": "Section Break",
+   "hide_border": 1,
+   "label": "Notes"
+  },
+  {
+   "fieldname": "notes",
+   "fieldtype": "Small Text",
+   "label": "Notes"
+  },
+  {
+   "fieldname": "fleet_no",
+   "fieldtype": "Data",
+   "label": "Customer Ref"
+  },
+  {
+   "fieldname": "location",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Location",
+   "options": "FT Location",
+   "reqd": 1
+  },
+  {
+   "fieldname": "region",
+   "fieldtype": "Link",
+   "label": "Region",
+   "options": "FT Region"
+  },
+  {
+   "fieldname": "supplied",
+   "fieldtype": "Select",
+   "label": "MXG Supplied?",
+   "options": "Not Specified\nNo\nYes",
+   "reqd": 1
+  },
+  {
+   "collapsible": 1,
+   "fieldname": "warranty_details_section",
+   "fieldtype": "Section Break",
+   "hide_border": 1,
+   "label": "Warranty Details"
+  },
+  {
+   "fieldname": "handover_date",
+   "fieldtype": "Date",
+   "label": "Handover Date",
+   "mandatory_depends_on": "eval:doc.supplied === \"Yes\""
+  },
+  {
+   "fieldname": "expiry_date",
+   "fieldtype": "Date",
+   "label": "Expiry Date",
+   "mandatory_depends_on": "eval:doc.supplied === \"Yes\""
+  },
+  {
+   "fieldname": "column_break_19",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "warranty_hours",
+   "fieldtype": "Float",
+   "label": "Hours",
+   "mandatory_depends_on": "eval:doc.supplied === \"Yes\""
+  },
+  {
+   "collapsible": 1,
+   "depends_on": "eval:doc.fleetrack_managed === \"Yes\"",
+   "fieldname": "hmr_section",
+   "fieldtype": "Section Break",
+   "hide_border": 1,
+   "label": "HMR"
+  },
+  {
+   "fieldname": "starting_hmr",
+   "fieldtype": "Float",
+   "label": "Starting HMR",
+   "mandatory_depends_on": "eval:doc.fleetrack_managed === \"Yes\"",
+   "precision": "2"
+  },
+  {
+   "fieldname": "column_break_23",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "current_hmr",
+   "fieldtype": "Float",
+   "label": "Current HMR",
+   "precision": "2",
+   "read_only": 1
+  },
+  {
+   "collapsible": 1,
+   "depends_on": "eval:doc.fleetrack_managed === \"Yes\"",
+   "fieldname": "service_details_section",
+   "fieldtype": "Section Break",
+   "hide_border": 1,
+   "label": "Service Configuration"
+  },
+  {
+   "fetch_from": "model.si_hours",
+   "fetch_if_empty": 1,
+   "fieldname": "service_interval_hours",
+   "fieldtype": "Float",
+   "label": "Service Interval",
+   "reqd": 1
+  },
+  {
+   "fieldname": "column_break_27",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "last_service_date",
+   "fieldtype": "Date",
+   "label": "Last Service Date",
+   "read_only": 1
+  },
+  {
+   "fieldname": "last_service_hmr",
+   "fieldtype": "Float",
+   "label": "Last Service HMR",
+   "precision": "2"
+  },
+  {
+   "fieldname": "next_service_hmr",
+   "fieldtype": "Float",
+   "label": "Next Service HMR",
+   "precision": "2"
+  },
+  {
+   "default": "50",
+   "depends_on": "eval:doc.track_initial_service === \"Yes\"",
+   "fieldname": "initial_service_type",
+   "fieldtype": "Float",
+   "label": "Initial Service Type",
+   "mandatory_depends_on": "eval:doc.track_initial_service === \"Yes\"",
+   "precision": "2"
+  },
+  {
+   "default": "N/A",
+   "fieldname": "warranty_status",
+   "fieldtype": "Select",
+   "in_standard_filter": 1,
+   "label": "Warranty Status",
+   "mandatory_depends_on": "eval:doc.supplied === \"Yes\"",
+   "options": "N/A\nUnder Warranty\nOut of Warranty"
+  },
+  {
+   "fieldname": "service_obligation",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "Service Obligation",
+   "options": "Not Specified\nCustomer\nMXG"
+  },
+  {
+   "collapsible": 1,
+   "depends_on": "eval:doc.fleetrack_managed === \"Yes\"",
+   "fieldname": "initial_service_section",
+   "fieldtype": "Section Break",
+   "hide_border": 1,
+   "label": "Initial Service"
+  },
+  {
+   "default": "No",
+   "fieldname": "track_initial_service",
+   "fieldtype": "Select",
+   "label": "Track Initial Service",
+   "options": "\nNo\nYes",
+   "reqd": 1
+  },
+  {
+   "fieldname": "column_break_37",
+   "fieldtype": "Column Break"
+  },
+  {
+   "depends_on": "eval:doc.track_initial_service === \"Yes\"",
+   "fieldname": "initial_service_status",
+   "fieldtype": "Select",
+   "label": "Initial Service Status",
+   "mandatory_depends_on": "eval:doc.track_initial_service === \"Yes\"",
+   "options": "\nPending\nDone"
+  },
+  {
+   "fieldname": "customer",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "Customer",
+   "options": "FT Customer",
+   "reqd": 1
+  },
+  {
+   "fieldname": "hours_remaining_to_service",
+   "fieldtype": "Float",
+   "label": "Hours to Service",
+   "precision": "2",
+   "read_only": 1
+  },
+  {
+   "fieldname": "last_hmr_date",
+   "fieldtype": "Date",
+   "label": "Last HMR Date",
+   "read_only": 1
+  },
+  {
+   "default": "No",
+   "fieldname": "fleetrack_managed",
+   "fieldtype": "Select",
+   "label": "On Fleetrack&trade;?",
+   "options": "No\nYes",
+   "read_only_depends_on": "eval:!doc.name",
+   "reqd": 1
+  },
+  {
+   "fieldname": "section_break_2",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "colb1",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "colb2",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "colbr3",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "colbr4",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "colbr6",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "cb1",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "cb2",
+   "fieldtype": "Column Break"
+  },
+  {
+   "default": "No",
+   "fieldname": "has_telematics_device",
+   "fieldtype": "Select",
+   "label": "Has Telematics Device?",
+   "options": "\nNo\nYes",
+   "reqd": 1
+  },
+  {
+   "fieldname": "column_break_32",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "column_break_47",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "column_break_49",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "column_break_34",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "last_hmr_log",
+   "fieldtype": "Link",
+   "label": "Last Log",
+   "options": "FT HMR Log",
+   "read_only": 1
+  },
+  {
+   "fieldname": "days_since_last_hmr",
+   "fieldtype": "Int",
+   "label": "Days Since",
+   "read_only": 1
+  },
+  {
+   "fieldname": "column_break_38",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "column_break_54",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "column_break_44",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "column_break_24",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "warranty_type",
+   "fieldtype": "Select",
+   "label": "Warranty Type",
+   "options": "Not Specified\nParts Only\nFull Warranty\nNo Warranty"
+  },
+  {
+   "fieldname": "chassis_number",
+   "fieldtype": "Data",
+   "label": "Chassis Number"
+  },
+  {
+   "depends_on": "eval:doc.supplied === \"No\"",
+   "fieldname": "epr_entry_date",
+   "fieldtype": "Date",
+   "label": "EPR Entry Date"
+  },
+  {
+   "fieldname": "engine_type",
+   "fieldtype": "Data",
+   "label": "Engine Type",
+   "reqd": 1
+  },
+  {
+   "fieldname": "warranty_period",
+   "fieldtype": "Float",
+   "label": "Period (Months)",
+   "precision": "1"
+  },
+  {
+   "fieldname": "cbbb2",
+   "fieldtype": "Column Break"
+  },
+  {
+   "depends_on": "eval:doc.supplied === \"Yes\"",
+   "fieldname": "mxg_fleet_no",
+   "fieldtype": "Data",
+   "label": "Fleet No.",
+   "read_only": 1,
+   "unique": 1
+  },
+  {
+   "fieldname": "colbr_nre_fleet",
+   "fieldtype": "Column Break"
+  },
+  {
+   "depends_on": "eval:doc.fleetrack_managed === \"Yes\"",
+   "fieldname": "section_break_57",
+   "fieldtype": "Section Break",
+   "hide_border": 1
+  },
+  {
+   "fieldname": "col_br_nst",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "next_service_type",
+   "fieldtype": "Float",
+   "label": "Next Service Type",
+   "read_only": 1
+  },
+  {
+   "fieldname": "col_br_service_hdr",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "last_service_type",
+   "fieldtype": "Float",
+   "label": "Last Service Type",
+   "precision": "2"
+  },
+  {
+   "fieldname": "cbroemreg",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "oem_registered",
+   "fieldtype": "Select",
+   "label": "OEM Registered?",
+   "options": "\nYes\nNo"
+  },
+  {
+   "collapsible": 1,
+   "fieldname": "library_section",
+   "fieldtype": "Section Break",
+   "hide_border": 1,
+   "label": "Library"
+  },
+  {
+   "fieldname": "filters_list",
+   "fieldtype": "Attach",
+   "label": "Filters List"
+  },
+  {
+   "fieldname": "compatible_get",
+   "fieldtype": "Data",
+   "label": "Compatible GET"
+  },
+  {
+   "fieldname": "pdi_checklist",
+   "fieldtype": "Attach",
+   "label": "PDI Checklist"
+  },
+  {
+   "fieldname": "lube_types",
+   "fieldtype": "Data",
+   "label": "Lube Types"
+  },
+  {
+   "fieldname": "belt_dimensions",
+   "fieldtype": "Attach",
+   "label": "Belt Dimensions"
+  },
+  {
+   "fieldname": "hyd_filters_dimensions",
+   "fieldtype": "Attach",
+   "label": "Hyd. Filters Dimensions"
+  },
+  {
+   "fieldname": "equipment_information_form",
+   "fieldtype": "Attach",
+   "label": "Equipment Information Form"
+  },
+  {
+   "fieldname": "wty_certificate",
+   "fieldtype": "Attach",
+   "label": "Wty. Certificate"
+  },
+  {
+   "fieldname": "nei_checklist",
+   "fieldtype": "Attach",
+   "label": "NEI Checklist"
+  },
+  {
+   "fieldname": "column_break_81",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "column_break_83",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "machine_picture",
+   "fieldtype": "Attach Image",
+   "label": "Machine Picture"
+  },
+  {
+   "fieldname": "machine_data_plate",
+   "fieldtype": "Attach Image",
+   "label": "Machine Data Plate"
+  },
+  {
+   "fieldname": "engine_data_plate",
+   "fieldtype": "Attach Image",
+   "label": "Engine Data Plate"
+  },
+  {
+   "fieldname": "supplier",
+   "fieldtype": "Link",
+   "label": "Supplier",
+   "options": "FT Machine Supplier"
+  },
+  {
+   "fieldname": "misc_files",
+   "fieldtype": "Attach",
+   "label": "Misc."
+  },
+  {
+   "collapsible": 1,
+   "fieldname": "madr_section",
+   "fieldtype": "Section Break",
+   "label": "Mobility"
+  },
+  {
+   "depends_on": "eval:doc.mobility == \"Tracked\"",
+   "fieldname": "track_components",
+   "fieldtype": "Table",
+   "label": "Track Components",
+   "options": "FT Machine Track Components"
+  },
+  {
+   "fieldname": "rpc_list",
+   "fieldtype": "Attach",
+   "label": "RPC List"
+  },
+  {
+   "fieldname": "parts_manuals",
+   "fieldtype": "Attach",
+   "label": "Parts Manuals"
+  },
+  {
+   "fieldname": "parts_manuals_2",
+   "fieldtype": "Attach",
+   "label": "Parts Manuals"
+  },
+  {
+   "fieldname": "parts_manuals_3",
+   "fieldtype": "Attach",
+   "label": "Parts Manuals"
+  },
+  {
+   "fieldname": "operating_weight",
+   "fieldtype": "Float",
+   "label": "Operating Weight (Ton)",
+   "non_negative": 1,
+   "precision": "2"
+  },
+  {
+   "fieldname": "bin_capacity",
+   "fieldtype": "Float",
+   "label": "Bin/Bucket Capacity (m3)",
+   "non_negative": 1,
+   "precision": "1"
+  },
+  {
+   "fetch_from": "model.fuel_consumption",
+   "fetch_if_empty": 1,
+   "fieldname": "standard_fuel_consumption",
+   "fieldtype": "Float",
+   "label": "STD Fuel Consumption (L/Hr)"
+  },
+  {
+   "fieldname": "tyre_size",
+   "fieldtype": "Link",
+   "label": "Tyre Size",
+   "options": "FT Tyre Size"
+  },
+  {
+   "fieldname": "canbus_enabled",
+   "fieldtype": "Select",
+   "label": "CANBUS Enabled",
+   "options": "\nYes\nNo"
+  },
+  {
+   "default": "0",
+   "fieldname": "unique_attachments_fitted",
+   "fieldtype": "Int",
+   "label": "Unique Attachments Fitted",
+   "read_only": 1
+  },
+  {
+   "collapsible": 1,
+   "fieldname": "telematics_section",
+   "fieldtype": "Section Break",
+   "label": "Telematics & IOT"
+  },
+  {
+   "fieldname": "telematics_device",
+   "fieldtype": "Link",
+   "label": "Telematics Device Make & Model",
+   "options": "FT Telematics Device"
+  },
+  {
+   "fieldname": "column_break_yztmf",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "telematics_device_sn",
+   "fieldtype": "Data",
+   "label": "Device SN"
+  },
+  {
+   "fieldname": "sim_card",
+   "fieldtype": "Data",
+   "label": "Sim Card"
+  },
+  {
+   "fieldname": "enabled_parameters",
+   "fieldtype": "Table",
+   "label": "Enabled Parameters",
+   "options": "FT Machine Enabled Telematics Parameters"
+  },
+  {
+   "collapsible": 1,
+   "fieldname": "service_guide_section",
+   "fieldtype": "Section Break",
+   "label": "Service Guide"
+  },
+  {
+   "fieldname": "standard_service_configuration",
+   "fieldtype": "Table",
+   "label": "Standard Service Configuration",
+   "options": "FT Machine Standard Service Config"
+  },
+  {
+   "depends_on": "eval:doc.unique_attachments_fitted > 0",
+   "fieldname": "btn_view_unique_attachments",
+   "fieldtype": "Button",
+   "in_preview": 1,
+   "label": "View Unique Attachments",
+   "permlevel": 4
+  },
+  {
+   "fieldname": "mobility",
+   "fieldtype": "Select",
+   "label": "Mobility",
+   "options": "\nWheeled\nTracked"
+  },
+  {
+   "collapsible": 1,
+   "depends_on": "eval:doc.mobility == \"Tracked\"",
+   "fieldname": "under_carriage_section",
+   "fieldtype": "Section Break",
+   "label": "Under Carriage"
+  },
+  {
+   "fieldname": "chain_make",
+   "fieldtype": "Data",
+   "label": "Chain Make"
+  },
+  {
+   "fieldname": "column_break_gwqvk",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "chain_length",
+   "fieldtype": "Float",
+   "label": "Chain Length",
+   "non_negative": 1
+  },
+  {
+   "fieldname": "column_break_jociq",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "chain_width",
+   "fieldtype": "Float",
+   "label": "Chain Width"
+  },
+  {
+   "collapsible": 1,
+   "depends_on": "eval:doc.mobility == \"Tracked\"",
+   "fieldname": "sprokects_section",
+   "fieldtype": "Section Break",
+   "label": "Sprokets"
+  },
+  {
+   "fieldname": "sproket_lhs_teeth",
+   "fieldtype": "Int",
+   "label": "LHS No. of Teeth"
+  },
+  {
+   "fieldname": "sproket_lhs_holes",
+   "fieldtype": "Int",
+   "label": "LHS No. of Holes"
+  },
+  {
+   "fieldname": "column_break_guec2",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "sproket_rhs_teeth",
+   "fieldtype": "Int",
+   "label": "RHS No. of Teeth"
+  },
+  {
+   "fieldname": "sproket_rhs_holes",
+   "fieldtype": "Int",
+   "label": "RHS No. of Holes"
+  },
+  {
+   "depends_on": "eval:doc.mobility == \"Tracked\"",
+   "fieldname": "other_uc_info",
+   "fieldtype": "Small Text",
+   "label": "Other UC Info"
+  },
+  {
+   "collapsible": 1,
+   "fieldname": "get_components_section",
+   "fieldtype": "Section Break",
+   "label": "GET Components"
+  },
+  {
+   "fieldname": "get_components",
+   "fieldtype": "Table",
+   "options": "FT Machine GET Components"
+  },
+  {
+   "collapsible": 1,
+   "fieldname": "fb_section",
+   "fieldtype": "Section Break",
+   "label": "Filters & Belts"
+  },
+  {
+   "fieldname": "filters_and_belts",
+   "fieldtype": "Table",
+   "options": "FT Machine Filters and Belts"
+  },
+  {
+   "collapsible": 1,
+   "fieldname": "customer_file_section",
+   "fieldtype": "Section Break",
+   "label": "Customer File"
+  },
+  {
+   "depends_on": "eval:doc.prepare_welcome_report == \"Yes\"",
+   "fieldname": "machine_welcome_report_status",
+   "fieldtype": "Select",
+   "label": "Welcome Report Status",
+   "mandatory_depends_on": "eval:doc.prepare_welcome_report == \"Yes\"",
+   "options": "\nSENT\nPENDING"
+  },
+  {
+   "fieldname": "column_break_duu5t",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "column_break_4ctjf",
+   "fieldtype": "Column Break"
+  },
+  {
+   "default": "N/A",
+   "fieldname": "prepare_welcome_report",
+   "fieldtype": "Select",
+   "label": "Prepare Welcome Report",
+   "options": "\nNo\nYes\nN/A"
+  },
+  {
+   "depends_on": "eval:doc.prepare_welcome_report == \"Yes\"",
+   "fieldname": "btn_prepare_machine_welcome_report",
+   "fieldtype": "Button",
+   "label": "Prepare Report"
+  },
+  {
+   "fieldname": "total_running_hours",
+   "fieldtype": "Float",
+   "label": "Total Running Hours",
+   "non_negative": 1,
+   "precision": "2",
+   "read_only": 1
+  },
+  {
+   "fieldname": "working_voltage",
+   "fieldtype": "Float",
+   "label": "Working Voltage",
+   "non_negative": 1,
+   "precision": "1"
+  }
+ ],
+ "image_field": "machine_picture",
+ "index_web_pages_for_search": 1,
+ "links": [],
+ "make_attachments_public": 1,
+ "modified": "2023-12-05 19:09:17.697717",
+ "modified_by": "Administrator",
+ "module": "MXG Fleet Track",
+ "name": "FT Machine",
+ "naming_rule": "By fieldname",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "MXG-CONTROLLER",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "create": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "MXG-STANDARD",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "MXG-READ-ONLY",
+   "share": 1
+  },
+  {
+   "create": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "MXG-MD",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "permlevel": 4,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "MXG-CONTROLLER",
+   "select": 1,
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "search_fields": "sn,type,customer",
+ "show_title_field_in_link": 1,
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": [],
+ "title_field": "model",
+ "track_changes": 1
+}

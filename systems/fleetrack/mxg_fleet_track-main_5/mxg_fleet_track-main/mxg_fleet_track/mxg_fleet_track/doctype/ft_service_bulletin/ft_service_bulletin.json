@@ -1,0 +1,142 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "autoname": "format:SBMXG{MM}-{YYYY}-{##}",
+ "creation": "2023-09-16 15:36:54.695085",
+ "default_view": "List",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "sb_details_section",
+  "date_issued",
+  "column_break_ces74",
+  "issued_by",
+  "column_break_hurxl",
+  "oem",
+  "machinery_affected_section",
+  "models_applicable",
+  "column_break_z6vcz",
+  "types_applicable",
+  "section_break_gvy0a",
+  "subject",
+  "outline",
+  "column_break_iwph8",
+  "implementation_procedure",
+  "section_break_170dh"
+ ],
+ "fields": [
+  {
+   "fieldname": "sb_details_section",
+   "fieldtype": "Section Break",
+   "label": "SB Details"
+  },
+  {
+   "fieldname": "date_issued",
+   "fieldtype": "Date",
+   "in_list_view": 1,
+   "label": "Date Issued",
+   "reqd": 1
+  },
+  {
+   "fieldname": "column_break_ces74",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "issued_by",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "label": "Issued by",
+   "options": "\nMXG\nOEM",
+   "reqd": 1
+  },
+  {
+   "fieldname": "column_break_hurxl",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "oem",
+   "fieldtype": "Link",
+   "label": "OEM",
+   "mandatory_depends_on": "eval:doc.issued_by === \"OEM\"",
+   "options": "FT Machine OEM"
+  },
+  {
+   "fieldname": "machinery_affected_section",
+   "fieldtype": "Section Break",
+   "label": "Machinery Affected"
+  },
+  {
+   "fieldname": "models_applicable",
+   "fieldtype": "Table",
+   "label": "Models",
+   "options": "FT SB Models Applicable"
+  },
+  {
+   "fieldname": "column_break_z6vcz",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "types_applicable",
+   "fieldtype": "Table",
+   "label": "Other",
+   "options": "FT SB Types Applicable"
+  },
+  {
+   "fieldname": "section_break_gvy0a",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "subject",
+   "fieldtype": "Data",
+   "label": "Subject",
+   "reqd": 1
+  },
+  {
+   "fieldname": "column_break_iwph8",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "outline",
+   "fieldtype": "Small Text",
+   "label": "Outline",
+   "reqd": 1
+  },
+  {
+   "fieldname": "section_break_170dh",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "implementation_procedure",
+   "fieldtype": "Small Text",
+   "label": "Implementation Procedure"
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "links": [],
+ "modified": "2023-09-16 15:46:28.745872",
+ "modified_by": "Administrator",
+ "module": "MXG Fleet Track",
+ "name": "FT Service Bulletin",
+ "name_case": "UPPER CASE",
+ "naming_rule": "Expression",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": [],
+ "track_changes": 1
+}

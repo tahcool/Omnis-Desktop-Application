@@ -1,0 +1,943 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Customer Portal — Fleetrack</title>
+  <meta name="description" content="Fleetrack Customer Portal — view your machines, track defects and report issues."/>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet"/>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --bg:        #0a0f1e;
+      --surface:   #111827;
+      --surface2:  #1e293b;
+      --border:    rgba(255,255,255,0.08);
+      --text:      #f1f5f9;
+      --muted:     #64748b;
+      --accent:    #ef4444;
+      --accent2:   #f97316;
+      --green:     #10b981;
+      --blue:      #3b82f6;
+      --amber:     #f59e0b;
+      --purple:    #8b5cf6;
+      --radius:    12px;
+    }
+
+    body {
+      font-family: 'Inter', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+    }
+
+    /* ── AUTH SCREEN ──────────────────────────────────── */
+    #auth-screen {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: radial-gradient(ellipse at 30% 50%, rgba(239,68,68,0.12) 0%, transparent 60%),
+                  radial-gradient(ellipse at 70% 20%, rgba(59,130,246,0.08) 0%, transparent 50%),
+                  var(--bg);
+    }
+
+    .auth-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 48px 40px;
+      width: 100%;
+      max-width: 420px;
+      box-shadow: 0 32px 80px rgba(0,0,0,0.5);
+    }
+
+    .auth-logo {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 32px;
+    }
+
+    .auth-logo-icon {
+      width: 40px; height: 40px;
+      background: linear-gradient(135deg, #ef4444, #f97316);
+      border-radius: 10px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 20px;
+    }
+
+    .auth-logo-text { font-size: 18px; font-weight: 800; color: var(--text); }
+    .auth-logo-sub  { font-size: 11px; color: var(--muted); font-weight: 500; margin-top: 1px; }
+
+    .auth-title { font-size: 22px; font-weight: 800; color: var(--text); margin-bottom: 6px; }
+    .auth-sub   { font-size: 13px; color: var(--muted); margin-bottom: 28px; }
+
+    .form-group { margin-bottom: 16px; }
+    .form-label {
+      display: block; font-size: 11px; font-weight: 700;
+      letter-spacing: 0.08em; text-transform: uppercase;
+      color: var(--muted); margin-bottom: 6px;
+    }
+    .form-input {
+      width: 100%; padding: 11px 14px;
+      background: var(--surface2); border: 1px solid var(--border);
+      border-radius: 9px; font-size: 14px; color: var(--text);
+      outline: none; font-family: inherit; transition: border 0.2s;
+    }
+    .form-input:focus { border-color: rgba(239,68,68,0.5); }
+    .form-input::placeholder { color: var(--muted); }
+
+    .btn-primary {
+      width: 100%; padding: 13px;
+      background: linear-gradient(135deg, #ef4444, #dc2626);
+      color: white; border: none; border-radius: 9px;
+      font-size: 14px; font-weight: 700; cursor: pointer;
+      font-family: inherit; transition: opacity 0.2s, transform 0.1s;
+      margin-top: 8px;
+    }
+    .btn-primary:hover   { opacity: 0.9; }
+    .btn-primary:active  { transform: scale(0.99); }
+    .btn-primary:disabled { opacity: 0.5; cursor: not-allowed; }
+
+    .auth-error {
+      background: rgba(239,68,68,0.12); border: 1px solid rgba(239,68,68,0.3);
+      color: #fca5a5; border-radius: 8px; padding: 10px 14px;
+      font-size: 13px; margin-bottom: 16px; display: none;
+    }
+
+    .auth-footer { font-size: 12px; color: var(--muted); text-align: center; margin-top: 20px; }
+
+    /* ── FORGOT / RESET ──────────────────────────────── */
+    .link-btn {
+      background: none; border: none; color: #60a5fa;
+      font-size: 12px; cursor: pointer; font-family: inherit;
+      text-decoration: underline; padding: 0;
+    }
+
+    /* ── APP SHELL ───────────────────────────────────── */
+    #app-shell { display: none; min-height: 100vh; flex-direction: column; }
+
+    /* Top Nav */
+    .portal-nav {
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      padding: 0 28px;
+      height: 58px;
+      display: flex; align-items: center; justify-content: space-between;
+      position: sticky; top: 0; z-index: 100;
+    }
+
+    .nav-brand {
+      display: flex; align-items: center; gap: 10px;
+    }
+    .nav-brand-icon {
+      width: 32px; height: 32px;
+      background: linear-gradient(135deg, #ef4444, #f97316);
+      border-radius: 8px; display: flex; align-items: center; justify-content: center;
+      font-size: 16px;
+    }
+    .nav-brand-name { font-size: 15px; font-weight: 800; }
+    .nav-brand-tag  { font-size: 10px; color: var(--muted); margin-left: 6px; padding: 2px 8px; background: var(--surface2); border-radius: 20px; }
+
+    .nav-user { display: flex; align-items: center; gap: 12px; }
+    .nav-avatar {
+      width: 34px; height: 34px; border-radius: 50%;
+      background: linear-gradient(135deg, var(--accent), var(--accent2));
+      display: flex; align-items: center; justify-content: center;
+      font-size: 13px; font-weight: 800; color: white;
+    }
+    .nav-user-name { font-size: 13px; font-weight: 600; }
+    .btn-signout {
+      background: var(--surface2); border: 1px solid var(--border);
+      color: var(--muted); padding: 6px 12px; border-radius: 7px;
+      font-size: 12px; cursor: pointer; font-family: inherit;
+      transition: all 0.18s;
+    }
+    .btn-signout:hover { color: var(--text); border-color: rgba(255,255,255,0.2); }
+
+    /* Side Nav */
+    .app-body { display: flex; flex: 1; }
+
+    .side-nav {
+      width: 220px; min-width: 220px;
+      background: var(--surface);
+      border-right: 1px solid var(--border);
+      padding: 20px 12px;
+      display: flex; flex-direction: column; gap: 4px;
+    }
+
+    .side-nav-item {
+      display: flex; align-items: center; gap: 10px;
+      padding: 9px 12px; border-radius: 8px;
+      font-size: 13px; font-weight: 500; color: var(--muted);
+      cursor: pointer; transition: all 0.15s; border: none;
+      background: none; font-family: inherit; text-align: left; width: 100%;
+    }
+    .side-nav-item:hover  { background: rgba(255,255,255,0.05); color: var(--text); }
+    .side-nav-item.active { background: rgba(239,68,68,0.12); color: #fca5a5; }
+    .side-nav-item svg    { flex-shrink: 0; }
+
+    /* Main Content */
+    .main-content { flex: 1; padding: 28px; overflow-y: auto; }
+
+    /* Screens */
+    .screen { display: none; }
+    .screen.active { display: block; }
+
+    /* Page header */
+    .page-header { margin-bottom: 24px; }
+    .page-title  { font-size: 20px; font-weight: 800; color: var(--text); }
+    .page-sub    { font-size: 13px; color: var(--muted); margin-top: 4px; }
+
+    /* KPI Cards */
+    .kpi-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 16px; margin-bottom: 28px; }
+    .kpi-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 20px;
+    }
+    .kpi-label { font-size: 10px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); }
+    .kpi-value { font-size: 28px; font-weight: 900; margin: 6px 0 4px; }
+    .kpi-sub   { font-size: 11px; color: var(--muted); }
+
+    /* Cards / Lists */
+    .section-label { font-size: 11px; font-weight: 800; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); margin-bottom: 12px; }
+
+    .card-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 16px; }
+    .machine-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 20px;
+      cursor: pointer;
+      transition: border-color 0.18s, transform 0.18s;
+    }
+    .machine-card:hover { border-color: rgba(239,68,68,0.4); transform: translateY(-2px); }
+    .machine-card-serial { font-size: 11px; color: var(--muted); font-weight: 600; letter-spacing: 0.06em; }
+    .machine-card-name   { font-size: 15px; font-weight: 700; margin: 4px 0 12px; }
+    .machine-card-meta   { display: flex; flex-direction: column; gap: 5px; }
+    .machine-card-row    { display: flex; align-items: center; gap: 6px; font-size: 12px; color: var(--muted); }
+    .status-pill {
+      display: inline-block; padding: 2px 9px; border-radius: 20px;
+      font-size: 10px; font-weight: 700; text-transform: uppercase;
+    }
+    .pill-active   { background: rgba(16,185,129,0.15); color: #6ee7b7; }
+    .pill-breakdown{ background: rgba(239,68,68,0.15); color: #fca5a5; }
+    .pill-service  { background: rgba(245,158,11,0.15); color: #fcd34d; }
+    .pill-idle     { background: rgba(100,116,139,0.15); color: #94a3b8; }
+
+    /* Table */
+    .data-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+    .data-table th {
+      padding: 10px 14px; text-align: left; font-size: 10px;
+      font-weight: 800; letter-spacing: 0.08em; text-transform: uppercase;
+      color: var(--muted); border-bottom: 1px solid var(--border);
+    }
+    .data-table td { padding: 12px 14px; border-bottom: 1px solid rgba(255,255,255,0.04); }
+    .data-table tr:hover td { background: rgba(255,255,255,0.02); }
+
+    /* Defect severity */
+    .sev-critical { color: #f87171; font-weight: 700; }
+    .sev-major    { color: #fbbf24; font-weight: 700; }
+    .sev-minor    { color: #94a3b8; }
+
+    /* Form card */
+    .form-card {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: var(--radius); padding: 28px; max-width: 640px;
+    }
+    .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+    .form-group-dark .form-input {
+      background: var(--surface2);
+    }
+    select.form-input { cursor: pointer; }
+    textarea.form-input { min-height: 100px; resize: vertical; }
+    .btn-submit {
+      background: linear-gradient(135deg, #ef4444, #dc2626);
+      color: white; border: none; padding: 12px 28px;
+      border-radius: 9px; font-size: 14px; font-weight: 700;
+      cursor: pointer; font-family: inherit; transition: opacity 0.2s;
+      margin-top: 8px;
+    }
+    .btn-submit:hover { opacity: 0.88; }
+    .btn-submit:disabled { opacity: 0.5; cursor: not-allowed; }
+
+    /* Success message */
+    .success-msg {
+      background: rgba(16,185,129,0.12); border: 1px solid rgba(16,185,129,0.3);
+      color: #6ee7b7; border-radius: 8px; padding: 12px 16px;
+      font-size: 13px; margin-top: 16px; display: none;
+    }
+
+    /* Empty state */
+    .empty-state {
+      text-align: center; padding: 60px 20px; color: var(--muted);
+    }
+    .empty-state-icon { font-size: 48px; margin-bottom: 12px; }
+    .empty-state-title { font-size: 16px; font-weight: 700; color: var(--text); margin-bottom: 6px; }
+
+    /* Loading */
+    .loading-row { text-align: center; padding: 40px; color: var(--muted); font-size: 13px; }
+
+    /* Back button */
+    .back-btn {
+      background: none; border: none; color: var(--muted);
+      font-size: 13px; cursor: pointer; font-family: inherit;
+      display: flex; align-items: center; gap: 6px; margin-bottom: 20px;
+      padding: 0; transition: color 0.15s;
+    }
+    .back-btn:hover { color: var(--text); }
+
+    /* Responsive */
+    @media (max-width: 700px) {
+      .side-nav { display: none; }
+      .form-row { grid-template-columns: 1fr; }
+      .kpi-grid { grid-template-columns: 1fr 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ══════════════════════════════════════════════════════ -->
+<!--  AUTH SCREEN                                          -->
+<!-- ══════════════════════════════════════════════════════ -->
+<div id="auth-screen">
+  <div class="auth-card">
+    <div class="auth-logo">
+      <div class="auth-logo-icon">🚜</div>
+      <div>
+        <div class="auth-logo-text">Fleetrack</div>
+        <div class="auth-logo-sub">Customer Portal</div>
+      </div>
+    </div>
+
+    <div id="auth-login-pane">
+      <div class="auth-title">Welcome back</div>
+      <div class="auth-sub">Sign in to view your machines and manage defects</div>
+      <div class="auth-error" id="auth-error"></div>
+      <div class="form-group">
+        <label class="form-label">Email Address</label>
+        <input type="email" id="login-email" class="form-input" placeholder="you@company.com" autocomplete="email"/>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Password</label>
+        <input type="password" id="login-password" class="form-input" placeholder="••••••••" autocomplete="current-password"/>
+      </div>
+      <button class="btn-primary" id="btn-login" onclick="doLogin()">Sign In</button>
+      <div class="auth-footer">
+        Forgot your password?
+        <button class="link-btn" onclick="showForgot()">Reset it here</button>
+      </div>
+    </div>
+
+    <div id="auth-forgot-pane" style="display:none;">
+      <div class="auth-title">Reset Password</div>
+      <div class="auth-sub">Enter your email and we'll send a reset link</div>
+      <div class="auth-error" id="forgot-error"></div>
+      <div class="form-group">
+        <label class="form-label">Email Address</label>
+        <input type="email" id="forgot-email" class="form-input" placeholder="you@company.com"/>
+      </div>
+      <button class="btn-primary" onclick="doForgot()">Send Reset Link</button>
+      <div class="auth-footer">
+        <button class="link-btn" onclick="showLogin()">← Back to Sign In</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════ -->
+<!--  APP SHELL                                            -->
+<!-- ══════════════════════════════════════════════════════ -->
+<div id="app-shell" style="display:none; flex-direction:column; min-height:100vh;">
+
+  <!-- Top nav -->
+  <nav class="portal-nav">
+    <div class="nav-brand">
+      <div class="nav-brand-icon">🚜</div>
+      <span class="nav-brand-name">Fleetrack</span>
+      <span class="nav-brand-tag">Customer Portal</span>
+    </div>
+    <div class="nav-user">
+      <div class="nav-avatar" id="nav-avatar">?</div>
+      <div>
+        <div class="nav-user-name" id="nav-username">—</div>
+        <div style="font-size:11px;color:var(--muted);" id="nav-company">—</div>
+      </div>
+      <button class="btn-signout" onclick="doSignOut()">Sign Out</button>
+    </div>
+  </nav>
+
+  <div class="app-body">
+    <!-- Side nav -->
+    <aside class="side-nav">
+      <button class="side-nav-item active" id="nav-dashboard" onclick="showScreen('dashboard')">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/></svg>
+        Dashboard
+      </button>
+      <button class="side-nav-item" id="nav-machines" onclick="showScreen('machines')">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="8" width="20" height="13" rx="2"/><path d="M16 8V6a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2"/><line x1="12" y1="13" x2="12" y2="16"/></svg>
+        My Machines
+      </button>
+      <button class="side-nav-item" id="nav-report" onclick="showScreen('report')">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 9v4m0 4h.01M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/></svg>
+        Report Defect
+      </button>
+      <button class="side-nav-item" id="nav-myreports" onclick="showScreen('myreports')">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+        My Reports
+      </button>
+    </aside>
+
+    <!-- Main content -->
+    <main class="main-content">
+
+      <!-- ── DASHBOARD ──────────────────────────────── -->
+      <div class="screen active" id="screen-dashboard">
+        <div class="page-header">
+          <div class="page-title" id="dash-greeting">Good morning</div>
+          <div class="page-sub">Here's an overview of your fleet status</div>
+        </div>
+        <div class="kpi-grid">
+          <div class="kpi-card">
+            <div class="kpi-label">Total Machines</div>
+            <div class="kpi-value" id="kpi-machines" style="color:#3b82f6;">—</div>
+            <div class="kpi-sub">Assigned to your account</div>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-label">Active Defects</div>
+            <div class="kpi-value" id="kpi-defects" style="color:#ef4444;">—</div>
+            <div class="kpi-sub">Open items requiring attention</div>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-label">Machines Down</div>
+            <div class="kpi-value" id="kpi-down" style="color:#f59e0b;">—</div>
+            <div class="kpi-sub">Currently out of service</div>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-label">Reports Submitted</div>
+            <div class="kpi-value" id="kpi-reports" style="color:#10b981;">—</div>
+            <div class="kpi-sub">Via this portal</div>
+          </div>
+        </div>
+        <div class="section-label">Recent Defects</div>
+        <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;">
+          <table class="data-table">
+            <thead><tr><th>Machine</th><th>Defect</th><th>Severity</th><th>Status</th><th>Date</th></tr></thead>
+            <tbody id="dash-defects-body"><tr><td colspan="5" class="loading-row">Loading…</td></tr></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- ── MY MACHINES ────────────────────────────── -->
+      <div class="screen" id="screen-machines">
+        <div class="page-header">
+          <div class="page-title">My Machines</div>
+          <div class="page-sub">All machines assigned to your account</div>
+        </div>
+        <div class="card-grid" id="machines-grid">
+          <div class="loading-row" style="grid-column:1/-1;">Loading machines…</div>
+        </div>
+      </div>
+
+      <!-- ── MACHINE DETAIL ─────────────────────────── -->
+      <div class="screen" id="screen-machine-detail">
+        <button class="back-btn" onclick="showScreen('machines')">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"/></svg>
+          Back to Machines
+        </button>
+        <div class="page-header">
+          <div class="page-title" id="detail-machine-name">—</div>
+          <div class="page-sub" id="detail-machine-serial">—</div>
+        </div>
+        <div class="kpi-grid" style="grid-template-columns:repeat(auto-fill,minmax(160px,1fr));">
+          <div class="kpi-card">
+            <div class="kpi-label">Status</div>
+            <div class="kpi-value" id="detail-status" style="font-size:18px;margin-top:8px;">—</div>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-label">Active Defects</div>
+            <div class="kpi-value" id="detail-defect-count" style="color:#ef4444;">—</div>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-label">Last Service</div>
+            <div class="kpi-value" id="detail-last-service" style="font-size:14px;margin-top:8px;">—</div>
+          </div>
+        </div>
+        <div class="section-label" style="margin-top:8px;">Defect History</div>
+        <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;">
+          <table class="data-table">
+            <thead><tr><th>Defect</th><th>Category</th><th>Severity</th><th>Reported</th><th>Status</th></tr></thead>
+            <tbody id="detail-defects-body"><tr><td colspan="5" class="loading-row">Loading…</td></tr></tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- ── REPORT DEFECT ──────────────────────────── -->
+      <div class="screen" id="screen-report">
+        <div class="page-header">
+          <div class="page-title">Report a Defect</div>
+          <div class="page-sub">Submit a defect report for one of your machines</div>
+        </div>
+        <div class="form-card">
+          <div class="form-group">
+            <label class="form-label">Machine</label>
+            <select id="report-machine" class="form-input">
+              <option value="">Select a machine…</option>
+            </select>
+          </div>
+          <div class="form-row">
+            <div class="form-group">
+              <label class="form-label">Defect Category</label>
+              <select id="report-category" class="form-input">
+                <option value="">Select category…</option>
+                <option>Engine</option>
+                <option>Hydraulics</option>
+                <option>Electrical</option>
+                <option>Transmission</option>
+                <option>Brakes</option>
+                <option>Tyres</option>
+                <option>Body / Structure</option>
+                <option>Cooling System</option>
+                <option>Fuel System</option>
+                <option>Other</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Severity</label>
+              <select id="report-severity" class="form-input">
+                <option value="">Select severity…</option>
+                <option value="Critical">Critical — Machine Down</option>
+                <option value="Major">Major — Affects Operation</option>
+                <option value="Minor">Minor — Cosmetic / Low Impact</option>
+              </select>
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Defect Description</label>
+            <textarea id="report-description" class="form-input" placeholder="Describe the issue in detail — symptoms, when it started, any error codes…"></textarea>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Operator Name (optional)</label>
+            <input type="text" id="report-operator" class="form-input" placeholder="Name of operator who reported the issue"/>
+          </div>
+          <div class="auth-error" id="report-error"></div>
+          <button class="btn-submit" id="btn-submit-report" onclick="submitDefectReport()">Submit Report</button>
+          <div class="success-msg" id="report-success">
+            ✓ Report submitted successfully. Our team has been notified and will follow up.
+          </div>
+        </div>
+      </div>
+
+      <!-- ── MY REPORTS ─────────────────────────────── -->
+      <div class="screen" id="screen-myreports">
+        <div class="page-header">
+          <div class="page-title">My Reports</div>
+          <div class="page-sub">Defects you've submitted through this portal</div>
+        </div>
+        <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);overflow:hidden;">
+          <table class="data-table">
+            <thead><tr><th>Machine</th><th>Category</th><th>Description</th><th>Severity</th><th>Submitted</th><th>Status</th></tr></thead>
+            <tbody id="my-reports-body"><tr><td colspan="6" class="loading-row">Loading…</td></tr></tbody>
+          </table>
+        </div>
+      </div>
+
+    </main>
+  </div>
+</div>
+
+<script>
+// ── SUPABASE SETUP ─────────────────────────────────────────────────────
+const SUPA_URL = 'https://pfqaeewmlwfayxbgmuaq.supabase.co';
+const SUPA_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBmcWFlZXdtbHdmYXl4YmdtdWFxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDc1NTg3OTEsImV4cCI6MjA2MzEzNDc5MX0.YLx-ym_yS6K2lHJJXPx6OBpEdWnqmkBWrdlFd6I7mGU';
+const sb = supabase.createClient(SUPA_URL, SUPA_KEY);
+
+let CURRENT_USER = null;
+let PORTAL_ACCOUNT = null;
+let MY_MACHINES = [];
+
+// ── AUTH ───────────────────────────────────────────────────────────────
+async function doLogin() {
+  const email = document.getElementById('login-email').value.trim();
+  const pass  = document.getElementById('login-password').value;
+  const errEl = document.getElementById('auth-error');
+  const btn   = document.getElementById('btn-login');
+
+  errEl.style.display = 'none';
+  btn.disabled = true;
+  btn.textContent = 'Signing in…';
+
+  try {
+    const { data, error } = await sb.auth.signInWithPassword({ email, password: pass });
+    if (error) throw error;
+
+    CURRENT_USER = data.user;
+    await loadPortalAccount();
+    showApp();
+  } catch (e) {
+    errEl.textContent = e.message || 'Sign in failed. Please check your credentials.';
+    errEl.style.display = 'block';
+  } finally {
+    btn.disabled = false;
+    btn.textContent = 'Sign In';
+  }
+}
+
+async function doForgot() {
+  const email = document.getElementById('forgot-email').value.trim();
+  const errEl = document.getElementById('forgot-error');
+  errEl.style.display = 'none';
+  try {
+    const { error } = await sb.auth.resetPasswordForEmail(email, {
+      redirectTo: window.location.href
+    });
+    if (error) throw error;
+    errEl.style.cssText = 'display:block;background:rgba(16,185,129,0.12);border-color:rgba(16,185,129,0.3);color:#6ee7b7;';
+    errEl.textContent = '✓ Reset link sent — check your email.';
+  } catch (e) {
+    errEl.style.display = 'block';
+    errEl.textContent = e.message;
+  }
+}
+
+async function doSignOut() {
+  await sb.auth.signOut();
+  CURRENT_USER = null;
+  PORTAL_ACCOUNT = null;
+  MY_MACHINES = [];
+  document.getElementById('auth-screen').style.display = 'flex';
+  document.getElementById('app-shell').style.display = 'none';
+}
+
+function showForgot() {
+  document.getElementById('auth-login-pane').style.display = 'none';
+  document.getElementById('auth-forgot-pane').style.display = 'block';
+}
+function showLogin() {
+  document.getElementById('auth-forgot-pane').style.display = 'none';
+  document.getElementById('auth-login-pane').style.display = 'block';
+}
+
+// ── LOAD PORTAL ACCOUNT ────────────────────────────────────────────────
+async function loadPortalAccount() {
+  const { data, error } = await sb
+    .from('ft_customer_portal_accounts')
+    .select('*, ft_portal_machine_assignments(*)')
+    .eq('auth_user_id', CURRENT_USER.id)
+    .eq('is_active', true)
+    .single();
+
+  if (error || !data) throw new Error('Portal account not found or access suspended. Contact your administrator.');
+  PORTAL_ACCOUNT = data;
+  MY_MACHINES = data.ft_portal_machine_assignments || [];
+}
+
+// ── SHOW APP ───────────────────────────────────────────────────────────
+function showApp() {
+  document.getElementById('auth-screen').style.display = 'none';
+  document.getElementById('app-shell').style.display = 'flex';
+
+  // Set user info
+  const name = PORTAL_ACCOUNT.contact_name || CURRENT_USER.email;
+  const initials = name.split(' ').map(w=>w[0]).join('').toUpperCase().slice(0,2);
+  document.getElementById('nav-avatar').textContent = initials;
+  document.getElementById('nav-username').textContent = name;
+  document.getElementById('nav-company').textContent = PORTAL_ACCOUNT.customer_name || '';
+
+  // Greeting
+  const h = new Date().getHours();
+  const greeting = h < 12 ? 'Good morning' : h < 17 ? 'Good afternoon' : 'Good evening';
+  document.getElementById('dash-greeting').textContent = greeting + ', ' + name.split(' ')[0];
+
+  // Load data
+  showScreen('dashboard');
+  loadDashboard();
+  populateMachineSelect();
+}
+
+// ── SCREEN NAVIGATION ──────────────────────────────────────────────────
+function showScreen(name) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('.side-nav-item').forEach(s => s.classList.remove('active'));
+  const screen = document.getElementById('screen-' + name);
+  const nav    = document.getElementById('nav-' + name);
+  if (screen) screen.classList.add('active');
+  if (nav)    nav.classList.add('active');
+
+  if (name === 'machines')  loadMachines();
+  if (name === 'myreports') loadMyReports();
+}
+
+// ── DASHBOARD ──────────────────────────────────────────────────────────
+async function loadDashboard() {
+  const machineNames = MY_MACHINES.map(m => m.machine_name);
+  document.getElementById('kpi-machines').textContent = machineNames.length;
+
+  // Active defects from ft_defect (Supabase mirror)
+  try {
+    const { data: defects } = await sb
+      .from('ft_defect')
+      .select('*')
+      .in('machine', machineNames)
+      .is('end_date', null);
+
+    const d = defects || [];
+    document.getElementById('kpi-defects').textContent = d.length;
+    document.getElementById('kpi-down').textContent = d.filter(x => (x.defect_type||'').toLowerCase().includes('breakdown') || (x.severity||'').toLowerCase() === 'critical').length;
+
+    // Populate recent defects table
+    const tbody = document.getElementById('dash-defects-body');
+    if (d.length === 0) {
+      tbody.innerHTML = '<tr><td colspan="5" class="loading-row" style="color:#10b981;">✓ No active defects</td></tr>';
+    } else {
+      tbody.innerHTML = d.slice(0,8).map(r => `
+        <tr>
+          <td style="font-weight:600;">${r.machine||'—'}</td>
+          <td>${r.defect_name||r.description||'—'}</td>
+          <td><span class="${sevClass(r.severity)}">${r.severity||'—'}</span></td>
+          <td><span class="status-pill ${statusPill(r.status)}">${r.status||'Open'}</span></td>
+          <td style="color:var(--muted);">${fmtDate(r.start_date||r.creation)}</td>
+        </tr>`).join('');
+    }
+  } catch(e) {
+    document.getElementById('dash-defects-body').innerHTML = `<tr><td colspan="5" class="loading-row">Could not load defects</td></tr>`;
+  }
+
+  // My portal report count
+  try {
+    const { count } = await sb
+      .from('ft_portal_defect_reports')
+      .select('id', { count: 'exact', head: true })
+      .eq('portal_account_id', PORTAL_ACCOUNT.id);
+    document.getElementById('kpi-reports').textContent = count || 0;
+  } catch(e) {}
+}
+
+// ── MACHINES ───────────────────────────────────────────────────────────
+async function loadMachines() {
+  const grid = document.getElementById('machines-grid');
+  grid.innerHTML = '<div class="loading-row" style="grid-column:1/-1;">Loading machines…</div>';
+
+  if (MY_MACHINES.length === 0) {
+    grid.innerHTML = '<div class="empty-state" style="grid-column:1/-1;"><div class="empty-state-icon">🚜</div><div class="empty-state-title">No machines assigned</div><p>Contact your administrator to assign machines to your account.</p></div>';
+    return;
+  }
+
+  // Enrich from ft_machine Supabase table
+  try {
+    const { data: ftMachines } = await sb
+      .from('ft_machine')
+      .select('name,machine_type,status,customer,region,serial_number')
+      .in('name', MY_MACHINES.map(m=>m.machine_name));
+
+    const machMap = {};
+    (ftMachines||[]).forEach(m => machMap[m.name] = m);
+
+    grid.innerHTML = MY_MACHINES.map(m => {
+      const ft = machMap[m.machine_name] || {};
+      const st = ft.status || m.machine_status || 'Unknown';
+      return `
+        <div class="machine-card" onclick="openMachineDetail(${JSON.stringify(m).replace(/"/g,'&quot;')}, ${JSON.stringify(ft).replace(/"/g,'&quot;')})">
+          <div class="machine-card-serial">${ft.serial_number || m.serial_number || 'No Serial'}</div>
+          <div class="machine-card-name">${m.machine_name}</div>
+          <div class="machine-card-meta">
+            <div class="machine-card-row">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="8" width="20" height="13" rx="2"/></svg>
+              ${ft.machine_type || m.machine_type || 'Machine'}
+            </div>
+            <div class="machine-card-row">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/></svg>
+              ${ft.region || m.site_location || '—'}
+            </div>
+            <div style="margin-top:8px;">
+              <span class="status-pill ${statusPillFromStatus(st)}">${st}</span>
+            </div>
+          </div>
+        </div>`;
+    }).join('');
+  } catch(e) {
+    grid.innerHTML = MY_MACHINES.map(m => `
+      <div class="machine-card" onclick="openMachineDetail(${JSON.stringify(m).replace(/"/g,'&quot;')}, {})">
+        <div class="machine-card-serial">${m.serial_number||''}</div>
+        <div class="machine-card-name">${m.machine_name}</div>
+        <div class="machine-card-meta"><span class="status-pill pill-idle">Unknown</span></div>
+      </div>`).join('');
+  }
+}
+
+async function openMachineDetail(assignment, ftData) {
+  document.getElementById('detail-machine-name').textContent = assignment.machine_name;
+  document.getElementById('detail-machine-serial').textContent = 'Serial: ' + (ftData.serial_number || assignment.serial_number || '—');
+  const st = ftData.status || assignment.machine_status || 'Unknown';
+  document.getElementById('detail-status').innerHTML = `<span class="status-pill ${statusPillFromStatus(st)}">${st}</span>`;
+  document.getElementById('detail-last-service').textContent = assignment.last_service_date || '—';
+  document.getElementById('detail-defects-body').innerHTML = '<tr><td colspan="5" class="loading-row">Loading…</td></tr>';
+
+  showScreen('machine-detail');
+
+  // Load defects
+  try {
+    const { data } = await sb
+      .from('ft_defect')
+      .select('*')
+      .eq('machine', assignment.machine_name)
+      .order('creation', { ascending: false });
+
+    document.getElementById('detail-defect-count').textContent = (data||[]).filter(d=>!d.end_date).length;
+
+    const tbody = document.getElementById('detail-defects-body');
+    if (!data || data.length === 0) {
+      tbody.innerHTML = '<tr><td colspan="5" class="loading-row" style="color:#10b981;">✓ No defects on record</td></tr>';
+    } else {
+      tbody.innerHTML = data.map(r => `
+        <tr>
+          <td>${r.defect_name||r.description||'—'}</td>
+          <td style="color:var(--muted);">${r.defect_type||r.category||'—'}</td>
+          <td><span class="${sevClass(r.severity)}">${r.severity||'—'}</span></td>
+          <td style="color:var(--muted);">${fmtDate(r.start_date||r.creation)}</td>
+          <td><span class="status-pill ${statusPill(r.status)}">${r.status||'Open'}</span></td>
+        </tr>`).join('');
+    }
+  } catch(e) {
+    document.getElementById('detail-defects-body').innerHTML = '<tr><td colspan="5" class="loading-row">Could not load defects</td></tr>';
+  }
+}
+
+// ── REPORT DEFECT ──────────────────────────────────────────────────────
+function populateMachineSelect() {
+  const sel = document.getElementById('report-machine');
+  sel.innerHTML = '<option value="">Select a machine…</option>' +
+    MY_MACHINES.map(m => `<option value="${m.machine_name}">${m.machine_name}${m.serial_number?' ('+m.serial_number+')':''}</option>`).join('');
+}
+
+async function submitDefectReport() {
+  const machine     = document.getElementById('report-machine').value;
+  const category    = document.getElementById('report-category').value;
+  const severity    = document.getElementById('report-severity').value;
+  const description = document.getElementById('report-description').value.trim();
+  const operator    = document.getElementById('report-operator').value.trim();
+  const errEl       = document.getElementById('report-error');
+  const successEl   = document.getElementById('report-success');
+  const btn         = document.getElementById('btn-submit-report');
+
+  errEl.style.display = 'none';
+  successEl.style.display = 'none';
+
+  if (!machine || !category || !severity || !description) {
+    errEl.textContent = 'Please fill in all required fields.';
+    errEl.style.display = 'block';
+    return;
+  }
+
+  btn.disabled = true;
+  btn.textContent = 'Submitting…';
+
+  try {
+    const { error } = await sb.from('ft_portal_defect_reports').insert({
+      portal_account_id: PORTAL_ACCOUNT.id,
+      customer_name:     PORTAL_ACCOUNT.customer_name,
+      machine_name:      machine,
+      category,
+      severity,
+      description,
+      operator_name:     operator || null,
+      submitted_by:      PORTAL_ACCOUNT.contact_name || CURRENT_USER.email,
+      status:            'New',
+      created_at:        new Date().toISOString()
+    });
+    if (error) throw error;
+
+    // Reset form
+    document.getElementById('report-machine').value = '';
+    document.getElementById('report-category').value = '';
+    document.getElementById('report-severity').value = '';
+    document.getElementById('report-description').value = '';
+    document.getElementById('report-operator').value = '';
+    successEl.style.display = 'block';
+  } catch(e) {
+    errEl.textContent = e.message || 'Submission failed. Please try again.';
+    errEl.style.display = 'block';
+  } finally {
+    btn.disabled = false;
+    btn.textContent = 'Submit Report';
+  }
+}
+
+// ── MY REPORTS ─────────────────────────────────────────────────────────
+async function loadMyReports() {
+  const tbody = document.getElementById('my-reports-body');
+  tbody.innerHTML = '<tr><td colspan="6" class="loading-row">Loading…</td></tr>';
+  try {
+    const { data, error } = await sb
+      .from('ft_portal_defect_reports')
+      .select('*')
+      .eq('portal_account_id', PORTAL_ACCOUNT.id)
+      .order('created_at', { ascending: false });
+
+    if (!data || data.length === 0) {
+      tbody.innerHTML = '<tr><td colspan="6" class="loading-row">No reports submitted yet.</td></tr>';
+      return;
+    }
+    tbody.innerHTML = data.map(r => `
+      <tr>
+        <td style="font-weight:600;">${r.machine_name||'—'}</td>
+        <td style="color:var(--muted);">${r.category||'—'}</td>
+        <td style="max-width:240px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${r.description||'—'}</td>
+        <td><span class="${sevClass(r.severity)}">${r.severity||'—'}</span></td>
+        <td style="color:var(--muted);">${fmtDate(r.created_at)}</td>
+        <td><span class="status-pill ${statusPill(r.status)}">${r.status||'New'}</span></td>
+      </tr>`).join('');
+  } catch(e) {
+    tbody.innerHTML = `<tr><td colspan="6" class="loading-row">Error: ${e.message}</td></tr>`;
+  }
+}
+
+// ── HELPERS ────────────────────────────────────────────────────────────
+function sevClass(s) {
+  const v = (s||'').toLowerCase();
+  if (v === 'critical') return 'sev-critical';
+  if (v === 'major')    return 'sev-major';
+  return 'sev-minor';
+}
+function statusPill(s) {
+  const v = (s||'').toLowerCase();
+  if (v === 'open' || v === 'new') return 'pill-breakdown';
+  if (v === 'in progress')         return 'pill-service';
+  if (v === 'closed' || v === 'resolved') return 'pill-active';
+  return 'pill-idle';
+}
+function statusPillFromStatus(s) {
+  const v = (s||'').toLowerCase();
+  if (v.includes('breakdown') || v.includes('down')) return 'pill-breakdown';
+  if (v.includes('service'))  return 'pill-service';
+  if (v.includes('active') || v.includes('operational')) return 'pill-active';
+  return 'pill-idle';
+}
+function fmtDate(d) {
+  if (!d) return '—';
+  try { return new Date(d).toLocaleDateString('en-GB', { day:'2-digit', month:'short', year:'numeric' }); }
+  catch(e) { return d; }
+}
+
+// ── RESTORE SESSION ON LOAD ────────────────────────────────────────────
+(async () => {
+  const { data: { session } } = await sb.auth.getSession();
+  if (session) {
+    CURRENT_USER = session.user;
+    try {
+      await loadPortalAccount();
+      showApp();
+    } catch(e) {
+      // Account not found or suspended — stay on login
+    }
+  }
+})();
+</script>
+</body>
+</html>

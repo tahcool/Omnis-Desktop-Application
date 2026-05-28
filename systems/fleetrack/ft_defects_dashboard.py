@@ -3,7 +3,7 @@ import frappe
 
 
 @frappe.whitelist(allow_guest=True)
-def get_ft_defect_summary():
+def get_ft_defect_summary(machine=None):
     """
     API for Omnis Fleetrack dashboard – Defects block.
 
@@ -44,9 +44,10 @@ def get_ft_defect_summary():
     try:
         rows = frappe.db.get_all(
             doctype,
+            filters={"machine": machine} if machine else {},
             fields=fields,
             order_by="creation desc",
-            limit_page_length=200,
+            limit_page_length=5000 if machine else 200,
             ignore_permissions=True,
         )
     except Exception as e:

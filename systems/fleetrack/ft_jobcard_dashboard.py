@@ -201,3 +201,67 @@ def create_ft_job_card(machine, job_description, technician=None, hmr=None):
     except Exception as e:
         frappe.log_error("Create Job Card Failed", str(e))
         return {"error": str(e)}
+
+
+@frappe.whitelist(allow_guest=True)
+def update_jc_status(name, status=None, technician=None, close_date=None):
+    """
+    Update Job Card status and optional technician.
+    Handles the special case of closing (docstatus → 1).
+    """
+    if not name:
+        return {"error": "Job Card name is required"}
+
+    try:
+        doc = frappe.get_doc("FT Job Card", name)
+
+        if technician is not None:
+            doc.technician = technician
+
+        if status:
+            # Store in a status field if it exists, otherwise just track via docstatus
+            if hasattr(doc, "status"):
+                doc.status = status
+            if hasattr(doc, "workflow_state"):
+                try:
+                    doc.workflow_state = status
+                except Exception:
+                    pass
+
+        doc.save(ignore_permissions=True)
+
+        # If closing, try to submit the doc (docstatus=1)
+        if status and status.lower() in ("closed", "completed"):
+            if doc.docstatus == 0:
+                try:
+                    doc.submit()
+                except Exception as sub_err:
+                    # If submit fails (workflow required), just save with status field
+                    frappe.log_error(f"JC submit failed for {name}: {sub_err}")
+
+        frappe.db.commit()
+
+        return {
+            "ok": True,
+            "name": doc.name,
+            "status": getattr(doc, "status", None) or getattr(doc, "workflow_state", None),
+            "docstatus": doc.docstatus
+        }
+
+    except Exception as e:
+        frappe.log_error(f"update_jc_status error for {name}: {str(e)}")
+        return {"error": str(e)}
+
+
+@frappe.whitelist(allow_guest=True)
+def get_jc_status_options():
+    """Return the valid status options for FT Job Card."""
+    try:
+        meta = frappe.get_meta("FT Job Card")
+        for f in meta.fields:
+            if f.fieldname == "status" and f.options:
+                return {"options": [o.strip() for o in f.options.strip().split("\n") if o.strip()]}
+        # Fallback defaults
+        return {"options": ["Draft", "In Progress", "Awaiting Parts", "On Hold", "Completed", "Closed"]}
+    except Exception as e:
+        return {"options": ["Draft", "In Progress", "Awaiting Parts", "On Hold", "Completed", "Closed"], "error": str(e)}

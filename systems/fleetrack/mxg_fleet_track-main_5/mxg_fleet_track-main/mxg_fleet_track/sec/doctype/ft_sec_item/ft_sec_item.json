@@ -1,0 +1,194 @@
+{
+ "actions": [],
+ "allow_import": 1,
+ "allow_rename": 1,
+ "autoname": "format:SEC-{YY}-{MM}{#####}",
+ "creation": "2023-12-07 13:43:28.754742",
+ "default_view": "List",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "in_stock",
+  "section_break_ctnbc",
+  "component_reference",
+  "column_break_hftcj",
+  "part_number",
+  "column_break_fx55d",
+  "item_reference",
+  "column_break_rcjff",
+  "location",
+  "section_break_5ifiy",
+  "oem",
+  "column_break_6vkwn",
+  "serial",
+  "column_break_x46me",
+  "machine_model",
+  "column_break_brvhw",
+  "customer",
+  "section_break_k4blc",
+  "repair_ref"
+ ],
+ "fields": [
+  {
+   "fieldname": "component_reference",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Component Reference",
+   "options": "FT SEC Component",
+   "reqd": 1
+  },
+  {
+   "fetch_from": "component_reference.part_number",
+   "fieldname": "part_number",
+   "fieldtype": "Data",
+   "label": "Part Number",
+   "read_only": 1
+  },
+  {
+   "allow_in_quick_entry": 1,
+   "fieldname": "item_reference",
+   "fieldtype": "Data",
+   "label": "Item Reference"
+  },
+  {
+   "fieldname": "serial",
+   "fieldtype": "Data",
+   "label": "Serial"
+  },
+  {
+   "allow_in_quick_entry": 1,
+   "fieldname": "location",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Location",
+   "options": "FT Location",
+   "reqd": 1
+  },
+  {
+   "allow_in_quick_entry": 1,
+   "fieldname": "machine_model",
+   "fieldtype": "Link",
+   "label": "Machine Model",
+   "options": "FT Machine Model"
+  },
+  {
+   "fieldname": "oem",
+   "fieldtype": "Link",
+   "label": "OEM",
+   "options": "FT Machine OEM"
+  },
+  {
+   "allow_in_quick_entry": 1,
+   "fieldname": "customer",
+   "fieldtype": "Link",
+   "label": "Customer",
+   "options": "FT Customer"
+  },
+  {
+   "fieldname": "section_break_5ifiy",
+   "fieldtype": "Section Break",
+   "label": "Item Details"
+  },
+  {
+   "fieldname": "column_break_hftcj",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "column_break_fx55d",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "column_break_rcjff",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "column_break_6vkwn",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "column_break_x46me",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "column_break_brvhw",
+   "fieldtype": "Column Break"
+  },
+  {
+   "default": "0",
+   "fieldname": "in_stock",
+   "fieldtype": "Check",
+   "label": "In Stock",
+   "read_only": 1
+  },
+  {
+   "fieldname": "section_break_ctnbc",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "section_break_k4blc",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "repair_ref",
+   "fieldtype": "Link",
+   "label": "Repair & Recon Reference",
+   "options": "FT SEC Repair",
+   "read_only": 1
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "links": [],
+ "modified": "2023-12-07 16:31:04.241743",
+ "modified_by": "Administrator",
+ "module": "SEC",
+ "name": "FT SEC Item",
+ "naming_rule": "Expression",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "select": 1,
+   "share": 1,
+   "write": 1
+  },
+  {
+   "create": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "MXG-SEC",
+   "select": 1,
+   "share": 1,
+   "write": 1
+  },
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "MXG-CONTROLLER",
+   "select": 1,
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "quick_entry": 1,
+ "search_fields": "component_reference,location",
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": [],
+ "track_changes": 1
+}

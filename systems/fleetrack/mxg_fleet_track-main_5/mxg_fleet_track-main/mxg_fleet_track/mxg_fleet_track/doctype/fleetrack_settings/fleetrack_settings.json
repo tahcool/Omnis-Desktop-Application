@@ -1,0 +1,232 @@
+{
+ "actions": [],
+ "creation": "2022-10-11 17:16:46.111731",
+ "doctype": "DocType",
+ "document_type": "Other",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "send_ft_report_every",
+  "column_break_2",
+  "send_alert_for_hmr_after",
+  "alerts_on_hours_to_service_section",
+  "quote_alert",
+  "column_break_6",
+  "quote_follow_up_alert",
+  "column_break_7",
+  "maint_warning",
+  "column_break_10",
+  "stop_machine_warning",
+  "internal_section",
+  "srd_customer",
+  "defects_aging_summary_ranges_section",
+  "dasr_1st",
+  "column_break_16",
+  "dasr_2nd",
+  "column_break_18",
+  "dasr_3rd",
+  "column_break_20",
+  "dasr_4th",
+  "breakdown_aging_summary_ranges_section",
+  "basr_1st",
+  "column_break_24",
+  "basr_2nd",
+  "column_break_26",
+  "basr_3rd",
+  "column_break_28",
+  "basr_4th",
+  "auxiliary_screens_section",
+  "aux_pin"
+ ],
+ "fields": [
+  {
+   "fieldname": "send_ft_report_every",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "label": "Send Fleetrack &trade; Report every",
+   "options": "Monday\nTuesday\nWednesday\nThursday\nFriday",
+   "reqd": 1
+  },
+  {
+   "fieldname": "column_break_2",
+   "fieldtype": "Column Break"
+  },
+  {
+   "default": "4 Days",
+   "fieldname": "send_alert_for_hmr_after",
+   "fieldtype": "Select",
+   "label": "Send Alert for HMR after",
+   "options": "1 Day\n2 Days\n3 Days\n4 Days\n5 Days\n6 Days\n7 Days",
+   "reqd": 1
+  },
+  {
+   "collapsible": 1,
+   "fieldname": "alerts_on_hours_to_service_section",
+   "fieldtype": "Section Break",
+   "hide_border": 1,
+   "label": "Alerts on Hours to Service"
+  },
+  {
+   "default": "75",
+   "fieldname": "quote_alert",
+   "fieldtype": "Float",
+   "label": "Quote Alert",
+   "precision": "2"
+  },
+  {
+   "default": "-1",
+   "fieldname": "maint_warning",
+   "fieldtype": "Float",
+   "label": "Maintenance Warning",
+   "precision": "2"
+  },
+  {
+   "fieldname": "column_break_7",
+   "fieldtype": "Column Break"
+  },
+  {
+   "default": "20",
+   "fieldname": "quote_follow_up_alert",
+   "fieldtype": "Float",
+   "label": "Quote Follow-up",
+   "precision": "2"
+  },
+  {
+   "default": "-10",
+   "fieldname": "stop_machine_warning",
+   "fieldtype": "Float",
+   "label": "Stop Machine Warning",
+   "precision": "2"
+  },
+  {
+   "fieldname": "column_break_6",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "column_break_10",
+   "fieldtype": "Column Break"
+  },
+  {
+   "collapsible": 1,
+   "fieldname": "internal_section",
+   "fieldtype": "Section Break",
+   "hide_border": 1,
+   "label": "Internal"
+  },
+  {
+   "fieldname": "srd_customer",
+   "fieldtype": "Link",
+   "label": "Sales & Rental Division",
+   "options": "FT Customer"
+  },
+  {
+   "collapsible": 1,
+   "fieldname": "defects_aging_summary_ranges_section",
+   "fieldtype": "Section Break",
+   "hide_border": 1,
+   "label": "Defects Aging Summary Ranges"
+  },
+  {
+   "default": "15",
+   "fieldname": "dasr_1st",
+   "fieldtype": "Int",
+   "label": "0 -"
+  },
+  {
+   "fieldname": "column_break_16",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "dasr_2nd",
+   "fieldtype": "Int"
+  },
+  {
+   "fieldname": "column_break_18",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "dasr_3rd",
+   "fieldtype": "Int"
+  },
+  {
+   "fieldname": "column_break_20",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "dasr_4th",
+   "fieldtype": "Int"
+  },
+  {
+   "collapsible": 1,
+   "fieldname": "breakdown_aging_summary_ranges_section",
+   "fieldtype": "Section Break",
+   "hide_border": 1,
+   "label": "Breakdown Aging Summary Ranges"
+  },
+  {
+   "fieldname": "basr_1st",
+   "fieldtype": "Int",
+   "label": "0 - "
+  },
+  {
+   "fieldname": "column_break_24",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "basr_2nd",
+   "fieldtype": "Int"
+  },
+  {
+   "fieldname": "column_break_26",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "basr_3rd",
+   "fieldtype": "Int"
+  },
+  {
+   "fieldname": "column_break_28",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "basr_4th",
+   "fieldtype": "Int"
+  },
+  {
+   "collapsible": 1,
+   "fieldname": "auxiliary_screens_section",
+   "fieldtype": "Section Break",
+   "hide_border": 1,
+   "label": "Auxiliary Screens"
+  },
+  {
+   "fieldname": "aux_pin",
+   "fieldtype": "Password",
+   "label": "PIN"
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "issingle": 1,
+ "links": [],
+ "modified": "2022-11-15 22:49:48.026519",
+ "modified_by": "Administrator",
+ "module": "MXG Fleet Track",
+ "name": "Fleetrack Settings",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "print": 1,
+   "read": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "sort_field": "modified",
+ "sort_order": "ASC",
+ "states": [],
+ "track_changes": 1
+}

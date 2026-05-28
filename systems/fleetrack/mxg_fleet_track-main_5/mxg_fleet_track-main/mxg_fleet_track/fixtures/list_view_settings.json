@@ -1,0 +1,101 @@
+[
+ {
+  "disable_auto_refresh": 0,
+  "disable_count": 0,
+  "disable_sidebar_stats": 0,
+  "docstatus": 0,
+  "doctype": "List View Settings",
+  "fields": "[{\"fieldname\":\"description\",\"label\":\"Defect Description\"},{\"fieldname\":\"customer\",\"label\":\"Customer\"},{\"fieldname\":\"machine\",\"label\":\"Machine (S/N)\"},{\"fieldname\":\"model\",\"label\":\"Model\"},{\"fieldname\":\"status_field\",\"label\":\"Status\"},{\"fieldname\":\"priority\",\"label\":\"Priority\"},{\"fieldname\":\"defect_days\",\"label\":\"Defect Days\"},{\"fieldname\":\"start_date\",\"label\":\"Start Date\"}]",
+  "modified": "2022-10-10 19:21:55.182139",
+  "name": "FT Defects Log",
+  "total_fields": "8"
+ },
+ {
+  "disable_auto_refresh": 0,
+  "disable_count": 0,
+  "disable_sidebar_stats": 0,
+  "docstatus": 0,
+  "doctype": "List View Settings",
+  "fields": "[{\"fieldname\":\"model\",\"label\":\"Model\"},{\"fieldname\":\"status_field\",\"label\":\"Status\"},{\"fieldname\":\"customer\",\"label\":\"Customer\"},{\"fieldname\":\"sn\",\"label\":\"SN\"},{\"fieldname\":\"location\",\"label\":\"Location\"},{\"fieldname\":\"hours_remaining_to_service\",\"label\":\"Hours Remaining to Service\"},{\"fieldname\":\"service_obligation\",\"label\":\"Service Obligation\"}]",
+  "modified": "2022-10-16 14:05:00.844005",
+  "name": "FT Machine",
+  "total_fields": "7"
+ },
+ {
+  "disable_auto_refresh": 0,
+  "disable_count": 0,
+  "disable_sidebar_stats": 0,
+  "docstatus": 0,
+  "doctype": "List View Settings",
+  "fields": "[{\"label\":\"ID\",\"fieldname\":\"name\"},{\"label\":\"Module\",\"fieldname\":\"module\"},{\"label\":\"Is Child Table\",\"fieldname\":\"istable\"},{\"label\":\"Naming Rule\",\"fieldname\":\"naming_rule\"}]",
+  "modified": "2022-10-10 00:56:55.743938",
+  "name": "DocType",
+  "total_fields": "4"
+ },
+ {
+  "disable_auto_refresh": 0,
+  "disable_count": 0,
+  "disable_sidebar_stats": 0,
+  "docstatus": 0,
+  "doctype": "List View Settings",
+  "fields": "[{\"fieldname\":\"machine\",\"label\":\"Machine\"},{\"fieldname\":\"model\",\"label\":\"Model\"},{\"fieldname\":\"service_date\",\"label\":\"Service Date\"},{\"fieldname\":\"service_hmr\",\"label\":\"Service HMR\"},{\"fieldname\":\"technician_name\",\"label\":\"Technician Name\"},{\"fieldname\":\"service_type\",\"label\":\"Service Type\"},{\"fieldname\":\"notes\",\"label\":\"Notes/Defects\"}]",
+  "modified": "2022-10-10 13:27:56.111183",
+  "name": "FT Service Log",
+  "total_fields": "7"
+ },
+ {
+  "disable_auto_refresh": 0,
+  "disable_count": 0,
+  "disable_sidebar_stats": 0,
+  "docstatus": 0,
+  "doctype": "List View Settings",
+  "fields": "[{\"label\":\"Machine (S/N)\",\"fieldname\":\"machine\"},{\"label\":\"Model\",\"fieldname\":\"model\"},{\"label\":\"HMR\",\"fieldname\":\"hmr\"},{\"label\":\"Logger\",\"fieldname\":\"logger\"},{\"label\":\"Customer\",\"fieldname\":\"customer\"},{\"label\":\"Reading Date\",\"fieldname\":\"reading_date\"}]",
+  "modified": "2022-10-10 18:57:43.611011",
+  "name": "FT HMR Log",
+  "total_fields": "6"
+ },
+ {
+  "disable_auto_refresh": 0,
+  "disable_count": 0,
+  "disable_sidebar_stats": 0,
+  "docstatus": 0,
+  "doctype": "List View Settings",
+  "fields": "[{\"fieldname\":\"description\",\"label\":\"Breakdown Description\"},{\"fieldname\":\"customer\",\"label\":\"Customer\"},{\"fieldname\":\"machine\",\"label\":\"Machine\"},{\"fieldname\":\"model\",\"label\":\"Model\"},{\"fieldname\":\"days_on_bd\",\"label\":\"Days on BD\"},{\"fieldname\":\"breakdown_date\",\"label\":\"Breakdown Start Date\"},{\"fieldname\":\"status\",\"label\":\"Status\"}]",
+  "modified": "2022-10-10 19:04:38.697073",
+  "name": "FT Breakdown Log",
+  "total_fields": "7"
+ },
+ {
+  "disable_auto_refresh": 0,
+  "disable_count": 0,
+  "disable_sidebar_stats": 0,
+  "docstatus": 0,
+  "doctype": "List View Settings",
+  "fields": "[{\"fieldname\":\"name\",\"label\":\"ID\"},{\"fieldname\":\"alert_type\",\"label\":\"Alert Type\"},{\"fieldname\":\"date_issued\",\"label\":\"Date Issued\"},{\"fieldname\":\"machine\",\"label\":\"Machine\"},{\"fieldname\":\"model\",\"label\":\"Model\"},{\"fieldname\":\"status\",\"label\":\"Status\"},{\"fieldname\":\"on_service_type\",\"label\":\"Service Type\"},{\"fieldname\":\"quote_no\",\"label\":\"Quote No\"}]",
+  "modified": "2022-10-12 18:07:32.969974",
+  "name": "FT Alert",
+  "total_fields": "8"
+ },
+ {
+  "disable_auto_refresh": 0,
+  "disable_count": 0,
+  "disable_sidebar_stats": 0,
+  "docstatus": 0,
+  "doctype": "List View Settings",
+  "fields": "[{\"fieldname\":\"name\",\"label\":\"ID\"},{\"fieldname\":\"component_name\",\"label\":\"Component Name\"},{\"fieldname\":\"ref\",\"label\":\"Ref\"},{\"fieldname\":\"location\",\"label\":\"Location\"},{\"fieldname\":\"customer\",\"label\":\"Customer\"},{\"fieldname\":\"part_no\",\"label\":\"Part No.\"},{\"fieldname\":\"machine_model\",\"label\":\"Machine Model\"}]",
+  "modified": "2023-04-06 09:45:12.856012",
+  "name": "SEC Item",
+  "total_fields": "9"
+ },
+ {
+  "disable_auto_refresh": 0,
+  "disable_count": 0,
+  "disable_sidebar_stats": 0,
+  "docstatus": 0,
+  "doctype": "List View Settings",
+  "fields": "[{\"fieldname\":\"name\",\"label\":\"ID\"},{\"fieldname\":\"description\",\"label\":\"Description\"},{\"fieldname\":\"job_number\",\"label\":\"Job Number\"},{\"fieldname\":\"technician_assigned\",\"label\":\"Technician Assigned\"},{\"fieldname\":\"sec_item_no\",\"label\":\"SEC Item No.\"},{\"fieldname\":\"customer\",\"label\":\"Customer\"},{\"fieldname\":\"date_logged\",\"label\":\"Date Logged\"},{\"fieldname\":\"status\",\"label\":\"Status\"}]",
+  "modified": "2023-04-06 10:23:42.549457",
+  "name": "SEC Repair Log Entry",
+  "total_fields": "9"
+ }
+]

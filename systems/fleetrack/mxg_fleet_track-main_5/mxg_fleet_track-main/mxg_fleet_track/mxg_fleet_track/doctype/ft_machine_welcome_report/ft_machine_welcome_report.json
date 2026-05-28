@@ -1,0 +1,111 @@
+{
+ "actions": [],
+ "allow_import": 1,
+ "allow_rename": 1,
+ "autoname": "format:{machine}",
+ "creation": "2023-11-05 12:49:54.335327",
+ "default_view": "List",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "sn",
+  "column_break_91kxh",
+  "machine",
+  "column_break_k1zl7",
+  "customer",
+  "column_break_lkiew"
+ ],
+ "fields": [
+  {
+   "fetch_from": "machine.sn",
+   "fieldname": "sn",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "SN",
+   "read_only": 1
+  },
+  {
+   "fieldname": "machine",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Machine",
+   "options": "FT Machine",
+   "reqd": 1
+  },
+  {
+   "fieldname": "column_break_k1zl7",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fetch_from": "machine.customer",
+   "fieldname": "customer",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "Customer",
+   "options": "FT Customer",
+   "read_only": 1
+  },
+  {
+   "fieldname": "column_break_91kxh",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "column_break_lkiew",
+   "fieldtype": "Column Break"
+  }
+ ],
+ "hide_toolbar": 1,
+ "in_create": 1,
+ "index_web_pages_for_search": 1,
+ "links": [],
+ "modified": "2023-12-01 21:00:12.868462",
+ "modified_by": "Administrator",
+ "module": "MXG Fleet Track",
+ "name": "FT Machine Welcome Report",
+ "naming_rule": "Expression",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "MXG-CONTROLLER",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "create": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "MXG-STANDARD",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": [],
+ "track_changes": 1
+}

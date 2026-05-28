@@ -1,0 +1,51 @@
+name: Deploy to Frampol Server
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    env:
+      FLEETRACK_HOST: ${{ secrets.FLEETRACK_HOST }}
+      FLEETRACK_USERNAME: ${{ secrets.FLEETRACK_USERNAME }}
+      FLEETRACK_PASSWORD: ${{ secrets.FLEETRACK_PASSWORD }}
+      FORTINET_VPN_SERVER: ${{ secrets.FORTINET_VPN_SERVER }}
+      FORTINET_CERT_THUMBPRINT: ${{ secrets.FORTINET_CERT_THUMBPRINT }}
+      FORTINET_VPN_PORT: ${{ secrets.FORTINET_VPN_PORT }}
+      FORTINET_VPN_USERNAME: ${{ secrets.FORTINET_VPN_USERNAME }}
+      FORTINET_VPN_PASSWORD: ${{ secrets.FORTINET_VPN_PASSWORD }}
+      FORITNET_VPN_SLEEP_TIME: ${{ secrets.FORITNET_VPN_SLEEP_TIME }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Install Fortinet VPN client
+        run: sudo apt-get install openfortivpn -y
+
+      - name: Connect to Frampol VPN
+        run: |
+          sudo openfortivpn $FORTINET_VPN_SERVER:$FORTINET_VPN_PORT --username=$FORTINET_VPN_USERNAME --password=$FORTINET_VPN_PASSWORD --trusted-cert=$FORTINET_CERT_THUMBPRINT > fortinet.log >&1 &
+          while true; do
+              if grep -q "Tunnel is up and running" fortinet.log; then
+                  break
+              fi
+              sleep 1
+          done
+
+      - name: Test if connected to VPN
+        run: ping -c4 $FLEETRACK_HOST
+
+      - name: Deploy Latest Build
+        uses: appleboy/ssh-action@master
+        with:
+          host: ${{ secrets.FLEETRACK_HOST }}
+          key: ${{ secrets.FLEETRACK_KEY }}
+          username: ${{ secrets.FLEETRACK_USERNAME }}
+          password: ${{ secrets.FLEETRACK_PASSWORD }}
+          script: |
+            cd $HOME/frappe-bench && cd apps/mxg_fleet_track && git pull && cp -f mxg_fleet_track/pdf.py $HOME/frappe-bench/apps/frappe/frappe/utils/pdf.py && $HOME/frappe-bench/env/bin/python3 -m pip install -r requirements.txt && bench migrate && bench clear-cache && bench restart

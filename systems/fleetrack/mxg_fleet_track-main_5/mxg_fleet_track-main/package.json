@@ -1,0 +1,14 @@
+{
+  "name": "mxg_fleet_track",
+  "version": "1.0.0",
+  "description": "STS & EPR",
+  "scripts": {
+    "watch": "npx tailwindcss -i ./mxg_fleet_track/public/css/tw.css -o ./mxg_fleet_track/public/css/tailwind.css --watch",
+    "build": "npx tailwindcss build -i ./mxg_fleet_track/public/css/tw.css -o ./mxg_fleet_track/public/css/tailwind.css"
+  },
+  "author": "Percival Rapha",
+  "license": "ISC",
+  "devDependencies": {
+    "tailwindcss": "^3.3.5"
+  }
+}

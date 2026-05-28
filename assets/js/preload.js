@@ -29,6 +29,7 @@ contextBridge.exposeInMainWorld("settingsAPI", {
 
 contextBridge.exposeInMainWorld("frappeAPI", {
   request: (options) => ipcRenderer.invoke("frappe:request", options),
+  downloadFile: (url) => ipcRenderer.invoke("frappe:downloadFile", { url }),
   getCached: (table) => ipcRenderer.invoke("cache:getAll", table),
   setCached: (table, data) => ipcRenderer.invoke("cache:set", { table, data }),
   minimize: () => ipcRenderer.invoke("window:minimize"),

@@ -150,6 +150,7 @@ __all__ = [
     "get_omnis_group_sales",       # ✅ ADDED
     "get_group_sales_list",       # ✅ ADDED for SalesTrack frontend
     "save_group_sales",           # ✅ ADDED for SalesTrack frontend
+    "delete_group_sale",          # ✅ ADDED for SalesTrack frontend
     "get_omnis_orders_kpi",        # ✅ ADDED
     "get_omnis_quotations_kpi",    # ✅ ADDED
     "get_omnis_enquiries_kpi",     # ✅ ADDED
@@ -172,6 +173,11 @@ __all__ = [
     "upload_machine_image",        # ✅ ADDED
     "update_customer_phone_omnis", # ✅ ADDED
     "trigger_password_reset",      # ✅ ADDED
+    "get_customer_quotes",          # ✅ ADDED — Customer Profile Panel
+    "get_oem_summary",              # ✅ ADDED — OEM period filter
+    "get_dashboard_kpis",           # ✅ ADDED — New dashboard stage 1
+    "get_dashboard_charts",         # ✅ ADDED — New dashboard stage 2
+    "get_dashboard_lists",          # ✅ ADDED — New dashboard stage 3
 ]
 
 
@@ -1709,21 +1715,27 @@ def _trigger_fmb_entry_from_sale(sale_doc, original_user=None):
 @frappe.whitelist(allow_guest=True, methods=["POST"])
 def save_group_sales(payload=None, **kwargs):
     """
-    Saves a new Group Sales record.
-    Expected Fields: customer, order_date, committed_lead_time, oem, 
+    Creates or updates a Group Sales record.
+    If 'name' is provided and the record exists, it will be updated (edit mode).
+    Expected Fields: customer, order_date, committed_lead_time, oem,
     machine_condition, model, qty, customer_status, sector, salesperson, company, comments.
     """
     params = extract_params(payload=payload, **kwargs)
-    
+
     if not params.get("customer"):
         return {"ok": False, "error": "Customer is required."}
 
     previous_user = frappe.session.user
     frappe.set_user("Administrator")
     try:
-        doc = frappe.new_doc("Group Sales")
+        edit_name = (params.get("name") or "").strip()
+        if edit_name and frappe.db.exists("Group Sales", edit_name):
+            doc = frappe.get_doc("Group Sales", edit_name)
+        else:
+            doc = frappe.new_doc("Group Sales")
+
         actual_cols = frappe.db.get_table_columns("Group Sales")
-        
+
         # Core standard fields
         data_to_set = {
             "customer": params.get("customer"),
@@ -1736,31 +1748,33 @@ def save_group_sales(payload=None, **kwargs):
             "company": params.get("company"),
             "comments": params.get("comments")
         }
-        
+
         # Handle qty vs quantity
         if "qty" in actual_cols:
             data_to_set["qty"] = frappe.utils.cint(params.get("qty") or 1)
         elif "quantity" in actual_cols:
             data_to_set["quantity"] = frappe.utils.cint(params.get("qty") or 1)
-            
+
         # Handle model vs item
         if "model" in actual_cols:
             data_to_set["model"] = params.get("model")
         elif "item" in actual_cols:
             data_to_set["item"] = params.get("model")
-            
+
         # Handle oem vs brand
         if "oem" in actual_cols:
             data_to_set["oem"] = params.get("oem")
         elif "brand" in actual_cols:
             data_to_set["brand"] = params.get("brand") or params.get("oem")
-            
+
         doc.update(data_to_set)
-        doc.insert(ignore_permissions=True)
-        
-        # ✅ AUTOMATION: Trigger FMB (Order Tracking) Entry creation automatically
-        _trigger_fmb_entry_from_sale(doc, original_user=previous_user)
-        
+
+        if doc.is_new():
+            doc.insert(ignore_permissions=True)
+            _trigger_fmb_entry_from_sale(doc, original_user=previous_user)
+        else:
+            doc.save(ignore_permissions=True)
+
         frappe.db.commit()
         return {"ok": True, "name": doc.name}
     except Exception as e:
@@ -4584,6 +4598,56 @@ def get_dashboard_kpis(period="This Year", payload=None):
             orders_machines_total = 0
             current_orders_count = 1
 
+        # Company sales (for immediate KPI card rendering in Stage 1)
+        today_date_kpi = getdate(nowdate())
+        s_year_kpi = str(today_date_kpi.replace(month=1, day=1))
+        s_this_kpi = str(get_first_day(today_date_kpi))
+        e_this_kpi = str(get_last_day(today_date_kpi))
+        days_elapsed_kpi = today_date_kpi.day
+        days_in_month_kpi = (get_last_day(today_date_kpi) - get_first_day(today_date_kpi)).days + 1
+        company_sales_kpi = {}
+        try:
+            ytd_kpi = frappe.db.sql("""
+                SELECT company, item, SUM(qty) AS total
+                FROM `tabGroup Sales`
+                WHERE docstatus < 2 AND order_date BETWEEN %s AND %s
+                GROUP BY company, item
+            """, (s_year_kpi, e_this_kpi), as_dict=True)
+            for r in ytd_kpi:
+                c = r.company or "Unknown"
+                if c not in company_sales_kpi:
+                    company_sales_kpi[c] = {"mtd": 0, "ytd": 0, "breakdown": [],
+                                            "days_elapsed": days_elapsed_kpi,
+                                            "days_in_month": days_in_month_kpi, "quotes": 0}
+                company_sales_kpi[c]["ytd"] += float(r.total or 0)
+                existing = next((b for b in company_sales_kpi[c]["breakdown"] if b["model"] == r.item), None)
+                if existing:
+                    existing["qty"] += float(r.total or 0)
+                else:
+                    company_sales_kpi[c]["breakdown"].append({"model": r.item, "qty": float(r.total or 0)})
+            mtd_kpi = frappe.db.sql("""
+                SELECT company, SUM(qty) AS total
+                FROM `tabGroup Sales`
+                WHERE docstatus < 2 AND order_date BETWEEN %s AND %s
+                GROUP BY company
+            """, (s_this_kpi, e_this_kpi), as_dict=True)
+            for r in mtd_kpi:
+                c = r.company or "Unknown"
+                if c in company_sales_kpi:
+                    company_sales_kpi[c]["mtd"] = float(r.total or 0)
+            # Inject targets
+            for c in company_sales_kpi:
+                c_up = c.upper()
+                if "SINO" in c_up or "POWER" in c_up:
+                    company_sales_kpi[c]["mtd_target"] = 16
+                elif "MACH" in c_up or "EXCHANGE" in c_up:
+                    company_sales_kpi[c]["mtd_target"] = 18
+                else:
+                    company_sales_kpi[c]["mtd_target"] = 10
+                company_sales_kpi[c]["ytd_target"] = company_sales_kpi[c]["mtd_target"] * 12
+        except Exception:
+            pass
+
         kpis = {
             "active_customers_total": active_customers_total,
             "quotations_total": quotations_total,
@@ -4593,7 +4657,8 @@ def get_dashboard_kpis(period="This Year", payload=None):
             "orders_overdue": orders_overdue,
             "orders_machines_total": orders_machines_total,
             "current_orders": current_orders_count,
-            "leadtime_recommendation": "" # Deprecated/Empty for speed
+            "leadtime_recommendation": "", # Deprecated/Empty for speed
+            "company_sales": company_sales_kpi,
         }
         
         frappe.cache().set_value(cache_key, frappe.as_json(kpis), expires_in_sec=300)
@@ -4728,7 +4793,9 @@ def get_dashboard_charts(period="This Year", payload=None):
                 oem_stats_map[oem] = {"oem": oem, "sales": 0, "quotes": 0, "top_bought": {}, "top_quoted": {}}
             oem_stats_map[oem]["sales"] += q
             oem_stats_map[oem]["top_bought"][r.model] = oem_stats_map[oem]["top_bought"].get(r.model, 0) + q
-            
+            # — per-model sales
+            ms_map = oem_stats_map[oem].setdefault("model_sales", {})
+            ms_map[r.model] = ms_map.get(r.model, 0) + q
             if r.company not in company_sales:
                 company_sales[r.company] = {"ytd": 0.0, "mtd": 0.0, "breakdown": {}}
             company_sales[r.company]["ytd"] += q
@@ -4745,6 +4812,9 @@ def get_dashboard_charts(period="This Year", payload=None):
                 oem_stats_map[oem] = {"oem": oem, "sales": 0, "quotes": 0, "top_bought": {}, "top_quoted": {}}
             oem_stats_map[oem]["quotes"] += q
             oem_stats_map[oem]["top_quoted"][r.model] = oem_stats_map[oem]["top_quoted"].get(r.model, 0) + q
+            # — per-model quotes
+            mq_map = oem_stats_map[oem].setdefault("model_quotes", {})
+            mq_map[r.model] = mq_map.get(r.model, 0) + q
 
         top_items = sorted([{"item_name": k, "total_qty": v} for k, v in top_items_map.items()], key=lambda x: x["total_qty"], reverse=True)[:5]
         hot_customers = sorted([{"customer_name": k, "total_value": v} for k, v in hot_cust_map.items()], key=lambda x: x["total_value"], reverse=True)[:5]
@@ -4757,27 +4827,64 @@ def get_dashboard_charts(period="This Year", payload=None):
             
             most_bought = max(v["top_bought"], key=v["top_bought"].get) if v["top_bought"] else "N/A"
             most_quoted = max(v["top_quoted"], key=v["top_quoted"].get) if v["top_quoted"] else "N/A"
-            
+
+            import math  # ensure available for both models block and velocity block below
+
+            # ── Per-model stats ─────────────────────────────────────────────
+            model_sales_map  = v.get("model_sales", {})
+            model_quotes_map = v.get("model_quotes", {})
+            all_model_names  = set(list(model_sales_map.keys()) + list(model_quotes_map.keys()))
+
+            raw_models = []
+            for model_name in all_model_names:
+                ms = model_sales_map.get(model_name, 0)
+                mq = model_quotes_map.get(model_name, 0)
+                mv = ms / max(1, months_in_period)
+                raw_models.append({
+                    "model": model_name,
+                    "sales": int(ms),
+                    "quotes": int(mq),
+                    "monthly_velocity": round(mv, 1),
+                    "suggested_order": math.ceil(mv * 1.5),
+                })
+
+            # Movement score: 1–5 dots relative to brand’s top model
+            max_mv = max((m["monthly_velocity"] for m in raw_models), default=0.01) or 0.01
+            for m in raw_models:
+                score = round((m["monthly_velocity"] / max_mv) * 5)
+                m["movement_score"] = max(1, min(5, score)) if m["monthly_velocity"] > 0 else 0
+
+            models = sorted(raw_models, key=lambda x: x["sales"], reverse=True)
+            # ────────────────────────────────────────────────────────────
+
             # Recommended Stock Logic
-            import math
             velocity = v["sales"] / max(1, months_in_period)
             suggested_batch = math.ceil(velocity * 1.5) # 1.5 months supply
             recommended = math.ceil(v["sales"] + (v["quotes"] * 0.25))
             
             enriched_oem_stats.append({
                 "oem": k,
-                "total_qty": v["sales"], # Maintain backwards compatibility for doughnut chart
+                "total_qty": v["sales"],  # backwards compat for doughnut chart
                 "sales": v["sales"],
                 "quotes": v["quotes"],
                 "most_bought": most_bought,
                 "most_quoted": most_quoted,
                 "monthly_velocity": round(velocity, 1),
                 "suggested_order": suggested_batch,
-                "recommended_stock": recommended
+                "recommended_stock": recommended,
+                "models": models,  # ✔ per-model breakdown
             })
             
         oem_sales = sorted(enriched_oem_stats, key=lambda x: x["total_qty"], reverse=True)
-        
+
+        # Days pace helper — computed once, injected into every company record
+        from frappe.utils import now_datetime, get_first_day, get_last_day
+        _today_dt       = now_datetime().date()
+        _first_of_month = get_first_day(_today_dt)
+        _last_of_month  = get_last_day(_today_dt)
+        _days_elapsed   = (_today_dt - _first_of_month).days + 1
+        _days_in_month  = (_last_of_month - _first_of_month).days + 1
+
         for c in company_sales:
             comp = company_sales[c]
             comp["breakdown"] = [{"model": k, "qty": v} for k, v in comp["breakdown"].items()]
@@ -4789,6 +4896,19 @@ def get_dashboard_charts(period="This Year", payload=None):
             # 🧪 DIAGNOSTIC FORCE: If Sinopower, force to 50 to test rendering
             if k == "SINO":
                 comp["quotes"] = 50.0
+
+            # ── Targets per company (unit-based, not revenue) ──
+            if "SINO" in c_up or "POWER" in c_up:
+                comp["mtd_target"] = 16   # Sinopower monthly target
+            elif "MACH" in c_up or "EXCHANGE" in c_up:
+                comp["mtd_target"] = 18   # Machinery Exchange monthly target
+            else:
+                comp["mtd_target"] = 10   # Default for any other entity
+
+            comp["ytd_target"] = comp["mtd_target"] * 12   # Annual = monthly × 12
+            comp["days_elapsed"]  = _days_elapsed
+            comp["days_in_month"] = _days_in_month
+
 
         res_data = {
             "orders_at_risk": orders_at_risk,
@@ -5526,7 +5646,7 @@ def get_eff_final_v10(payload=None, **kwargs):
             label = f"{today.strftime('%B')} [{debug_ts}]"
 
         # 3. Dynamic SQL Filtering (Company & Dates)
-        where_clauses = ["f.docstatus < 2", "m.actual_handover_date IS NOT NULL", "m.actual_handover_date != ''"]
+        where_clauses = ["f.docstatus < 2", "m.actual_handover_date IS NOT NULL", "m.actual_handover_date != ''", "m.target_handover_date IS NOT NULL", "m.target_handover_date != ''"]
         args = []
 
         if start_date and end_date:
@@ -5554,7 +5674,7 @@ def get_eff_final_v10(payload=None, **kwargs):
                 f.customer_name as customer,
                 m.item as machine,
                 i.brand as brand,
-                COALESCE(m.revised_handover_date, m.target_handover_date) as target_date,
+                m.target_handover_date as target_date,
                 m.actual_handover_date as actual_date,
                 m.qty,
                 f.name as report_id
@@ -6007,7 +6127,6 @@ def update_order_details_v2(payload=None, **kwargs):
         
         # frappe.log_error(f"Save Order Payload: MACHINES={machines} STATUS={status}", "Omnis Update Debug")
         log_debug(f"Payload: status={status}, machines={machines}")
-            except: return []
 
         # 1. Load the main document
         doc = frappe.get_doc("FMB Report", report_id)
@@ -6015,6 +6134,28 @@ def update_order_details_v2(payload=None, **kwargs):
         # 2. Update Status
         if status:
             doc.status = status
+
+        # Helper: resolve item code from display name or code
+        def resolve_item_code(raw_val, fallback_code=None):
+            if not raw_val:
+                return fallback_code
+            raw_val = str(raw_val).strip()
+            # 1. Direct match (item code)
+            if frappe.db.exists("Item", raw_val):
+                return raw_val
+            # 2. Try matching by item_name (exact)
+            found = frappe.db.get_value("Item", {"item_name": raw_val}, "name")
+            if found:
+                return found
+            # 3. Case-insensitive partial item_name match
+            result = frappe.db.sql(
+                "SELECT name FROM `tabItem` WHERE LOWER(item_name) = LOWER(%s) LIMIT 1",
+                (raw_val,), as_dict=True
+            )
+            if result:
+                return result[0]["name"]
+            # 4. Keep fallback so we don't blank out an existing code
+            return fallback_code or raw_val
 
         # 3. Handle Existing Machines Update
         machines_list = safe_json_decode(machines_raw)
@@ -6025,11 +6166,13 @@ def update_order_details_v2(payload=None, **kwargs):
                 # Find matching row in doc
                 for row in doc.machines:
                     if row.name == m_id:
-                        if "item" in m: row.item = m["item"]
+                        if "item" in m:
+                            row.item = resolve_item_code(m["item"], fallback_code=row.item)
                         if "serial_no" in m: row.serial_no = m["serial_no"]
                         if "qty" in m: row.qty = m["qty"]
                         if "target_handover_date" in m: row.target_handover_date = m["target_handover_date"] or None
                         if "revised_handover_date" in m: row.revised_handover_date = m["revised_handover_date"] or None
+                        if "actual_handover_date" in m: row.actual_handover_date = m["actual_handover_date"] or None
                         if "notes" in m: row.notes = m["notes"]
                         if "images_one" in m: row.images_one = m["images_one"]
                         if "image_two" in m: row.image_two = m["image_two"]
@@ -6040,12 +6183,15 @@ def update_order_details_v2(payload=None, **kwargs):
         if new_machines_list:
             for nm in new_machines_list:
                 if not nm.get("item"): continue
+                resolved_item = resolve_item_code(nm.get("item"))
+                if not resolved_item: continue
                 doc.append("machines", {
-                    "item": nm.get("item"),
+                    "item": resolved_item,
                     "qty": nm.get("qty") or 1,
                     "serial_no": nm.get("serial_no"),
                     "target_handover_date": nm.get("target_handover_date") or None,
                     "revised_handover_date": nm.get("revised_handover_date") or None,
+                    "actual_handover_date": nm.get("actual_handover_date") or None,
                     "notes": nm.get("notes"),
                     "images_one": nm.get("images_one"),
                     "image_two": nm.get("image_two")
@@ -6165,6 +6311,8 @@ def send_order_email_update(payload=None, **kwargs):
                 "revised_handover_date":getattr(m, "revised_handover_date", None),
                 "actual_handover_date": getattr(m, "actual_handover_date", None),
                 "notes":                getattr(m, "notes", "") or "",
+                "images_one":           getattr(m, "images_one", "") or "",
+                "image_two":            getattr(m, "image_two", "") or "",
             })
 
         # ── Column detection (match Jinja template logic) ───────────────────
@@ -6192,24 +6340,18 @@ def send_order_email_update(payload=None, **kwargs):
             brand_colour  = "#7b1515"
             brand_name    = "Sinopower"
             
-            # --- TESTING MODE ---
             cc_list = [
                 "takunda@industrial-exchange.group",
+                "antony@industrial-exchange.group",
+                "logistics@sinopower.co.zw",
+                "brett@sinopower.co.zw",
+                "trucks@sinopower.co.zw",
                 "rutendo@industrial-exchange.group",
-                "omnis@industrial-exchange.group"
+                "louis@industrial-exchange.group",
+                "mathew@industrial-exchange.group",
+                "barry@industrial-exchange.group",
+                "brendan@industrial-exchange.group"
             ]
-            # --- ORIGINAL SINOPOWER LIST ---
-            # cc_list = [
-            #     "takunda@industrial-exchange.group",
-            #     "antony@industrial-exchange.group",
-            #     "logistics@sinopower.co.zw",
-            #     "brett@sinopower.co.zw",
-            #     "trucks@sinopower.co.zw",
-            #     "rutendo@industrial-exchange.group",
-            #     "louis@industrial-exchange.group",
-            #     "mathew@industrial-exchange.group",
-            #     "barry@industrial-exchange.group"
-            # ]
         else:
             contact_name  = "Chetan Samji"
             contact_title = "Commercial Manager"
@@ -6217,25 +6359,19 @@ def send_order_email_update(payload=None, **kwargs):
             brand_colour  = "#c92222"
             brand_name    = "Machinery Exchange"
 
-            # --- TESTING MODE ---
             cc_list = [
                 "takunda@industrial-exchange.group",
+                "antony@industrial-exchange.group",
+                "sales.humphrey@machinery-exchange.com",
+                "chetan.samji@machinery-exchange.com",
+                "equipment@machinery-exchange.com",
+                "sales@machinery-exchange.com",
+                "robin.hunter@machinery-exchange.com",
                 "rutendo@industrial-exchange.group",
-                "omnis@industrial-exchange.group"
+                "mathew@industrial-exchange.group",
+                "barry@industrial-exchange.group",
+                "brendan@industrial-exchange.group"
             ]
-            # --- ORIGINAL MXG LIST ---
-            # cc_list = [
-            #     "takunda@industrial-exchange.group",
-            #     "antony@industrial-exchange.group",
-            #     "sales.humphrey@machinery-exchange.com",
-            #     "chetan.samji@machinery-exchange.com",
-            #     "equipment@machinery-exchange.com",
-            #     "sales@machinery-exchange.com",
-            #     "robin.hunter@machinery-exchange.com",
-            #     "rutendo@industrial-exchange.group",
-            #     "mathew@industrial-exchange.group",
-            #     "barry@industrial-exchange.group"
-            # ]
 
         # ── Date formatter ──────────────────────────────────────────────────
         def fmt(d):
@@ -6292,7 +6428,8 @@ def send_order_email_update(payload=None, **kwargs):
             for i, m in enumerate(machines):
                 bg = "#f5fafd" if i % 2 == 0 else "#ffffff"
                 serial_div = f'<div style="color:#64748b; font-size:13px; margin-top:4px;">Serial: {m["serial_no"]}</div>' if (show_serial and m["serial_no"]) else ""
-                row = f'<td style="padding:14px 18px; font-size:15px; color:#0f172a; font-weight:600;"><strong>{m["item"]}</strong>{serial_div}</td>'
+                img_html = m.get("_img_html", "")
+                row = f'<td style="padding:14px 18px; font-size:15px; color:#0f172a; font-weight:600;"><strong>{m["item"]}</strong>{serial_div}{img_html}</td>'
                 if show_qty:       row += td(m["qty"] or "", "center")
                 if show_status:    row += td(getattr(doc, "status_issue", "") or "")
                 if show_prod_comp: row += td(fmt(getattr(doc, "production_completion_date", None)), "center", True)
@@ -6313,6 +6450,72 @@ def send_order_email_update(payload=None, **kwargs):
         subject    = f"Order Status Report \u2014 {doc.customer_name or ''}"
         greeting_name = recipient_name if (recipient_name and recipient_name != "Customer") else (doc.customer_name or "Customer")
 
+        # ── Load logo for CID inline attachment (works in Outlook + all clients) ──
+        import os
+        _logo_path = os.path.join(
+            os.path.dirname(os.path.abspath(__file__)),
+            "assets", "images", "omnis-logo-white.png"
+        )
+        _logo_bytes = None
+        try:
+            with open(_logo_path, "rb") as _f:
+                _logo_bytes = _f.read()
+        except Exception:
+            pass
+
+        _logo_img_tag = '<img src="cid:omnis-logo" alt="Omnis" height="40" style="display:block; height:40px; width:auto; max-width:160px;">' if _logo_bytes else ''
+
+        # ── Load machine images as CID attachments ───────────────────────────
+        _inline_images = []
+        if _logo_bytes:
+            _inline_images.append({
+                "filename": "omnis-logo-white.png",
+                "filecontent": _logo_bytes,
+                "content_id": "omnis-logo"
+            })
+
+        def _load_machine_img(file_url, cid):
+            """Read a Frappe-stored file and return bytes, or None on failure."""
+            if not file_url:
+                return None
+            try:
+                site_path = frappe.get_site_path()
+                # Strip leading slash and resolve to site public/private files
+                rel = file_url.lstrip("/")
+                # Try public files first, then private
+                for base in [os.path.join(site_path, "public"), os.path.join(site_path, "private")]:
+                    full = os.path.join(base, rel)
+                    if os.path.exists(full):
+                        with open(full, "rb") as f:
+                            return f.read()
+                # Also try direct path if it looks absolute
+                if os.path.exists(file_url):
+                    with open(file_url, "rb") as f:
+                        return f.read()
+            except Exception:
+                pass
+            return None
+
+        # Attach machine images and build img tags per machine
+        for i, m in enumerate(machines):
+            img_tags = []
+            for field, suffix in [("images_one", "a"), ("image_two", "b")]:
+                url = m.get(field, "")
+                if url:
+                    cid = f"mach-img-{i}-{suffix}"
+                    ext = os.path.splitext(url)[-1].lower() or ".jpg"
+                    mime = "image/png" if ext == ".png" else "image/jpeg"
+                    img_bytes = _load_machine_img(url, cid)
+                    if img_bytes:
+                        _inline_images.append({
+                            "filename": f"{cid}{ext}",
+                            "filecontent": img_bytes,
+                            "content_id": cid
+                        })
+                        img_tags.append(f'<img src="cid:{cid}" style="width:120px; height:90px; object-fit:cover; border-radius:6px; margin-top:8px; margin-right:4px; display:inline-block;">')
+            m["_img_html"] = "".join(img_tags)
+
+
         email_html = f"""<!DOCTYPE html>
 <html><head><meta charset="utf-8"></head>
 <body style="margin:0; padding:20px; font-family:Arial,'Helvetica Neue',sans-serif; background:#f0f4f8;">
@@ -6321,12 +6524,16 @@ def send_order_email_update(payload=None, **kwargs):
   <!-- Brand Header -->
   <table style="width:100%; border-collapse:collapse; background:{brand_colour};" cellpadding="0" cellspacing="0">
     <tr>
-      <td style="padding:24px 28px;">
+      <td style="padding:20px 28px; width:50%; vertical-align:middle;">
+        {_logo_img_tag}
+      </td>
+      <td style="padding:20px 28px; width:50%; vertical-align:middle; text-align:right;">
         <div style="font-size:20px; font-weight:800; color:#ffffff; letter-spacing:-0.3px;">{brand_name}</div>
         <div style="font-size:12px; color:rgba(255,255,255,0.75); margin-top:4px; text-transform:uppercase; letter-spacing:0.06em;">Equipment Order Status Report</div>
       </td>
     </tr>
   </table>
+
 
   <!-- Greeting -->
   <div style="padding:24px 28px 12px;">
@@ -6376,7 +6583,8 @@ def send_order_email_update(payload=None, **kwargs):
             now=True,
             expose_recipients="header",
             with_container=False,
-            add_unsubscribe_link=False
+            add_unsubscribe_link=False,
+            inline_images=_inline_images if _inline_images else None
         )
 
         # Log comment on the doc
@@ -7305,18 +7513,26 @@ def delete_stock_pipeline(payload=None, **kwargs):
 
 
 @frappe.whitelist(allow_guest=True)
-def delete_group_sale(name):
+def delete_group_sale(payload=None, **kwargs):
     """Securely deletes a Group Sale entry."""
-    if not name: return {"ok": False, "error": "Missing name"}
-    
+    # Try plain form_dict first (direct FormData POST), then encoded payload
+    name = (frappe.form_dict.get("name") or "").strip()
+    if not name:
+        params = extract_params(payload=payload, **kwargs)
+        name = (params.get("name") or "").strip()
+    if not name:
+        return {"ok": False, "error": "Missing name"}
+
     previous_user = frappe.session.user
     frappe.set_user("Administrator")
     try:
         if frappe.db.exists("Group Sales", name):
             frappe.delete_doc("Group Sales", name, ignore_permissions=True)
+            frappe.db.commit()
             return {"ok": True}
-        return {"ok": False, "error": "Record not found"}
+        return {"ok": False, "error": "Record not found: " + name}
     except Exception as e:
+        frappe.log_error(frappe.get_traceback(), "delete_group_sale Error")
         return {"ok": False, "error": str(e)}
     finally:
         frappe.set_user(previous_user)
@@ -7558,3 +7774,224 @@ def trigger_password_reset(user_email=None, payload=None, **kwargs):
         # If user not found, we still return OK to prevent user enumeration, 
         # but Frappe's reset_password usually handles this gracefully.
         return {"ok": False, "error": str(e)}
+
+
+# ── CUSTOMER PROFILE PANEL ───────────────────────────────────────────────────
+
+@frappe.whitelist(allow_guest=True)
+def get_customer_quotes(customer_name=None, payload=None, **kwargs):
+    """
+    Returns all quotations + their machine line-items for a given customer.
+    Used by the Customer Profile slide-in panel in Omnis Salestrack.
+    """
+    params = extract_params(payload=payload, **kwargs)
+    customer_name = customer_name or params.get("customer_name") or ""
+    if not customer_name:
+        return {"ok": False, "error": "customer_name is required", "data": []}
+
+    previous_user = frappe.session.user
+    frappe.set_user("Administrator")
+    try:
+        # 1. Fetch quotation headers for this customer
+        headers = frappe.get_all(
+            "Quotation",
+            filters={"customer_name": customer_name, "docstatus": ["<", 2]},
+            fields=[
+                "name", "title", "transaction_date", "valid_till",
+                "grand_total", "status", "custom_sales_person",
+                "currency", "total_qty", "company"
+            ],
+            order_by="transaction_date desc",
+            limit_page_length=100
+        )
+
+        if not headers:
+            return {"ok": True, "data": []}
+
+        names = [h["name"] for h in headers]
+
+        # 2. Fetch all child items for these quotations
+        items = frappe.get_all(
+            "Quotation Item",
+            filters=[["parent", "in", names]],
+            fields=["parent", "item_code", "item_name", "qty", "rate", "amount", "description"]
+        )
+
+        # 3. Enrich items with brand / item_group
+        item_codes = list(set(i["item_code"] for i in items if i.get("item_code")))
+        item_meta = {}
+        if item_codes:
+            meta_rows = frappe.get_all(
+                "Item",
+                filters=[["name", "in", item_codes]],
+                fields=["name", "brand", "item_group"]
+            )
+            for m in meta_rows:
+                item_meta[m["name"]] = m
+
+        # Attach meta to each item
+        for i in items:
+            meta = item_meta.get(i.get("item_code"), {})
+            i["brand"] = meta.get("brand") or ""
+            i["item_group"] = meta.get("item_group") or ""
+
+        # 4. Group items by parent quotation
+        items_by_qtn = {}
+        for i in items:
+            items_by_qtn.setdefault(i["parent"], []).append(i)
+
+        # 5. Attach items to headers and stringify dates
+        result = []
+        for h in headers:
+            h["items"] = items_by_qtn.get(h["name"], [])
+            if h.get("transaction_date"):
+                h["transaction_date"] = str(h["transaction_date"])
+            if h.get("valid_till"):
+                h["valid_till"] = str(h["valid_till"])
+            result.append(h)
+
+        return {"ok": True, "data": result}
+
+    except Exception as e:
+        frappe.log_error(frappe.get_traceback(), "get_customer_quotes failed")
+        return {"ok": False, "error": str(e), "data": []}
+    finally:
+        frappe.set_user(previous_user)
+
+
+# ── OEM SUMMARY (period-filtered, for the OEM Reports table) ─────────────────
+
+@frappe.whitelist(allow_guest=True)
+def get_oem_summary(period="This Year", payload=None, **kwargs):
+    """
+    Returns oem_sales with full per-model breakdown for a given period.
+    Used by the OEM Reports table period filter in Omnis Salestrack.
+    """
+    params = extract_params(payload=payload, **kwargs)
+    period = period or params.get("period") or "This Year"
+
+    import math
+    from frappe.utils import nowdate, getdate, get_first_day, get_last_day, add_months
+
+    previous_user = frappe.session.user
+    frappe.set_user("Administrator")
+    try:
+        today = getdate(nowdate())
+        s_this_year = f"{today.year}-01-01"
+        e_this_year = f"{today.year}-12-31"
+
+        # Period resolution
+        start_date, end_date = s_this_year, e_this_year
+        months_in_period = today.month  # "This Year" default
+
+        if period == "This Month":
+            start_date = str(get_first_day(today))
+            end_date   = str(get_last_day(today))
+            months_in_period = 1
+        elif period == "Last Month":
+            first_of_this = get_first_day(today)
+            last_mo_end   = str(first_of_this - frappe.utils.datetime.timedelta(days=1))
+            last_mo_start = str(get_first_day(getdate(last_mo_end)))
+            start_date, end_date = last_mo_start, last_mo_end
+            months_in_period = 1
+        elif period == "This Quarter":
+            q_month = ((today.month - 1) // 3) * 3 + 1
+            start_date = f"{today.year}-{q_month:02d}-01"
+            end_date   = str(get_last_day(getdate(f"{today.year}-{min(q_month+2,12):02d}-01")))
+            months_in_period = 3
+        elif period == "Last Year":
+            start_date = f"{today.year - 1}-01-01"
+            end_date   = f"{today.year - 1}-12-31"
+            months_in_period = 12
+
+        # Sales rows
+        sales_rows = frappe.db.sql("""
+            SELECT oem, model, qty
+            FROM `tabGroup Sales`
+            WHERE docstatus < 2 AND order_date >= %s AND order_date <= %s
+        """, (start_date, end_date), as_dict=True)
+
+        # Quote rows (active quotations in period)
+        quotes_rows = frappe.db.sql("""
+            SELECT i.brand as oem, qi.item_name as model, qi.qty as qty
+            FROM `tabQuotation` q
+            JOIN `tabQuotation Item` qi ON qi.parent = q.name
+            JOIN `tabItem` i ON i.name = qi.item_code
+            WHERE q.docstatus < 2 AND q.transaction_date >= %s AND q.transaction_date <= %s
+        """, (start_date, end_date), as_dict=True)
+
+        oem_map = {}
+
+        for r in sales_rows:
+            oem = r.oem or "Unknown"
+            q   = float(r.qty or 0)
+            if oem not in oem_map:
+                oem_map[oem] = {"sales": 0, "quotes": 0, "model_sales": {}, "model_quotes": {}}
+            oem_map[oem]["sales"] += q
+            oem_map[oem]["model_sales"][r.model] = oem_map[oem]["model_sales"].get(r.model, 0) + q
+
+        for r in quotes_rows:
+            oem = r.oem or "Unknown"
+            q   = float(r.qty or 0)
+            if oem not in oem_map:
+                oem_map[oem] = {"sales": 0, "quotes": 0, "model_sales": {}, "model_quotes": {}}
+            oem_map[oem]["quotes"] += q
+            oem_map[oem]["model_quotes"][r.model] = oem_map[oem]["model_quotes"].get(r.model, 0) + q
+
+        result = []
+        for k, v in oem_map.items():
+            if v["sales"] == 0 and v["quotes"] == 0:
+                continue
+
+            velocity       = v["sales"] / max(1, months_in_period)
+            suggested_batch = math.ceil(velocity * 1.5)
+            recommended    = math.ceil(v["sales"] + (v["quotes"] * 0.25))
+            most_bought    = max(v["model_sales"], key=v["model_sales"].get) if v["model_sales"] else "N/A"
+
+            # Per-model
+            all_models = set(list(v["model_sales"].keys()) + list(v["model_quotes"].keys()))
+            raw_models = []
+            for model_name in all_models:
+                ms = v["model_sales"].get(model_name, 0)
+                mq = v["model_quotes"].get(model_name, 0)
+                mv = ms / max(1, months_in_period)
+                raw_models.append({
+                    "model": model_name,
+                    "sales": int(ms),
+                    "quotes": int(mq),
+                    "monthly_velocity": round(mv, 1),
+                    "suggested_order": math.ceil(mv * 1.5),
+                })
+            max_mv = max((m["monthly_velocity"] for m in raw_models), default=0.01) or 0.01
+            for m in raw_models:
+                score = round((m["monthly_velocity"] / max_mv) * 5)
+                m["movement_score"] = max(1, min(5, score)) if m["monthly_velocity"] > 0 else 0
+            models = sorted(raw_models, key=lambda x: x["sales"], reverse=True)
+
+            result.append({
+                "oem": k,
+                "total_qty": v["sales"],
+                "sales": int(v["sales"]),
+                "quotes": int(v["quotes"]),
+                "most_bought": most_bought,
+                "monthly_velocity": round(velocity, 1),
+                "suggested_order": suggested_batch,
+                "recommended_stock": recommended,
+                "models": models,
+            })
+
+        result = sorted(result, key=lambda x: x["total_qty"], reverse=True)
+        return {"ok": True, "data": result, "period": period}
+
+    except Exception as e:
+        frappe.log_error(frappe.get_traceback(), "get_oem_summary failed")
+        return {"ok": False, "error": str(e), "data": []}
+    finally:
+        frappe.set_user(previous_user)
+
+
+# -------------------------------------------------------------------------------
+# NEW DASHBOARD API � Three-Stage Loader
+# Called by dashboard_logic.js ? loadStage()
+# Each returns { "ok": True, "data": { ... } }
+# -------------------------------------------------------------------------------

@@ -1,0 +1,9 @@
+.DS_Store
+*.pyc
+*.egg-info
+*.swp
+tags
+mxg_fleet_track/docs/current
+node_modules/
+.vscode/
+.idea/

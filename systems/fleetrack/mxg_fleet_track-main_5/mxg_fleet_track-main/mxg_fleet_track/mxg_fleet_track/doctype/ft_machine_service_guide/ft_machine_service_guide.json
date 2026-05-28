@@ -1,0 +1,154 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "autoname": "format:{model}-{label}",
+ "creation": "2023-10-08 13:10:05.201795",
+ "default_view": "List",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "label",
+  "column_break_ch4w3",
+  "sg_name",
+  "column_break_dudao",
+  "model",
+  "column_break_zazec",
+  "make",
+  "service_items_section",
+  "items",
+  "column_break_sw2uk"
+ ],
+ "fields": [
+  {
+   "description": "Custom tagging. E.g. A1",
+   "fieldname": "label",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Label",
+   "reqd": 1
+  },
+  {
+   "fieldname": "service_items_section",
+   "fieldtype": "Section Break",
+   "label": "Service Items"
+  },
+  {
+   "fieldname": "items",
+   "fieldtype": "Table",
+   "label": "Items",
+   "options": "FT Machine Service Guide Items",
+   "reqd": 1
+  },
+  {
+   "fieldname": "column_break_ch4w3",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "model",
+   "fieldtype": "Link",
+   "label": "Model",
+   "options": "FT Machine Model",
+   "reqd": 1
+  },
+  {
+   "fieldname": "column_break_zazec",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fetch_from": "model.oem",
+   "fieldname": "make",
+   "fieldtype": "Link",
+   "label": "Make",
+   "options": "FT Machine OEM",
+   "reqd": 1
+  },
+  {
+   "fieldname": "column_break_sw2uk",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "column_break_dudao",
+   "fieldtype": "Column Break"
+  },
+  {
+   "description": "Name of SG. E.g. Initial 250hr Service",
+   "fieldname": "sg_name",
+   "fieldtype": "Data",
+   "label": "Name",
+   "reqd": 1
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "links": [],
+ "modified": "2023-10-08 13:28:09.983078",
+ "modified_by": "Administrator",
+ "module": "MXG Fleet Track",
+ "name": "FT Machine Service Guide",
+ "naming_rule": "Expression",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "create": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "MXG-STANDARD",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "MXG-CONTROLLER",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "MXG-READ-ONLY",
+   "share": 1
+  },
+  {
+   "create": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "MXG-MD",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "quick_entry": 1,
+ "search_fields": "sg_name",
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": [],
+ "title_field": "label",
+ "track_changes": 1
+}

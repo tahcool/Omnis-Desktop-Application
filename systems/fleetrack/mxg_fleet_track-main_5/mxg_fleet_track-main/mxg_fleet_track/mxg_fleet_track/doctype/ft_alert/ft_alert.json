@@ -1,0 +1,242 @@
+{
+ "actions": [],
+ "allow_import": 1,
+ "allow_rename": 1,
+ "creation": "2022-10-12 14:08:04.381225",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "date_issued",
+  "column_break_2",
+  "alert_type",
+  "column_break_4",
+  "status",
+  "colbr_sub",
+  "desc",
+  "section_break_2",
+  "machine",
+  "column_break_6",
+  "customer",
+  "section_break_10",
+  "oem",
+  "column_break_15",
+  "model",
+  "column_break_16",
+  "type",
+  "column_breakft",
+  "fleetrack_managed",
+  "section_break_12",
+  "on_last_hmr",
+  "colb3",
+  "days_since_last_hmr",
+  "column_break_18",
+  "on_service_type",
+  "column_break_14",
+  "quote_no",
+  "section_break_20"
+ ],
+ "fields": [
+  {
+   "fieldname": "date_issued",
+   "fieldtype": "Date",
+   "in_list_view": 1,
+   "label": "Date Issued",
+   "reqd": 1
+  },
+  {
+   "fieldname": "section_break_2",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "machine",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "Machine",
+   "options": "FT Machine",
+   "reqd": 1
+  },
+  {
+   "fetch_from": "machine.oem",
+   "fieldname": "oem",
+   "fieldtype": "Link",
+   "label": "OEM",
+   "options": "FT Machine OEM",
+   "read_only": 1
+  },
+  {
+   "fetch_from": "machine.customer",
+   "fieldname": "customer",
+   "fieldtype": "Link",
+   "label": "Customer",
+   "options": "FT Customer",
+   "read_only": 1
+  },
+  {
+   "fieldname": "column_break_6",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fetch_from": "machine.model",
+   "fieldname": "model",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Model",
+   "options": "FT Machine Model",
+   "read_only": 1
+  },
+  {
+   "fetch_from": "machine.type",
+   "fieldname": "type",
+   "fieldtype": "Link",
+   "label": "Type",
+   "options": "FT Machine Type",
+   "read_only": 1
+  },
+  {
+   "fieldname": "column_break_2",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "alert_type",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "Alert Type",
+   "options": "\nGeneral\nQuote Alert\nQuote Follow Up\nMaintenance Warning\nStop Machine\nHMR Alert",
+   "reqd": 1
+  },
+  {
+   "default": "Pending",
+   "fieldname": "status",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "Status",
+   "options": "Pending\nDone",
+   "read_only": 1,
+   "reqd": 1
+  },
+  {
+   "fieldname": "section_break_12",
+   "fieldtype": "Section Break"
+  },
+  {
+   "depends_on": "eval:['Quote Alert', 'Quote Follow Up', 'Maintenance Warning', 'Stop Machine'].indexOf(doc.alert_type) !== -1",
+   "fetch_from": "machine.next_service_hmr",
+   "fetch_if_empty": 1,
+   "fieldname": "on_service_type",
+   "fieldtype": "Float",
+   "in_list_view": 1,
+   "label": "Service Type",
+   "mandatory_depends_on": "eval:['Quote Alert', 'Quote Follow Up', 'Maintenance Warning', 'Stop Machine'].indexOf(doc.alert_type) !== -1",
+   "precision": "2",
+   "read_only": 1
+  },
+  {
+   "fieldname": "column_break_14",
+   "fieldtype": "Column Break"
+  },
+  {
+   "depends_on": "eval:doc.status === \"Done\" && (doc.alert_type === \"Quote Alert\" || doc.alert_type === \"Quote Follow Up\")",
+   "fieldname": "quote_no",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Quote No",
+   "mandatory_depends_on": "eval:doc.status === \"Done\" && doc.alert_type === \"Quote Alert\""
+  },
+  {
+   "fieldname": "column_break_4",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "section_break_10",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "column_break_15",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "column_break_16",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "section_break_20",
+   "fieldtype": "Section Break"
+  },
+  {
+   "depends_on": "eval:['Quote Alert', 'Quote Follow Up'].indexOf(doc.alert_type) !== -1",
+   "fetch_from": "machine.current_hmr",
+   "fetch_if_empty": 1,
+   "fieldname": "on_last_hmr",
+   "fieldtype": "Float",
+   "label": "Last HMR",
+   "precision": "2",
+   "read_only": 1
+  },
+  {
+   "fieldname": "column_break_18",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "colb3",
+   "fieldtype": "Column Break"
+  },
+  {
+   "depends_on": "eval:doc.alert_type === \"HMR Alert\"",
+   "fetch_from": "machine.days_since_last_hmr",
+   "fieldname": "days_since_last_hmr",
+   "fieldtype": "Int",
+   "label": "Days since last HMR",
+   "read_only": 1
+  },
+  {
+   "fieldname": "column_breakft",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fetch_from": "machine.fleetrack_managed",
+   "fieldname": "fleetrack_managed",
+   "fieldtype": "Select",
+   "label": "On Fleetrack&trade;?",
+   "options": "No\nYes",
+   "read_only": 1
+  },
+  {
+   "fieldname": "colbr_sub",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "desc",
+   "fieldtype": "Data",
+   "label": "Description"
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "links": [],
+ "modified": "2022-11-29 11:57:17.212078",
+ "modified_by": "Administrator",
+ "module": "MXG Fleet Track",
+ "name": "FT Alert",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": [],
+ "track_changes": 1
+}

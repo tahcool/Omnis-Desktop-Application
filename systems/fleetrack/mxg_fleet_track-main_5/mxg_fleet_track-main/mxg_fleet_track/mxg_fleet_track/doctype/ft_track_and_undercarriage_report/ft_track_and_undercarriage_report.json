@@ -1,0 +1,237 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "autoname": "format:TUR-{YY}-{####}",
+ "creation": "2023-09-16 17:20:08.158647",
+ "default_view": "List",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "machine",
+  "machine_model",
+  "machine_type",
+  "column_break_mmwk1",
+  "customer",
+  "customer_ref",
+  "fleet_no",
+  "column_break_aep6i",
+  "engine_make",
+  "engine_sn",
+  "column_break_di5hu",
+  "current_hmr",
+  "total_running_hours",
+  "report_details_section",
+  "inspected_by",
+  "column_break_xgsq9",
+  "operator_name",
+  "column_break_2mx4a",
+  "date_of_inspection",
+  "column_break_jwn1s",
+  "site",
+  "wear_assessment_section",
+  "components",
+  "sprokets_section",
+  "lhs_sproket_condition",
+  "column_break_gyuxw",
+  "rhs_sproket_condition",
+  "section_break_nb8f6",
+  "recommendations"
+ ],
+ "fields": [
+  {
+   "fieldname": "machine",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Machine",
+   "options": "FT Machine",
+   "reqd": 1
+  },
+  {
+   "fetch_from": "machine.model",
+   "fieldname": "machine_model",
+   "fieldtype": "Link",
+   "label": "Machine Model",
+   "options": "FT Machine Model",
+   "read_only": 1
+  },
+  {
+   "fetch_from": "machine.type",
+   "fieldname": "machine_type",
+   "fieldtype": "Link",
+   "label": "Machine Type",
+   "options": "FT Machine Type",
+   "read_only": 1
+  },
+  {
+   "fieldname": "column_break_mmwk1",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fetch_from": "machine.customer",
+   "fieldname": "customer",
+   "fieldtype": "Link",
+   "label": "Customer",
+   "options": "FT Customer",
+   "read_only": 1
+  },
+  {
+   "fetch_from": "machine.fleet_no",
+   "fieldname": "customer_ref",
+   "fieldtype": "Data",
+   "label": "Customer Ref",
+   "read_only": 1
+  },
+  {
+   "fetch_from": "machine.mxg_fleet_no",
+   "fieldname": "fleet_no",
+   "fieldtype": "Data",
+   "label": "Fleet No",
+   "read_only": 1
+  },
+  {
+   "fieldname": "column_break_aep6i",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fetch_from": "machine.engine_type",
+   "fieldname": "engine_make",
+   "fieldtype": "Data",
+   "label": "Engine Make",
+   "read_only": 1
+  },
+  {
+   "fieldname": "column_break_di5hu",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fetch_from": "machine.current_hmr",
+   "fieldname": "current_hmr",
+   "fieldtype": "Float",
+   "label": "Current HMR",
+   "read_only": 1
+  },
+  {
+   "fieldname": "total_running_hours",
+   "fieldtype": "Float",
+   "label": "Total Running Hours"
+  },
+  {
+   "fieldname": "report_details_section",
+   "fieldtype": "Section Break",
+   "label": "Report details"
+  },
+  {
+   "fieldname": "inspected_by",
+   "fieldtype": "Data",
+   "label": "Inspected By"
+  },
+  {
+   "fieldname": "column_break_xgsq9",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "operator_name",
+   "fieldtype": "Data",
+   "label": "Operator's Name"
+  },
+  {
+   "fieldname": "column_break_2mx4a",
+   "fieldtype": "Column Break"
+  },
+  {
+   "default": "Today",
+   "fieldname": "date_of_inspection",
+   "fieldtype": "Date",
+   "label": "Date of Inspection"
+  },
+  {
+   "fieldname": "column_break_jwn1s",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "site",
+   "fieldtype": "Link",
+   "label": "Site",
+   "options": "FT Location"
+  },
+  {
+   "fetch_from": "machine.esn",
+   "fieldname": "engine_sn",
+   "fieldtype": "Data",
+   "label": "Engine SN",
+   "read_only": 1
+  },
+  {
+   "fieldname": "wear_assessment_section",
+   "fieldtype": "Section Break",
+   "label": "Wear Assessment"
+  },
+  {
+   "fieldname": "components",
+   "fieldtype": "Table",
+   "label": "Components",
+   "options": "FT TUR Components"
+  },
+  {
+   "fieldname": "sprokets_section",
+   "fieldtype": "Section Break",
+   "label": "Sprokets"
+  },
+  {
+   "fieldname": "column_break_gyuxw",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "section_break_nb8f6",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "recommendations",
+   "fieldtype": "Small Text",
+   "label": "Recommendations"
+  },
+  {
+   "fieldname": "lhs_sproket_condition",
+   "fieldtype": "Select",
+   "label": "LHS Condition",
+   "options": "\nGood\nBad",
+   "reqd": 1
+  },
+  {
+   "fieldname": "rhs_sproket_condition",
+   "fieldtype": "Select",
+   "label": "RHS Condition",
+   "options": "\nGood\nBad",
+   "reqd": 1
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "links": [],
+ "modified": "2023-09-16 18:23:51.538983",
+ "modified_by": "Administrator",
+ "module": "MXG Fleet Track",
+ "name": "FT Track and Undercarriage Report",
+ "name_case": "UPPER CASE",
+ "naming_rule": "Expression",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "quick_entry": 1,
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": [],
+ "track_changes": 1
+}

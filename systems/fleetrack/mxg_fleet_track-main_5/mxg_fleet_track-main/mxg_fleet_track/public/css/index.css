@@ -1,0 +1,114 @@
+:root {
+    --ft-red: #f02510;
+}
+
+.ft-logo {
+    width: 250px;
+    margin-bottom: 1.8rem;
+}
+
+.ft-table td, .ft-table th {
+    padding: 5px !important;
+}
+
+/*.ft-table.ft-main {*/
+/*    width: 100%;*/
+/*}*/
+
+/*.ft-table.ft-customer {*/
+/*    width: 100%;*/
+/*}*/
+
+.ft-table.ft-table.ft-customer {
+    border: 3px solid #000;
+    border-radius: 3px;
+}
+
+.ft-table.ft-table.ft-customer th, .ft-table.ft-table.ft-customer td {
+    padding: 5px 10px
+}
+
+.ft-table th {
+    text-align: left;
+}
+
+.ft-container {
+    margin: 1rem 1.8rem 1rem 1.8rem;
+}
+
+.text-white {
+    color: #fff !important;
+}
+
+table.ft-main thead th {
+    background-color: var(--ft-red);
+    color: #fff;
+    padding: 5px 5px;
+}
+
+table.ft-main tbody td {
+    border-bottom: 1px solid #9aa0a61f;
+}
+
+.text-right {
+    text-align: right !important;
+}
+
+.ft-bg-green {
+    background-color: green;
+    color: #fff;
+}
+
+.ft-bg-red {
+    background-color: var(--ft-red);
+    color: #fff;
+}
+
+.ft-bg-yellow {
+    background-color: #ffc000;
+}
+
+.text-center {
+    text-align: center !important;
+}
+
+.ft-bold {
+    font-weight: 700;
+}
+
+.ft-defects-ul {
+    font-size: 0.8em !important;
+    list-style: none !important;
+    padding-left: 0 !important;
+}
+
+table.ft-main thead tr:nth-of-type(2) th {
+    border-right: 1px solid #fff;
+}
+
+.ft-cell {
+    padding-left: 0 !important;
+    padding-right: 0 !important;
+}
+
+table.ft-main thead tr:nth-of-type(2) th:last-of-type {
+    border-top-left-radius: 3px;
+    border-right: 1px solid var(--ft-red);
+}
+
+table.ft-main thead th {
+    font-weight: 600 !important;
+}
+
+.no-fold {
+    width: 1px;
+    white-space: nowrap;
+}
+
+.print-format {
+    max-width: 13.3in !important;
+}
+
+.ft-middle {
+    vertical-align: middle !important;
+}

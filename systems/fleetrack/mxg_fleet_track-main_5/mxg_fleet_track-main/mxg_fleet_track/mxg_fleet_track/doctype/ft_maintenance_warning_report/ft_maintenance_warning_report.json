@@ -1,0 +1,277 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "autoname": "format:MWR{#####}",
+ "creation": "2023-09-14 21:46:29.676894",
+ "default_view": "List",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "mwr_mode",
+  "column_break_zxxc4",
+  "customer",
+  "multiple_machines_section",
+  "machines",
+  "single_machine_section",
+  "machine",
+  "machine_model",
+  "machine_type",
+  "column_break_i8go0",
+  "engine_make",
+  "total_running_hours",
+  "column_break_1qwgs",
+  "customer_ref",
+  "engine_srn",
+  "column_break_i3w0a",
+  "fleet_no",
+  "current_hmr",
+  "mw_details_section",
+  "warranty_violation",
+  "advisory",
+  "column_break_1ehjo",
+  "overdue_maintenance",
+  "other",
+  "column_break_t1dog",
+  "major_defects",
+  "site_where_applicable",
+  "column_break_dxsjq",
+  "date_of_issue",
+  "warning_messages_section",
+  "warning_message",
+  "details_section",
+  "risks",
+  "column_break_ym1cn",
+  "recommendations"
+ ],
+ "fields": [
+  {
+   "fieldname": "machine",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Machine",
+   "mandatory_depends_on": "eval:doc.mwr_mode == \"Single Machine\"",
+   "options": "FT Machine"
+  },
+  {
+   "fetch_from": "machine.engine_type",
+   "fieldname": "engine_make",
+   "fieldtype": "Data",
+   "label": "Engine Make"
+  },
+  {
+   "fetch_from": "machine.current_hmr",
+   "fieldname": "current_hmr",
+   "fieldtype": "Float",
+   "label": "Current HMR"
+  },
+  {
+   "fetch_from": "machine.esn",
+   "fieldname": "engine_srn",
+   "fieldtype": "Data",
+   "label": "Engine SRN"
+  },
+  {
+   "fetch_from": "machine.fleet_no",
+   "fieldname": "customer_ref",
+   "fieldtype": "Data",
+   "label": "Customer Ref"
+  },
+  {
+   "fetch_from": "machine.mxg_fleet_no",
+   "fieldname": "fleet_no",
+   "fieldtype": "Data",
+   "label": "Fleet No"
+  },
+  {
+   "fieldname": "total_running_hours",
+   "fieldtype": "Float",
+   "label": "Total Running Hours"
+  },
+  {
+   "fetch_from": "machine.model",
+   "fieldname": "machine_model",
+   "fieldtype": "Link",
+   "label": "Machine Model",
+   "options": "FT Machine Model"
+  },
+  {
+   "fieldname": "mw_details_section",
+   "fieldtype": "Section Break",
+   "label": "MW Details"
+  },
+  {
+   "default": "0",
+   "fieldname": "warranty_violation",
+   "fieldtype": "Check",
+   "label": "Warranty Violation"
+  },
+  {
+   "default": "0",
+   "fieldname": "advisory",
+   "fieldtype": "Check",
+   "label": "Advisory"
+  },
+  {
+   "fieldname": "column_break_1ehjo",
+   "fieldtype": "Column Break"
+  },
+  {
+   "default": "0",
+   "fieldname": "overdue_maintenance",
+   "fieldtype": "Check",
+   "label": "Overdue Maintenance"
+  },
+  {
+   "default": "0",
+   "fieldname": "other",
+   "fieldtype": "Check",
+   "label": "Other"
+  },
+  {
+   "fieldname": "column_break_t1dog",
+   "fieldtype": "Column Break"
+  },
+  {
+   "default": "0",
+   "fieldname": "major_defects",
+   "fieldtype": "Check",
+   "label": "Major Defect(s)"
+  },
+  {
+   "fetch_from": "machine.location",
+   "fetch_if_empty": 1,
+   "fieldname": "site_where_applicable",
+   "fieldtype": "Link",
+   "label": "Site (Where Applicable)",
+   "options": "FT Location"
+  },
+  {
+   "fieldname": "column_break_dxsjq",
+   "fieldtype": "Column Break"
+  },
+  {
+   "default": "Today",
+   "fieldname": "date_of_issue",
+   "fieldtype": "Date",
+   "label": "Date of Issue"
+  },
+  {
+   "fieldname": "warning_messages_section",
+   "fieldtype": "Section Break",
+   "label": "Warning Message(s)"
+  },
+  {
+   "fieldname": "warning_message",
+   "fieldtype": "Small Text",
+   "label": "Dear Valued Customer, It has come to our attention that the named unit(s)"
+  },
+  {
+   "fieldname": "details_section",
+   "fieldtype": "Section Break",
+   "label": "Details"
+  },
+  {
+   "fieldname": "risks",
+   "fieldtype": "Table",
+   "label": "Risk(s) Involved",
+   "options": "FT Maintenance Warning Risks"
+  },
+  {
+   "fieldname": "column_break_ym1cn",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "recommendations",
+   "fieldtype": "Table",
+   "label": "Our Recommendations/Advice",
+   "options": "FT Maintenance Warning Recommendations"
+  },
+  {
+   "fieldname": "column_break_i8go0",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fetch_from": "machine.customer",
+   "fetch_if_empty": 1,
+   "fieldname": "customer",
+   "fieldtype": "Link",
+   "label": "Customer",
+   "options": "FT Customer",
+   "read_only_depends_on": "eval:doc.mwr_mode == \"Single Machine\"",
+   "reqd": 1
+  },
+  {
+   "fieldname": "column_break_1qwgs",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "column_break_i3w0a",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fetch_from": "machine.type",
+   "fieldname": "machine_type",
+   "fieldtype": "Link",
+   "label": "Machine Type",
+   "options": "FT Machine Type"
+  },
+  {
+   "depends_on": "eval:doc.mwr_mode == \"Single Machine\"",
+   "fieldname": "single_machine_section",
+   "fieldtype": "Section Break",
+   "label": "Single Machine"
+  },
+  {
+   "fieldname": "mwr_mode",
+   "fieldtype": "Select",
+   "label": "MWR Mode",
+   "options": "\nSingle Machine\nMultiple Machines",
+   "reqd": 1
+  },
+  {
+   "fieldname": "column_break_zxxc4",
+   "fieldtype": "Column Break"
+  },
+  {
+   "depends_on": "eval:doc.mwr_mode == \"Multiple Machines\"",
+   "fieldname": "multiple_machines_section",
+   "fieldtype": "Section Break",
+   "label": "Multiple Machines"
+  },
+  {
+   "depends_on": "eval:doc.customer",
+   "fieldname": "machines",
+   "fieldtype": "Table",
+   "label": "Machines",
+   "mandatory_depends_on": "eval:doc.mwr_mode == \"Multiple Machines\"",
+   "options": "FT Maintenance Warning Machines"
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "links": [],
+ "modified": "2024-06-04 13:32:22.979282",
+ "modified_by": "Administrator",
+ "module": "MXG Fleet Track",
+ "name": "FT Maintenance Warning Report",
+ "naming_rule": "Expression",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": [],
+ "track_changes": 1
+}

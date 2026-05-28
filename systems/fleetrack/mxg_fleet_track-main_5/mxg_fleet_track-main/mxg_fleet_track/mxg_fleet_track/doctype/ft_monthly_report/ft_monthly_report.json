@@ -1,0 +1,172 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "autoname": "format:CRM-{YY}-{####}",
+ "creation": "2023-10-11 14:58:39.962896",
+ "default_view": "List",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "period_section",
+  "utilization_graph",
+  "customer",
+  "column_break_thfqb",
+  "date_from",
+  "column_break_jeum7",
+  "date_to",
+  "report_details_section",
+  "machines",
+  "messages_alerts_section",
+  "messages",
+  "active_defects_section",
+  "active_defects"
+ ],
+ "fields": [
+  {
+   "fieldname": "period_section",
+   "fieldtype": "Section Break",
+   "label": "Report Header"
+  },
+  {
+   "fieldname": "date_from",
+   "fieldtype": "Date",
+   "in_list_view": 1,
+   "label": "From",
+   "reqd": 1
+  },
+  {
+   "fieldname": "column_break_jeum7",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "date_to",
+   "fieldtype": "Date",
+   "in_list_view": 1,
+   "label": "Until",
+   "reqd": 1
+  },
+  {
+   "fieldname": "report_details_section",
+   "fieldtype": "Section Break",
+   "label": "Machine Data"
+  },
+  {
+   "fieldname": "customer",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Customer",
+   "options": "FT Customer",
+   "reqd": 1
+  },
+  {
+   "fieldname": "column_break_thfqb",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "machines",
+   "fieldtype": "Table",
+   "label": "Machines",
+   "options": "FT Monthly Report Machines"
+  },
+  {
+   "collapsible": 1,
+   "fieldname": "messages_alerts_section",
+   "fieldtype": "Section Break",
+   "label": "Messages & Alerts"
+  },
+  {
+   "fieldname": "messages",
+   "fieldtype": "Table",
+   "options": "FT Monthly Report Messages"
+  },
+  {
+   "collapsible": 1,
+   "fieldname": "active_defects_section",
+   "fieldtype": "Section Break",
+   "label": "Active Defects"
+  },
+  {
+   "fieldname": "active_defects",
+   "fieldtype": "Table",
+   "options": "FT Monthly Report Defects",
+   "read_only": 1
+  },
+  {
+   "fieldname": "utilization_graph",
+   "fieldtype": "Data",
+   "hidden": 1,
+   "label": "Utilization Graph",
+   "read_only": 1
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "links": [],
+ "modified": "2023-11-05 00:46:13.407078",
+ "modified_by": "Administrator",
+ "module": "MXG Fleet Track",
+ "name": "FT Monthly Report",
+ "naming_rule": "Expression",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "MXG-CONTROLLER",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "create": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "MXG-STANDARD",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "create": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "MXG-MD",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "MXG-READ-ONLY",
+   "share": 1
+  }
+ ],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": [],
+ "track_changes": 1
+}

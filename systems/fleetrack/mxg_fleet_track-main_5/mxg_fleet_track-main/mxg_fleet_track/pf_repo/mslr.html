@@ -1,0 +1,1290 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <title>Machine Service Life Report (MSLR)</title>
+    <meta name="pdfkit-orientation" content="Landscape" />
+    <style>
+      body {
+        font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu, Cantarell,
+          "Open Sans", "Helvetica Neue", sans-serif;
+        text-rendering: geometricPrecision;
+      }
+      ul,
+      ol {
+        padding: 0;
+        padding-left: 8px;
+      }
+      .tiny-td-padding,
+      .tiny-th-padding {
+        padding: 2px 5px !important;
+      }
+      .bg-mxg-alt {
+        background-color: #4c4847 !important;
+        color: #fff !important;
+      }
+      .text-mxg-alt {
+        color: #4c4847 !important;
+      }
+      .document,
+      .cover-page {
+        display: block;
+        clear: both;
+        page-break-after: always;
+      }
+
+      .logo-summary {
+        width: 80px;
+      }
+      .text-white {
+        color: #fff !important;
+      }
+      .flex {
+        display: -webkit-box;
+        display: flex;
+      }
+
+      .flex-col {
+        -webkit-box-orient: vertical;
+        -webkit-box-direction: normal;
+        -webkit-flex-direction: column;
+        flex-direction: column;
+      }
+
+      .flex-row {
+        -webkit-box-orient: horizontal;
+        -webkit-box-direction: normal;
+        -webkit-flex-direction: row;
+        flex-direction: row;
+      }
+
+      .flex-1 {
+        -webkit-box-flex: 1;
+        -webkit-flex: 1;
+        flex: 1;
+      }
+
+      .gap-1 {
+        gap: 0.25rem;
+      }
+
+      .gap-2 {
+        gap: 0.5rem;
+      }
+
+      .gap-3 {
+        gap: 0.75rem;
+      }
+
+      .gap-4 {
+        gap: 1rem;
+      }
+
+      .gap-5 {
+        gap: 1.25rem;
+      }
+
+      .gap-6 {
+        gap: 1.5rem;
+      }
+
+      .gap-8 {
+        gap: 2rem;
+      }
+
+      .gap-10 {
+        gap: 2.5rem;
+      }
+
+      .gap-12 {
+        gap: 3rem;
+      }
+
+      .gap-16 {
+        gap: 4rem;
+      }
+
+      .gap-20 {
+        gap: 5rem;
+      }
+
+      .gap-24 {
+        gap: 6rem;
+      }
+
+      .font-bold {
+        font-weight: 600 !important;
+      }
+
+      .font-black {
+        font-weight: 900 !important;
+      }
+
+      .justify-between {
+        -webkit-box-pack: justify;
+        -webkit-justify-content: space-between;
+        justify-content: space-between;
+      }
+
+      .justify-end {
+        -webkit-box-pack: end;
+        -webkit-justify-content: end;
+        justify-content: end;
+      }
+
+      .justify-center {
+        -webkit-box-pack: center;
+        -webkit-justify-content: center;
+        justify-content: center;
+      }
+
+      .items-center {
+        -webkit-box-align: center;
+        -webkit-align-items: center;
+        align-items: center;
+      }
+
+      .mb-1 {
+        margin-bottom: 0.25rem;
+      }
+
+      .mb-2 {
+        margin-bottom: 0.5rem;
+      }
+
+      .mb-3 {
+        margin-bottom: 0.75rem;
+      }
+
+      .mb-4 {
+        margin-bottom: 1rem;
+      }
+
+      .mb-5 {
+        margin-bottom: 1.25rem;
+      }
+
+      .mb-6 {
+        margin-bottom: 1.5rem;
+      }
+
+      .mb-8 {
+        margin-bottom: 2rem;
+      }
+
+      .mb-10 {
+        margin-bottom: 2.5rem;
+      }
+
+      .ml-1 {
+        margin-left: 0.25rem;
+      }
+
+      .ml-2 {
+        margin-left: 0.5rem;
+      }
+
+      .ml-3 {
+        margin-left: 0.75rem;
+      }
+
+      .ml-4 {
+        margin-left: 1rem;
+      }
+
+      .mr-1 {
+        margin-right: 0.25rem;
+      }
+
+      .mr-2 {
+        margin-right: 0.5rem;
+      }
+
+      .mr-3 {
+        margin-right: 0.75rem;
+      }
+
+      .mr-4 {
+        margin-right: 1rem;
+      }
+
+      .mr-5 {
+        margin-right: 1.25rem;
+      }
+
+      .mr-6 {
+        margin-right: 1.5rem;
+      }
+
+      .mr-8 {
+        margin-right: 2rem;
+      }
+
+      .mr-10 {
+        margin-right: 2.5rem;
+      }
+
+      .mr-12 {
+        margin-right: 3rem;
+      }
+
+      .mr-16 {
+        margin-right: 4rem;
+      }
+
+      .mr-20 {
+        margin-right: 5rem;
+      }
+
+      .mt-1 {
+        margin-top: 0.25rem;
+      }
+
+      .mt-2 {
+        margin-top: 0.5rem;
+      }
+
+      .mt-3 {
+        margin-top: 0.75rem;
+      }
+
+      .mt-4 {
+        margin-top: 1rem;
+      }
+
+      .mt-5 {
+        margin-top: 1.25rem;
+      }
+
+      .mt-6 {
+        margin-top: 1.5rem;
+      }
+
+      .mt-8 {
+        margin-top: 2rem;
+      }
+
+      .mt-10 {
+        margin-top: 2.5rem;
+      }
+
+      .mt-12 {
+        margin-top: 3rem;
+      }
+
+      .mt-16 {
+        margin-top: 4rem;
+      }
+
+      .mt-20 {
+        margin-top: 5rem;
+      }
+
+      .w-1\/2 {
+        width: 50%;
+      }
+
+      .w-1\/3 {
+        width: 33.333333%;
+      }
+
+      .w-2\/3 {
+        width: 66.666667%;
+      }
+
+      .w-1\/4 {
+        width: 25%;
+      }
+
+      .w-3\/4 {
+        width: 75%;
+      }
+
+      .w-1\/5 {
+        width: 20%;
+      }
+
+      .w-2\/5 {
+        width: 40%;
+      }
+
+      .w-3\/5 {
+        width: 60%;
+      }
+
+      .w-4\/5 {
+        width: 80%;
+      }
+
+      .w-1\/6 {
+        width: 16.666667%;
+      }
+
+      .w-5\/6 {
+        width: 83.333333%;
+      }
+
+      .w-full {
+        width: 100%;
+      }
+
+      .underline {
+        text-decoration: underline;
+      }
+
+      .border-bottom {
+        border-bottom: 1px solid #f4f5f6;
+      }
+
+      .border {
+        border: 1px solid #f4f5f6;
+      }
+
+      .border-ft-red {
+        border-color: #d60000;
+      }
+
+      .border-top {
+        border-top: 1px solid #f4f5f6;
+      }
+
+      .border-left {
+        border-left: 1px solid #f4f5f6;
+      }
+
+      .border-right {
+        border-right: 1px solid #f4f5f6;
+      }
+
+      .border-none {
+        border: none;
+      }
+
+      .border-collapse {
+        border-collapse: collapse;
+      }
+
+      .border-separate {
+        border-collapse: separate;
+      }
+
+      .border-transparent {
+        border-color: transparent;
+      }
+
+      .border-primary {
+        border-color: #4b4b4d !important;
+      }
+
+      .border-black {
+        border-color: #111017;
+      }
+
+      .border-mxg-alt {
+        border-color: #4c4847;
+      }
+
+      .border-white {
+        border-color: #fff;
+      }
+
+      .border-2 {
+        border-width: 2px;
+      }
+
+      .border-4 {
+        border-width: 4px;
+      }
+
+      .border-8 {
+        border-width: 8px;
+      }
+
+      .rounded {
+        border-radius: 0.25rem;
+      }
+
+      .rounded-t {
+        border-top-left-radius: 0.25rem;
+        border-top-right-radius: 0.25rem;
+      }
+
+      .rounded-b {
+        border-bottom-right-radius: 0.25rem;
+        border-bottom-left-radius: 0.25rem;
+      }
+
+      .rounded-l {
+        border-top-left-radius: 0.25rem;
+        border-bottom-left-radius: 0.25rem;
+      }
+
+      .rounded-r {
+        border-top-right-radius: 0.25rem;
+        border-bottom-right-radius: 0.25rem;
+      }
+
+      .rounded-tl {
+        border-top-left-radius: 0.25rem;
+      }
+
+      .rounded-tr {
+        border-top-right-radius: 0.25rem;
+      }
+
+      .rounded-bl {
+        border-bottom-left-radius: 0.25rem;
+      }
+
+      .rounded-br {
+        border-bottom-right-radius: 0.25rem;
+      }
+
+      .rounded-t-none {
+        border-top-left-radius: 0;
+        border-top-right-radius: 0;
+      }
+
+      .rounded-r-none {
+        border-top-right-radius: 0;
+        border-bottom-right-radius: 0;
+      }
+
+      .rounded-b-none {
+        border-bottom-right-radius: 0;
+        border-bottom-left-radius: 0;
+      }
+
+      .rounded-l-none {
+        border-top-left-radius: 0;
+        border-bottom-left-radius: 0;
+      }
+
+      .rounded-tl-none {
+        border-top-left-radius: 0;
+      }
+
+      .rounded-tr-none {
+        border-top-right-radius: 0;
+      }
+
+      .rounded-bl-none {
+        border-bottom-left-radius: 0;
+      }
+
+      .rounded-br-none {
+        border-bottom-right-radius: 0;
+      }
+
+      .rounded-sm {
+        border-radius: 0.125rem;
+      }
+
+      .rounded-lg {
+        border-radius: 0.5rem;
+      }
+
+      .rounded-full {
+        border-radius: 9999px;
+      }
+
+      .rounded-t-sm {
+        border-top-left-radius: 0.125rem;
+        border-top-right-radius: 0.125rem;
+      }
+
+      .relative {
+        position: relative !important;
+      }
+
+      .absolute {
+        position: absolute;
+      }
+
+      .fixed {
+        position: fixed;
+      }
+
+      .px-1 {
+        padding-left: 0.25rem;
+        padding-right: 0.25rem;
+      }
+
+      .px-2 {
+        padding-left: 0.5rem;
+        padding-right: 0.5rem;
+      }
+
+      .px-3 {
+        padding-left: 0.75rem;
+        padding-right: 0.75rem;
+      }
+
+      .px-4 {
+        padding-left: 1rem;
+        padding-right: 1rem;
+      }
+
+      .px-5 {
+        padding-left: 1.25rem;
+        padding-right: 1.25rem;
+      }
+
+      .px-6 {
+        padding-left: 1.5rem;
+        padding-right: 1.5rem;
+      }
+
+      .px-8 {
+        padding-left: 2rem;
+        padding-right: 2rem;
+      }
+
+      .px-10 {
+        padding-left: 2.5rem;
+        padding-right: 2.5rem;
+      }
+
+      .px-12 {
+        padding-left: 3rem;
+        padding-right: 3rem;
+      }
+
+      .px-16 {
+        padding-left: 4rem;
+        padding-right: 4rem;
+      }
+
+      .px-20 {
+        padding-left: 5rem;
+        padding-right: 5rem;
+      }
+
+      .py-1 {
+        padding-top: 0.25rem;
+        padding-bottom: 0.25rem;
+      }
+
+      .py-2 {
+        padding-top: 0.5rem;
+        padding-bottom: 0.5rem;
+      }
+
+      .py-3 {
+        padding-top: 0.75rem;
+        padding-bottom: 0.75rem;
+      }
+
+      .py-4 {
+        padding-top: 1rem;
+        padding-bottom: 1rem;
+      }
+
+      .py-5 {
+        padding-top: 1.25rem;
+        padding-bottom: 1.25rem;
+      }
+
+      .py-6 {
+        padding-top: 1.5rem;
+        padding-bottom: 1.5rem;
+      }
+
+      .py-8 {
+        padding-top: 2rem;
+        padding-bottom: 2rem;
+      }
+
+      .py-10 {
+        padding-top: 2.5rem;
+        padding-bottom: 2.5rem;
+      }
+
+      .py-12 {
+        padding-top: 3rem;
+        padding-bottom: 3rem;
+      }
+
+      .py-16 {
+        padding-top: 4rem;
+        padding-bottom: 4rem;
+      }
+
+      .py-20 {
+        padding-top: 5rem;
+        padding-bottom: 5rem;
+      }
+
+      .pt-1 {
+        padding-top: 0.25rem;
+      }
+
+      .pt-2 {
+        padding-top: 0.5rem;
+      }
+
+      .pt-3 {
+        padding-top: 0.75rem;
+      }
+
+      .pt-4 {
+        padding-top: 1rem;
+      }
+
+      .pt-5 {
+        padding-top: 1.25rem;
+      }
+
+      .pt-6 {
+        padding-top: 1.5rem;
+      }
+
+      .pt-8 {
+        padding-top: 2rem;
+      }
+
+      .pt-10 {
+        padding-top: 2.5rem;
+      }
+
+      .pt-12 {
+        padding-top: 3rem;
+      }
+
+      .pt-16 {
+        padding-top: 4rem;
+      }
+
+      .pt-20 {
+        padding-top: 5rem;
+      }
+
+      .pb-0 {
+        padding-bottom: 0 !important;
+      }
+
+      .pb-1 {
+        padding-bottom: 0.25rem;
+      }
+
+      .pb-2 {
+        padding-bottom: 0.5rem;
+      }
+
+      .pb-3 {
+        padding-bottom: 0.75rem;
+      }
+
+      .pb-4 {
+        padding-bottom: 1rem;
+      }
+
+      .pb-5 {
+        padding-bottom: 1.25rem;
+      }
+
+      .pb-6 {
+        padding-bottom: 1.5rem;
+      }
+
+      .pb-8 {
+        padding-bottom: 2rem;
+      }
+
+      .pb-10 {
+        padding-bottom: 2.5rem;
+      }
+
+      .pb-12 {
+        padding-bottom: 3rem;
+      }
+
+      .pb-16 {
+        padding-bottom: 4rem;
+      }
+
+      .pb-20 {
+        padding-bottom: 5rem;
+      }
+
+      .logo-machine {
+        width: 80px;
+      }
+
+      body {
+        height: 260mm;
+      }
+
+      .print-format img {
+        max-width: none;
+      }
+
+      .m-0 {
+        margin: 0;
+      }
+
+      .border-red {
+        border-color: #ec1c24 !important;
+      }
+
+      .text-mxg {
+        color: #4b4b4d !important;
+      }
+
+      .text-mxg-red {
+        color: #ec1c24 !important;
+      }
+
+      .text-sm {
+        font-size: 0.875rem;
+      }
+
+      .text-base {
+        font-size: 1rem;
+      }
+
+      .text-lg {
+        font-size: 1.125rem;
+      }
+
+      .text-xl {
+        font-size: 1.25rem;
+      }
+
+      .text-2xl {
+        font-size: 1.5rem;
+      }
+
+      .text-3xl {
+        font-size: 1.875rem;
+      }
+
+      .text-nowrap {
+        white-space: nowrap;
+      }
+
+      .text-right {
+        text-align: right;
+      }
+
+      .text-left {
+        text-align: left;
+      }
+
+      .text-center {
+        text-align: center;
+      }
+
+      .text-xs {
+        font-size: 0.65rem;
+      }
+
+      .text-xxs {
+        font-size: 0.55rem;
+      }
+
+      .uppercase {
+        text-transform: uppercase;
+      }
+
+      .table-bordered {
+        border-collapse: collapse;
+        border: 1px solid #111017 !important;
+      }
+
+      .table-bordered th,
+      .table-bordered td {
+        border: 1px solid #111017 !important;
+      }
+
+      .table-bordered thead th,
+      .table-bordered thead td {
+        border-bottom-width: 1px;
+      }
+
+      .table-bordered thead th,
+      .table-bordered thead td {
+        border-bottom-width: 1px;
+      }
+
+      .table-bordered th,
+      .table-bordered td {
+        border: 1px solid #111017 !important;
+      }
+
+      .table-bordered thead th,
+      .table-bordered thead td {
+        border-bottom-width: 1px;
+      }
+
+      .table-bordered th,
+      .table-bordered td {
+        border: 1px solid #111017 !important;
+      }
+
+      .table-bordered thead th,
+      .table-bordered thead td {
+        border-bottom-width: 1px;
+      }
+
+      .table-bordered th,
+      .table-bordered td {
+        border: 1px solid #111017 !important;
+      }
+
+      .table-bordered thead th,
+      .table-bordered thead td {
+        border-bottom-width: 1px;
+      }
+
+      .table-bordered th,
+      .table-bordered td {
+        border: 1px solid #111017 !important;
+      }
+
+      .text-black {
+        color: #111017 !important;
+      }
+
+      .bg-black {
+        background-color: #111017 !important;
+      }
+
+      .px-0 {
+        padding-left: 0 !important;
+        padding-right: 0 !important;
+      }
+      .watermark {
+        position: fixed;
+        /* bottom: 5px;
+                right: 5px; */
+        opacity: 0.08;
+        z-index: 99;
+        color: black;
+        left: 50%;
+        top: 50%;
+        transform: translate(-50%, -50%);
+      }
+
+      .hidden {
+        display: none !important;
+      }
+
+      .text-ft-red {
+        color: #d60000;
+      }
+
+      .bg-ft-red {
+        background-color: #d60000;
+        color: #fff !important;
+      }
+
+      .bg-white {
+        background-color: #fff;
+      }
+
+      .py-0\.5 {
+        padding-top: 0.05rem;
+        padding-bottom: 0.05rem;
+      }
+      .border-ft-red {
+        border-color: #d60000;
+      }
+    </style>
+  </head>
+  {% set machine = doc %}
+  <body class="document">
+    <div class="flex items-center justify-between gap-4">
+      <div class="flex gap-4 items-center flex-col">
+        <img style="width: 250px" src="/assets/mxg_fleet_track/img/fleetrack-logo.png" alt="Fleetrack Logo" />
+      </div>
+      <table style="border-collapse: separate">
+        <thead>
+          <tr>
+            <th style="padding: 0 !important" colspan="6" class="text-right px-0">
+              <h1 class="text-3xl text-nowrap font-bold text-black m-0 p-0">Machine Service Life Report (MSLR)</h1>
+            </th>
+          </tr>
+        </thead>
+        <tr>
+          <th style="padding: 0 0 5px 0 !important" colspan="6" class="text-right px-0">
+            <h1 style="color: #a3a4a5" class="text-2xl text-mxg-alt font-bold my-0 m-0 p-0">{{ machine.model }}</h1>
+            <div class="flex items-center justify-end gap-1">
+              <h5 style="color: #a3a4a5" class="text-base text-mxg-alt font-bold my-0 m-0 p-0">{{ machine.type }}</h5>
+            </div>
+          </th>
+        </tr>
+        <tr>
+          <td class="bg-ft-red tiny-td-padding border border-ft-red px-2 text-xs font-bold text-nowrap">Machine SRN</td>
+          <td class="px-2 tiny-td-padding border border-black uppercase text-xs font-bold text-nowrap">{{ doc.sn }}</td>
+          <td class="bg-ft-red tiny-td-padding border border-ft-red px-2 text-xs font-bold text-nowrap">
+            Customer Ref
+          </td>
+          <td class="tiny-td-padding border border-black px-1 text-xs font-bold text-nowrap">{{ machine.fleet_no }}</td>
+          <td class="bg-ft-red tiny-td-padding border border-ft-red py-1 px-4 text-center text-xs text-nowrap">
+            <div class="flex flex-col">
+              <span class="text-white">Fleet No</span>
+            </div>
+          </td>
+          <td class="tiny-td-padding border border-black px-1 text-xs font-bold text-nowrap">
+            {{ machine.mxg_fleet_no|default("&nbsp;", True) }}
+          </td>
+        </tr>
+        <tr>
+          <td class="bg-ft-red tiny-td-padding border border-ft-red px-2 py-0 text-xs font-bold text-nowrap">
+            Engine Make
+          </td>
+          <td class="px-2 border tiny-td-padding border-black uppercase text-xs font-bold text-nowrap">
+            {{ machine.engine_type }}
+          </td>
+          <td class="bg-ft-red tiny-td-padding border border-ft-red px-2 text-xs font-bold text-nowrap">Engine SRN</td>
+          <td colspan="3" class="tiny-td-padding border border-black px-1 text-xs font-bold text-nowrap">
+            {{ machine.esn }}
+          </td>
+        </tr>
+        <tr>
+          <td class="bg-ft-red tiny-td-padding border border-ft-red px-2 py-0 text-xs font-bold text-nowrap">
+            Current HMR
+          </td>
+          <td class="px-2 border tiny-td-padding border-black uppercase text-xs font-bold text-nowrap">
+            {{ machine.current_hmr }}
+          </td>
+          <td class="bg-ft-red tiny-td-padding border border-ft-red px-2 text-xs font-bold text-nowrap">
+            Total Running Hours
+          </td>
+          <td colspan="3" class="tiny-td-padding border border-black px-1 text-xs font-bold text-nowrap">
+            {{ machine.total_running_hours }}
+          </td>
+        </tr>
+        <tr>
+          <td class="bg-mxg-alt tiny-td-padding border border-ft-red px-2 py-0 text-xs font-bold text-nowrap">
+            Handover Date
+          </td>
+          <td class="px-2 border tiny-td-padding border-black text-xs font-bold text-nowrap">
+            {{ frappe.format_date(machine.handover_date) }}
+          </td>
+          <td class="bg-mxg-alt tiny-td-padding border border-ft-red px-2 text-xs font-bold text-nowrap">
+            Warranty Expiry Date
+          </td>
+          <td colspan="3" class="tiny-td-padding border border-black px-1 text-xs font-bold">
+            {{frappe.format_date(machine.expiry_date)}}
+          </td>
+        </tr>
+
+        <tr>
+          <td style="padding: 0 !important" colspan="6" class="text-sm px-1 text-xxs text-right">
+            fleetrack@machinery-exchange.com | https://fleetrack.machinery-exchange.com | +263 784 488 801
+          </td>
+        </tr>
+      </table>
+    </div>
+    <table style="border-collapse: separate">
+      <tr>
+        <th colspan="6" class="text-left" style="padding: 0 !important">
+          <h1 style="padding-right: 5px" class="text-xl flex items-center font-bold text-black my-0">
+            <svg
+              width="24px"
+              height="24px"
+              viewBox="0 0 24 24"
+              stroke-width="2"
+              fill="none"
+              xmlns="http://www.w3.org/2000/svg"
+              color="#000000">
+              <path
+                d="M12 12a4 4 0 100-8 4 4 0 000 8z"
+                stroke="#000000"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"></path>
+              <path
+                d="M5 20v-1a7 7 0 0110-6.326M21 22l1-6-3.5 1.8L17 16l-1.5 1.8L12 16l1 6h8z"
+                stroke="#000000"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"></path>
+            </svg>
+            <span class="pl-2">{{ doc.customer }}</span>
+          </h1>
+        </th>
+      </tr>
+    </table>
+    <table class="text-sm mt-3">
+      <tr>
+        <td style="padding: 2px 3px !important" class="text-right">Printed by</td>
+        <td style="padding: 2px 3px !important">
+          {{ frappe.db.get_value("User",{"name":frappe.session.user}, "full_name") }}
+        </td>
+      </tr>
+      <tr>
+        <td style="padding: 2px 3px !important" class="text-right">Date</td>
+        <td style="padding: 2px 3px !important">{{ frappe.utils.today() }}</td>
+      </tr>
+    </table>
+
+    <table style="border-collapse: collapse !important" class="w-full">
+      <thead>
+        <tr>
+          <th
+            style="padding: 2px 3px !important"
+            class="bg-ft-red border border-ft-red text-white uppercase font-black text-center"
+            colspan="2">
+            Ownership Costs (Operational)
+          </th>
+        </tr>
+      </thead>
+      {% set fuel_consumed = (doc.standard_fuel_consumption or 0) * doc.total_running_hours %}
+      <tbody>
+        <tr>
+          <td style="padding: 2px 5px !important" class="tiny-td-padding">
+            <span class="text-sm">
+              Fuel Consumed to date ~
+              <span class="text-ft-red">{{ fuel_consumed }}L</span>
+            </span>
+          </td>
+          <td style="padding: 2px 5px !important" class="tiny-td-padding text-left">
+            <i class="text-ft-red">*Limited to jobs carried out by Machinery Exchange</i>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+    <!-- prettier-ignore -->
+    {% set repairs_value_total = frappe.db.sql("SELECT sum(value) as value FROM `tabFT JRV` WHERE machine='%s' AND nature in (%s)" % (machine.name, "'Defects', 'Breakdown'"), as_dict=1)[0] %}
+    <!-- prettier-ignore -->
+    {% set maintenance_value_total = frappe.db.sql("SELECT sum(value) as value FROM `tabFT JRV` WHERE machine='%s' AND nature in (%s)" % (machine.name, "'Service', 'Service + Defect'"), as_dict=1)[0] %}
+    <!-- prettier-ignore -->
+    {% set mods_value_total = frappe.db.sql("SELECT sum(value) as value FROM `tabFT JRV` WHERE machine='%s' AND nature in (%s)" % (machine.name, "'Modification', 'Other'"), as_dict=1)[0] %}
+    <table style="border-collapse: collapse !important" class="w-full">
+      <thead>
+        <tr>
+          <th
+            style="padding: 2px 3px !important"
+            class="bg-mxg-alt text-nowrap border border-mxg-alt text-white uppercase font-black text-left">
+            Repairs to date (USD)
+            <span class="text-sm text-white">
+              ~
+              <span class="font-black text-white">
+                {{ frappe.utils.fmt_money(repairs_value_total.value,currency="$") }}
+              </span>
+            </span>
+          </th>
+          <th
+            style="padding: 2px 3px !important"
+            class="bg-mxg-alt border text-nowrap uppercase border-mxg-alt text-white font-black text-left">
+            Periodic Maint.
+            <br />
+            <span class="text-sm text-white">
+              (Service) to Date (USD) ~
+              <span class="font-black text-white">
+                {{ frappe.utils.fmt_money(maintenance_value_total.value, currency="$") }}
+              </span>
+            </span>
+          </th>
+          <th
+            style="padding: 2px 3px !important"
+            class="bg-mxg-alt border text-nowrap border-mxg-alt text-white uppercase font-black text-left">
+            Modifications & Misc
+            <span class="text-sm text-white">
+              ~
+              <span class="font-black text-white">
+                {{ frappe.utils.fmt_money(mods_value_total.value, currency="$") }}
+              </span>
+            </span>
+          </th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td class="border-right tiny-td-padding border-mxg-alt">
+            <ol type="1">
+              <!-- prettier-ignore -->
+              {% set repair_jobs = frappe.get_all("FT JRV", filters={"machine": doc.name, "workflow_state": "Complete", "nature": ["in", ("Defects", "Breakdown")]}, fields=["name", "job_no", "date"]) %}
+              <!-- prettier-ignore -->
+              {% for job in repair_jobs %}
+              <!-- prettier-ignore -->
+              {% set desc_items = frappe.get_all("FT JRV Details", filters={"parent": job.name }, pluck="basic_description") %}
+              <li>
+                <span class="font-bold">{{ job.job_no }}</span>
+                {% if desc_items %} ~ {{ desc_items[0] }} {% endif %} ~ {{ job.date }}
+              </li>
+              {% endfor %}
+            </ol>
+          </td>
+          <td class="tiny-td-padding text-left">
+            <ol type="1">
+              <!-- prettier-ignore -->
+              {% set periodic_maint_jobs = frappe.get_all("FT JRV", filters={"machine": doc.name, "workflow_state": "Complete", "nature": ["in", ("Service", "Service + Defect")]}, fields=["name", "job_no", "date"]) %}
+              <!-- prettier-ignore -->
+              {% for job in periodic_maint_jobs %}
+              <!-- prettier-ignore -->
+              {% set desc_items = frappe.get_all("FT JRV Details", filters={ "parent": job.name}, pluck="basic_description") %}
+              <li>
+                <span class="font-bold">{{ job.job_no }}</span>
+                {% if desc_items %} ~ {{ desc_items[0]}} {% endif %} ~ {{ job.date }}
+              </li>
+              {% endfor %}
+            </ol>
+          </td>
+          <td class="tiny-td-padding text-left">
+            <ol type="1">
+              <!-- prettier-ignore -->
+              {% set modification_jobs = frappe.get_all("FT JRV", filters={"machine": doc.name, "workflow_state": "Complete", "nature": ["in", ("Modification", "Other")]}, fields=["name", "job_no", "date"]) %}
+              <!-- prettier-ignore -->
+              {% for job in modification_jobs %}
+              <!-- prettier-ignore -->
+              {% set desc_items = frappe.get_all("FT JRV Details", filters={ "parent": job.name }, pluck="basic_description") %}
+              <li>
+                <span class="font-bold">{{ job.job_no }}</span>
+                {% if desc_items %} ~ {{ desc_items[0]}} {% endif %} ~ {{ job.date }}
+              </li>
+              {% endfor %}
+            </ol>
+          </td>
+        </tr>
+      </tbody>
+      <tfoot>
+        <tr>
+          <th
+            style="padding: 2px 3px !important"
+            colspan="3"
+            class="tiny-td-padding text-sm text-center bg-ft-red border-bottom border-4 border-ft-red font-black">
+            Events & History
+          </th>
+        </tr>
+        <tr>
+          <th
+            style="padding: 2px 3px !important"
+            colspan="2"
+            class="tiny-td-padding text-sm text-left bg-mxg-alt border-bottom border-4 border-mxg-alt font-black">
+            Warranty Cases Raised
+          </th>
+          <th
+            style="padding: 2px 3px !important"
+            class="tiny-td-padding text-left bg-mxg-alt border-bottom text-sm font-black border-4 border-mxg-alt">
+            Maintenance Warnings Issued
+          </th>
+        </tr>
+        <tr>
+          <td colspan="2" class="tiny-td-padding text-left">
+            <!-- prettier-ignore -->
+            {% set warranty_cases = frappe.get_all("FT Warranty Claim", filters={"machine_srn": doc.name}, fields=["date", "description", "job_no"]) %}
+            <ul type="1">
+              {% for case in warranty_cases %}
+              <li>
+                <span class="font-bold">{{ case.description }}</span>
+                ~ {{ case.job_no|default("", True) }}
+              </li>
+              {% endfor %}
+            </ul>
+          </td>
+          <td class="tiny-td-padding text-left">
+            <!-- prettier-ignore -->
+            {% set maint_warnings_single = frappe.get_all("FT Maintenance Warning Report", filters={"mwr_mode": "Single Machine", "machine": doc.name}, fields=["name", "date_of_issue", "warranty_violation", "overdue_maintenance", "major_defects", "advisory", "other"]) %}
+            <ul type="1">
+              {% for warning in maint_warnings_single %}
+              <li>
+                <span class="font-bold">{{ warning.name }}</span>
+                ~ {% if warning.overdue_maintenance %}
+                <span class="text-ft-red">Overdue Maintenance</span>
+                {% endif %} {% if warning.warranty_violation %}
+                <span class="text-ft-red">Warranty Violation</span>
+                {% endif %} {% if warning.major_defects %}
+                <span class="text-ft-red">Major Defects</span>
+                {% endif %} {% if warning.advisory %}
+                <span class="text-ft-red">Advisory</span>
+                {% endif %} {% if warning.other %}
+                <span class="text-ft-red">Other</span>
+                {% endif %} ~ {{ warning.date_of_issue }}
+              </li>
+              {% endfor %}
+            </ul>
+          </td>
+        </tr>
+        <tr>
+          <th
+            style="padding: 2px 3px !important"
+            colspan="3"
+            class="tiny-td-padding bg-ft-red text-sm uppercase border-right font-black border-white border-4">
+            Current State
+          </th>
+        </tr>
+        <tr>
+          <td style="padding: 0 !important" colspan="3">&nbsp;</td>
+        </tr>
+        <tr>
+          <th colspan="1" class="tiny-td-padding bg-mxg-alt text-left border-right border-white border-4">
+            Active Defects & BD
+          </th>
+          <th colspan="1" class="tiny-td-padding bg-mxg-alt text-left border-right border-white border-4">
+            Maint. Status
+          </th>
+          <th colspan="1" class="tiny-td-padding bg-mxg-alt text-left border-right border-white border-4">
+            Other Comments
+          </th>
+        </tr>
+        <tr>
+          <td style="font-style: italic !important" class="tiny-td-padding">
+            <!-- prettier-ignore -->
+            {% set defects = frappe.get_all("FT Defects Log", filters={ "machine": doc.name, "end_date": ["is", "not set"], }, fields=["description", "status"]) %}
+            <!-- prettier-ignore -->
+            {% set breakdowns = frappe.get_all("FT Breakdown Log", filters={ "machine": doc.name, "end_date": ["is", "not set"], }, fields=["description", "status"]) %}
+            <ul type="1">
+              {% for defect in defects %}
+              <li>
+                <span class="font-bold">{{ defect.description }}</span>
+                ~ {{ defect.status }}
+              </li>
+              {% endfor %} {% for breakdown in breakdowns %}
+              <li>
+                <span class="font-bold">{{ breakdown.description }}</span>
+                ~ {{ breakdown.status }}
+              </li>
+              {% endfor %}
+            </ul>
+          </td>
+          <td style="font-style: italic !important" class="tiny-td-padding">
+            <dl>
+              <dt>HRS to Service</dt>
+              <dd>{{ doc.hours_remaining_to_service|default("", True) }}</dd>
+              <dt>Last Service Date</dt>
+              <dd>{{ doc.get_formatted("last_service_date", doc)|default("-", True) }}</dd>
+              <dt>Next Service Type (HR)</dt>
+              <dd>{{ doc.get_formatted("next_service_type", doc) }}</dd>
+            </dl>
+          </td>
+          <td style="font-style: italic !important" class="tiny-td-padding">{{ doc.notes|default("", True) }}</td>
+        </tr>
+      </tfoot>
+    </table>
+
+    <!-- Signatures -->
+    <table class="w-full mt-4">
+      <thead>
+        <tr>
+          <th style="padding: 2px 5px !important" class="text-center border border-ft-red bg-ft-red text-white">
+            Fleetrack
+          </th>
+          <th style="padding: 2px 5px !important" class="text-center border border-ft-red bg-ft-red text-white">
+            Customer Service Coordinator
+          </th>
+          <th style="padding: 2px 5px !important" class="text-center border border-ft-red bg-ft-red text-white">
+            CSD Manager
+          </th>
+          <th style="padding: 2px 5px !important" class="text-center border border-ft-red bg-ft-red text-white">
+            SRD Manager
+          </th>
+          <th style="padding: 2px 5px !important" class="text-center border border-ft-red bg-ft-red text-white">
+            Managing Director
+          </th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td class="border border-ft-red pt-5">&nbsp;</td>
+          <td class="border border-ft-red pt-5"></td>
+          <td class="border border-ft-red pt-5"></td>
+          <td class="border border-ft-red pt-5"></td>
+          <td class="border border-ft-red pt-5"></td>
+        </tr>
+      </tbody>
+    </table>
+  </body>
+</html>

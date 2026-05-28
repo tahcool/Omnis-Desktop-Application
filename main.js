@@ -1,4 +1,4 @@
-const { app, BrowserWindow, session, ipcMain, globalShortcut } = require("electron");
+const { app, BrowserWindow, session, ipcMain, globalShortcut, dialog, shell, net } = require("electron");
 const { autoUpdater } = require("electron-updater");
 const path = require("path");
 const axios = require("axios");
@@ -31,24 +31,25 @@ const ENGTRACK_DOMAIN = 'engtrack.machinery-exchange.com';
 const FLEETRACK_DOMAIN_V2 = 'fleetrack.powerstar.co.zw';
 const ENGTRACK_DOMAIN_V2 = 'engtrack.powerstar.co.zw';
 const POWERTRACK_DOMAIN = 'powertrack.powerstar.co.zw';
+const POWERTRACK_IP = '102.218.13.120'; // Powertrack has its own server
 
 // 1. Force Node.js (axios/bridge) resolution
 const originalLookup = dns.lookup;
 dns.lookup = (hostname, options, callback) => {
   if (hostname === SPE_DOMAIN) return callback(null, SPE_IP, 4);
   if (hostname === SALESTRACK_DOMAIN) return callback(null, SALESTRACK_IP, 4);
+  if (hostname === POWERTRACK_DOMAIN) return callback(null, POWERTRACK_IP, 4);
   if (
      hostname === FLEETRACK_DOMAIN || 
      hostname === ENGTRACK_DOMAIN || 
      hostname === FLEETRACK_DOMAIN_V2 || 
-     hostname === ENGTRACK_DOMAIN_V2 || 
-     hostname === POWERTRACK_DOMAIN
+     hostname === ENGTRACK_DOMAIN_V2
   ) return callback(null, FLEETRACK_IP, 4);
   return originalLookup(hostname, options, callback);
 };
 
 // 2. Force Chromium (renderer/fetch) resolution
-app.commandLine.appendSwitch('host-rules', `MAP ${SPE_DOMAIN} ${SPE_IP}, MAP ${SALESTRACK_DOMAIN} ${SALESTRACK_IP}, MAP ${FLEETRACK_DOMAIN} ${FLEETRACK_IP}, MAP ${ENGTRACK_DOMAIN} ${FLEETRACK_IP}, MAP ${FLEETRACK_DOMAIN_V2} ${FLEETRACK_IP}, MAP ${ENGTRACK_DOMAIN_V2} ${FLEETRACK_IP}, MAP ${POWERTRACK_DOMAIN} ${FLEETRACK_IP}`);
+app.commandLine.appendSwitch('host-rules', `MAP ${SPE_DOMAIN} ${SPE_IP}, MAP ${SALESTRACK_DOMAIN} ${SALESTRACK_IP}, MAP ${FLEETRACK_DOMAIN} ${FLEETRACK_IP}, MAP ${ENGTRACK_DOMAIN} ${FLEETRACK_IP}, MAP ${FLEETRACK_DOMAIN_V2} ${FLEETRACK_IP}, MAP ${ENGTRACK_DOMAIN_V2} ${FLEETRACK_IP}, MAP ${POWERTRACK_DOMAIN} ${POWERTRACK_IP}`);
 
 // 3. Force IPv4 preference for Windows stability
 if (dns.setDefaultResultOrder) dns.setDefaultResultOrder('ipv4first');
@@ -129,7 +130,38 @@ function setupFrappeCookieCompatibility() {
       callback({ requestHeaders: headers });
     });
 
-    console.log("[Omnis] Frappe cookie compatibility enabled (Smart Origin).");
+    ses.webRequest.onHeadersReceived(filter, (details, callback) => {
+      const headers = details.responseHeaders || {};
+
+      // ── Strip X-Frame-Options so Frappe pages load inside our in-app viewer ──
+      delete headers['x-frame-options'];
+      delete headers['X-Frame-Options'];
+
+      // ── Strip CSP frame-ancestors directive that also blocks framing ──
+      const cspKey = Object.keys(headers).find(k => k.toLowerCase() === 'content-security-policy');
+      if (cspKey && headers[cspKey]) {
+        const cspArr = Array.isArray(headers[cspKey]) ? headers[cspKey] : [headers[cspKey]];
+        headers[cspKey] = cspArr.map(csp =>
+          csp.replace(/frame-ancestors[^;]*(;|$)/gi, '').trim()
+        );
+      }
+
+      // ── Rewrite Set-Cookie to bypass SameSite strictness for file:// origin ──
+      if (headers['Set-Cookie'] || headers['set-cookie']) {
+        const cookieKey = headers['Set-Cookie'] ? 'Set-Cookie' : 'set-cookie';
+        let cookies = headers[cookieKey];
+        if (!Array.isArray(cookies)) cookies = [cookies];
+        headers[cookieKey] = cookies.map(cookie => {
+          let updated = cookie.replace(/SameSite=Lax/i, 'SameSite=None');
+          if (!updated.toLowerCase().includes('secure')) updated += '; Secure';
+          return updated;
+        });
+      }
+
+      callback({ cancel: false, responseHeaders: headers });
+    });
+
+    console.log("[Omnis] Frappe cookie compatibility enabled (Smart Origin & SameSite fix).");
   } catch (e) {
     console.warn("[Omnis] Could not enable Frappe cookie compatibility:", e);
   }
@@ -384,9 +416,11 @@ ipcMain.handle("frappe:request", async (event, { url, method, data, headers, syn
     // Identification and forced IP mapping for known systems
     const isSpe = url.includes(SPE_DOMAIN) || url.includes(SPE_IP);
     const isSalestrack = url.includes(SALESTRACK_DOMAIN) || url.includes(SALESTRACK_IP);
-    const isFleetrack = url.includes(FLEETRACK_DOMAIN) || url.includes(FLEETRACK_IP) || 
+    const isPowertrack = url.includes(POWERTRACK_DOMAIN) || url.includes(POWERTRACK_IP);
+    const isFleetrack = !isPowertrack && (
+                       url.includes(FLEETRACK_DOMAIN) || url.includes(FLEETRACK_IP) || 
                        url.includes(ENGTRACK_DOMAIN) || url.includes(FLEETRACK_DOMAIN_V2) || 
-                       url.includes(ENGTRACK_DOMAIN_V2) || url.includes(POWERTRACK_DOMAIN);
+                       url.includes(ENGTRACK_DOMAIN_V2));
 
     console.log(`[Frappe IPC] Request Trace: ${axiosMethod} ${url}`);
 
@@ -414,10 +448,10 @@ ipcMain.handle("frappe:request", async (event, { url, method, data, headers, syn
       // Force correct Host header if using our hardware-defined IPs
       if (isSpe) requestHeaders['Host'] = SPE_DOMAIN;
       else if (isSalestrack) requestHeaders['Host'] = SALESTRACK_DOMAIN;
+      else if (isPowertrack) requestHeaders['Host'] = POWERTRACK_DOMAIN;
       else if (isFleetrack) {
          if (url.includes(ENGTRACK_DOMAIN)) requestHeaders['Host'] = ENGTRACK_DOMAIN;
          else if (url.includes(ENGTRACK_DOMAIN_V2)) requestHeaders['Host'] = ENGTRACK_DOMAIN_V2;
-         else if (url.includes(POWERTRACK_DOMAIN)) requestHeaders['Host'] = POWERTRACK_DOMAIN;
          else if (url.includes(FLEETRACK_DOMAIN_V2)) requestHeaders['Host'] = FLEETRACK_DOMAIN_V2;
          else requestHeaders['Host'] = FLEETRACK_DOMAIN;
       }
@@ -464,13 +498,13 @@ ipcMain.handle("frappe:request", async (event, { url, method, data, headers, syn
       [SALESTRACK_DOMAIN]: SALESTRACK_IP,
       [FLEETRACK_DOMAIN]: FLEETRACK_IP,
       [ENGTRACK_DOMAIN]: FLEETRACK_IP,
-      [POWERTRACK_DOMAIN]: FLEETRACK_IP,
+      [POWERTRACK_DOMAIN]: POWERTRACK_IP,
       [FLEETRACK_DOMAIN_V2]: FLEETRACK_IP,
       [ENGTRACK_DOMAIN_V2]: FLEETRACK_IP,
     };
 
-    // FORCED OVERRIDE TIMEOUT: Ensure we never hang the main loop beyond 12s
-    const FORCED_TIMEOUT_MS = 8000;
+    // FORCED OVERRIDE TIMEOUT: Ensure we never hang the main loop beyond 30s
+    const FORCED_TIMEOUT_MS = timeout || 30000;
     
     const axiosPromise = axios({
       url: url, // Use ORIGINAL URL (Domain name)
@@ -478,7 +512,7 @@ ipcMain.handle("frappe:request", async (event, { url, method, data, headers, syn
       data: isPost ? requestData : undefined,
       params: !isPost ? data : undefined,
       headers: requestHeaders,
-      timeout: timeout || 15000,
+      timeout: FORCED_TIMEOUT_MS,
       maxRedirects: 0,
       maxBodyLength: Infinity,
       maxContentLength: Infinity,
@@ -572,7 +606,8 @@ ipcMain.handle("frappe:request", async (event, { url, method, data, headers, syn
       return {
         ok: false,
         error: errorMsg,
-        status: error.response ? error.response.status : 0
+        status: error.response ? error.response.status : 0,
+        data: error.response ? error.response.data : null
       };
   }
 });
@@ -661,30 +696,385 @@ ipcMain.handle('sync:setOnline', async (event, online) => {
 });
 
 // ✅ Supabase Proxy API - Allows renderer to query Supabase safely
-ipcMain.handle('supabase:query', async (event, { table, method, params, data }) => {
+ipcMain.handle('supabase:query', async (event, { table, method, params, data }) =>{
   try {
     let query = supabase.from(table);
-    
+
     if (method === 'select') {
       query = query.select(params.columns || '*', params.options || {});
+      // Apply filters (key-value pairs)
+      if (params.filters && typeof params.filters === 'object') {
+        for (const [col, val] of Object.entries(params.filters)) {
+          if (val !== undefined && val !== null && val !== '') query = query.eq(col, val);
+        }
+      }
       if (params.match) query = query.match(params.match);
-      if (params.order) query = query.order(params.order.column, params.order.options || {});
+      if (params.order) query = query.order(params.order.column, { ascending: params.order.ascending ?? true });
+      if (params.limit) query = query.limit(params.limit);
       if (params.range) query = query.range(params.range.from, params.range.to);
       if (params.or) query = query.or(params.or);
-    } else if (method === 'upsert') {
-      query = query.upsert(data);
+
+    } else if (method === 'getOne') {
+      // Fetch a single record by primary key (name or id)
+      query = query.select('*');
+      if (params.name) query = query.eq('name', params.name);
+      else if (params.id) query = query.eq('id', params.id);
+      const result = await query.maybeSingle();
+      return { ok: !result.error, data: result.data, error: result.error?.message };
+
     } else if (method === 'insert') {
-      query = query.insert(data);
+      query = query.insert(params.data || data).select();
+
+    } else if (method === 'update') {
+      const updates = params.data || data;
+      query = query.update(updates);
+      if (params.name) query = query.eq('name', params.name);
+      else if (params.id) query = query.eq('id', params.id);
+      else if (params.match) query = query.match(params.match);
+      query = query.select();
+
+    } else if (method === 'upsert') {
+      query = query.upsert(params.data || data, params.options || {}).select();
+
     } else if (method === 'delete') {
       query = query.delete();
-      if (params.match) query = query.match(params.match);
+      if (params.name) query = query.eq('name', params.name);
+      else if (params.id) query = query.eq('id', params.id);
+      else if (params.match) query = query.match(params.match);
     }
 
     const result = await query;
-    return { ok: !result.error, data: result.data, count: result.count, error: result.error };
+    return { ok: !result.error, data: result.data, count: result.count, error: result.error?.message };
   } catch (err) {
     console.error(`[Supabase Proxy Error] ${method} on ${table}:`, err);
     return { ok: false, error: err.message };
+  }
+});
+
+// ✅ Supabase Auth Admin — generate password reset / invite links
+ipcMain.handle('supabase:auth', async (event, { action, email, userId, password, reason }) => {
+  try {
+    if (action === 'resetPassword') {
+      // Try recovery link first (works if user already exists in auth.users)
+      const { data, error } = await supabase.auth.admin.generateLink({
+        type: 'recovery',
+        email,
+        options: { redirectTo: '' } // not needed — link works standalone
+      });
+      if (error) {
+        // Fallback: user might not exist yet — send an invite instead
+        const inv = await supabase.auth.admin.generateLink({ type: 'invite', email });
+        if (inv.error) return { ok: false, error: inv.error.message };
+        return { ok: true, link: inv.data?.properties?.action_link, type: 'invite' };
+      }
+      return { ok: true, link: data?.properties?.action_link, type: 'recovery' };
+    }
+
+    if (action === 'inviteUser') {
+      const { data, error } = await supabase.auth.admin.generateLink({ type: 'invite', email });
+      if (error) return { ok: false, error: error.message };
+      return { ok: true, link: data?.properties?.action_link, type: 'invite' };
+    }
+
+    if (action === 'setPassword') {
+      if (!userId) return { ok: false, error: 'userId required for setPassword' };
+      const { data, error } = await supabase.auth.admin.updateUserById(userId, { password });
+      if (error) return { ok: false, error: error.message };
+      return { ok: true, data };
+    }
+
+    if (action === 'setPasswordByEmail') {
+      // Look up the auth user by email, then set their password directly
+      if (!email) return { ok: false, error: 'email required' };
+      if (!password) return { ok: false, error: 'password required' };
+      const { data: { users }, error: listErr } = await supabase.auth.admin.listUsers();
+      if (listErr) return { ok: false, error: listErr.message };
+      const authUser = (users || []).find(u => u.email === email);
+      if (!authUser) return { ok: false, error: `No auth account found for ${email}. Use Reset Password to invite them first.` };
+      const { error: updErr } = await supabase.auth.admin.updateUserById(authUser.id, { password });
+      if (updErr) return { ok: false, error: updErr.message };
+      return { ok: true };
+    }
+
+    if (action === 'impersonate') {
+      // Step 1: generate a magic link
+      const { data, error } = await supabase.auth.admin.generateLink({
+        type: 'magiclink',
+        email
+      });
+      if (error) return { ok: false, error: error.message };
+
+      const action_link = data?.properties?.action_link;
+      if (!action_link) return { ok: false, error: 'No action_link from Supabase' };
+
+      // Step 2: exchange server-side (no browser needed) — Supabase returns a 303
+      // redirect to <redirect_to>#access_token=...&refresh_token=...
+      let access_token, refresh_token, expires_in;
+      try {
+        const resp = await fetch(action_link, { redirect: 'manual' });
+        const loc  = resp.headers.get('location') || '';
+        // Hash fragment comes after '#', parse as query string
+        const hash = loc.includes('#') ? loc.split('#')[1] : loc.split('?')[1] || '';
+        const p    = new URLSearchParams(hash);
+        access_token  = p.get('access_token');
+        refresh_token = p.get('refresh_token');
+        expires_in    = parseInt(p.get('expires_in') || '3600', 10);
+        if (!access_token) throw new Error('No access_token in redirect: ' + loc.substring(0, 80));
+      } catch(e) {
+        return { ok: false, error: 'Token exchange failed: ' + e.message };
+      }
+
+      // Step 3: Audit log (best-effort)
+      try {
+        await supabase.from('ft_portal_impersonation_log').insert({
+          admin_name:     'Omnis Admin',
+          customer_email: email,
+          reason,
+          created_at:     new Date().toISOString()
+        });
+      } catch(logErr) {
+        console.warn('[Impersonate] Audit log failed:', logErr.message);
+      }
+
+      // Decode user from the access_token JWT (standard base64 payload, no verification needed here)
+      let user = null;
+      try {
+        const payload = JSON.parse(Buffer.from(access_token.split('.')[1], 'base64url').toString('utf8'));
+        user = {
+          id:                payload.sub,
+          aud:               payload.aud  || 'authenticated',
+          role:              payload.role || 'authenticated',
+          email:             payload.email || email,
+          email_confirmed_at: payload.email_confirmed_at,
+          phone:             payload.phone || '',
+          confirmed_at:      payload.confirmed_at,
+          last_sign_in_at:   payload.last_sign_in_at,
+          app_metadata:      payload.app_metadata  || {},
+          user_metadata:     payload.user_metadata  || {},
+          identities:        payload.identities     || [],
+          created_at:        payload.created_at,
+          updated_at:        payload.updated_at,
+        };
+      } catch(decodeErr) {
+        console.warn('[Impersonate] Could not decode JWT user payload:', decodeErr.message);
+      }
+
+      return { ok: true, access_token, refresh_token, expires_in, user };
+    }
+
+    const SUPER_ADMIN_EMAIL = 'takunda@industrial-exchange.group';
+
+    // Helper: resolve user email from userId (to enforce super-admin protection server-side)
+    async function getUserEmail(uid) {
+      try {
+        const { data, error } = await supabase.auth.admin.getUserById(uid);
+        return data?.user?.email?.toLowerCase() || null;
+      } catch { return null; }
+    }
+
+    if (action === 'listUsers') {
+      const { data, error } = await supabase.auth.admin.listUsers({ perPage: 1000 });
+      if (error) return { ok: false, error: error.message };
+      return { ok: true, users: data.users || [] };
+    }
+
+    if (action === 'suspendUser') {
+      if (!userId) return { ok: false, error: 'userId required' };
+      const email = await getUserEmail(userId);
+      if (email === SUPER_ADMIN_EMAIL) return { ok: false, error: 'Cannot suspend the super-admin account.' };
+      const { error } = await supabase.auth.admin.updateUserById(userId, { ban_duration: '876000h' });
+      if (error) return { ok: false, error: error.message };
+      return { ok: true };
+    }
+
+    if (action === 'unsuspendUser') {
+      if (!userId) return { ok: false, error: 'userId required' };
+      const { error } = await supabase.auth.admin.updateUserById(userId, { ban_duration: 'none' });
+      if (error) return { ok: false, error: error.message };
+      return { ok: true };
+    }
+
+    if (action === 'deleteUser') {
+      if (!userId) return { ok: false, error: 'userId required' };
+      const email = await getUserEmail(userId);
+      if (email === SUPER_ADMIN_EMAIL) return { ok: false, error: 'Cannot delete the super-admin account.' };
+      const { error } = await supabase.auth.admin.deleteUser(userId);
+      if (error) return { ok: false, error: error.message };
+      return { ok: true };
+    }
+
+    if (action === 'setPasswordDirect') {
+      if (!userId) return { ok: false, error: 'userId required' };
+      if (!password) return { ok: false, error: 'password required' };
+      const { error } = await supabase.auth.admin.updateUserById(userId, { password });
+      if (error) return { ok: false, error: error.message };
+      return { ok: true };
+    }
+
+    if (action === 'makeAdmin') {
+      if (!userId) return { ok: false, error: 'userId required' };
+      const email = await getUserEmail(userId);
+      if (email === SUPER_ADMIN_EMAIL) return { ok: false, error: 'Super-admin role is built-in and cannot be re-assigned.' };
+      const { error } = await supabase.auth.admin.updateUserById(userId, { app_metadata: { role: 'admin' } });
+      if (error) return { ok: false, error: error.message };
+      return { ok: true };
+    }
+
+    if (action === 'removeAdmin') {
+      if (!userId) return { ok: false, error: 'userId required' };
+      const email = await getUserEmail(userId);
+      if (email === SUPER_ADMIN_EMAIL) return { ok: false, error: 'Cannot demote the super-admin account.' };
+      const { error } = await supabase.auth.admin.updateUserById(userId, { app_metadata: { role: 'user' } });
+      if (error) return { ok: false, error: error.message };
+      return { ok: true };
+    }
+
+    return { ok: false, error: `Unknown auth action: ${action}` };
+  } catch (err) {
+    console.error('[Supabase Auth Error]', action, err.message);
+    return { ok: false, error: err.message };
+  }
+});
+
+// ✅ Open customer portal as an impersonated user
+//   - Tokens were already exchanged server-side in main process
+//   - We inject the session into localStorage before Supabase client init
+//   - Portal reloads and picks up the pre-stored session naturally
+ipcMain.handle('portal:impersonate', async (event, { access_token, refresh_token, expires_in, user, email }) => {
+  try {
+    const PROJ_REF  = 'pfqaeewmlwfayxbgmuaq';
+    const LS_KEY    = `sb-${PROJ_REF}-auth-token`;
+    const portalPath = path.join(__dirname, 'systems', 'fleetrack', 'customer-portal.html');
+
+    // Build a COMPLETE session object — user must NOT be null or Supabase will
+    // try to refresh the token (network call → fails with invalid anon key)
+    const sessionPayload = {
+      access_token,
+      refresh_token,
+      expires_at: Math.floor(Date.now() / 1000) + (expires_in || 3600),
+      expires_in: expires_in || 3600,
+      token_type: 'bearer',
+      user: user || { id: '', email, role: 'authenticated', aud: 'authenticated',
+                      app_metadata: {}, user_metadata: {}, created_at: '' }
+    };
+    const sessionStr = JSON.stringify(sessionPayload);
+
+    const win = new BrowserWindow({
+      width: 1280, height: 820,
+      show: false,
+      title: `👤 ${email} — Customer Portal (Impersonation)`,
+      webPreferences: {
+        nodeIntegration: false,
+        contextIsolation: true,
+        webSecurity: false
+      }
+    });
+
+    // First load: inject session into localStorage BEFORE Supabase client init
+    await win.loadFile(portalPath);
+
+    await win.webContents.executeJavaScript(`
+      localStorage.setItem(${JSON.stringify(LS_KEY)}, ${JSON.stringify(sessionStr)});
+      console.log('[ImpersonatePortal] Complete session stored, reloading...');
+    `);
+
+    // Second load: Supabase finds the complete session → no network call needed
+    await win.loadFile(portalPath);
+
+    // Wait a moment for the auto-restore IIFE to complete
+    await new Promise(r => setTimeout(r, 800));
+
+    // Verify the session was picked up
+    await win.webContents.executeJavaScript(`
+      (async () => {
+        const { data: { session } } = await sb.auth.getSession();
+        if (session) {
+          console.log('[ImpersonatePortal] Session active for:', session.user.email);
+          window.CURRENT_USER = session.user;
+          // If showApp hasn\'t already been called by the IIFE, call it now
+          if (document.getElementById('auth-screen').style.display !== 'none') {
+            await loadPortalAccount();
+            showApp();
+          }
+        } else {
+          console.warn('[ImpersonatePortal] No session after reload — check anon key');
+        }
+      })();
+    `);
+
+    win.setTitle(`👤 ${email} — Customer Portal (Impersonation)`);
+    win.show();
+    return { ok: true };
+
+  } catch(err) {
+    console.error('[portal:impersonate]', err.message);
+    return { ok: false, error: err.message };
+  }
+});
+
+
+// ✅ Open URL in the system default browser (not an Electron window)
+ipcMain.handle('shell:openUrl', async (event, url) => {
+  try {
+    await shell.openExternal(url);
+    return { ok: true };
+  } catch(err) {
+    console.error('[shell:openUrl]', err.message);
+    return { ok: false, error: err.message };
+  }
+});
+
+// 🔐 Supabase Auth — Fleetrack Login (replaces Frappe session auth)
+ipcMain.handle('supabase:signIn', async (event, { email, password }) => {
+  try {
+    const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+    if (error) return { ok: false, error: error.message };
+    return {
+      ok: true,
+      user: { id: data.user.id, email: data.user.email, role: data.user.role },
+      access_token: data.session.access_token,
+      refresh_token: data.session.refresh_token,
+      expires_at: data.session.expires_at,
+    };
+  } catch (e) {
+    return { ok: false, error: e.message };
+  }
+});
+
+ipcMain.handle('supabase:signOut', async () => {
+  try {
+    const { error } = await supabase.auth.signOut();
+    if (error) return { ok: false, error: error.message };
+    return { ok: true };
+  } catch (e) {
+    return { ok: false, error: e.message };
+  }
+});
+
+ipcMain.handle('supabase:getSession', async () => {
+  try {
+    const { data, error } = await supabase.auth.getSession();
+    if (error || !data.session) return { ok: false, session: null };
+    return {
+      ok: true,
+      session: {
+        user: { id: data.session.user.id, email: data.session.user.email },
+        access_token: data.session.access_token,
+        expires_at: data.session.expires_at,
+      }
+    };
+  } catch (e) {
+    return { ok: false, session: null };
+  }
+});
+
+ipcMain.handle('supabase:resetPwd', async (event, { email }) => {
+  try {
+    const { error } = await supabase.auth.resetPasswordForEmail(email);
+    if (error) return { ok: false, error: error.message };
+    return { ok: true };
+  } catch (e) {
+    return { ok: false, error: e.message };
   }
 });
 
@@ -706,6 +1096,136 @@ ipcMain.handle('storage:upload', async (event, { bucket, path, base64Data, conte
     return { ok: false, error: error.message };
   }
 });
+
+// ✅ Ensure Supabase Storage buckets exist
+(async () => {
+  for (const [bucket, isPublic] of [['machine-library', true], ['machine-images', true]]) {
+    try {
+      const { error } = await supabase.storage.createBucket(bucket, { public: isPublic });
+      if (error && !error.message?.includes('already exists')) {
+        console.warn(`[Storage] ${bucket} bucket create warning:`, error.message);
+      } else {
+        console.log(`[Storage] ${bucket} bucket ready`);
+      }
+    } catch (e) { /* ignore */ }
+  }
+})();
+
+// ✅ Download a file from Frappe as base64
+// Uses Electron net.request (Chromium network stack — shares session, cookies, proxy)
+// Falls back to axios if net.request is unavailable.
+ipcMain.handle('frappe:downloadFile', async (event, { url, retries = 3 }) => {
+  const RETRY_DELAYS = [3000, 6000, 12000];
+
+  // ── Strategy 1: Electron net.request (same stack as the browser) ──
+  async function downloadViaNet(targetUrl) {
+    return new Promise((resolve, reject) => {
+      const req = net.request({
+        url: targetUrl,
+        session: session.defaultSession,  // shares cookies/auth with the renderer
+      });
+
+      const chunks = [];
+      let contentType = 'application/octet-stream';
+      let statusCode = 0;
+
+      req.on('response', (resp) => {
+        statusCode = resp.statusCode;
+        contentType = resp.headers['content-type'] || contentType;
+
+        if (statusCode >= 400) {
+          reject(new Error(`HTTP ${statusCode}`));
+          return;
+        }
+
+        resp.on('data', (chunk) => chunks.push(chunk));
+        resp.on('end', () => {
+          const buf = Buffer.concat(chunks);
+          resolve({ base64: buf.toString('base64'), contentType, bytes: buf.byteLength });
+        });
+        resp.on('error', reject);
+      });
+
+      req.on('error', reject);
+
+      // 90-second safety timeout
+      const timer = setTimeout(() => {
+        try { req.abort(); } catch (_) {}
+        reject(Object.assign(new Error('Request timed out after 90s'), { code: 'ETIMEDOUT' }));
+      }, 90000);
+
+      req.on('response', () => clearTimeout(timer));
+      req.end();
+    });
+  }
+
+  // ── Strategy 2: axios fallback (Node TCP) ────────────────────────
+  async function downloadViaAxios(targetUrl) {
+    const ses = session.defaultSession;
+    const cookies = await ses.cookies.get({ url: targetUrl });
+    const cookieHeader = cookies.map(c => `${c.name}=${c.value}`).join('; ');
+    const requestHeaders = { 'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36' };
+    if (cookieHeader) requestHeaders['Cookie'] = cookieHeader;
+    try {
+      const u = new URL(targetUrl);
+      requestHeaders['Origin']  = u.origin;
+      requestHeaders['Referer'] = u.origin + '/app';
+      requestHeaders['Host']    = u.hostname;
+    } catch (_) {}
+
+    const DNS_MAP = { 'fleetrack.machinery-exchange.com': '197.242.136.253' };
+    const response = await axios({
+      url: targetUrl, method: 'GET', responseType: 'arraybuffer',
+      headers: requestHeaders, timeout: 90000, maxRedirects: 5,
+      httpsAgent: new https.Agent({
+        rejectUnauthorized: false,
+        lookup: (hostname, options, callback) => {
+          if (typeof options === 'function') { callback = options; options = {}; }
+          else if (typeof callback !== 'function') { callback = options; options = {}; }
+          if (!options) options = {};
+          const ip = DNS_MAP[hostname];
+          if (ip) return options.all ? callback(null, [{ address: ip, family: 4 }]) : callback(null, ip, 4);
+          require('dns').lookup(hostname, options, callback);
+        }
+      }),
+    });
+    return {
+      base64: Buffer.from(response.data).toString('base64'),
+      contentType: response.headers['content-type'] || 'application/octet-stream',
+      bytes: response.data.byteLength
+    };
+  }
+
+  // ── Retry loop ───────────────────────────────────────────────────
+  for (let i = 0; i < retries; i++) {
+    try {
+      // Try net.request first (uses Chromium stack — avoids ETIMEDOUT)
+      const result = await downloadViaNet(url);
+      console.log(`[FileDownload] net.request OK: ${url} → ${result.bytes} bytes (attempt ${i + 1})`);
+      return { ok: true, base64: result.base64, contentType: result.contentType };
+    } catch (netErr) {
+      console.warn(`[FileDownload] net.request attempt ${i + 1} failed (${netErr.code || netErr.message}), trying axios fallback…`);
+      try {
+        const result = await downloadViaAxios(url);
+        console.log(`[FileDownload] axios fallback OK: ${url} → ${result.bytes} bytes (attempt ${i + 1})`);
+        return { ok: true, base64: result.base64, contentType: result.contentType };
+      } catch (axiosErr) {
+        const isRetryable = axiosErr.code === 'ETIMEDOUT' || axiosErr.code === 'ECONNRESET' || netErr.code === 'ETIMEDOUT';
+        console.warn(`[FileDownload] Both strategies failed attempt ${i + 1}: net=${netErr.message}, axios=${axiosErr.message}`);
+        if (i < retries - 1 && isRetryable) {
+          const delay = RETRY_DELAYS[i] || 12000;
+          console.log(`[FileDownload] Waiting ${delay}ms before retry…`);
+          await new Promise(r => setTimeout(r, delay));
+        } else {
+          return { ok: false, error: `${netErr.message} / ${axiosErr.message}` };
+        }
+      }
+    }
+  }
+  return { ok: false, error: 'Max download retries exceeded' };
+});
+
+
 
 // Helper for Frappe Requests (reusing app cookies)
 function createFrappeRequest() {
@@ -783,6 +1303,7 @@ ipcMain.handle('window:openDashboard', async (event, url) => {
   });
 
   return { ok: true };
+
 });
 
 // Close dashboard and return to login
@@ -793,6 +1314,100 @@ ipcMain.handle('window:openLogin', async (event) => {
   if (currentWin) currentWin.close();
   
   return { ok: true };
+});
+
+// ============================================================
+// 🖨️ PHASE 9 — Native PDF Export
+// ============================================================
+// (dialog and shell already imported above; fs and path already required)
+
+
+ipcMain.handle('print:toPDF', async (event, { htmlContent, filename, landscape }) => {
+  const fs   = require('fs');
+  const os   = require('os');
+  let tempHtmlPath = null;
+  let printWin     = null;
+
+  try {
+    // ── 1. Save dialog ──────────────────────────────────────────────────────
+    const downloadsDir = app.getPath('downloads') || app.getPath('desktop');
+    const defaultName  = filename || `fleetrack-report-${Date.now()}.pdf`;
+
+    const { filePath, canceled } = await dialog.showSaveDialog({
+      title: 'Save Report as PDF',
+      defaultPath: path.join(downloadsDir, defaultName),
+      filters: [{ name: 'PDF Files', extensions: ['pdf'] }],
+      buttonLabel: 'Save PDF'
+    });
+
+    if (canceled || !filePath) return { ok: false, canceled: true };
+
+    // ── 2. Write HTML to temp file (avoids data-URL size limits) ───────────
+    tempHtmlPath = path.join(os.tmpdir(), `omnis_pdf_${Date.now()}.html`);
+    fs.writeFileSync(tempHtmlPath, htmlContent, 'utf8');
+
+    // ── 3. Create hidden render window ──────────────────────────────────────
+    printWin = new BrowserWindow({
+      show: false,
+      width: landscape ? 1400 : 1050,
+      height: 1000,
+      webPreferences: {
+        nodeIntegration: false,
+        contextIsolation: true,
+        webSecurity: false
+      }
+    });
+
+    await printWin.loadFile(tempHtmlPath);
+
+    // Give complex tables extra time to render fully
+    await new Promise(resolve => setTimeout(resolve, 1200));
+
+    // ── 4. Print to PDF ─────────────────────────────────────────────────────
+    const pdfData = await printWin.webContents.printToPDF({
+      printBackground: true,
+      landscape: !!landscape,
+      pageSize: 'A4',
+      margins: {
+        marginType: 'custom',
+        top:    0.4,   // inches
+        bottom: 0.4,
+        left:   0.4,
+        right:  0.4
+      }
+    });
+
+    // ── 5. Cleanup render window and temp file ───────────────────────────────
+    printWin.close();
+    printWin = null;
+    try { fs.unlinkSync(tempHtmlPath); } catch (_) {}
+    tempHtmlPath = null;
+
+    // ── 6. Write PDF to chosen path ─────────────────────────────────────────
+    fs.writeFileSync(filePath, pdfData);
+    console.log(`[PDF] Saved: ${filePath}`);
+
+    // ── 7. Open in default viewer ────────────────────────────────────────────
+    shell.openPath(filePath);
+
+    return { ok: true, filePath };
+
+  } catch (err) {
+    console.error('[PDF] Error:', err);
+    if (printWin && !printWin.isDestroyed()) { try { printWin.close(); } catch (_) {} }
+    if (tempHtmlPath) { try { require('fs').unlinkSync(tempHtmlPath); } catch (_) {} }
+    return { ok: false, error: err.message };
+  }
+});
+
+// Open any file path in the system default app
+ipcMain.handle('print:openFile', async (event, filePath) => {
+  try {
+    await shell.openPath(filePath);
+    return { ok: true };
+  } catch (err) {
+    return { ok: false, error: err.message };
+  }
 });
 
 // ✅ AI Image Generation Bridge

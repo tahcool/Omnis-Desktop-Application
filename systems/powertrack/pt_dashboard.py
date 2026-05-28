@@ -1646,3 +1646,207 @@ def get_general_defect_report(region="All"):
     except Exception as e:
         frappe.log_error(f"GDR API Error: {str(e)}", "OMNIS GDR")
         return {"status": "error", "message": str(e)}
+
+
+# ============================================================================
+# CUSTOMER FLEETS → POWERTRACK LINK  (called from Salestrack / Omnis)
+# ============================================================================
+
+@frappe.whitelist(allow_guest=True)
+def get_pt_machines_for_customer(customer=None, serial_number=None, fleet_no=None):
+    """
+    Cross-reference Fleetrack customer/machine data with Powertrack records.
+
+    Match priority:
+      1. serial_number  ↔  Truck.reg_number   (most precise)
+      2. fleet_no       ↔  Truck.fleet_no      (good fallback)
+      3. customer       ↔  Truck.client        (broad customer-level lookup)
+
+    Returns a list of Powertrack trucks with live status:
+      open_breakdowns, active_defects, last_service_date, days_on_bd
+    """
+    try:
+        # ── Decode the WAF-bypass base64 payload from Omnis frontend ─────────
+        try:
+            params = extract_params(payload=None, **frappe.local.form_dict)
+            customer      = customer      or params.get('customer')
+            serial_number = serial_number or params.get('serial_number')
+            fleet_no      = fleet_no      or params.get('fleet_no')
+        except Exception:
+            pass  # fall back to plain function args
+
+        from frappe.utils import today, getdate, date_diff
+
+        if not customer and not serial_number and not fleet_no:
+            return {"machines": [], "count": 0, "error": "No search criteria provided"}
+
+        lockdown = _get_pt_lockdown_filters()
+
+        # ── 1. Find matching trucks ──────────────────────────────────────────
+        truck_filters = []
+        if serial_number:
+            truck_filters.append(["reg_number", "like", f"%{serial_number}%"])
+        elif fleet_no:
+            truck_filters.append(["fleet_no", "=", fleet_no])
+        elif customer:
+            truck_filters.append(["client", "like", f"%{customer}%"])
+
+        trucks = frappe.get_all(
+            "Truck",
+            filters=truck_filters,
+            fields=[
+                "name", "client", "model", "type",
+                "fleet_no", "reg_number", "location",
+                "current_reading", "reading_to_service", "engine_type"
+            ],
+            order_by="name asc",
+            limit_page_length=200,
+            ignore_permissions=True,
+        )
+
+        if not trucks:
+            return {"machines": [], "count": 0}
+
+        lbz_names = [t.name for t in trucks]
+
+        # ── 2. Open breakdown count per truck ────────────────────────────────
+        bd_filters = [
+            ["lbz", "in", lbz_names],
+            ["end_date", "is", "not set"],
+            ["docstatus", "!=", 2],
+        ] + lockdown
+
+        breakdowns = frappe.get_all(
+            "Breakdown Log",
+            filters=bd_filters,
+            fields=["lbz", "severity", "breakdown_date", "status", "location", "description"],
+            order_by="breakdown_date desc",
+            limit_page_length=500,
+            ignore_permissions=True,
+        )
+
+        current_date = getdate(today())
+        bd_map = {}  # lbz → { count, highest_severity, max_days, location, description }
+        for bd in breakdowns:
+            lbz = bd.get("lbz")
+            if lbz not in bd_map:
+                bd_map[lbz] = {
+                    "open_bd_count": 0,
+                    "highest_severity": "Low",
+                    "max_days_on_bd": 0,
+                    "bd_location": bd.get("location") or "—",
+                    "bd_description": bd.get("description") or "—",
+                }
+            entry = bd_map[lbz]
+            entry["open_bd_count"] += 1
+            sev = bd.get("severity") or "Low"
+            sev_rank = {"High": 3, "Medium": 2, "Low": 1}
+            if sev_rank.get(sev, 0) > sev_rank.get(entry["highest_severity"], 0):
+                entry["highest_severity"] = sev
+            bd_date = bd.get("breakdown_date")
+            if bd_date:
+                try:
+                    days = date_diff(current_date, getdate(bd_date))
+                    if days > entry["max_days_on_bd"]:
+                        entry["max_days_on_bd"] = days
+                except Exception:
+                    pass
+
+        # ── 3. Active defect count per truck (if Defects Log exists) ─────────
+        defect_map = {}
+        if frappe.db.exists("DocType", "Defects Log"):
+            defect_filters = [
+                ["lbz", "in", lbz_names],
+                ["end_date", "is", "not set"],
+            ] + lockdown
+            try:
+                defects = frappe.get_all(
+                    "Defects Log",
+                    filters=defect_filters,
+                    fields=["lbz", "importance", "status"],
+                    limit_page_length=500,
+                    ignore_permissions=True,
+                )
+                for d in defects:
+                    lbz = d.get("lbz")
+                    defect_map[lbz] = defect_map.get(lbz, 0) + 1
+            except Exception:
+                pass
+
+        # ── 4. Last service date per truck (if Service Log exists) ────────────
+        service_map = {}
+        if frappe.db.exists("DocType", "Service Log"):
+            try:
+                services = frappe.get_all(
+                    "Service Log",
+                    filters=[["lbz", "in", lbz_names]],
+                    fields=["lbz", "date", "service_reading", "next_service_reading"],
+                    order_by="date desc",
+                    limit_page_length=500,
+                    ignore_permissions=True,
+                )
+                for s in services:
+                    lbz = s.get("lbz")
+                    if lbz not in service_map:
+                        service_map[lbz] = {
+                            "last_service_date": str(s.get("date") or "—"),
+                            "last_service_reading": s.get("service_reading") or 0,
+                            "next_service_reading": s.get("next_service_reading") or 0,
+                        }
+            except Exception:
+                pass
+
+        # ── 5. Assemble result ────────────────────────────────────────────────
+        result = []
+        for t in trucks:
+            lbz = t.name
+            bd_info = bd_map.get(lbz, {})
+            svc_info = service_map.get(lbz, {})
+
+            open_bd   = bd_info.get("open_bd_count", 0)
+            sev       = bd_info.get("highest_severity", "Low") if open_bd else None
+            days_bd   = bd_info.get("max_days_on_bd", 0) if open_bd else 0
+
+            # Status classification for frontend badge
+            if open_bd > 0 and sev == "High":
+                pt_status = "bd_high"
+            elif open_bd > 0:
+                pt_status = "bd_open"
+            else:
+                pt_status = "ok"
+
+            result.append({
+                "lbz":                  lbz,
+                "model":                t.get("model") or "—",
+                "client":               t.get("client") or "—",
+                "fleet_no":             t.get("fleet_no") or "—",
+                "reg_number":           t.get("reg_number") or "—",
+                "location":             t.get("location") or "—",
+                "current_reading":      t.get("current_reading") or 0,
+                "reading_to_service":   t.get("reading_to_service") or 0,
+                "engine_type":          t.get("engine_type") or "—",
+                "open_bd_count":        open_bd,
+                "highest_severity":     sev or "—",
+                "max_days_on_bd":       days_bd,
+                "bd_location":          bd_info.get("bd_location", "—"),
+                "bd_description":       bd_info.get("bd_description", "—"),
+                "active_defects":       defect_map.get(lbz, 0),
+                "last_service_date":    svc_info.get("last_service_date", "—"),
+                "last_service_reading": svc_info.get("last_service_reading", 0),
+                "next_service_reading": svc_info.get("next_service_reading", 0),
+                "pt_status":            pt_status,
+            })
+
+        return {
+            "machines": result,
+            "count": len(result),
+            "customer": customer,
+        }
+
+    except Exception as e:
+        frappe.log_error(f"PT Customer Link Error: {str(e)}\n{frappe.get_traceback()}", "OMNIS PT LINK")
+        return {
+            "machines": [],
+            "count": 0,
+            "error": str(e),
+        }

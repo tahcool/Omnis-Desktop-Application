@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Maintenance Warning Report (MWR)</title>
+<style>
+  :root { --ft-red:#f02510; }
+  .print-format.landscape { font-size: initial !important; }
+  .justify-content-between { justify-content: space-between !important; }
+  .d-flex { display: flex !important; }
+  .ft-logo { width: 250px; margin-bottom: 1.8rem; }
+  .ft-table td, .ft-table th { padding: 5px !important; }
+  .ft-table.ft-table.ft-customer { border: 3px solid #000; border-radius: 3px; }
+  .ft-table.ft-table.ft-customer th, .ft-table.ft-table.ft-customer td { padding: 5px 10px }
+  .ft-table th { text-align: left; }
+  .ft-container { margin: 1rem 1.8rem; }
+  .text-white { color: #fff !important; }
+  table.ft-main thead th { background-color: var(--ft-red); color:#fff; padding:5px 5px; }
+  table.ft-main tbody td { border-bottom: 1px solid #9aa0a61f; }
+  .text-right { text-align: right !important; }
+  .text-center { text-align: center !important; }
+  .ft-bold { font-weight:700; }
+  .no-fold { width:1px !important; white-space:nowrap !important; }
+  .ft-middle { vertical-align: middle !important; }
+  .ft-main>tfoot>tr>td, .ft-main>tfoot>tr>th {
+    border-top:none !important; border-bottom:none !important; padding:5px 10px !important; font-size:.8rem !important;
+  }
+  .ft-main>tbody>tr:last-of-type>td { border-bottom:none !important; }
+  tr { page-break-inside: avoid !important; }
+</style>
+</head>
+<body>
+
+<div class="container-fluid">
+  <div class="d-flex justify-content-between" style="justify-content:center;">
+    <div class="d-flex" style="flex-direction:column;justify-content:center;">
+      <img class="ft-logo" src="/assets/mxg_fleet_track/img/fleetrack-logo.png" alt="Fleetrack Logo">
+    </div>
+    <div class="d-flex" style="flex-direction:column;justify-content:center">
+      <h1 style="font-size:2rem"><b>Maintenance Warning</b> Report (MWR)</h1>
+    </div>
+  </div>
+
+  <div class="flex">
+    <table class="ml-auto">
+      <tr>
+        <th style="background:#000;font-weight:bold;border:1px solid #000 !important" class="text-white text-center">% Efficiency</th>
+        <td style="border:1px solid #000 !important" class="font-weight-bold text-black border border-black">
+          {%= data.length ? data[0]["efficiency"] : "" %}
+        </td>
+      </tr>
+    </table>
+  </div>
+
+  <hr>
+
+  <div class="d-flex justify-content-between">
+    <div>
+      <table>
+        <tr>
+          <th style="padding:2px 5px !important;" class="lead">Prepared by</th>
+          <td style="padding:2px 5px !important;" class="font-weight-bold lead">
+            {%= frappe.user_info().fullname %}
+          </td>
+        </tr>
+        <tr>
+          <th style="padding:2px 5px !important;">Date</th>
+          <td style="padding:2px 5px !important;">
+            {%= frappe.datetime.now_date(true).toLocaleDateString("en-GB") %}
+          </td>
+        </tr>
+      </table>
+    </div>
+  </div>
+
+  <div>
+    <table class="table table-responsive-sm ft-main">
+      <thead>
+        <tr>
+          <th class="no-fold" style="vertical-align:middle !important; background:#f02510 !important; width:10% !important;">Customer</th>
+          <th class="no-fold" style="vertical-align:middle !important; background:#f02510 !important; width:15% !important;">Machine</th>
+          <th class="no-fold" style="vertical-align:middle !important; background:#f02510 !important; width:5% !important;">Date</th>
+          <th class="no-fold" style="vertical-align:middle !important; background:#f02510 !important; width:5% !important;">Mode</th>
+          <th class="no-fold" style="vertical-align:middle !important; background:#f02510 !important; width:16% !important;">Description</th>
+          <th class="no-fold" style="vertical-align:middle !important; background:#f02510 !important; width:11% !important;">Status</th>
+          <th class="no-fold text-center" style="vertical-align:middle !important; background:#f02510 !important; width:5% !important;">Days Elapsed</th>
+          <th class="no-fold" style="vertical-align:middle !important; background:#f02510 !important; width:8% !important;">Date Resolved</th>
+          <th class="no-fold" style="vertical-align:middle !important; background:#f02510 !important; width:5% !important;">Site</th>
+          <th class="no-fold" style="vertical-align:middle !important; background:#f02510 !important; width:5% !important;">Customer Ref</th>
+          <th class="no-fold" style="vertical-align:middle !important; background:#f02510 !important; width:5% !important;">Fleet No</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for (var i=0, l=data.length; i<l; i++) { %}
+        <tr>
+          <td>{%= data[i]["Customer"] %}</td>
+          <td>
+            {%= data[i]["Model"] %}<br>
+            <span style="font-size:0.8em">
+              <b class="text-muted">SRN ▸</b> {%= data[i]["SN"] || "" %}
+            </span><br>
+            <span style="font-size:0.8em">
+              <b class="text-muted">Flags ▸</b> {%= data[i]["Flags"] || "" %}
+            </span>
+          </td>
+          <td>{%= data[i]["Date"] %}</td>
+          <td>{%= data[i]["Mode"] || "" %}</td>
+          <td>{%= data[i]["Description"] %}</td>
+          <td>{%= data[i]["Status"] %}</td>
+          <td class="text-center">{%= data[i]["Days Elapsed"] %}</td>
+          <td>{%= data[i]["Date Resolved"] || "" %}</td>
+          <td>{%= data[i]["Site"] || "" %}</td>
+          <td>{%= data[i]["Customer Ref"] || "" %}</td>
+          <td>{%= data[i]["Fleet No"] || "" %}</td>
+        </tr>
+        {% } %}
+      </tbody>
+
+      <tfoot>
+        <tr>
+          <td colspan="4"></td>
+          <td colspan="2" class="text-white text-center" style="background:#f02510; font-weight:bold !important;">Signatures</td>
+          <td colspan="3"></td>
+        </tr>
+        <tr>
+          <th colspan="2" class="text-white no-fold" style="border:1px solid #f02510; background:#f02510 !important; font-weight:bold !important; width:20% !important;">FT Controller</th>
+          <th colspan="2" class="text-white no-fold" style="border:1px solid #f02510; background:#f02510 !important; font-weight:bold !important; width:20% !important;">PD Controller</th>
+          <th colspan="2" class="text-white text-center no-fold" style="border:1px solid #f02510; background:#f02510 !important; font-weight:bold !important; width:23% !important;">AD Controller</th>
+          <th colspan="2" class="text-white no-fold" style="border:1px solid #f02510; background:#f02510 !important; font-weight:bold !important; width:20% !important;">CSD Supervisor</th>
+          <th colspan="2" class="text-white" style="border:1px solid #f02510; background:#f02510 !important; font-weight:bold !important; width:17% !important;">CSD Manager</th>
+          <th colspan="2" class="text-white" style="border:1px solid #f02510; background:#f02510 !important; font-weight:bold !important; width:17% !important;">MD</th>
+        </tr>
+        <tr>
+          <td colspan="2" style="padding:25px 5px !important; border:1px solid #f02510 !important;"></td>
+          <td colspan="2" style="padding:25px 5px !important; border:1px solid #f02510 !important;"></td>
+          <td colspan="2" style="padding:25px 5px !important; border:1px solid #f02510 !important;"></td>
+          <td colspan="2" style="padding:25px 5px !important; border:1px solid #f02510 !important;"></td>
+          <td colspan="2" style="padding:25px 5px !important; border:1px solid #f02510 !important;"></td>
+          <td colspan="2" style="padding:25px 5px !important; border:1px solid #f02510 !important;"></td>
+        </tr>
+      </tfoot>
+    </table>
+  </div>
+</div>
+
+</body>
+</html>

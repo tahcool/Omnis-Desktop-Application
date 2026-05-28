@@ -1,0 +1,437 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <title>Service Planner (FSD)</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter+Tight:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap"
+      rel="stylesheet" />
+
+    <style>
+      * {
+        font-family: "Inter Tight", sans-serif;
+      }
+    </style>
+  </head>
+  <body
+    class="bg-slate-200 dark:bg-sladte-800"
+    onload="setTimeout(function() { document.refreshForm.submit() }, 1000 * 60)">
+    <!-- csrf_token -->
+    {% if not aux_auth %} {% include "templates/includes/aux_auth.html" %} {% else %}
+    <div class="px-2 mx-auto min-h-screen pt-2">
+      <div class="flex justify-between items-center">
+        <div>
+          <img class="w-56" src="/assets/mxg_fleet_track/img/fleetrack-logo.png" alt="Fleetrack Logo" />
+        </div>
+        <div class="justify-self-start">
+          <h1 class="text-4xl font-extrabold text-gray-700">Field Service Planner (FSP)</h1>
+          <h2 class="text-slate-600 flex justify-between">
+            <div>
+              <a href="/screens" class="font-bold text-gray-700">&larr; Back</a>
+            </div>
+            <form method="post" action="/screens/jrv_workflow_wsd" name="refreshForm">
+              <input type="hidden" name="aux_pin" value="{{ aux_pin }}" />
+              <button type="submit" class="bg-green-800 px-3 rounded text-xs py-0.5 font-bold text-white">
+                Swaps with Workshop Planner
+              </button>
+            </form>
+            <div>Auxiliary Screen Display</div>
+          </h2>
+        </div>
+        <div>
+          <div class="font-mono font-black bg-gray-700 px-5 py-4 rounded text-center shadow-md">
+            <span class="text-white text-center">{{ frappe.format_date(today, "full") }}</span>
+            <br />
+            <span class="mxg-clock text-white text-center font-bold text-4xl p-0 m-0">00:00:00</span>
+          </div>
+        </div>
+      </div>
+
+      <table class="mt-3 w-full text-sm text-left text-gray-400">
+        <thead class="text-xs bg-gray-700 text-gray-400">
+          <tr class="border-none bg-gray-700 border-gray-700">
+            <th scope="row" class="py-1 px-3 text-xl font-medium text-white">JRV</th>
+            <th scope="row" class="py-1 px-3 text-xl font-medium bg-slate-200 text-white border-none">&nbsp;</th>
+
+            <th scope="row" class="py-1 px-3 text-xl font-medium text-white">Pending Quote</th>
+            <th scope="row" class="py-1 px-3 text-xl font-medium bg-slate-200 text-white border-white">&nbsp;</th>
+            <th scope="row" class="py-1 px-3 text-xl font-medium text-white">Parts Load/Buy</th>
+            <th scope="row" class="py-1 px-3 text-xl font-medium bg-slate-200 text-white border-white">&nbsp;</th>
+            <th scope="row" class="py-1 px-3 text-xl font-medium text-white">To Send Quote</th>
+            <th scope="row" class="py-1 px-3 text-xl font-medium bg-slate-200 text-white border-white">&nbsp;</th>
+            <th scope="row" class="py-1 px-3 text-xl font-medium text-white">QFU</th>
+            <th scope="row" class="py-1 px-3 text-xl font-medium bg-slate-200 text-white border-white">&nbsp;</th>
+            <th scope="row" class="py-1 px-3 text-xl font-medium text-white">WSP</th>
+          </tr>
+          <tr class="border-none bg-gray-800 border-gray-700">
+            <td class="py-3 px-6 text-slate-200 text-center font-black text-3xl border-r-gray-700">
+              {{ planner[0]["JRV Stage"] }}
+            </td>
+            <td class="py-3 px-6 text-slate-200 text-center font-black text-3xl bg-slate-200 border-none">&nbsp;</td>
+            <td class="py-3 px-6 text-slate-200 text-center font-black text-3xl border-r-gray-700">
+              {{ planner[0]["Quotation Stage"] }}
+            </td>
+            <td class="py-3 px-6 text-slate-200 text-center font-black text-3xl bg-slate-200 border-none">&nbsp;</td>
+            <td class="py-3 px-6 text-slate-200 text-center font-black text-3xl border-r-gray-700">
+              {{ planner[0]["Quotation or Parts Stage"] }}
+            </td>
+            <td class="py-3 px-6 text-slate-200 text-center font-black text-3xl bg-slate-200 border-none">&nbsp;</td>
+            <td class="py-3 px-6 text-slate-200 text-center font-black text-3xl border-r-gray-700">
+              {{ planner[0]["Quotation to be sent to VC"] }}
+            </td>
+            <td class="py-3 px-6 text-slate-200 text-center font-black text-3xl bg-slate-200 border-none">&nbsp;</td>
+            <td class="py-3 px-6 text-slate-200 text-center font-black text-3xl border-r-gray-700">
+              {{ planner[0]["QFU"] }}
+            </td>
+            <td class="py-3 px-6 text-slate-200 text-center font-black text-3xl bg-slate-200 border-none">&nbsp;</td>
+            <td class="py-3 px-6 text-slate-200 text-center font-black text-3xl border-r-gray-700">
+              {{ planner[0]["Service Plan"] }}
+            </td>
+          </tr>
+        </thead>
+      </table>
+
+      <hr class="border-gray-300 mt-3" />
+      <div class="overflow-x-auto relative shadow-md sm:rounded-sm">
+        <table class="w-full text-sm text-left text-gray-400">
+          <thead class="text-xs uppercase bg-gray-700 text-gray-400">
+            <tr>
+              <th scope="col" colspan="4" class="py-3 bg-slate-200 px-2">&nbsp;</th>
+              <th scope="col" colspan="3" class="py-3 px-2 text-center text-lg text-slate-200">JRV Stage</th>
+            </tr>
+            <tr>
+              <th scope="col" class="py-3 px-2">JRV No.</th>
+              <th scope="col" class="py-3 px-2">Job No.</th>
+              <th scope="col" class="py-3 px-2">Machine</th>
+              <th scope="col" class="py-3 px-2">Description</th>
+              <th scope="col" class="py-3 px-2 text-right">Days on Curr. Stage</th>
+              <th scope="col" class="py-3 px-2 text-right">Days Running</th>
+              <th scope="col" class="py-3 px-2">Responsible People</th>
+            </tr>
+          </thead>
+          <tbody>
+            <!-- prettier-ignore -->
+            {% for jrv in planner %}
+              {% if jrv["workflow_state"] == "JRV Stage" %}
+            <tr class="border-b bg-gray-800 border-gray-700">
+              <td class="py-1 px-2 font-medium text-slate-200">
+                <span class="">{{ jrv["name"] }}</span>
+              </td>
+              <td class="py-1 px-2 font-medium text-slate-200">
+                <span class="">{{ jrv["job_no"]|default("", True) }}</span>
+              </td>
+              <td class="text-nowrap py-1 px-2 font-medium text-slate-200">
+                {{ jrv["customer"] }} ~
+                <b>{{ jrv["location"] }}</b>
+                <br />
+                <b>{{ jrv["machine_model"] }} | {{ jrv["machine_type"] }}</b>
+                <br />
+                <b>SRN~</b>
+                <i>{{ jrv["machine"] }}</i>
+              </td>
+              <td class="py-1 px-2 font-medium text-slate-200">{{ jrv["Description"] }}</td>
+              <td class="text-right py-1 px-2 font-medium text-slate-200">{{ jrv["days_on_current_stage"] }}</td>
+              <td class="text-right py-1 px-2 font-medium text-slate-200">{{ jrv["days_running"] }}</td>
+              <td class="text-left py-1 px-2 font-medium text-slate-200">{{ jrv["responsible_parties"] }}</td>
+            </tr>
+            <!-- prettier-ignore -->
+            {% endif %}
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+      <hr class="border-gray-300 mt-3" />
+      <div class="overflow-x-auto relative shadow-md sm:rounded-sm">
+        <table class="w-full text-sm text-left text-gray-400">
+          <thead class="text-xs uppercase bg-gray-700 text-gray-400">
+            <tr>
+              <th scope="col" colspan="4" class="py-3 bg-slate-200 px-2">&nbsp;</th>
+              <th scope="col" colspan="3" class="py-3 px-2 text-center text-lg text-slate-200">Quotation Stage</th>
+            </tr>
+            <tr>
+              <th scope="col" class="py-3 px-2">JRV No.</th>
+              <th scope="col" class="py-3 px-2">Job No.</th>
+              <th scope="col" class="py-3 px-2">Machine</th>
+              <th scope="col" class="py-3 px-2">Description</th>
+              <th scope="col" class="py-3 px-2 text-right">Days on Curr. Stage</th>
+              <th scope="col" class="py-3 px-2 text-right">Days Running</th>
+              <th scope="col" class="py-3 px-2">Responsible People</th>
+            </tr>
+          </thead>
+          <tbody>
+            <!-- prettier-ignore -->
+            {% for jrv in planner %}
+              {% if jrv["workflow_state"] == "Quotation Stage" %}
+            <tr class="border-b bg-gray-800 border-gray-700">
+              <td class="py-1 px-2 font-medium text-slate-200">
+                <span class="">{{ jrv["name"] }}</span>
+              </td>
+              <td class="py-1 px-2 font-medium text-slate-200">
+                <span class="">{{ jrv["job_no"]|default("", True) }}</span>
+              </td>
+              <td class="text-nowrap py-1 px-2 font-medium text-slate-200">
+                {{ jrv["customer"] }} ~
+                <b>{{ jrv["location"] }}</b>
+                <br />
+                <b>{{ jrv["machine_model"] }} | {{ jrv["machine_type"] }}</b>
+                <br />
+                <b>SRN~</b>
+                <i>{{ jrv["machine"] }}</i>
+              </td>
+              <td class="py-1 px-2 font-medium text-slate-200">{{ jrv["Description"] }}</td>
+              <td class="text-right py-1 px-2 font-medium text-slate-200">{{ jrv["days_on_current_stage"] }}</td>
+              <td class="text-right py-1 px-2 font-medium text-slate-200">{{ jrv["days_running"] }}</td>
+              <td class="text-left py-1 px-2 font-medium text-slate-200">{{ jrv["responsible_parties"] }}</td>
+            </tr>
+            <!-- prettier-ignore -->
+            {% endif %}
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+      <hr class="border-gray-300 mt-3" />
+      <div class="overflow-x-auto relative shadow-md sm:rounded-sm">
+        <table class="w-full text-sm text-left text-gray-400">
+          <thead class="text-xs uppercase bg-gray-700 text-gray-400">
+            <tr>
+              <th scope="col" colspan="4" class="py-3 bg-slate-200 px-2">&nbsp;</th>
+              <th scope="col" colspan="3" class="py-3 px-2 text-center text-lg text-slate-200">Quotation or Parts</th>
+            </tr>
+            <tr>
+              <th scope="col" class="py-3 px-2">JRV No.</th>
+              <th scope="col" class="py-3 px-2">Job No.</th>
+              <th scope="col" class="py-3 px-2">Machine</th>
+              <th scope="col" class="py-3 px-2">Description</th>
+              <th scope="col" class="py-3 px-2 text-right">Days on Curr. Stage</th>
+              <th scope="col" class="py-3 px-2 text-right">Days Running</th>
+              <th scope="col" class="py-3 px-2">Responsible People</th>
+            </tr>
+          </thead>
+          <tbody>
+            <!-- prettier-ignore -->
+            {% for jrv in planner %}
+              {% if jrv["workflow_state"] == "Quotation or Parts Stage" %}
+            <tr class="border-b bg-gray-800 border-gray-700">
+              <td class="py-1 px-2 font-medium text-slate-200">
+                <span class="">{{ jrv["name"] }}</span>
+              </td>
+              <td class="py-1 px-2 font-medium text-slate-200">
+                <span class="">{{ jrv["job_no"]|default("", True) }}</span>
+              </td>
+              <td class="text-nowrap py-1 px-2 font-medium text-slate-200">
+                {{ jrv["customer"] }} ~
+                <b>{{ jrv["location"] }}</b>
+                <br />
+                <b>{{ jrv["machine_model"] }} | {{ jrv["machine_type"] }}</b>
+                <br />
+                <b>SRN~</b>
+                <i>{{ jrv["machine"] }}</i>
+              </td>
+              <td class="py-1 px-2 font-medium text-slate-200">{{ jrv["Description"] }}</td>
+              <td class="text-right py-1 px-2 font-medium text-slate-200">{{ jrv["days_on_current_stage"] }}</td>
+              <td class="text-right py-1 px-2 font-medium text-slate-200">{{ jrv["days_running"] }}</td>
+              <td class="text-left py-1 px-2 font-medium text-slate-200">{{ jrv["responsible_parties"] }}</td>
+            </tr>
+            <!-- prettier-ignore -->
+            {% endif %}
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+      <hr class="border-gray-300 mt-3" />
+      <div class="overflow-x-auto relative shadow-md sm:rounded-sm">
+        <table class="w-full text-sm text-left text-gray-400">
+          <thead class="text-xs uppercase bg-gray-700 text-gray-400">
+            <tr>
+              <th scope="col" colspan="4" class="py-3 bg-slate-200 px-2">&nbsp;</th>
+              <th scope="col" colspan="3" class="py-3 px-2 text-center text-lg text-slate-200">
+                Quotation to be Sent to VC
+              </th>
+            </tr>
+            <tr>
+              <th scope="col" class="py-3 px-2">JRV No.</th>
+              <th scope="col" class="py-3 px-2">Job No.</th>
+              <th scope="col" class="py-3 px-2">Machine</th>
+              <th scope="col" class="py-3 px-2">Description</th>
+              <th scope="col" class="py-3 px-2 text-right">Days on Curr. Stage</th>
+              <th scope="col" class="py-3 px-2 text-right">Days Running</th>
+              <th scope="col" class="py-3 px-2">Responsible People</th>
+            </tr>
+          </thead>
+          <tbody>
+            <!-- prettier-ignore -->
+            {% for jrv in planner %}
+              {% if jrv["workflow_state"] == "Quotation to be sent to VC" %}
+            <tr class="border-b bg-gray-800 border-gray-700">
+              <td class="py-1 px-2 font-medium text-slate-200">
+                <span class="">{{ jrv["name"] }}</span>
+              </td>
+              <td class="py-1 px-2 font-medium text-slate-200">
+                <span class="">{{ jrv["job_no"]|default("", True) }}</span>
+              </td>
+              <td class="text-nowrap py-1 px-2 font-medium text-slate-200">
+                {{ jrv["customer"] }} ~
+                <b>{{ jrv["location"] }}</b>
+                <br />
+                <b>{{ jrv["machine_model"] }} | {{ jrv["machine_type"] }}</b>
+                <br />
+                <b>SRN~</b>
+                <i>{{ jrv["machine"] }}</i>
+              </td>
+              <td class="py-1 px-2 font-medium text-slate-200">{{ jrv["Description"] }}</td>
+              <td class="text-right py-1 px-2 font-medium text-slate-200">{{ jrv["days_on_current_stage"] }}</td>
+              <td class="text-right py-1 px-2 font-medium text-slate-200">{{ jrv["days_running"] }}</td>
+              <td class="text-left py-1 px-2 font-medium text-slate-200">{{ jrv["responsible_parties"] }}</td>
+            </tr>
+            <!-- prettier-ignore -->
+            {% endif %}
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+      <hr class="border-gray-300 mt-3" />
+      <div class="overflow-x-auto relative shadow-md sm:rounded-sm">
+        <table class="w-full text-sm text-left text-gray-400">
+          <thead class="text-xs uppercase bg-gray-700 text-gray-400">
+            <tr>
+              <th scope="col" colspan="4" class="py-3 bg-slate-200 px-2">&nbsp;</th>
+              <th scope="col" colspan="3" class="py-3 px-2 text-center text-lg text-slate-200">QFU</th>
+            </tr>
+            <tr>
+              <th scope="col" class="py-3 px-2">JRV No.</th>
+              <th scope="col" class="py-3 px-2">Job No.</th>
+              <th scope="col" class="py-3 px-2">Machine</th>
+              <th scope="col" class="py-3 px-2">Description</th>
+              <th scope="col" class="py-3 px-2 text-right">Days on Curr. Stage</th>
+              <th scope="col" class="py-3 px-2 text-right">Days Running</th>
+              <th scope="col" class="py-3 px-2">Responsible People</th>
+            </tr>
+          </thead>
+          <tbody>
+            <!-- prettier-ignore -->
+            {% for jrv in planner %}
+              {% if jrv["workflow_state"] == "QFU" %}
+            <tr class="border-b bg-gray-800 border-gray-700">
+              <td class="py-1 px-2 font-medium text-slate-200">
+                <span class="">{{ jrv["name"] }}</span>
+              </td>
+              <td class="py-1 px-2 font-medium text-slate-200">
+                <span class="">{{ jrv["job_no"]|default("", True) }}</span>
+              </td>
+              <td class="text-nowrap py-1 px-2 font-medium text-slate-200">
+                {{ jrv["customer"] }} ~
+                <b>{{ jrv["location"] }}</b>
+                <br />
+                <b>{{ jrv["machine_model"] }} | {{ jrv["machine_type"] }}</b>
+                <br />
+                <b>SRN~</b>
+                <i>{{ jrv["machine"] }}</i>
+              </td>
+              <td class="py-1 px-2 font-medium text-slate-200">{{ jrv["Description"] }}</td>
+              <td class="text-right py-1 px-2 font-medium text-slate-200">{{ jrv["days_on_current_stage"] }}</td>
+              <td class="text-right py-1 px-2 font-medium text-slate-200">{{ jrv["days_running"] }}</td>
+              <td class="text-left py-1 px-2 font-medium text-slate-200">{{ jrv["responsible_parties"] }}</td>
+            </tr>
+            <!-- prettier-ignore -->
+            {% endif %}
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+      <hr class="border-gray-300 mt-3" />
+      <div class="overflow-x-auto relative shadow-md sm:rounded-sm">
+        <table class="w-full text-sm text-left text-gray-400">
+          <thead class="text-xs uppercase bg-gray-700 text-gray-400">
+            <tr>
+              <th scope="col" colspan="4" class="py-3 bg-slate-200 px-2">&nbsp;</th>
+              <th scope="col" colspan="3" class="py-3 px-2 text-center text-lg text-slate-200">Workshop Plan</th>
+            </tr>
+            <tr>
+              <th scope="col" class="py-3 px-2">JRV No.</th>
+              <th scope="col" class="py-3 px-2">Job No.</th>
+              <th scope="col" class="py-3 px-2">Machine</th>
+              <th scope="col" class="py-3 px-2">Description</th>
+              <th scope="col" class="py-3 px-2 text-right">Days on Curr. Stage</th>
+              <th scope="col" class="py-3 px-2 text-right">Days Running</th>
+              <th scope="col" class="py-3 px-2">Responsible People</th>
+            </tr>
+          </thead>
+          <tbody>
+            <!-- prettier-ignore -->
+            {% for jrv in planner %}
+              {% if jrv["workflow_state"] == "Service Plan" %}
+            <tr class="border-b bg-gray-800 border-gray-700">
+              <td class="py-1 px-2 font-medium text-slate-200">
+                <span class="">{{ jrv["name"] }}</span>
+              </td>
+              <td class="py-1 px-2 font-medium text-slate-200">
+                <span class="">{{ jrv["job_no"]|default("", True) }}</span>
+              </td>
+              <td class="text-nowrap py-1 px-2 font-medium text-slate-200">
+                {{ jrv["customer"] }} ~
+                <b>{{ jrv["location"] }}</b>
+                <br />
+                <b>{{ jrv["machine_model"] }} | {{ jrv["machine_type"] }}</b>
+                <br />
+                <b>SRN~</b>
+                <i>{{ jrv["machine"] }}</i>
+              </td>
+              <td class="py-1 px-2 font-medium text-slate-200">{{ jrv["Description"] }}</td>
+              <td class="text-right py-1 px-2 font-medium text-slate-200">{{ jrv["days_on_current_stage"] }}</td>
+              <td class="text-right py-1 px-2 font-medium text-slate-200">{{ jrv["days_running"] }}</td>
+              <td class="text-left py-1 px-2 font-medium text-slate-200">{{ jrv["responsible_parties"] }}</td>
+            </tr>
+            <!-- prettier-ignore -->
+            {% endif %}
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <script
+      src="https://code.jquery.com/jquery-3.6.1.slim.min.js"
+      integrity="sha256-w8CvhFs7iHNVUtnSP0YKEg00p9Ih13rlL9zGqvLdePA="
+      crossorigin="anonymous"></script>
+    <script type="text/javascript">
+      if (!window.frappe) window.frappe = {};
+
+      frappe.csrf_token = "{{ csrf_token }}";
+    </script>
+    <script type="application/javascript">
+      localStorage.setItem("aux_authentication_storage", "1");
+
+      $(".mxg-clock").each(function (i) {
+        let el = $(this);
+        clockify(el);
+
+        let conf = {
+          attributes: true,
+        };
+
+        let cb = function (ms) {
+          for (let m of ms) {
+            clockify(el);
+          }
+        };
+
+        let obs = new MutationObserver(cb);
+        obs.observe(el[0], conf);
+      });
+
+      function clockify(el) {
+        setInterval(function () {
+          let now = new Date();
+
+          let clockStr = now.toTimeString().substr(0, 8);
+          el.html(clockStr);
+        }, 1000);
+      }
+    </script>
+    {% endif %}
+  </body>
+</html>

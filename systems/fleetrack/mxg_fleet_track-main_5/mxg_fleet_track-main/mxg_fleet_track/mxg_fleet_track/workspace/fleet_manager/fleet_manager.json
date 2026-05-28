@@ -1,0 +1,330 @@
+{
+ "charts": [],
+ "content": "[{\"id\":\"UT5zzQ9CeE\",\"type\":\"header\",\"data\":{\"text\":\"<span class=\\\"h2\\\">EPR &amp; Fleet Management</span>\",\"col\":12}},{\"id\":\"Fv20wz7ExS\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Equipment Population Register\",\"col\":3}},{\"id\":\"MLBEhOLdDG\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"General Population Register\",\"col\":3}},{\"id\":\"Cwup4SUhHQ\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"FSD Daily Breakdown Report\",\"col\":3}},{\"id\":\"X-8jEPcwDa\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"WSD Daily Breakdown Report\",\"col\":3}},{\"id\":\"ui7_vKYzxh\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Maintenance Warning Reports\",\"col\":3}},{\"id\":\"DkVlAFzGL8\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Machine Condition Assessments\",\"col\":3}},{\"id\":\"VKvZsYjPpq\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"JRVs\",\"col\":3}},{\"id\":\"4VMDGxHIZW\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Machine Failure Reports\",\"col\":3}},{\"id\":\"RZafBdwsA3\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Service Bulletins\",\"col\":3}},{\"id\":\"If9dsbBQgT\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Fleetrack&trade; Welcome Reports\",\"col\":6}},{\"id\":\"SiOShpCcQD\",\"type\":\"spacer\",\"data\":{\"col\":12}},{\"id\":\"BsQfwRrxjM\",\"type\":\"card\",\"data\":{\"card_name\":\"Manage\",\"col\":3}},{\"id\":\"rC0iBkmoL0\",\"type\":\"card\",\"data\":{\"card_name\":\"Logging\",\"col\":3}},{\"id\":\"meokFsovIO\",\"type\":\"card\",\"data\":{\"card_name\":\"Other\",\"col\":3}},{\"id\":\"BLUlO_t4FC\",\"type\":\"card\",\"data\":{\"card_name\":\"Reports\",\"col\":3}}]",
+ "creation": "2022-10-08 13:26:56.265522",
+ "custom_blocks": [],
+ "docstatus": 0,
+ "doctype": "Workspace",
+ "for_user": "",
+ "hide_custom": 0,
+ "icon": "spacer",
+ "idx": 0,
+ "is_hidden": 0,
+ "label": "Fleet Manager",
+ "links": [
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Other",
+   "link_count": 4,
+   "onboard": 0,
+   "type": "Card Break"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Regions",
+   "link_count": 0,
+   "link_to": "FT Region",
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Locations",
+   "link_count": 0,
+   "link_to": "FT Location",
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Technicians",
+   "link_count": 0,
+   "link_to": "FT Technician",
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Fleetrack\u2122 Settings",
+   "link_count": 0,
+   "link_to": "Fleetrack Settings",
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Logging",
+   "link_count": 5,
+   "onboard": 0,
+   "type": "Card Break"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Service History",
+   "link_count": 0,
+   "link_to": "FT Service Log",
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Weekly HMR Log",
+   "link_count": 0,
+   "link_to": "FT HMR Log",
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Breakdowns",
+   "link_count": 0,
+   "link_to": "FT Breakdown Log",
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Defects",
+   "link_count": 0,
+   "link_to": "FT Defects Log",
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Alerts",
+   "link_count": 0,
+   "link_to": "FT Alert",
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Manage",
+   "link_count": 6,
+   "onboard": 0,
+   "type": "Card Break"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Customers",
+   "link_count": 0,
+   "link_to": "FT Customer",
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Machine Register",
+   "link_count": 0,
+   "link_to": "FT Machine",
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Machine Types",
+   "link_count": 0,
+   "link_to": "FT Machine Type",
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Machine Models",
+   "link_count": 0,
+   "link_to": "FT Machine Model",
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "OEMs",
+   "link_count": 0,
+   "link_to": "FT Machine OEM",
+   "link_type": "DocType",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Backups",
+   "link_count": 0,
+   "link_to": "backups",
+   "link_type": "Page",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 0,
+   "label": "Reports",
+   "link_count": 4,
+   "onboard": 0,
+   "type": "Card Break"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 1,
+   "label": "GDR",
+   "link_count": 0,
+   "link_to": "General Defects Report (GDR)",
+   "link_type": "Report",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 1,
+   "label": "MDR",
+   "link_count": 0,
+   "link_to": "Major Defects Report (MDR)",
+   "link_type": "Report",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 1,
+   "label": "RDR",
+   "link_count": 0,
+   "link_to": "RDR",
+   "link_type": "Report",
+   "onboard": 0,
+   "type": "Link"
+  },
+  {
+   "hidden": 0,
+   "is_query_report": 1,
+   "label": "DBR",
+   "link_count": 0,
+   "link_to": "Daily Breakdown Report (DBR)",
+   "link_type": "Report",
+   "onboard": 0,
+   "type": "Link"
+  }
+ ],
+ "modified": "2024-07-29 13:57:35.451940",
+ "modified_by": "Administrator",
+ "module": "MXG Fleet Track",
+ "name": "Fleet Manager",
+ "number_cards": [],
+ "owner": "Administrator",
+ "parent_page": "",
+ "public": 1,
+ "quick_lists": [],
+ "roles": [],
+ "sequence_id": 1.0,
+ "shortcuts": [
+  {
+   "color": "Grey",
+   "doc_view": "List",
+   "label": "WSD Daily Breakdown Report",
+   "link_to": "WSD Daily Breakdown Report",
+   "type": "Report"
+  },
+  {
+   "color": "Grey",
+   "doc_view": "List",
+   "format": "{}",
+   "label": "Fleetrack&trade; Welcome Reports",
+   "link_to": "FT Machine Welcome Report",
+   "stats_filter": "{\"name\":[\"is\",\"set\"]}",
+   "type": "DocType"
+  },
+  {
+   "color": "Grey",
+   "doc_view": "List",
+   "label": "Machine Failure Reports",
+   "link_to": "FT Machine Failure",
+   "stats_filter": "{\"name\":[\"is\",\"set\"]}",
+   "type": "DocType"
+  },
+  {
+   "color": "Grey",
+   "doc_view": "List",
+   "label": "Maintenance Warning Reports",
+   "link_to": "FT Maintenance Warning Report",
+   "stats_filter": "{\"name\":[\"is\",\"set\"]}",
+   "type": "DocType"
+  },
+  {
+   "color": "Grey",
+   "doc_view": "List",
+   "format": "{}",
+   "label": "Service Bulletins",
+   "link_to": "FT Service Bulletin",
+   "stats_filter": "{\"name\":[\"is\",\"set\"]}",
+   "type": "DocType"
+  },
+  {
+   "color": "Grey",
+   "doc_view": "List",
+   "label": "Machine Condition Assessments",
+   "link_to": "FT Machine Condition Assessment",
+   "stats_filter": "{\"name\":[\"is\",\"set\"]}",
+   "type": "DocType"
+  },
+  {
+   "color": "Grey",
+   "doc_view": "List",
+   "label": "FSD Daily Breakdown Report",
+   "link_to": "FSD Daily Breakdown Report",
+   "type": "Report"
+  },
+  {
+   "color": "Grey",
+   "doc_view": "List",
+   "label": "Equipment Population Register",
+   "link_to": "Equipment Population Register",
+   "type": "Report"
+  },
+  {
+   "color": "Grey",
+   "doc_view": "List",
+   "label": "JRVs",
+   "link_to": "FT JRV",
+   "stats_filter": "{\"name\":[\"is\",\"set\"]}",
+   "type": "DocType"
+  },
+  {
+   "color": "Grey",
+   "doc_view": "List",
+   "label": "General Population Register",
+   "link_to": "General Population Register",
+   "type": "Report"
+  }
+ ],
+ "title": "Fleet Manager"
+}

@@ -1,0 +1,23 @@
+[
+ {
+  "color": "#000000",
+  "docstatus": 0,
+  "doctype": "Color",
+  "modified": "2022-10-08 22:17:52.276170",
+  "name": "Black"
+ },
+ {
+  "color": "#d60000",
+  "docstatus": 0,
+  "doctype": "Color",
+  "modified": "2022-10-08 22:33:59.320759",
+  "name": "Red"
+ },
+ {
+  "color": "#262626",
+  "docstatus": 0,
+  "doctype": "Color",
+  "modified": "2022-10-08 22:46:15.501148",
+  "name": "FT Black"
+ }
+]

@@ -1,0 +1,101 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "creation": "2023-10-08 15:44:28.134134",
+ "default_view": "List",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "item",
+  "column_break_eikmy",
+  "qty",
+  "column_break_6fuyw",
+  "oem_part_no",
+  "column_break_dxwv6",
+  "alt_part_no",
+  "column_break_ov94v",
+  "alt_part_no_1",
+  "column_break_xnoxn",
+  "alt_part_no_2"
+ ],
+ "fields": [
+  {
+   "columns": 2,
+   "fieldname": "item",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Description",
+   "options": "FT Machine Service Item",
+   "reqd": 1
+  },
+  {
+   "fieldname": "column_break_eikmy",
+   "fieldtype": "Column Break"
+  },
+  {
+   "columns": 1,
+   "fieldname": "qty",
+   "fieldtype": "Int",
+   "in_list_view": 1,
+   "label": "Qty",
+   "reqd": 1
+  },
+  {
+   "fieldname": "column_break_6fuyw",
+   "fieldtype": "Column Break"
+  },
+  {
+   "columns": 1,
+   "fieldname": "oem_part_no",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "OEM Part No"
+  },
+  {
+   "fieldname": "column_break_dxwv6",
+   "fieldtype": "Column Break"
+  },
+  {
+   "columns": 1,
+   "fieldname": "alt_part_no",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Alt. Part No"
+  },
+  {
+   "fieldname": "column_break_ov94v",
+   "fieldtype": "Column Break"
+  },
+  {
+   "columns": 1,
+   "fieldname": "alt_part_no_1",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Alt. Part No"
+  },
+  {
+   "fieldname": "column_break_xnoxn",
+   "fieldtype": "Column Break"
+  },
+  {
+   "columns": 1,
+   "fieldname": "alt_part_no_2",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Alt. Part No"
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "istable": 1,
+ "links": [],
+ "modified": "2023-10-08 15:44:28.134134",
+ "modified_by": "Administrator",
+ "module": "MXG Fleet Track",
+ "name": "FT Machine Filters and Belts",
+ "owner": "Administrator",
+ "permissions": [],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": []
+}

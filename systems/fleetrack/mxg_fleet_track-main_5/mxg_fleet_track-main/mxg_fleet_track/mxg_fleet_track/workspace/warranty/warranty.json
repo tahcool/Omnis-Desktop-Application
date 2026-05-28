@@ -1,0 +1,70 @@
+{
+ "charts": [],
+ "content": "[{\"id\":\"HWMKrt1_gr\",\"type\":\"header\",\"data\":{\"text\":\"<span class=\\\"h1\\\">Warranty Management</span>\",\"col\":12}},{\"id\":\"oA_mozQ6Nc\",\"type\":\"spacer\",\"data\":{\"col\":12}},{\"id\":\"_AuwESAxqB\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"New Claim\",\"col\":3}},{\"id\":\"1GhN7bB_ms\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Weekly Warranty Update\",\"col\":3}},{\"id\":\"V30e1cJOK3\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Claims to Submit\",\"col\":3}},{\"id\":\"-Y54IFQWlS\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Pending OEM Approval\",\"col\":3}},{\"id\":\"vQi3CcDeE0\",\"type\":\"shortcut\",\"data\":{\"shortcut_name\":\"Submitted Claims\",\"col\":3}}]",
+ "creation": "2022-10-11 21:07:42.350175",
+ "custom_blocks": [],
+ "docstatus": 0,
+ "doctype": "Workspace",
+ "for_user": "",
+ "hide_custom": 0,
+ "icon": "quality",
+ "idx": 0,
+ "is_hidden": 0,
+ "label": "Warranty",
+ "links": [],
+ "modified": "2023-11-05 19:41:12.999586",
+ "modified_by": "Administrator",
+ "module": "MXG Fleet Track",
+ "name": "Warranty",
+ "number_cards": [],
+ "owner": "Administrator",
+ "parent_page": "",
+ "public": 1,
+ "quick_lists": [],
+ "roles": [],
+ "sequence_id": 4.0,
+ "shortcuts": [
+  {
+   "color": "Grey",
+   "doc_view": "List",
+   "label": "Weekly Warranty Update",
+   "link_to": "Weekly Warranty Update (WWU)",
+   "type": "Report"
+  },
+  {
+   "color": "Grey",
+   "doc_view": "List",
+   "format": "{}",
+   "label": "Submitted Claims",
+   "link_to": "FT Warranty Claim",
+   "stats_filter": "{\"status\":[\"=\",\"Submitted\"]}",
+   "type": "DocType"
+  },
+  {
+   "color": "Orange",
+   "doc_view": "List",
+   "format": "{}",
+   "label": "Claims to Submit",
+   "link_to": "FT Warranty Claim",
+   "stats_filter": "{\"status\":[\"=\",\"To Submit\"]}",
+   "type": "DocType"
+  },
+  {
+   "color": "Orange",
+   "doc_view": "New",
+   "label": "New Claim",
+   "link_to": "FT Warranty Claim",
+   "type": "DocType"
+  },
+  {
+   "color": "Grey",
+   "doc_view": "List",
+   "format": "{}",
+   "label": "Pending OEM Approval",
+   "link_to": "FT Warranty Claim",
+   "stats_filter": "{\"approval_status\":[\"=\",\"Pending\"]}",
+   "type": "DocType"
+  }
+ ],
+ "title": "Warranty"
+}

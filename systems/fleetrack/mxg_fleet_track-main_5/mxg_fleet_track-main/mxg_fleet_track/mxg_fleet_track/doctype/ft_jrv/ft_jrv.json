@@ -1,0 +1,419 @@
+{
+ "actions": [],
+ "allow_import": 1,
+ "allow_rename": 1,
+ "autoname": "format:JRV-{#####}",
+ "creation": "2023-09-09 20:25:23.411050",
+ "default_view": "List",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "machine_section",
+  "machine",
+  "engine_make",
+  "machine_type",
+  "machine_model",
+  "column_break_wh4tf",
+  "customer",
+  "customer_ref",
+  "engine_srn",
+  "column_break_n7zxh",
+  "fleet_no",
+  "current_hmr",
+  "location",
+  "hours_to_service",
+  "location_and_customer_details_section",
+  "machine_location",
+  "contact_person",
+  "column_break_9wr3p",
+  "date_issued",
+  "phone_no",
+  "column_break_a1zxs",
+  "status",
+  "job_details_section",
+  "date",
+  "job_no",
+  "date_invoiced",
+  "column_break_0knxr",
+  "days_running",
+  "invoice_no",
+  "value",
+  "column_break_qmrae",
+  "nature",
+  "date_quote_sent",
+  "column_break_if5fl",
+  "responsibility",
+  "days_on_current_stage",
+  "description_of_work_required_section",
+  "description",
+  "column_break_zu3t4",
+  "detailed_description",
+  "pick_description_from",
+  "photographic_details_section",
+  "machine_data_plate",
+  "column_break_3f3o4",
+  "engine_data_plate",
+  "amended_from",
+  "lost_job_section",
+  "lost_reason"
+ ],
+ "fields": [
+  {
+   "fieldname": "machine",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Machine",
+   "options": "FT Machine",
+   "reqd": 1
+  },
+  {
+   "fetch_from": "machine.engine_type",
+   "fieldname": "engine_make",
+   "fieldtype": "Data",
+   "label": "Engine Make"
+  },
+  {
+   "fieldname": "column_break_wh4tf",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fetch_from": "machine.customer",
+   "fieldname": "customer",
+   "fieldtype": "Link",
+   "label": "Customer",
+   "options": "FT Customer",
+   "read_only": 1
+  },
+  {
+   "fetch_from": "machine.fleet_no",
+   "fieldname": "customer_ref",
+   "fieldtype": "Data",
+   "label": "Customer Ref"
+  },
+  {
+   "fetch_from": "machine.esn",
+   "fieldname": "engine_srn",
+   "fieldtype": "Data",
+   "label": "Engine SRN",
+   "read_only": 1
+  },
+  {
+   "fieldname": "column_break_n7zxh",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fetch_from": "machine.mxg_fleet_no",
+   "fieldname": "fleet_no",
+   "fieldtype": "Data",
+   "label": "Fleet No",
+   "read_only": 1
+  },
+  {
+   "fetch_from": "machine.current_hmr",
+   "fieldname": "current_hmr",
+   "fieldtype": "Float",
+   "label": "Current HMR",
+   "read_only": 1
+  },
+  {
+   "fetch_from": "machine.hours_remaining_to_service",
+   "fieldname": "hours_to_service",
+   "fieldtype": "Float",
+   "label": "Hours To Service",
+   "read_only": 1
+  },
+  {
+   "collapsible": 1,
+   "fieldname": "location_and_customer_details_section",
+   "fieldtype": "Section Break",
+   "label": "Location & Customer Details"
+  },
+  {
+   "fetch_from": "machine.location",
+   "fieldname": "machine_location",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Machine Location",
+   "options": "FT Location",
+   "reqd": 1
+  },
+  {
+   "fieldname": "contact_person",
+   "fieldtype": "Data",
+   "label": "Contact Person (Site)"
+  },
+  {
+   "fieldname": "status",
+   "fieldtype": "Select",
+   "label": "Status",
+   "options": "To Quote\nActivated"
+  },
+  {
+   "fieldname": "column_break_a1zxs",
+   "fieldtype": "Column Break"
+  },
+  {
+   "default": "Today",
+   "fieldname": "date_issued",
+   "fieldtype": "Date",
+   "label": "Date Issued"
+  },
+  {
+   "fieldname": "phone_no",
+   "fieldtype": "Data",
+   "label": "Phone No"
+  },
+  {
+   "fieldname": "job_details_section",
+   "fieldtype": "Section Break",
+   "label": "Job Details"
+  },
+  {
+   "fieldname": "job_no",
+   "fieldtype": "Data",
+   "label": "Job No",
+   "unique": 1
+  },
+  {
+   "default": "1",
+   "fieldname": "days_running",
+   "fieldtype": "Int",
+   "label": "Days Running",
+   "read_only": 1
+  },
+  {
+   "fieldname": "nature",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "label": "Nature",
+   "options": "\nDefects\nService\nService + Defect\nBreakdown\nModification\nOther",
+   "reqd": 1
+  },
+  {
+   "fieldname": "column_break_0knxr",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "date_quote_sent",
+   "fieldtype": "Date",
+   "label": "Date Quote Sent"
+  },
+  {
+   "fieldname": "date_invoiced",
+   "fieldtype": "Date",
+   "label": "Date Invoiced"
+  },
+  {
+   "fieldname": "description_of_work_required_section",
+   "fieldtype": "Section Break",
+   "label": "Description of Work Required"
+  },
+  {
+   "fieldname": "description",
+   "fieldtype": "Table",
+   "label": "Description",
+   "options": "FT JRV Details"
+  },
+  {
+   "fieldname": "photographic_details_section",
+   "fieldtype": "Section Break",
+   "label": "Photographic Details"
+  },
+  {
+   "fetch_from": "machine.machine_data_plate",
+   "fieldname": "machine_data_plate",
+   "fieldtype": "Attach Image",
+   "label": "Machine Data Plate"
+  },
+  {
+   "fieldname": "column_break_3f3o4",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fetch_from": "machine.engine_data_plate",
+   "fieldname": "engine_data_plate",
+   "fieldtype": "Attach Image",
+   "label": "Engine Data Plate"
+  },
+  {
+   "fetch_from": "machine.type",
+   "fieldname": "machine_type",
+   "fieldtype": "Link",
+   "label": "Machine Type",
+   "options": "FT Machine Type",
+   "read_only": 1
+  },
+  {
+   "fieldname": "column_break_qmrae",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "column_break_if5fl",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "column_break_9wr3p",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "column_break_zu3t4",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "detailed_description",
+   "fieldtype": "Table",
+   "label": "Detailed Description",
+   "options": "FT JRV Detailed Description"
+  },
+  {
+   "depends_on": "eval: [\"Defects\", \"Service + Defect\", \"Breakdown\"].indexOf(doc.nature) !== -1",
+   "fieldname": "pick_description_from",
+   "fieldtype": "Button",
+   "label": "Pick From Defects/BD"
+  },
+  {
+   "fetch_from": "machine.model",
+   "fieldname": "machine_model",
+   "fieldtype": "Link",
+   "label": "Machine Model",
+   "options": "FT Machine Model",
+   "read_only": 1
+  },
+  {
+   "fieldname": "amended_from",
+   "fieldtype": "Link",
+   "label": "Amended From",
+   "no_copy": 1,
+   "options": "FT JRV",
+   "print_hide": 1,
+   "read_only": 1
+  },
+  {
+   "fieldname": "invoice_no",
+   "fieldtype": "Data",
+   "label": "Invoice No"
+  },
+  {
+   "fieldname": "responsibility",
+   "fieldtype": "Select",
+   "label": "Responsibility (WSD/FSD)",
+   "options": "\nFSD\nWSD",
+   "reqd": 1
+  },
+  {
+   "fieldname": "days_on_current_stage",
+   "fieldtype": "Int",
+   "label": "Days on Current Stage",
+   "read_only": 1
+  },
+  {
+   "fetch_from": "machine.location",
+   "fieldname": "location",
+   "fieldtype": "Link",
+   "label": "Location",
+   "options": "FT Location",
+   "read_only": 1
+  },
+  {
+   "fieldname": "value",
+   "fieldtype": "Currency",
+   "label": "Value"
+  },
+  {
+   "collapsible": 1,
+   "fieldname": "machine_section",
+   "fieldtype": "Section Break",
+   "label": "Machine"
+  },
+  {
+   "default": "Today",
+   "fieldname": "date",
+   "fieldtype": "Date",
+   "label": "Date"
+  },
+  {
+   "collapsible": 1,
+   "fieldname": "lost_job_section",
+   "fieldtype": "Section Break",
+   "label": "Lost Job"
+  },
+  {
+   "fieldname": "lost_reason",
+   "fieldtype": "Select",
+   "label": "Reason",
+   "options": "\nToo Expensive\nVC Fixing Inhouse\nOther"
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "is_submittable": 1,
+ "links": [],
+ "modified": "2023-10-08 10:29:30.483410",
+ "modified_by": "Administrator",
+ "module": "MXG Fleet Track",
+ "name": "FT JRV",
+ "name_case": "UPPER CASE",
+ "naming_rule": "Expression",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "create": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "MXG-STANDARD",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "MXG-CONTROLLER",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "MXG-READ-ONLY",
+   "share": 1
+  },
+  {
+   "create": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "MXG-MD",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": [],
+ "track_changes": 1
+}

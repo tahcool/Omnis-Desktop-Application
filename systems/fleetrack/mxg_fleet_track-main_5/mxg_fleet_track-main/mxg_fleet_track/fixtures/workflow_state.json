@@ -1,0 +1,119 @@
+[
+ {
+  "docstatus": 0,
+  "doctype": "Workflow State",
+  "icon": "question-sign",
+  "modified": "2023-08-09 15:41:43.875776",
+  "name": "Pending",
+  "style": "",
+  "workflow_state_name": "Pending"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "Workflow State",
+  "icon": "ok-sign",
+  "modified": "2023-08-09 15:41:43.877870",
+  "name": "Approved",
+  "style": "Success",
+  "workflow_state_name": "Approved"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "Workflow State",
+  "icon": "remove",
+  "modified": "2023-08-09 15:41:43.880042",
+  "name": "Rejected",
+  "style": "Danger",
+  "workflow_state_name": "Rejected"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "Workflow State",
+  "icon": "",
+  "modified": "2023-09-18 12:31:58.531986",
+  "name": "JRV Stage",
+  "style": "Primary",
+  "workflow_state_name": "JRV Stage"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "Workflow State",
+  "icon": "",
+  "modified": "2023-09-18 12:32:06.392862",
+  "name": "Quotation Stage",
+  "style": "",
+  "workflow_state_name": "Quotation Stage"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "Workflow State",
+  "icon": "",
+  "modified": "2023-09-18 12:32:16.457829",
+  "name": "Quotation or Parts Stage",
+  "style": "",
+  "workflow_state_name": "Quotation or Parts Stage"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "Workflow State",
+  "icon": "",
+  "modified": "2023-09-18 12:32:38.959266",
+  "name": "Quotation to be sent to VC",
+  "style": "",
+  "workflow_state_name": "Quotation to be sent to VC"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "Workflow State",
+  "icon": "",
+  "modified": "2023-09-18 12:32:46.124060",
+  "name": "QFU",
+  "style": "",
+  "workflow_state_name": "QFU"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "Workflow State",
+  "icon": "",
+  "modified": "2023-09-18 14:23:10.988955",
+  "name": "Lost",
+  "style": "",
+  "workflow_state_name": "Lost"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "Workflow State",
+  "icon": "",
+  "modified": "2023-09-18 14:24:19.445638",
+  "name": "Service Plan",
+  "style": "",
+  "workflow_state_name": "Service Plan"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "Workflow State",
+  "icon": "",
+  "modified": "2023-09-18 15:01:55.906429",
+  "name": "Complete",
+  "style": "Primary",
+  "workflow_state_name": "Complete"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "Workflow State",
+  "icon": "",
+  "modified": "2023-10-06 10:03:30.072260",
+  "name": "To Complete",
+  "style": "",
+  "workflow_state_name": "To Complete"
+ },
+ {
+  "docstatus": 0,
+  "doctype": "Workflow State",
+  "icon": "",
+  "modified": "2023-11-13 18:55:27.391317",
+  "name": "Pending Approval",
+  "style": "",
+  "workflow_state_name": "Pending Approval"
+ }
+]

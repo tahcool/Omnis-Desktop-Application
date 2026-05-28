@@ -1,0 +1,270 @@
+{
+ "actions": [],
+ "allow_import": 1,
+ "allow_rename": 1,
+ "autoname": "format:",
+ "creation": "2022-10-09 22:57:50.578007",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "on_hold",
+  "ted_status",
+  "section_break_27",
+  "resp",
+  "fsb",
+  "machine",
+  "model",
+  "customer",
+  "warranty_status",
+  "column_break_2",
+  "oem",
+  "location",
+  "fleetrack_managed",
+  "breakdown_details_section",
+  "category",
+  "description",
+  "end_date",
+  "bd_duration",
+  "column_break_8",
+  "breakdown_date",
+  "status",
+  "section_break_17",
+  "days_on_bd",
+  "dobd_col_br",
+  "parts_eta",
+  "oeta_col_br",
+  "out_eta",
+  "section_break_19",
+  "ted",
+  "last_col_br_oeta",
+  "red"
+ ],
+ "fields": [
+  {
+   "fieldname": "machine",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "Machine",
+   "options": "FT Machine",
+   "reqd": 1
+  },
+  {
+   "fieldname": "column_break_2",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fetch_from": "machine.oem",
+   "fieldname": "oem",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "OEM",
+   "options": "FT Machine OEM",
+   "read_only": 1
+  },
+  {
+   "fetch_from": "machine.customer",
+   "fieldname": "customer",
+   "fieldtype": "Link",
+   "label": "Customer",
+   "options": "FT Customer",
+   "read_only": 1
+  },
+  {
+   "fieldname": "breakdown_date",
+   "fieldtype": "Date",
+   "in_list_view": 1,
+   "label": "Breakdown Date",
+   "reqd": 1
+  },
+  {
+   "fetch_from": "machine.location",
+   "fetch_if_empty": 1,
+   "fieldname": "location",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Location",
+   "options": "FT Location"
+  },
+  {
+   "fieldname": "breakdown_details_section",
+   "fieldtype": "Section Break",
+   "hide_border": 1
+  },
+  {
+   "fieldname": "column_break_8",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "description",
+   "fieldtype": "Data",
+   "label": "Description",
+   "reqd": 1
+  },
+  {
+   "fieldname": "status",
+   "fieldtype": "Data",
+   "label": "Status",
+   "reqd": 1
+  },
+  {
+   "fieldname": "days_on_bd",
+   "fieldtype": "Int",
+   "in_list_view": 1,
+   "label": "Days on BD",
+   "read_only": 1
+  },
+  {
+   "fieldname": "end_date",
+   "fieldtype": "Date",
+   "label": "Breakdown End Date",
+   "read_only": 1
+  },
+  {
+   "fetch_from": "machine.model",
+   "fieldname": "model",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "Model",
+   "options": "FT Machine Model",
+   "read_only": 1
+  },
+  {
+   "fetch_from": "machine.fleetrack_managed",
+   "fieldname": "fleetrack_managed",
+   "fieldtype": "Select",
+   "label": "On Fleetrack&trade;?",
+   "options": "No\nYes",
+   "read_only": 1
+  },
+  {
+   "fetch_from": "machine.warranty_status",
+   "fieldname": "warranty_status",
+   "fieldtype": "Select",
+   "label": "Warranty Status",
+   "options": "N/A\nUnder Warranty\nOut of Warranty",
+   "read_only": 1
+  },
+  {
+   "fieldname": "parts_eta",
+   "fieldtype": "Date",
+   "label": "Parts ETA"
+  },
+  {
+   "depends_on": "eval:(!doc.on_hold && doc.ted_status !== \"TBA\")",
+   "fieldname": "ted",
+   "fieldtype": "Date",
+   "label": "TED",
+   "mandatory_depends_on": "eval:(!doc.on_hold && doc.ted_status !== \"TBA\")",
+   "read_only_depends_on": "eval:doc.ted"
+  },
+  {
+   "fieldname": "red",
+   "fieldtype": "Date",
+   "label": "RED"
+  },
+  {
+   "fieldname": "fsb",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "resp",
+   "fieldtype": "Select",
+   "label": "Responsibility",
+   "options": "FSD\nWSD",
+   "reqd": 1
+  },
+  {
+   "fieldname": "section_break_19",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "last_col_br_oeta",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "section_break_17",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "dobd_col_br",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "oeta_col_br",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "out_eta",
+   "fieldtype": "Date",
+   "label": "Outwork ETA"
+  },
+  {
+   "fieldname": "section_break_27",
+   "fieldtype": "Section Break"
+  },
+  {
+   "default": "0",
+   "fieldname": "on_hold",
+   "fieldtype": "Check",
+   "label": "On Hold?"
+  },
+  {
+   "depends_on": "eval:!doc.on_hold",
+   "fieldname": "ted_status",
+   "fieldtype": "Select",
+   "label": "TED Status",
+   "mandatory_depends_on": "eval:!doc.on_hold",
+   "options": "\nAvailable\nTBA\nCompeted\nAwaiting Go Ahead\nNo Go Ahead"
+  },
+  {
+   "fieldname": "bd_duration",
+   "fieldtype": "Int",
+   "label": "BD Duration (Hrs)",
+   "read_only": 1
+  },
+  {
+   "fieldname": "category",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "in_preview": 1,
+   "in_standard_filter": 1,
+   "label": "Category",
+   "options": "FT BD Category",
+   "reqd": 1
+  }
+ ],
+ "in_create": 1,
+ "index_web_pages_for_search": 1,
+ "links": [],
+ "modified": "2024-01-25 17:00:57.557713",
+ "modified_by": "Administrator",
+ "module": "MXG Fleet Track",
+ "name": "FT Breakdown Log",
+ "naming_rule": "Expression",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "quick_entry": 1,
+ "search_fields": "machine",
+ "show_title_field_in_link": 1,
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": [],
+ "title_field": "description",
+ "track_changes": 1
+}

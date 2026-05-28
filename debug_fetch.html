@@ -1,0 +1,13 @@
+<!DOCTYPE html><html><body><script>
+async function testFetch() {
+  try {
+    const url = "https://salestrack.powerstar.co.zw/api/method/powerstar_salestrack.omnis_dashboard.get_dashboard_kpis";
+    const fetchUrl = "omnis-proxy.php?url=" + encodeURIComponent(url);
+    const res = await fetch(fetchUrl, { method: "POST", headers: { "X-Omnis-Data": "test" }, body: "foo=bar" });
+    document.body.innerHTML += "OK: " + res.status;
+  } catch (e) {
+    document.body.innerHTML += "ERR: " + e.message;
+  }
+}
+testFetch();
+</script></body></html>

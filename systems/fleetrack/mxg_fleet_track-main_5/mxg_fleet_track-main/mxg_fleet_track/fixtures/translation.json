@@ -1,0 +1,28 @@
+[
+ {
+  "context": null,
+  "contributed": 0,
+  "contribution_docname": null,
+  "contribution_status": "",
+  "docstatus": 0,
+  "doctype": "Translation",
+  "language": "en",
+  "modified": "2023-09-15 02:06:27.864572",
+  "name": "6f74990b73",
+  "source_text": "FT Breakdown Log",
+  "translated_text": "Breakdown Log"
+ },
+ {
+  "context": null,
+  "contributed": 0,
+  "contribution_docname": null,
+  "contribution_status": "",
+  "docstatus": 0,
+  "doctype": "Translation",
+  "language": "en",
+  "modified": "2023-09-15 02:06:42.855983",
+  "name": "44330488ad",
+  "source_text": "FT Defects Log",
+  "translated_text": "Defects Log"
+ }
+]

@@ -461,12 +461,13 @@ window.OmnisDashboardV6 = class OmnisDashboardV6 {
         this.renderRiskCard();
         this.renderHeaderStats();
         this.renderCompanyChart();
+        this.renderMTDTargets();
         this.renderOEMChart();
     }
 
     async loadStage(period, method, label, renderCallback) {
         const CACHE_TTL = 12 * 60 * 60 * 1000; // 12 Hours
-        const CACHE_VERSION = "v8"; // Increment to invalidate old structure
+        const CACHE_VERSION = "v13"; // Hardcoded JS targets: SP=16, ME=18
         const cacheKey = `omnis_dash_cache_${method}_${period}_${CACHE_VERSION}`;
 
         // 1. Check & Always Render Cache First (Ghost Loading)
@@ -1619,6 +1620,10 @@ window.OmnisDashboardV6 = class OmnisDashboardV6 {
         this.filterHotLeadsModal();
     }
 
+    // ══════════════════════════════════════════════════════════════════════════
+    // OEM PROCUREMENT INTELLIGENCE TABLE
+    // ══════════════════════════════════════════════════════════════════════════
+
     // NEW: High-Fidelity OEM Chart with Auto-Cycle
     renderOEMChart() {
         const container = document.getElementById('widget-oem-chart');
@@ -1660,13 +1665,14 @@ window.OmnisDashboardV6 = class OmnisDashboardV6 {
                 },
                 events: {
                     dataPointSelection: (event, chartContext, config) => {
-                        // &#x270F; Only open the modal if the selection was a REAL user click
+                        // ✏ Only open the modal if the selection was a REAL user click
                         if (!event) return;
-
                         const oemName = labels[config.dataPointIndex];
-                        if (oemName) {
-                            this.openOEMBreakdownModal(oemName);
-                        }
+                        if (oemName) this.openOEMBreakdownModal(oemName);
+                    },
+                    legendClick: (chartContext, seriesIndex) => {
+                        const oemName = labels[seriesIndex];
+                        if (oemName) this.openOEMBreakdownModal(oemName);
                     }
                 }
             },
@@ -1678,20 +1684,33 @@ window.OmnisDashboardV6 = class OmnisDashboardV6 {
             plotOptions: {
                 pie: {
                     donut: {
-                        size: '72%',
+                        size: '76%',  // slightly larger hole gives more text room
                         labels: {
                             show: true,
-                            name: { show: true, fontSize: '15px', fontWeight: 600, color: '#64748b', offsetY: 45 }, // More space
-                            value: { show: true, fontSize: '34px', fontWeight: 800, color: '#1e293b', offsetY: -20 }, // Pushed up & slightly smaller
+                            name: {
+                                show: true,
+                                fontSize: '13px',
+                                fontWeight: 600,
+                                color: '#64748b',
+                                offsetY: 30
+                            },
+                            value: {
+                                show: true,
+                                fontSize: '17px', // reduced from 34px — fits long names without overflow
+                                fontWeight: 800,
+                                color: '#1e293b',
+                                offsetY: -12
+                            },
                             total: {
                                 show: true,
                                 showAlways: true,
                                 label: `${series[0]} units (${totalUnits > 0 ? ((series[0] / totalUnits) * 100).toFixed(1) : 0}%)`,
-                                color: '#94a3b8', // Consistent muted slate
-                                fontSize: '15px',
+                                color: '#94a3b8',
+                                fontSize: '13px',
                                 fontWeight: 600,
                                 formatter: () => {
-                                    return labels[0];
+                                    const n = labels[0] || '';
+                                    return n.length > 20 ? n.substring(0, 18) + '\u2026' : n;
                                 }
                             }
                         }
@@ -1712,15 +1731,17 @@ window.OmnisDashboardV6 = class OmnisDashboardV6 {
                     return val + ": " + opts.w.globals.series[opts.seriesIndex];
                 }
             },
-            // High-Contrast Vivid Management Palette (Theme-Aligned)
-            colors: ['#1e40af', '#8b2219', '#059669', '#d97706', '#7c3aed', '#db2777', '#0891b2', '#4b5563', '#1e293b']
+            // Full initial palette — one colour per label, cycling palette if > 15 OEMs
+            colors: labels.map((_, i) => (['#1e40af','#8b2219','#059669','#d97706','#7c3aed','#db2777','#0891b2','#4b5563','#1e293b','#0f766e','#7e22ce','#b45309','#be123c','#0369a1','#15803d'])[i % 15])
         };
 
         container.innerHTML = "";
         const chart = new ApexCharts(container, options);
         chart.render();
 
-        // &#x1F680; Auto-Cycle Engine with Slice Highlighting (Theme Merged)
+        // 🚀 Auto-Cycle Engine — highlights one slice at a time across ALL OEMs
+        const basePalette = ['#1e40af', '#8b2219', '#059669', '#d97706', '#7c3aed', '#db2777', '#0891b2', '#4b5563', '#1e293b', '#0f766e', '#7e22ce', '#b45309', '#be123c', '#0369a1', '#15803d'];
+
         this.oemCycleInterval = setInterval(() => {
             if (!document.getElementById('widget-oem-chart')) {
                 clearInterval(this.oemCycleInterval);
@@ -1728,13 +1749,15 @@ window.OmnisDashboardV6 = class OmnisDashboardV6 {
             }
 
             this.oemCycleIndex = (this.oemCycleIndex + 1) % labels.length;
-            const currentOEM = labels[this.oemCycleIndex];
-            const currentQty = series[this.oemCycleIndex];
-            const currentPct = totalUnits > 0 ? ((currentQty / totalUnits) * 100).toFixed(1) : 0;
+            const currentOEM  = labels[this.oemCycleIndex];
+            const currentQty  = series[this.oemCycleIndex];
+            const currentPct  = totalUnits > 0 ? ((currentQty / totalUnits) * 100).toFixed(1) : 0;
 
-            // &#x1F4A1; Highlight the current slice (using theme-native opacity)
-            const basePalette = ['#1e40af', '#8b2219', '#059669', '#d97706', '#7c3aed', '#db2777', '#0891b2', '#4b5563', '#1e293b'];
-            const cycleColors = basePalette.map((c, i) => i === this.oemCycleIndex ? c : c + '22'); // 22 is ~13% opacity for a cleaner look
+            // Build a colour for EVERY label — dim all except the active one
+            const cycleColors = labels.map((_, i) => {
+                const base = basePalette[i % basePalette.length];
+                return i === this.oemCycleIndex ? base : base + '28'; // ~16% opacity
+            });
 
             chart.updateOptions({
                 colors: cycleColors,
@@ -1742,67 +1765,25 @@ window.OmnisDashboardV6 = class OmnisDashboardV6 {
                     pie: {
                         donut: {
                             labels: {
-                                total: {
+                        total: {
                                     label: `${currentQty} units (${currentPct}%)`,
-                                    formatter: () => currentOEM
+                                    formatter: () => {
+                                        const n = currentOEM || '';
+                                        return n.length > 20 ? n.substring(0, 18) + '\u2026' : n;
+                                    }
                                 }
                             }
                         }
                     }
                 }
-            }, false, true);
+            }, false, false); // animate=false prevents the double-flash
         }, 4000);
 
-        // Render KPI Table
+        // Render KPI Table — Smart Procurement Intelligence
         const kpisContainer = document.getElementById('widget-oem-kpis');
         if (kpisContainer) {
-            kpisContainer.style.display = 'block'; // Override grid layout from index.html if present
-
-            let kpiHtml = `
-            <div style="background:#fff; border:1px solid #e2e8f0; border-radius:12px; overflow:hidden; box-shadow:0 4px 20px rgba(0,0,0,0.03);">
-                <table style="width:100%; border-collapse:collapse; font-size:13px; text-align:left;">
-                    <thead>
-                        <tr style="background:#f8fafc; border-bottom:2px solid #e2e8f0;">
-                            <th style="padding:16px 20px; font-weight:800; color:#475569; text-transform:uppercase; letter-spacing:0.05em;">Brand</th>
-                            <th style="padding:16px 20px; font-weight:800; color:#475569; text-transform:uppercase; letter-spacing:0.05em;">Total Sales</th>
-                            <th style="padding:16px 20px; font-weight:800; color:#475569; text-transform:uppercase; letter-spacing:0.05em;">Movement /Mo</th>
-                            <th style="padding:16px 20px; font-weight:800; color:#475569; text-transform:uppercase; letter-spacing:0.05em;">Pipeline (Quotes)</th>
-                            <th style="padding:16px 20px; font-weight:800; color:#475569; text-transform:uppercase; letter-spacing:0.05em;">Conv %</th>
-                            <th style="padding:16px 20px; font-weight:800; color:#475569; text-transform:uppercase; letter-spacing:0.05em;">Top Model</th>
-                            <th style="padding:16px 20px; font-weight:800; color:#059669; text-transform:uppercase; letter-spacing:0.05em;">Suggested Order</th>
-                            <th style="padding:16px 20px; font-weight:800; color:#475569; text-transform:uppercase; letter-spacing:0.05em;">Total Target</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-            `;
-
-            oemData.forEach(d => {
-                const sales = d.sales !== undefined ? d.sales : (d.total_qty || 0);
-                const quotes = d.quotes || 0;
-                const convRate = quotes > 0 ? ((sales / quotes) * 100).toFixed(1) : 0;
-                const velocity = d.monthly_velocity || 0;
-                const suggest = d.suggested_order || 0;
-                const mostBought = d.most_bought || "N/A";
-                const recStock = d.recommended_stock || 0;
-
-                kpiHtml += `
-                        <tr style="border-bottom:1px solid #f1f5f9; transition:background 0.2s;" onmouseover="this.style.background='#f8fafc';" onmouseout="this.style.background='transparent';">
-                            <td style="padding:16px 20px; font-weight:800; color:#0f172a;">${d.oem}</td>
-                            <td style="padding:16px 20px; font-weight:700; color:#0f172a;">${sales}</td>
-                            <td style="padding:16px 20px; font-weight:700; color:#475569;">${velocity} <span style="font-size:10px; opacity:0.6;">units/mo</span></td>
-                            <td style="padding:16px 20px; font-weight:700; color:#0f172a;">${quotes}</td>
-                            <td style="padding:16px 20px;"><span style="background:#f0f9ff; color:#0369a1; padding:4px 8px; border-radius:6px; font-size:11px; font-weight:800;">${convRate}%</span></td>
-                            <td style="padding:16px 20px; color:#475569; font-weight:600; max-width:180px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;" title="${mostBought}">${mostBought}</td>
-                            <td style="padding:16px 20px;"><span style="background:linear-gradient(135deg, #059669, #047857); color:#fff; padding:6px 12px; border-radius:6px; font-size:13px; font-weight:900; box-shadow:0 2px 4px rgba(5,150,105,0.2);">${suggest} <span style="font-size:10px; font-weight:600; opacity:0.9;">Units</span></span></td>
-                            <td style="padding:16px 20px;"><span style="background:#f1f5f9; color:#475569; padding:6px 12px; border-radius:6px; font-size:12px; font-weight:800;">${recStock}</span></td>
-                        </tr>
-                `;
-            });
-            kpiHtml += `
-                    </tbody>
-                </table>
-            </div>`;
-            kpisContainer.innerHTML = kpiHtml;
+            window._oemTableData = oemData; // cache for filter re-render
+            window._renderOEMProcurementTable(kpisContainer, oemData, 'This Year');
         }
 
         // Render Quick Insights
@@ -3847,6 +3828,196 @@ window.OmnisDashboardV6 = class OmnisDashboardV6 {
         container.innerHTML = html;
     }
 
+    renderMTDTargets() {
+        const cardsEl = document.getElementById('mtd-company-cards');
+        const labelEl = document.getElementById('mtd-month-label');
+        const badgeEl = document.getElementById('mtd-overall-badge');
+        if (!cardsEl) return;
+
+        const companySales = this.data?.company_sales || {};
+        const companies    = Object.keys(companySales);
+
+        // Month / year label
+        const now       = new Date();
+        const monthName = now.toLocaleString('default', { month: 'long' });
+        const year      = now.getFullYear();
+        const day       = now.getDate();
+        if (labelEl) labelEl.textContent = `${monthName} ${year} — Day ${day} of month`;
+
+        if (!companies.length) {
+            cardsEl.innerHTML = `<div style="color:#94a3b8;text-align:center;padding:40px;">No company data available.</div>`;
+            return;
+        }
+
+        // Overall MTD badge (combined)
+        const totalMTD    = companies.reduce((s, c) => s + (companySales[c].mtd         || 0), 0);
+        const totalMTDTgt = companies.reduce((s, c) => s + (companySales[c].mtd_target  || 0), 0);
+        const overallPct  = totalMTDTgt > 0 ? Math.round((totalMTD / totalMTDTgt) * 100) : 0;
+        if (badgeEl) {
+            const isAhead = overallPct >= 100;
+            const isMid   = overallPct >= 60;
+            badgeEl.textContent      = `MTD ${overallPct}% — ${Math.round(totalMTD)} / ${totalMTDTgt} units`;
+            badgeEl.style.background = isAhead ? '#f0fdf4' : (isMid ? '#fffbeb' : '#fef2f2');
+            badgeEl.style.color      = isAhead ? '#16a34a' : (isMid ? '#d97706' : '#dc2626');
+        }
+        // ── Mirror to top KPI strip (legacy) ──
+        const kpiUnits = document.getElementById('dash-kpi-mtd-units');
+        if (kpiUnits) kpiUnits.textContent = Math.round(totalMTD);
+        const kpiPct = document.getElementById('dash-kpi-mtd-pct');
+        if (kpiPct) {
+            kpiPct.textContent = overallPct + '%';
+            kpiPct.style.color = overallPct >= 100 ? '#16a34a' : (overallPct >= 60 ? '#d97706' : '#dc2626');
+        }
+        const kpiSub = document.getElementById('dash-kpi-mtd-sub');
+        if (kpiSub) kpiSub.textContent = `${Math.round(totalMTD)} of ${totalMTDTgt} units`;
+
+        const barBlock = (actual, target, colorKey) => {
+            const isG = colorKey >= 100, isY = colorKey >= 60;
+            const col = isG ? '#16a34a' : (isY ? '#d97706' : '#dc2626');
+            const pct = target > 0 ? Math.min((actual / target) * 100, 100) : 0;
+            return { pct, col };
+        };
+
+        // ── Target resolver — source of truth is here, not the backend ──
+        const resolveTargets = (name) => {
+            const up = name.toUpperCase();
+            if (up.includes('SINO') || up.includes('SINOPOWER'))     return { mtd: 16, ytd: 192 };
+            if (up.includes('MACH') || up.includes('EXCHANGE'))       return { mtd: 18, ytd: 216 };
+            return { mtd: 10, ytd: 120 }; // default
+        };
+
+        // ── Populate per-company header cards ──
+        const setCard = (pfx, actual, target, col) => {
+            const pct = target > 0 ? Math.min(Math.round((actual / target) * 100), 999) : 0;
+            const isG = pct >= 100, isY = pct >= 60;
+            const color = isG ? '#16a34a' : (isY ? col : '#dc2626');
+            const barW  = target > 0 ? Math.min((actual / target) * 100, 100).toFixed(1) : 0;
+            const el = (id) => document.getElementById(id);
+            if (el(`${pfx}`))      el(`${pfx}`).textContent      = Math.round(actual);
+            if (el(`${pfx}-tgt`))  el(`${pfx}-tgt`).textContent  = `/ ${target}`;
+            if (el(`${pfx}-pct`))  { el(`${pfx}-pct`).textContent = `${pct}%`; el(`${pfx}-pct`).style.color = color; }
+            if (el(`${pfx}-bar`))  el(`${pfx}-bar`).style.width   = `${barW}%`;
+            if (el(`${pfx}-note`)) el(`${pfx}-note`).textContent  = actual >= target ? '✓ Target hit!' : `Need ${target - Math.round(actual)} more`;
+        };
+        companies.forEach(compName => {
+            const c    = companySales[compName];
+            const tgts = resolveTargets(compName);
+            const up   = compName.toUpperCase();
+            if (up.includes('SINO') || up.includes('SINOPOWER')) {
+                setCard('dash-sino-mtd', c.mtd || 0, tgts.mtd, '#8b2219');
+                setCard('dash-sino-ytd', c.ytd || 0, tgts.ytd, '#8b2219');
+            } else if (up.includes('MACH') || up.includes('EXCHANGE')) {
+                setCard('dash-mxg-mtd', c.mtd || 0, tgts.mtd, '#1e3a5f');
+                setCard('dash-mxg-ytd', c.ytd || 0, tgts.ytd, '#1e3a5f');
+            }
+        });
+
+        cardsEl.innerHTML = companies.map(compName => {
+            const c           = companySales[compName];
+            const mtd         = c.mtd || 0;
+            const ytd         = c.ytd || 0;
+            const tgts        = resolveTargets(compName);
+            const mtdTarget   = tgts.mtd;
+            const ytdTarget   = tgts.ytd;
+            const daysElapsed = c.days_elapsed  || day;
+            const daysInMonth = c.days_in_month || 30;
+
+            // MTD calcs
+            const mtdPct     = mtdTarget > 0 ? Math.min((mtd / mtdTarget) * 100, 100) : 0;
+            const mtdPace    = daysElapsed > 0 ? Math.round((mtd / daysElapsed) * daysInMonth) : 0;
+            const mtdPacePct = mtdTarget > 0 ? Math.min((mtdPace / mtdTarget) * 100, 100) : 0;
+            const mtdVar     = mtd - Math.round((mtdTarget / daysInMonth) * daysElapsed);
+
+            // YTD calcs
+            const ytdPct        = ytdTarget > 0 ? Math.min((ytd / ytdTarget) * 100, 100) : 0;
+            const monthsElapsed = now.getMonth() + (day / daysInMonth);
+            const ytdExpected   = Math.round((ytdTarget / 12) * monthsElapsed);
+            const ytdVar        = ytd - ytdExpected;
+
+            // Colours
+            const mtdIsG = mtdPct >= 100, mtdIsY = mtdPct >= 60;
+            const mtdCol = mtdIsG ? '#16a34a' : (mtdIsY ? '#d97706' : '#dc2626');
+            const mtdBg  = mtdIsG ? '#f0fdf4' : (mtdIsY ? '#fffbeb' : '#fef2f2');
+            const mtdTxt = mtdIsG ? '#15803d' : (mtdIsY ? '#b45309' : '#b91c1c');
+
+            const ytdIsG = ytdPct >= 100, ytdIsY = ytdPct >= 60;
+            const ytdCol = ytdIsG ? '#16a34a' : (ytdIsY ? '#d97706' : '#dc2626');
+            const ytdBg  = ytdIsG ? '#f0fdf4' : (ytdIsY ? '#fffbeb' : '#fef2f2');
+            const ytdTxt = ytdIsG ? '#15803d' : (ytdIsY ? '#b45309' : '#b91c1c');
+
+            // Top 3 models
+            const topModels    = (c.breakdown || []).sort((a, b) => b.qty - a.qty).slice(0, 3);
+            const topModelHtml = topModels.length
+                ? topModels.map(m => `<span style="background:#f1f5f9;color:#475569;font-size:10px;font-weight:700;padding:2px 6px;border-radius:6px;">${m.model}: ${m.qty}</span>`).join(' ')
+                : `<span style="color:#94a3b8;font-size:10px;">No model detail</span>`;
+
+            // Compact callout helper
+            const callout = (actual, target, col, bg) =>
+                actual >= target
+                    ? `<span style="font-size:10px;font-weight:800;color:#15803d;background:#dcfce7;padding:1px 7px;border-radius:99px;">✓ Hit!</span>`
+                    : `<span style="font-size:10px;font-weight:700;color:${col};">Need <strong>${target - Math.round(actual)}</strong> more</span>`;
+
+            return `
+            <div style="background:#fff;border:1px solid #e2e8f0;border-radius:14px;padding:14px 16px;transition:box-shadow 0.2s,border-color 0.2s;overflow:hidden;min-width:0;"
+                 onmouseover="this.style.boxShadow='0 6px 20px rgba(0,0,0,0.07)';this.style.borderColor='#cbd5e1';"
+                 onmouseout="this.style.boxShadow='none';this.style.borderColor='#e2e8f0';">
+
+                <!-- Company name row -->
+                <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
+                    <div style="font-size:13px;font-weight:800;color:#0f172a;display:flex;align-items:center;gap:7px;">
+                        <span style="width:7px;height:7px;border-radius:50%;background:#8b2219;flex-shrink:0;"></span>
+                        ${compName}
+                    </div>
+                    <span style="font-size:10px;font-weight:700;color:#64748b;background:#f1f5f9;padding:2px 8px;border-radius:6px;">Pace ${mtdPace}u/mo</span>
+                </div>
+
+                <!-- ── COMPACT MTD | YTD GRID ── -->
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;min-width:0;">
+
+                    <!-- MTD -->
+                    <div style="border-radius:10px;padding:10px 12px;background:${mtdBg};border-top:2px solid ${mtdCol};">
+                        <div style="font-size:9px;font-weight:900;color:${mtdTxt};text-transform:uppercase;letter-spacing:0.1em;margin-bottom:5px;">MTD</div>
+                        <div style="display:flex;align-items:baseline;gap:3px;margin-bottom:1px;">
+                            <span style="font-size:26px;font-weight:900;color:#0f172a;line-height:1;letter-spacing:-0.03em;">${Math.round(mtd)}</span>
+                            <span style="font-size:11px;font-weight:600;color:#94a3b8;">/ ${mtdTarget}</span>
+                        </div>
+                        <div style="font-size:10px;color:#64748b;font-weight:500;margin-bottom:7px;">units this month</div>
+                        <div style="position:relative;height:5px;background:#e2e8f0;border-radius:99px;margin-bottom:6px;">
+                            <div style="position:absolute;top:0;left:0;height:100%;width:${mtdPacePct.toFixed(1)}%;background:${mtdCol}30;border-radius:99px;"></div>
+                            <div style="position:absolute;top:0;left:0;height:100%;width:${mtdPct.toFixed(1)}%;background:${mtdCol};border-radius:99px;box-shadow:0 1px 3px ${mtdCol}55;transition:width 0.8s ease;"></div>
+                        </div>
+                        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:5px;">
+                            <span style="font-size:14px;font-weight:900;color:${mtdTxt};">${Math.round(mtdPct)}%</span>
+                            <span style="font-size:9px;font-weight:700;color:${mtdVar >= 0 ? '#16a34a' : '#dc2626'};">${mtdVar >= 0 ? '+' : ''}${Math.round(mtdVar)} vs pace</span>
+                        </div>
+                        ${callout(mtd, mtdTarget, mtdCol, mtdBg)}
+                    </div>
+
+                    <!-- YTD -->
+                    <div style="border-radius:10px;padding:10px 12px;background:${ytdBg};border-top:2px solid ${ytdCol};">
+                        <div style="font-size:9px;font-weight:900;color:${ytdTxt};text-transform:uppercase;letter-spacing:0.1em;margin-bottom:5px;">YTD</div>
+                        <div style="display:flex;align-items:baseline;gap:3px;margin-bottom:1px;">
+                            <span style="font-size:26px;font-weight:900;color:#0f172a;line-height:1;letter-spacing:-0.03em;">${Math.round(ytd)}</span>
+                            <span style="font-size:11px;font-weight:600;color:#94a3b8;">/ ${ytdTarget}</span>
+                        </div>
+                        <div style="font-size:10px;color:#64748b;font-weight:500;margin-bottom:7px;">units this year</div>
+                        <div style="position:relative;height:5px;background:#e2e8f0;border-radius:99px;margin-bottom:6px;">
+                            <div style="position:absolute;top:0;left:0;height:100%;width:${ytdPct.toFixed(1)}%;background:${ytdCol};border-radius:99px;box-shadow:0 1px 3px ${ytdCol}55;transition:width 0.9s ease;"></div>
+                        </div>
+                        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:5px;">
+                            <span style="font-size:14px;font-weight:900;color:${ytdTxt};">${Math.round(ytdPct)}%</span>
+                            <span style="font-size:9px;font-weight:700;color:${ytdVar >= 0 ? '#16a34a' : '#dc2626'};">${ytdVar >= 0 ? '+' : ''}${Math.round(ytdVar)} vs exp.</span>
+                        </div>
+                        ${callout(ytd, ytdTarget, ytdCol, ytdBg)}
+                    </div>
+                </div>
+
+                <!-- Top models -->
+                <div style="display:flex;flex-wrap:wrap;gap:4px;margin-top:10px;">${topModelHtml}</div>
+            </div>`;
+        }).join('');
+    }
+
     renderCompanyChart() {
         const container = document.getElementById('widget-company-chart');
         if (!container) return;
@@ -4575,17 +4746,17 @@ window.OmnisDashboardV6 = class OmnisDashboardV6 {
                     <td style="padding:12px; border-bottom:1px solid #f1f5f9;">
                         <input type="text" class="m-item" data-item="${m.item || ''}" value="${(m.item_name || m.machine || m.item || '').replace(/\"/g, '&quot;')}" placeholder="Machine/Item" style="width:100%; padding:8px; border:1px solid #cbd5e1; border-radius:6px; font-size:12px; background:white;">
                     </td>
-                     <td style="padding:12px; border-bottom:1px solid #f1f5f9;">
-                        <input type="text" class="m-serial" value="${(m.serial_no || '').replace(/\"/g, '&quot;')}" placeholder="Serial" style="width:100%; padding:8px; border:1px solid #cbd5e1; border-radius:6px; font-size:12px; background:white;">
-                    </td>
                     <td style="padding:12px; border-bottom:1px solid #f1f5f9;">
                         <input type="number" class="m-qty" value="${m.qty || 1}" style="width:100%; padding:10px 8px; border:1px solid #cbd5e1; border-radius:8px; font-size:14px; font-weight:700; text-align:center; background:white; color:#0f172a; box-shadow:inset 0 1px 2px rgba(0,0,0,0.02);">
                     </td>
                     <td style="padding:12px; border-bottom:1px solid #f1f5f9;">
-                        <input type="date" class="m-target" value="${m.target_handover_date || m.target_handover || ''}" style="width:100%; padding:8px; border:1px solid #cbd5e1; border-radius:6px; font-size:12px; background:white;">
+                        <input type="date" class="m-target" value="${m.target_handover_date || m.target_handover || ''}" readonly style="width:100%; padding:8px; border:1px solid #e2e8f0; border-radius:6px; font-size:12px; background:#f1f5f9; color:#64748b; cursor:not-allowed;" title="Target date is locked and cannot be changed">
                     </td>
                     <td style="padding:12px; border-bottom:1px solid #f1f5f9;">
                         <input type="date" class="m-revised" value="${m.revised_handover_date || m.revised_handover || ''}" style="width:100%; padding:8px; border:1px solid #cbd5e1; border-radius:6px; font-size:12px; background:white;">
+                    </td>
+                    <td style="padding:12px; border-bottom:1px solid #f1f5f9;">
+                        <input type="date" class="m-actual" value="${m.actual_handover_date || ''}" style="width:100%; padding:8px; border:1px solid #cbd5e1; border-radius:6px; font-size:12px; background:white;">
                     </td>
                     <td style="padding:10px 12px; border-bottom:1px solid #f1f5f9;">
                          <div style="display:flex; gap:8px; align-items:stretch; width:100%;">
@@ -4675,12 +4846,12 @@ window.OmnisDashboardV6 = class OmnisDashboardV6 {
                        <table style="width:100%; border-collapse:collapse; font-size:13px;">
                            <thead style="background:#8b2219; color:white; font-weight:800; font-size:11px; text-transform:uppercase; letter-spacing:0.05em;">
                                <tr>
-                                   <th style="padding:16px 12px; text-align:left; width:18%; color:white;">Machine / Item</th>
-                                   <th style="padding:16px 12px; text-align:left; width:16%; color:white;">Serial No</th>
-                                   <th style="padding:16px 12px; text-align:center; width:8%; color:white;">Qty</th>
+                                   <th style="padding:16px 12px; text-align:left; width:22%; color:white;">Machine / Item</th>
+                                   <th style="padding:16px 12px; text-align:center; width:6%; color:white;">Qty</th>
                                    <th style="padding:16px 12px; text-align:left; width:13%; color:white;">Target Date</th>
                                    <th style="padding:16px 12px; text-align:left; width:13%; color:white;">Revised Date</th>
-                                   <th style="padding:16px 12px; text-align:left; width:32%; color:white;">Status</th>
+                                   <th style="padding:16px 12px; text-align:left; width:13%; color:white;">Actual Date</th>
+                                   <th style="padding:16px 12px; text-align:left; width:33%; color:white;">Status</th>
                                </tr>
                            </thead>
                            <tbody id="machines-tbody">
@@ -4747,7 +4918,7 @@ window.OmnisDashboardV6 = class OmnisDashboardV6 {
            </div>
        `;
 
-        this.openListModal("Edit Order Details", content, "1100px");
+        this.openListModal("Edit Order Details", content, "1400px");
         this.refreshContactsTable(); // ✅ Populate contacts and bind listeners immediately
 
         // Bind Listeners (Safe method for quotes)
@@ -4783,10 +4954,10 @@ window.OmnisDashboardV6 = class OmnisDashboardV6 {
 
         row.innerHTML = `
             <td style="padding:12px; border-bottom:1px solid #f1f5f9;"><input type="text" class="new-item" placeholder="Model Name" style="width:100%; padding:8px; border:1px solid #cbd5e1; border-radius:6px; font-size:12px; background:white;"></td>
-            <td style="padding:12px; border-bottom:1px solid #f1f5f9;"><input type="text" class="new-serial" placeholder="Serial" style="width:100%; padding:8px; border:1px solid #cbd5e1; border-radius:6px; font-size:12px; background:white;"></td>
             <td style="padding:12px; border-bottom:1px solid #f1f5f9;"><input type="number" class="new-qty" value="1" style="width:100%; padding:8px; border:1px solid #cbd5e1; border-radius:6px; font-size:12px; text-align:center; background:white;"></td>
             <td style="padding:12px; border-bottom:1px solid #f1f5f9;"><input type="date" class="new-target" style="width:100%; padding:8px; border:1px solid #cbd5e1; border-radius:6px; font-size:12px; background:white;"></td>
             <td style="padding:12px; border-bottom:1px solid #f1f5f9;"><input type="date" class="new-revised" style="width:100%; padding:8px; border:1px solid #cbd5e1; border-radius:6px; font-size:12px; background:white;"></td>
+            <td style="padding:12px; border-bottom:1px solid #f1f5f9;"><input type="date" class="new-actual" style="width:100%; padding:8px; border:1px solid #cbd5e1; border-radius:6px; font-size:12px; background:white;"></td>
             <td style="padding:10px 12px; border-bottom:1px solid #f1f5f9;">
                 <div style="display:flex; gap:8px; align-items:stretch; width:100%;">
                     <textarea class="new-notes" rows="2" placeholder="Notes" style="flex:1; min-height:60px; padding:8px; border:1px solid #cbd5e1; border-radius:8px; font-size:12px; font-family:inherit; background:white; line-height:1.4; resize:vertical;"></textarea>
@@ -4879,6 +5050,7 @@ window.OmnisDashboardV6 = class OmnisDashboardV6 {
                 const mQty = row.querySelector('.m-qty')?.value;
                 const mTarget = row.querySelector('.m-target')?.value;
                 const mRevised = row.querySelector('.m-revised')?.value;
+                const mActual = row.querySelector('.m-actual')?.value;
                 const mNotes = row.querySelector('.m-notes')?.value;
                 const mImg1 = row.querySelector('.m-img-one')?.value;
                 const mImg2 = row.querySelector('.m-img-two')?.value;
@@ -4890,6 +5062,7 @@ window.OmnisDashboardV6 = class OmnisDashboardV6 {
                     qty: mQty,
                     target_handover_date: mTarget,
                     revised_handover_date: mRevised,
+                    actual_handover_date: mActual || null,
                     notes: mNotes,
                     images_one: mImg1,
                     image_two: mImg2
@@ -4905,6 +5078,7 @@ window.OmnisDashboardV6 = class OmnisDashboardV6 {
             const mQty = row.querySelector('.new-qty')?.value;
             const mTarget = row.querySelector('.new-target')?.value;
             const mRevised = row.querySelector('.new-revised')?.value;
+            const mActual = row.querySelector('.new-actual')?.value;
             const mNotes = row.querySelector('.new-notes')?.value;
             const mImg1 = row.querySelector('.new-img-one')?.value;
             const mImg2 = row.querySelector('.new-img-two')?.value;
@@ -4916,6 +5090,7 @@ window.OmnisDashboardV6 = class OmnisDashboardV6 {
                     qty: mQty,
                     target_handover_date: mTarget,
                     revised_handover_date: mRevised,
+                    actual_handover_date: mActual || null,
                     notes: mNotes,
                     images_one: mImg1,
                     image_two: mImg2
@@ -5719,18 +5894,22 @@ window.OmnisDashboardV6 = class OmnisDashboardV6 {
                 ? `${previewContact.salutation} ${previewContact.name}`
                 : previewContact.name;
 
-            const company = this._currentFullDoc?.company || "";
+            const company = (this._currentFullDoc?.company || "").toLowerCase();
+            const owner = (this._currentFullDoc?.owner || "").toLowerCase();
+            const isSinopower = company.includes("sinopower") || owner.includes("sinopower");
+            const isIEG = company.includes("industrial equipment") || owner.includes("industrial equipment");
+
             let contactPerson = "Chetan Samji";
             let contactPhone = "+263772949515";
             let companyName = "Machinery Exchange";
             let signOff = `*The ${companyName} Team*`;
 
-            if (company.includes("Sinopower")) {
+            if (isSinopower) {
                 contactPerson = "Brett Berry";
                 contactPhone = "+263775553862";
                 companyName = "Sinopower";
                 signOff = `*Sinopower*`;
-            } else if (company.includes("Industrial Equipment")) {
+            } else if (isIEG) {
                 companyName = "Industrial Equipment Group";
                 signOff = `*The IEG Team*`;
             }
@@ -5868,18 +6047,22 @@ window.OmnisDashboardV6 = class OmnisDashboardV6 {
         if (btn) { btn.disabled = true; btn.innerHTML = `<i class="fas fa-spinner fa-spin"></i> Sending...`; }
 
         try {
-            const company = this._currentFullDoc?.company || "";
+            const company = (this._currentFullDoc?.company || "").toLowerCase();
+            const owner = (this._currentFullDoc?.owner || "").toLowerCase();
+            const isSinopower = company.includes("sinopower") || owner.includes("sinopower");
+            const isIEG = company.includes("industrial equipment") || owner.includes("industrial equipment");
+
             let contactPerson = "Chetan Samji";
             let contactPhone = "+263772949515";
             let companyName = "Machinery Exchange";
             let signOff = `*The ${companyName} Team*`;
 
-            if (company.includes("Sinopower")) {
+            if (isSinopower) {
                 contactPerson = "Brett Berry";
                 contactPhone = "+263775553862";
                 companyName = "Sinopower";
                 signOff = `*Sinopower*`;
-            } else if (company.includes("Industrial Equipment")) {
+            } else if (isIEG) {
                 companyName = "Industrial Equipment Group";
                 signOff = `*The IEG Team*`;
             }
@@ -6031,35 +6214,23 @@ window.OmnisDashboardV6 = class OmnisDashboardV6 {
         let ccList = [];
         if (company.includes("Sinopower")) {
             internalTeamLabel = "Sinopower";
-            // --- TESTING MODE ---
             ccList = [
-                "takunda@industrial-exchange.group",
-                "rutendo@industrial-exchange.group",
-                "omnis@industrial-exchange.group"
+                "takunda@industrial-exchange.group", "antony@industrial-exchange.group",
+                "logistics@sinopower.co.zw", "brett@sinopower.co.zw", "trucks@sinopower.co.zw",
+                "rutendo@industrial-exchange.group", "louis@industrial-exchange.group",
+                "mathew@industrial-exchange.group", "barry@industrial-exchange.group",
+                "brendan@industrial-exchange.group"
             ];
-            // --- ORIGINAL SINOPOWER LIST ---
-            // ccList = [
-            //     "takunda@industrial-exchange.group", "antony@industrial-exchange.group", 
-            //     "logistics@sinopower.co.zw", "brett@sinopower.co.zw", "trucks@sinopower.co.zw", 
-            //     "rutendo@industrial-exchange.group", "louis@industrial-exchange.group", 
-            //     "mathew@industrial-exchange.group", "barry@industrial-exchange.group"
-            // ];
         } else {
             internalTeamLabel = "Machinery Exchange";
-            // --- TESTING MODE ---
             ccList = [
-                "takunda@industrial-exchange.group",
-                "rutendo@industrial-exchange.group",
-                "omnis@industrial-exchange.group"
+                "takunda@industrial-exchange.group", "antony@industrial-exchange.group",
+                "sales.humphrey@machinery-exchange.com", "chetan.samji@machinery-exchange.com",
+                "equipment@machinery-exchange.com", "sales@machinery-exchange.com",
+                "robin.hunter@machinery-exchange.com", "rutendo@industrial-exchange.group",
+                "mathew@industrial-exchange.group", "barry@industrial-exchange.group",
+                "brendan@industrial-exchange.group"
             ];
-            // --- ORIGINAL MXG LIST ---
-            // ccList = [
-            //     "takunda@industrial-exchange.group", "antony@industrial-exchange.group", 
-            //     "sales.humphrey@machinery-exchange.com", "chetan.samji@machinery-exchange.com", 
-            //     "equipment@machinery-exchange.com", "sales@machinery-exchange.com", 
-            //     "robin.hunter@machinery-exchange.com", "rutendo@industrial-exchange.group", 
-            //     "mathew@industrial-exchange.group", "barry@industrial-exchange.group"
-            // ];
         }
         const ccListHtml = ccList.join(', ');
 

@@ -1,0 +1,229 @@
+{
+ "actions": [],
+ "allow_import": 1,
+ "allow_rename": 1,
+ "autoname": "format:HMR-{YY}{MM}{DD}-{machine}-{###}",
+ "creation": "2022-10-08 14:37:22.286034",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "machine",
+  "model",
+  "reading_date",
+  "column_break_2",
+  "customer",
+  "hmr",
+  "logger",
+  "telemetry_data_section",
+  "hmr_on_log",
+  "column_break_10",
+  "op_hours",
+  "col_br_prov",
+  "prov_op_hours",
+  "column_break_12",
+  "has_telemetry",
+  "column_break_14",
+  "fuel_consumed",
+  "section_break_16",
+  "fuel_consumption",
+  "column_break_18",
+  "ignition_on",
+  "column_break_20",
+  "engine_on",
+  "column_break_22",
+  "operation"
+ ],
+ "fields": [
+  {
+   "fieldname": "hmr",
+   "fieldtype": "Float",
+   "in_list_view": 1,
+   "label": "HMR",
+   "precision": "2",
+   "reqd": 1
+  },
+  {
+   "fieldname": "column_break_2",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "logger",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Logger",
+   "read_only": 1
+  },
+  {
+   "fieldname": "machine",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "Machine (S/N)",
+   "options": "FT Machine",
+   "reqd": 1
+  },
+  {
+   "default": "Today",
+   "fieldname": "reading_date",
+   "fieldtype": "Date",
+   "in_list_view": 1,
+   "label": "Reading Date",
+   "reqd": 1
+  },
+  {
+   "fetch_from": "machine.model",
+   "fieldname": "model",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "Model",
+   "options": "FT Machine Model",
+   "read_only": 1
+  },
+  {
+   "fetch_from": "machine.customer",
+   "fieldname": "customer",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "Customer",
+   "options": "FT Customer",
+   "read_only": 1
+  },
+  {
+   "fieldname": "telemetry_data_section",
+   "fieldtype": "Section Break"
+  },
+  {
+   "default": "No",
+   "fetch_from": "machine.has_telematics_device",
+   "fetch_if_empty": 1,
+   "fieldname": "has_telemetry",
+   "fieldtype": "Select",
+   "label": "Has Telemetry Data",
+   "options": "\nNo\nYes",
+   "reqd": 1
+  },
+  {
+   "fieldname": "column_break_10",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "op_hours",
+   "fieldtype": "Float",
+   "label": "Operating Hours",
+   "precision": "2"
+  },
+  {
+   "fieldname": "column_break_12",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "column_break_14",
+   "fieldtype": "Column Break"
+  },
+  {
+   "depends_on": "eval:doc.has_telemetry === \"Yes\"",
+   "fieldname": "fuel_consumed",
+   "fieldtype": "Float",
+   "label": "Fuel Consumed (l)",
+   "mandatory_depends_on": "eval:doc.has_telemetry === \"Yes\""
+  },
+  {
+   "depends_on": "eval:doc.has_telemetry === \"Yes\"",
+   "fieldname": "fuel_consumption",
+   "fieldtype": "Float",
+   "label": "Fuel Consumption (l/hr)",
+   "precision": "2",
+   "read_only": 1
+  },
+  {
+   "fetch_from": "machine.current_hmr",
+   "fetch_if_empty": 1,
+   "fieldname": "hmr_on_log",
+   "fieldtype": "Float",
+   "label": "Previous HMR",
+   "precision": "2",
+   "read_only": 1
+  },
+  {
+   "fieldname": "section_break_16",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "column_break_18",
+   "fieldtype": "Column Break"
+  },
+  {
+   "depends_on": "eval:doc.has_telemetry === \"Yes\"",
+   "fieldname": "ignition_on",
+   "fieldtype": "Float",
+   "label": "Idling",
+   "precision": "2"
+  },
+  {
+   "fieldname": "column_break_20",
+   "fieldtype": "Column Break"
+  },
+  {
+   "depends_on": "eval:doc.has_telemetry === \"Yes\"",
+   "fieldname": "engine_on",
+   "fieldtype": "Float",
+   "label": "Engine On",
+   "precision": "2"
+  },
+  {
+   "fieldname": "column_break_22",
+   "fieldtype": "Column Break"
+  },
+  {
+   "depends_on": "eval:doc.has_telemetry === \"Yes\"",
+   "fieldname": "operation",
+   "fieldtype": "Float",
+   "label": "Operation",
+   "precision": "2"
+  },
+  {
+   "fieldname": "col_br_prov",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "prov_op_hours",
+   "fieldtype": "Float",
+   "label": "OP Hours (Prov.)",
+   "non_negative": 1,
+   "precision": "2"
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "links": [],
+ "modified": "2022-11-27 20:28:29.842477",
+ "modified_by": "Administrator",
+ "module": "MXG Fleet Track",
+ "name": "FT HMR Log",
+ "naming_rule": "Expression",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "quick_entry": 1,
+ "search_fields": "machine",
+ "show_title_field_in_link": 1,
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": [],
+ "title_field": "machine",
+ "track_changes": 1
+}

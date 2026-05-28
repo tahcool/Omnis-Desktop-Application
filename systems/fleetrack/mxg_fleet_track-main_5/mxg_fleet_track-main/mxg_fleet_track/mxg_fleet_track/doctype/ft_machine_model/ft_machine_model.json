@@ -1,0 +1,112 @@
+{
+ "actions": [],
+ "allow_import": 1,
+ "allow_rename": 1,
+ "autoname": "format:{oem}-{model_name}",
+ "creation": "2022-10-08 12:45:08.730505",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "oem",
+  "si_hours",
+  "column_break_2",
+  "model_name",
+  "fuel_consumption_section",
+  "fuel_consumption",
+  "column_break_lsb53",
+  "fuel_consumption_class",
+  "column_break_mxvlx"
+ ],
+ "fields": [
+  {
+   "fieldname": "oem",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "OEM",
+   "options": "FT Machine OEM",
+   "reqd": 1
+  },
+  {
+   "fieldname": "column_break_2",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "model_name",
+   "fieldtype": "Data",
+   "in_list_view": 1,
+   "label": "Model",
+   "reqd": 1
+  },
+  {
+   "fieldname": "si_hours",
+   "fieldtype": "Float",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "Service Interval Hours",
+   "precision": "2",
+   "reqd": 1
+  },
+  {
+   "fieldname": "fuel_consumption_section",
+   "fieldtype": "Section Break",
+   "label": "Fuel Consumption"
+  },
+  {
+   "allow_in_quick_entry": 1,
+   "fieldname": "fuel_consumption",
+   "fieldtype": "Float",
+   "in_list_view": 1,
+   "label": "L/hr",
+   "non_negative": 1,
+   "precision": "2"
+  },
+  {
+   "fieldname": "column_break_lsb53",
+   "fieldtype": "Column Break"
+  },
+  {
+   "allow_in_quick_entry": 1,
+   "fieldname": "fuel_consumption_class",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "Fuel Consumption Class",
+   "options": "\nLight Duty\nModerate\nHeavy Duty"
+  },
+  {
+   "fieldname": "column_break_mxvlx",
+   "fieldtype": "Column Break"
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "links": [],
+ "modified": "2023-11-05 12:33:17.182386",
+ "modified_by": "Administrator",
+ "module": "MXG Fleet Track",
+ "name": "FT Machine Model",
+ "naming_rule": "Expression",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "quick_entry": 1,
+ "search_fields": "model_name,oem",
+ "show_title_field_in_link": 1,
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": [],
+ "title_field": "model_name",
+ "track_changes": 1
+}

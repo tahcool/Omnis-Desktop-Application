@@ -1,0 +1,191 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "creation": "2023-10-15 21:03:09.574328",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "technician",
+  "column_break_5i2vr",
+  "site",
+  "column_break_n7gjp",
+  "designation",
+  "billable_section",
+  "productive",
+  "column_break_fdr1f",
+  "travel",
+  "non_billable_section",
+  "admin",
+  "column_break_7hcbu",
+  "house_keeping",
+  "column_break_u74or",
+  "non_productive",
+  "summary_section",
+  "total_billable",
+  "column_break_glqxm",
+  "total_non_billable",
+  "column_break_rcxau",
+  "billed",
+  "column_break_tlbir",
+  "efficiency"
+ ],
+ "fields": [
+  {
+   "fieldname": "column_break_5i2vr",
+   "fieldtype": "Column Break"
+  },
+  {
+   "columns": 1,
+   "fieldname": "productive",
+   "fieldtype": "Float",
+   "in_list_view": 1,
+   "label": "Productive"
+  },
+  {
+   "fieldname": "column_break_fdr1f",
+   "fieldtype": "Column Break"
+  },
+  {
+   "columns": 1,
+   "fieldname": "travel",
+   "fieldtype": "Float",
+   "in_list_view": 1,
+   "label": "Travel"
+  },
+  {
+   "columns": 1,
+   "fieldname": "admin",
+   "fieldtype": "Float",
+   "in_list_view": 1,
+   "label": "Admin"
+  },
+  {
+   "fieldname": "column_break_7hcbu",
+   "fieldtype": "Column Break"
+  },
+  {
+   "columns": 1,
+   "fieldname": "house_keeping",
+   "fieldtype": "Float",
+   "in_list_view": 1,
+   "label": "House Keeping"
+  },
+  {
+   "fieldname": "column_break_u74or",
+   "fieldtype": "Column Break"
+  },
+  {
+   "columns": 1,
+   "fieldname": "non_productive",
+   "fieldtype": "Float",
+   "in_list_view": 1,
+   "label": "Non Productive"
+  },
+  {
+   "columns": 2,
+   "fieldname": "technician",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Technician",
+   "options": "FT Technician",
+   "reqd": 1
+  },
+  {
+   "columns": 1,
+   "fieldname": "total_billable",
+   "fieldtype": "Float",
+   "in_list_view": 1,
+   "label": "Total Billable",
+   "non_negative": 1,
+   "precision": "2",
+   "read_only": 1
+  },
+  {
+   "fieldname": "column_break_glqxm",
+   "fieldtype": "Column Break"
+  },
+  {
+   "columns": 1,
+   "fieldname": "billed",
+   "fieldtype": "Float",
+   "in_list_view": 1,
+   "label": "Billed",
+   "non_negative": 1,
+   "precision": "2",
+   "reqd": 1
+  },
+  {
+   "fieldname": "column_break_rcxau",
+   "fieldtype": "Column Break"
+  },
+  {
+   "columns": 1,
+   "fieldname": "efficiency",
+   "fieldtype": "Float",
+   "label": "Efficiency",
+   "non_negative": 1,
+   "precision": "2",
+   "read_only": 1
+  },
+  {
+   "fieldname": "billable_section",
+   "fieldtype": "Section Break",
+   "label": "Billable"
+  },
+  {
+   "fieldname": "non_billable_section",
+   "fieldtype": "Section Break",
+   "label": "Non Billable"
+  },
+  {
+   "fieldname": "summary_section",
+   "fieldtype": "Section Break",
+   "label": "Summary"
+  },
+  {
+   "columns": 1,
+   "fieldname": "total_non_billable",
+   "fieldtype": "Float",
+   "in_list_view": 1,
+   "label": "Total Non Billable",
+   "read_only": 1
+  },
+  {
+   "fieldname": "column_break_tlbir",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fetch_from": "technician.site",
+   "fieldname": "site",
+   "fieldtype": "Link",
+   "label": "Site",
+   "options": "FT Location",
+   "read_only": 1
+  },
+  {
+   "fieldname": "column_break_n7gjp",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fetch_from": "technician.designation",
+   "fieldname": "designation",
+   "fieldtype": "Data",
+   "label": "Designation",
+   "read_only": 1
+  }
+ ],
+ "hide_toolbar": 1,
+ "index_web_pages_for_search": 1,
+ "istable": 1,
+ "links": [],
+ "modified": "2023-10-22 16:44:18.448519",
+ "modified_by": "Administrator",
+ "module": "Workforce",
+ "name": "FT Technician Efficiency Items",
+ "owner": "Administrator",
+ "permissions": [],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": []
+}

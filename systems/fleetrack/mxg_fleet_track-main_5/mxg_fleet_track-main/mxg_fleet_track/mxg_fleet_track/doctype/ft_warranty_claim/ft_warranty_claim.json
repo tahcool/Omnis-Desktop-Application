@@ -1,0 +1,269 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "creation": "2022-10-12 10:20:05.519783",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "date",
+  "column_break_jxjii",
+  "date_resolved",
+  "column_break_uqvns",
+  "section_break_2",
+  "machine_srn",
+  "column_break_4",
+  "customer",
+  "section_break_6",
+  "model",
+  "column_break_8",
+  "oem",
+  "wa_oem_cbr",
+  "warranty_oem",
+  "column_break_10",
+  "type",
+  "column_break_12",
+  "job_no",
+  "section_break_8",
+  "description",
+  "column_break_13",
+  "status",
+  "section_break_18",
+  "date_of_submission",
+  "column_break_20",
+  "parts_eta",
+  "column_break_22",
+  "approval_status",
+  "column_break_24",
+  "oem_system_no",
+  "section_break_23",
+  "tracking_number",
+  "column_break_26",
+  "parts",
+  "section_break_19",
+  "notes"
+ ],
+ "fields": [
+  {
+   "bold": 1,
+   "fieldname": "date",
+   "fieldtype": "Date",
+   "in_list_view": 1,
+   "label": "Date",
+   "reqd": 1
+  },
+  {
+   "bold": 1,
+   "fieldname": "machine_srn",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "Machine SRN",
+   "options": "FT Machine",
+   "reqd": 1
+  },
+  {
+   "fetch_from": "machine_srn.model",
+   "fieldname": "model",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Model",
+   "options": "FT Machine Model",
+   "read_only": 1
+  },
+  {
+   "fetch_from": "machine_srn.oem",
+   "fieldname": "oem",
+   "fieldtype": "Link",
+   "label": "Machine OEM",
+   "options": "FT Machine OEM",
+   "read_only": 1
+  },
+  {
+   "fetch_from": "machine_srn.customer",
+   "fieldname": "customer",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "Customer",
+   "options": "FT Customer",
+   "read_only": 1
+  },
+  {
+   "fieldname": "description",
+   "fieldtype": "Data",
+   "label": "Description",
+   "reqd": 1
+  },
+  {
+   "fieldname": "status",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "Status",
+   "options": "To Submit\nSubmitted",
+   "reqd": 1
+  },
+  {
+   "fieldname": "date_of_submission",
+   "fieldtype": "Date",
+   "label": "Date of Submission",
+   "mandatory_depends_on": "eval:doc.status === \"Submitted\""
+  },
+  {
+   "fieldname": "parts_eta",
+   "fieldtype": "Date",
+   "label": "Parts ETA"
+  },
+  {
+   "fieldname": "column_break_4",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "job_no",
+   "fieldtype": "Data",
+   "label": "Job No"
+  },
+  {
+   "fieldname": "section_break_8",
+   "fieldtype": "Section Break",
+   "label": "Claim Details"
+  },
+  {
+   "fieldname": "approval_status",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "in_standard_filter": 1,
+   "label": "Approval Status",
+   "options": "\nPending\nApproved\nRejected"
+  },
+  {
+   "fieldname": "tracking_number",
+   "fieldtype": "Data",
+   "label": "Tracking Number"
+  },
+  {
+   "fieldname": "column_break_13",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "oem_system_no",
+   "fieldtype": "Data",
+   "label": "OEM System No"
+  },
+  {
+   "fieldname": "parts",
+   "fieldtype": "Small Text",
+   "label": "Type of Parts"
+  },
+  {
+   "fieldname": "section_break_19",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "notes",
+   "fieldtype": "Small Text",
+   "label": "Notes"
+  },
+  {
+   "fieldname": "section_break_2",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fetch_from": "machine_srn.type",
+   "fieldname": "type",
+   "fieldtype": "Link",
+   "label": "Type",
+   "options": "FT Machine Type",
+   "read_only": 1
+  },
+  {
+   "fieldname": "section_break_6",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "column_break_8",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "column_break_10",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "column_break_12",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "section_break_18",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "section_break_23",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "column_break_26",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "column_break_20",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "column_break_22",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "column_break_24",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "wa_oem_cbr",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "warranty_oem",
+   "fieldtype": "Data",
+   "label": "OEM (Warranty)"
+  },
+  {
+   "fieldname": "column_break_jxjii",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "date_resolved",
+   "fieldtype": "Date",
+   "label": "Date Resolved"
+  },
+  {
+   "fieldname": "column_break_uqvns",
+   "fieldtype": "Column Break"
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "links": [],
+ "modified": "2023-11-05 19:34:28.716031",
+ "modified_by": "Administrator",
+ "module": "MXG Fleet Track",
+ "name": "FT Warranty Claim",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "quick_entry": 1,
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": [],
+ "track_changes": 1
+}

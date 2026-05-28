@@ -1,0 +1,26 @@
+{
+ "add_total_row": 0,
+ "columns": [],
+ "creation": "2022-10-14 03:09:08.285144",
+ "disable_prepared_report": 0,
+ "disabled": 0,
+ "docstatus": 0,
+ "doctype": "Report",
+ "filters": [],
+ "idx": 0,
+ "is_standard": "Yes",
+ "modified": "2022-10-14 03:09:08.285144",
+ "modified_by": "Administrator",
+ "module": "MXG Fleet Track",
+ "name": "Fleetrack Activity List",
+ "owner": "Administrator",
+ "prepared_report": 0,
+ "ref_doctype": "FT Alert",
+ "report_name": "Fleetrack Activity List",
+ "report_type": "Script Report",
+ "roles": [
+  {
+   "role": "System Manager"
+  }
+ ]
+}

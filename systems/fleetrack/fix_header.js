@@ -1,0 +1,10 @@
+const fs = require('fs');
+const c = fs.readFileSync('c:/Users/Administrator/omnis/systems/fleetrack/index.html','utf8');
+const old1 = '<th style="padding:10px 16px;text-align:left;font-weight:700;color:#ffffff !important;border-bottom:2px solid #ef4444;">TECHNICIAN</th>';
+const old2 = '<th style="padding:10px 16px;text-align:right;font-weight:700;color:#ffffff !important;border-bottom:2px solid #ef4444;">REPORTED</th>';
+const newCols = '<th style="padding:10px 12px;text-align:left;font-weight:700;color:#ffffff !important;border-bottom:2px solid #ef4444;">REPORTED</th>\r\n                  <th style="padding:10px 12px;text-align:left;font-weight:700;color:#ffffff !important;border-bottom:2px solid #ef4444;">TYPE</th>\r\n                  <th style="padding:10px 12px;text-align:left;font-weight:700;color:#ffffff !important;border-bottom:2px solid #ef4444;">ACTIONS</th>';
+console.log('TECH col found:', c.includes(old1));
+console.log('REPORTED col found:', c.includes(old2));
+const out = c.replace(old1,'').replace(old2, newCols);
+fs.writeFileSync('c:/Users/Administrator/omnis/systems/fleetrack/index.html', out, 'utf8');
+console.log('Done - headers patched.');

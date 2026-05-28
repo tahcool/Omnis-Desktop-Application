@@ -1,0 +1,18 @@
+include MANIFEST.in
+include requirements.txt
+include *.json
+include *.md
+include *.py
+include *.txt
+recursive-include mxg_fleet_track *.css
+recursive-include mxg_fleet_track *.csv
+recursive-include mxg_fleet_track *.html
+recursive-include mxg_fleet_track *.ico
+recursive-include mxg_fleet_track *.js
+recursive-include mxg_fleet_track *.json
+recursive-include mxg_fleet_track *.md
+recursive-include mxg_fleet_track *.png
+recursive-include mxg_fleet_track *.py
+recursive-include mxg_fleet_track *.svg
+recursive-include mxg_fleet_track *.txt
+recursive-exclude mxg_fleet_track *.pyc

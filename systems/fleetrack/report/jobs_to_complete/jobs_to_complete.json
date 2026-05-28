@@ -1,0 +1,38 @@
+{
+ "add_total_row": 0,
+ "columns": [],
+ "creation": "2023-11-13 14:42:33.937042",
+ "disable_prepared_report": 0,
+ "disabled": 0,
+ "docstatus": 0,
+ "doctype": "Report",
+ "filters": [],
+ "idx": 0,
+ "is_standard": "Yes",
+ "modified": "2023-11-13 14:42:33.937042",
+ "modified_by": "Administrator",
+ "module": "MXG Fleet Track",
+ "name": "Jobs To Complete",
+ "owner": "Administrator",
+ "prepared_report": 0,
+ "ref_doctype": "FT JRV",
+ "report_name": "Jobs To Complete",
+ "report_type": "Script Report",
+ "roles": [
+  {
+   "role": "System Manager"
+  },
+  {
+   "role": "MXG-STANDARD"
+  },
+  {
+   "role": "MXG-CONTROLLER"
+  },
+  {
+   "role": "MXG-READ-ONLY"
+  },
+  {
+   "role": "MXG-MD"
+  }
+ ]
+}

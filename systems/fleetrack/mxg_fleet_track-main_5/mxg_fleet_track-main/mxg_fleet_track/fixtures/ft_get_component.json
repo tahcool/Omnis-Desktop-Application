@@ -1,0 +1,23 @@
+[
+ {
+  "component_name": "Standard Tooth",
+  "docstatus": 0,
+  "doctype": "FT GET Component",
+  "modified": "2023-09-16 08:25:02.273680",
+  "name": "Standard Tooth"
+ },
+ {
+  "component_name": "Penetrator tooth",
+  "docstatus": 0,
+  "doctype": "FT GET Component",
+  "modified": "2023-09-16 08:25:09.579606",
+  "name": "Penetrator tooth"
+ },
+ {
+  "component_name": "Specialised tooth",
+  "docstatus": 0,
+  "doctype": "FT GET Component",
+  "modified": "2023-09-16 08:25:48.640674",
+  "name": "Specialised tooth"
+ }
+]

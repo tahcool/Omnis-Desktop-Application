@@ -852,6 +852,52 @@ def get_ft_machine_register(region=None, customer=None, model=None, warranty_sta
 
 
 # ---------------------------------------------------------------------------
+# Initial Service Report (ISR) — machines with no Last Service Date
+# ---------------------------------------------------------------------------
+
+@frappe.whitelist(allow_guest=True)
+def get_ft_isr(region=None, customer=None):
+    """
+    Return all FT Machines where last_service_date is blank/null.
+    These are machines that have never been serviced — candidates for
+    their first (initial) service.
+    """
+    filters = {"last_service_date": ["is", "not set"]}
+    if region:
+        filters["region"] = region
+    if customer:
+        filters["customer"] = ["like", f"%{customer}%"]
+
+    machines = frappe.get_all(
+        "FT Machine",
+        filters=filters,
+        fields=[
+            "name", "customer", "region", "model", "type",
+            "fleet_no", "sn", "mxg_fleet_no", "location",
+            "warranty_status", "current_hmr",
+            "next_service_hmr", "service_interval_hours",
+            "last_service_date", "last_service_hmr",
+            "fleetrack_managed", "modified"
+        ],
+        order_by="customer asc, name asc",
+        limit_page_length=5000,
+        ignore_permissions=True
+    )
+
+    # Group summary
+    by_region = {}
+    for m in machines:
+        r = m.get("region") or "Unassigned"
+        by_region[r] = by_region.get(r, 0) + 1
+
+    return {
+        "machines": machines,
+        "total": len(machines),
+        "by_region": by_region
+    }
+
+
+# ---------------------------------------------------------------------------
 # WhatsApp Report Generator
 # ---------------------------------------------------------------------------
 
@@ -1705,7 +1751,7 @@ def create_ft_breakdown_log(
 
 
 
-@frappe.whitelist()
+@frappe.whitelist(allow_guest=True)
 def get_breakdown_categories():
     """
     Fetch all FT BD Category names, sorted alphabetically.
@@ -1728,17 +1774,235 @@ def get_ft_machine_detail(name):
         return {"error": "Missing name"}
         
     try:
-        # Check permissions explicitly or ignore them depending on safety
-        # Since this is a dashboard for internal users who might be Guests
-        # we treat it read-only for the machine detail.
         doc = frappe.get_doc("FT Machine", name)
         return doc.as_dict()
     except Exception as e:
         return {"error": str(e)}
 
-# ---------------------------------------------------------------------------
-# Field Service Planning (FSP)
-# ---------------------------------------------------------------------------
+
+@frappe.whitelist(allow_guest=True)
+def create_ft_machine(
+    sn, model, oem, customer, location,
+    engine_type=None, region=None, mxg_fleet_no=None, fleet_no=None,
+    warranty_status="Out of Warranty", warranty_type=None,
+    service_obligation="Not Specified", service_interval_hours=250,
+    working_status="Active", has_telematics_device="No",
+    handover_date=None, notes=None, fleetrack_managed="Yes",
+    chassis_number=None, esn=None,
+):
+    """
+    Create a new FT Machine record from the Omnis native UI.
+    Returns {ok, name} on success or {error} on failure.
+    """
+    if not sn or not model or not customer:
+        return {"error": "Serial Number, Model and Customer are required"}
+
+    try:
+        # Check for duplicate SN
+        existing = frappe.db.get_value("FT Machine", {"sn": sn}, "name")
+        if existing:
+            return {"error": f"A machine with SN '{sn}' already exists: {existing}"}
+
+        doc = frappe.new_doc("FT Machine")
+        doc.sn = sn
+        doc.model = model
+        doc.oem = oem
+        doc.customer = customer
+        doc.location = location
+        doc.region = region
+        doc.engine_type = engine_type
+        doc.mxg_fleet_no = mxg_fleet_no
+        doc.fleet_no = fleet_no
+        doc.warranty_status = warranty_status
+        doc.warranty_type = warranty_type
+        doc.service_obligation = service_obligation
+        doc.service_interval_hours = frappe.utils.flt(service_interval_hours) or 250
+        doc.working_status = working_status
+        doc.has_telematics_device = has_telematics_device
+        doc.handover_date = handover_date
+        doc.notes = notes
+        doc.fleetrack_managed = fleetrack_managed
+        doc.chassis_number = chassis_number or sn
+        doc.esn = esn
+        doc.current_hmr = 0
+
+        doc.flags.ignore_permissions = True
+        doc.insert(ignore_permissions=True)
+        frappe.db.commit()
+
+        return {
+            "ok": True,
+            "name": doc.name,
+            "message": f"Machine '{doc.name}' created successfully"
+        }
+    except Exception as e:
+        frappe.log_error(f"create_ft_machine error: {str(e)}")
+        return {"error": str(e)}
+
+
+@frappe.whitelist(allow_guest=True)
+def log_ft_service(
+    machine, service_hmr, service_date=None,
+    technician=None, description=None, service_type="Scheduled Service"
+):
+    """
+    Record a service event for a machine.
+    - Creates an FT Service Log entry (if doctype exists, else FT HMR Log)
+    - Updates machine: last_service_hmr, last_service_date, next_service_hmr
+    """
+    if not machine or not service_hmr:
+        return {"error": "Machine and Service HMR are required"}
+
+    try:
+        service_hmr = frappe.utils.flt(service_hmr)
+        service_date = service_date or frappe.utils.nowdate()
+
+        # Get service interval from machine
+        mach = frappe.db.get_value(
+            "FT Machine", machine,
+            ["name", "service_interval_hours", "current_hmr"],
+            as_dict=True, ignore_permissions=True
+        )
+        if not mach:
+            return {"error": f"Machine '{machine}' not found"}
+
+        interval = frappe.utils.flt(mach.get("service_interval_hours") or 250)
+        next_service_hmr = service_hmr + interval
+
+        # Try to create FT Service Log if that doctype exists
+        log_name = None
+        try:
+            log = frappe.new_doc("FT Service Log")
+            log.machine = machine
+            log.service_hmr = service_hmr
+            log.service_date = service_date
+            log.technician = technician
+            log.description = description or service_type
+            log.service_type = service_type
+            log.flags.ignore_permissions = True
+            log.insert(ignore_permissions=True)
+            log_name = log.name
+        except Exception:
+            # Fallback: record as HMR Log if FT Service Log doesn't exist
+            log = frappe.new_doc("FT HMR Log")
+            log.machine = machine
+            log.hmr = service_hmr
+            log.date = service_date
+            log.telematics = "No"
+            log.flags.ignore_permissions = True
+            log.insert(ignore_permissions=True)
+            log_name = log.name
+
+        # Update machine service fields
+        frappe.db.set_value("FT Machine", machine, {
+            "last_service_hmr": service_hmr,
+            "last_service_date": service_date,
+            "next_service_hmr": next_service_hmr,
+            "current_hmr": max(service_hmr, frappe.utils.flt(mach.get("current_hmr") or 0)),
+        }, update_modified=True, ignore_permissions=True)
+        frappe.db.commit()
+
+        return {
+            "ok": True,
+            "log_name": log_name,
+            "next_service_hmr": next_service_hmr,
+            "message": f"Service logged at {service_hmr} HRS. Next service due at {next_service_hmr} HRS."
+        }
+    except Exception as e:
+        frappe.log_error(f"log_ft_service error: {str(e)}")
+        return {"error": str(e)}
+
+
+@frappe.whitelist(allow_guest=True)
+def save_ft_machine(
+    name,
+    # Core identifiers
+    customer=None, location=None, region=None,
+    mxg_fleet_no=None, fleet_no=None, sn=None, esn=None, chassis_number=None,
+    # Service config
+    service_obligation=None, service_interval_hours=None,
+    # Status
+    working_status=None,
+    # Warranty
+    warranty_status=None, warranty_type=None,
+    handover_date=None, expiry_date=None, warranty_period=None, warranty_hours=None,
+    # Machine spec
+    model=None, oem=None, engine_type=None, operating_weight=None,
+    bin_capacity=None, standard_fuel_consumption=None,
+    has_telematics_device=None, canbus_enabled=None,
+    # Notes
+    notes=None,
+    # Misc
+    fleetrack_managed=None,
+):
+    """
+    Update editable FT Machine fields from the Omnis native UI.
+    Uses db_set per-field to avoid triggering validation on unset fields.
+    Returns {ok: true, name} on success or {error: ...} on failure.
+    """
+    if not name:
+        return {"error": "Missing machine name"}
+
+    try:
+        # Verify machine exists
+        if not frappe.db.exists("FT Machine", name):
+            return {"error": f"Machine '{name}' not found"}
+
+        # Map of field -> value, only set if value provided (not None)
+        updates = {
+            "customer":                  customer,
+            "location":                  location,
+            "region":                    region,
+            "mxg_fleet_no":              mxg_fleet_no,
+            "fleet_no":                  fleet_no,
+            "sn":                        sn,
+            "esn":                       esn,
+            "chassis_number":            chassis_number,
+            "service_obligation":        service_obligation,
+            "service_interval_hours":    service_interval_hours,
+            "working_status":            working_status,
+            "warranty_status":           warranty_status,
+            "warranty_type":             warranty_type,
+            "handover_date":             handover_date,
+            "expiry_date":               expiry_date,
+            "warranty_period":           warranty_period,
+            "warranty_hours":            warranty_hours,
+            "model":                     model,
+            "oem":                       oem,
+            "engine_type":               engine_type,
+            "operating_weight":          operating_weight,
+            "bin_capacity":              bin_capacity,
+            "standard_fuel_consumption": standard_fuel_consumption,
+            "has_telematics_device":     has_telematics_device,
+            "canbus_enabled":            canbus_enabled,
+            "notes":                     notes,
+            "fleetrack_managed":         fleetrack_managed,
+        }
+
+        changed = []
+        for field, value in updates.items():
+            if value is not None:
+                try:
+                    frappe.db.set_value("FT Machine", name, field, value,
+                                        update_modified=True, ignore_permissions=True)
+                    changed.append(field)
+                except Exception as field_err:
+                    frappe.log_error(f"save_ft_machine: field '{field}' failed: {field_err}")
+
+        frappe.db.commit()
+
+        return {
+            "ok": True,
+            "name": name,
+            "updated_fields": changed,
+            "message": f"Machine '{name}' updated successfully ({len(changed)} fields)"
+        }
+
+    except Exception as e:
+        frappe.log_error(f"save_ft_machine error for {name}: {str(e)}")
+        return {"error": str(e)}
+
+
 
 @frappe.whitelist(allow_guest=True)
 def add_ft_service_plan_entry(machine, description=None, planned_date=None, technician=None, defects=None, warranty_status=None, location=None):
@@ -2029,6 +2293,40 @@ def format_date_simple(date_obj):
     return frappe.utils.format_date(date_obj, "dd.MMM")
 
 @frappe.whitelist(allow_guest=True)
+def get_ft_technicians(q=None):
+    """
+    Return a list of FT Technician records for the FSP modal typeahead.
+    Optionally filter by q (search string matching name/technician_name/mobile).
+    """
+    try:
+        filters = {}
+        fields  = ["name", "technician_name", "mobile_no"]
+
+        rows = frappe.get_all(
+            "FT Technician",
+            filters=filters,
+            fields=fields,
+            order_by="technician_name asc",
+            limit_page_length=200,
+            ignore_permissions=True,
+        )
+
+        if q:
+            q_lower = q.lower()
+            rows = [
+                r for r in rows
+                if q_lower in (r.get("technician_name") or "").lower()
+                or q_lower in (r.get("name") or "").lower()
+                or q_lower in (r.get("mobile_no") or "").lower()
+            ]
+
+        return rows
+    except Exception as e:
+        frappe.log_error(f"get_ft_technicians error: {str(e)}")
+        return []
+
+
+@frappe.whitelist(allow_guest=True)
 def get_technician_contact(technician_name):
     """
     Get the contact details (mobile number) for a specific technician.
@@ -2064,7 +2362,8 @@ def get_technician_contact(technician_name):
 @frappe.whitelist(allow_guest=True)
 def get_active_machine_defects(machine):
     """
-    Fetch all active (non-Closed) defects for a specific machine.
+    Fetch all active defects for a specific machine.
+    Active = status != Closed AND end_date is not set.
     Used by FSP entry modal to allow technicians to 'tick' existing issues.
     """
     if not machine:
@@ -2074,9 +2373,10 @@ def get_active_machine_defects(machine):
         defects = frappe.get_all("FT Defects Log", 
             filters={
                 "machine": machine,
-                "status": ["!=", "Closed"]
+                "status": ["!=", "Closed"],
+                "end_date": ["is", "not set"]
             },
-            fields=["name", "defect_type", "description", "priority", "status"],
+            fields=["name", "defect_type", "description", "priority", "status", "end_date"],
             order_by="creation desc",
             ignore_permissions=True
         )
@@ -2232,4 +2532,113 @@ def get_hmr_activity_report(date_from=None, date_to=None, region=None, customer=
 
     except Exception as e:
         frappe.log_error(f"HMR Activity Report Error: {str(e)}")
+        return {"error": str(e)}
+
+
+# ──────────────────────────────────────────────
+# CUSTOMER MANAGEMENT (Phase 4)
+# ──────────────────────────────────────────────
+
+@frappe.whitelist(allow_guest=True)
+def get_ft_customers():
+    """Return all FT Customers with machine counts."""
+    try:
+        customers = frappe.db.get_all(
+            "FT Customer",
+            fields=["name", "customer_name", "contact_person", "phone", "email",
+                    "region", "whatsapp_group_id"],
+            order_by="customer_name asc",
+            limit_page_length=500,
+            ignore_permissions=True,
+        )
+
+        # Enrich with machine count
+        for c in customers:
+            try:
+                c["machine_count"] = frappe.db.count(
+                    "FT Machine", filters={"customer": c["name"]}
+                )
+            except Exception:
+                c["machine_count"] = 0
+
+        return {"customers": customers}
+
+    except Exception as e:
+        frappe.log_error(f"get_ft_customers error: {e}")
+        return {"customers": [], "error": str(e)}
+
+
+@frappe.whitelist(allow_guest=True)
+def create_ft_customer(customer_name, contact_person=None, phone=None,
+                       email=None, region=None, whatsapp_group_id=None):
+    """Create a new FT Customer record."""
+    if not customer_name:
+        return {"error": "Customer name is required"}
+    try:
+        doc = frappe.new_doc("FT Customer")
+        doc.customer_name = customer_name
+        if contact_person: doc.contact_person = contact_person
+        if phone:          doc.phone = phone
+        if email:
+            try: doc.email = email
+            except Exception: pass
+        if region:
+            try: doc.region = region
+            except Exception: pass
+        if whatsapp_group_id and hasattr(doc, "whatsapp_group_id"):
+            doc.whatsapp_group_id = whatsapp_group_id
+
+        doc.insert(ignore_permissions=True)
+        frappe.db.commit()
+        return {"ok": True, "name": doc.name}
+
+    except Exception as e:
+        frappe.log_error(f"create_ft_customer error: {e}")
+        return {"error": str(e)}
+
+
+@frappe.whitelist(allow_guest=True)
+def update_ft_customer(name, customer_name=None, contact_person=None, phone=None,
+                       email=None, region=None, whatsapp_group_id=None):
+    """Update an existing FT Customer record."""
+    if not name:
+        return {"error": "Customer name/ID is required"}
+    try:
+        doc = frappe.get_doc("FT Customer", name)
+        if customer_name:     doc.customer_name = customer_name
+        if contact_person is not None: doc.contact_person = contact_person
+        if phone is not None:          doc.phone = phone
+        if email is not None:
+            try: doc.email = email
+            except Exception: pass
+        if region is not None:
+            try: doc.region = region
+            except Exception: pass
+        if whatsapp_group_id is not None and hasattr(doc, "whatsapp_group_id"):
+            doc.whatsapp_group_id = whatsapp_group_id
+
+        doc.save(ignore_permissions=True)
+        frappe.db.commit()
+        return {"ok": True, "name": doc.name}
+
+    except Exception as e:
+        frappe.log_error(f"update_ft_customer error: {e}")
+        return {"error": str(e)}
+
+@frappe.whitelist(allow_guest=True)
+def get_ft_breakdown_all_for_migration():
+    """
+    Temporary endpoint to fetch ALL breakdowns (open and closed) 
+    for the Phase 2 data migration to Supabase. Bypasses permissions.
+    """
+    try:
+        rows = frappe.get_all(
+            "FT Breakdown Log",
+            filters={},
+            fields=["*"],
+            limit_page_length=99999,
+            ignore_permissions=True
+        )
+        return {"data": rows}
+    except Exception as e:
         return {"error": str(e)}

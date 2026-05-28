@@ -1,0 +1,1198 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <title>Machine Welcome Report</title>
+    <meta name="pdfkit-orientation" content="Landscape" />
+    <style>
+      body {
+        text-rendering: geometricPrecision;
+      }
+
+      .print-format.landscape {
+        /* reset font size */
+        font-size: initial !important;
+      }
+
+      .tiny-td-padding,
+      .tiny-th-padding {
+        padding: 2px 5px !important;
+      }
+      .bg-mxg-alt {
+        background-color: #4c4847 !important;
+        color: #fff !important;
+      }
+      .text-mxg-alt {
+        color: #4c4847 !important;
+      }
+      .document,
+      .cover-page {
+        font-family: "Atkinson Hyperlegible", sans-serif;
+        display: block;
+        clear: both;
+        page-break-after: always;
+      }
+
+      .logo-summary {
+        width: 80px;
+      }
+      .text-white {
+        color: #fff !important;
+      }
+      .flex {
+        display: -webkit-box;
+        display: flex;
+      }
+
+      .flex-col {
+        -webkit-box-orient: vertical;
+        -webkit-box-direction: normal;
+        -webkit-flex-direction: column;
+        flex-direction: column;
+      }
+
+      .flex-row {
+        -webkit-box-orient: horizontal;
+        -webkit-box-direction: normal;
+        -webkit-flex-direction: row;
+        flex-direction: row;
+      }
+
+      .flex-1 {
+        -webkit-box-flex: 1;
+        -webkit-flex: 1;
+        flex: 1;
+      }
+
+      .gap-1 {
+        gap: 0.25rem;
+      }
+
+      .gap-2 {
+        gap: 0.5rem;
+      }
+
+      .gap-3 {
+        gap: 0.75rem;
+      }
+
+      .gap-4 {
+        gap: 1rem;
+      }
+
+      .gap-5 {
+        gap: 1.25rem;
+      }
+
+      .gap-6 {
+        gap: 1.5rem;
+      }
+
+      .gap-8 {
+        gap: 2rem;
+      }
+
+      .gap-10 {
+        gap: 2.5rem;
+      }
+
+      .gap-12 {
+        gap: 3rem;
+      }
+
+      .gap-16 {
+        gap: 4rem;
+      }
+
+      .gap-20 {
+        gap: 5rem;
+      }
+
+      .gap-24 {
+        gap: 6rem;
+      }
+
+      .font-bold {
+        font-weight: 600;
+      }
+
+      .font-black {
+        font-weight: 900;
+      }
+
+      .justify-between {
+        -webkit-box-pack: justify;
+        -webkit-justify-content: space-between;
+        justify-content: space-between;
+      }
+
+      .justify-end {
+        -webkit-box-pack: end;
+        -webkit-justify-content: end;
+        justify-content: end;
+      }
+
+      .justify-center {
+        -webkit-box-pack: center;
+        -webkit-justify-content: center;
+        justify-content: center;
+      }
+
+      .items-center {
+        -webkit-box-align: center;
+        -webkit-align-items: center;
+        align-items: center;
+      }
+
+      .mb-1 {
+        margin-bottom: 0.25rem;
+      }
+
+      .mb-2 {
+        margin-bottom: 0.5rem;
+      }
+
+      .mb-3 {
+        margin-bottom: 0.75rem;
+      }
+
+      .mb-4 {
+        margin-bottom: 1rem;
+      }
+
+      .mb-5 {
+        margin-bottom: 1.25rem;
+      }
+
+      .mb-6 {
+        margin-bottom: 1.5rem;
+      }
+
+      .mb-8 {
+        margin-bottom: 2rem;
+      }
+
+      .mb-10 {
+        margin-bottom: 2.5rem;
+      }
+
+      .ml-1 {
+        margin-left: 0.25rem;
+      }
+
+      .ml-2 {
+        margin-left: 0.5rem;
+      }
+
+      .ml-3 {
+        margin-left: 0.75rem;
+      }
+
+      .ml-4 {
+        margin-left: 1rem;
+      }
+
+      .mr-1 {
+        margin-right: 0.25rem;
+      }
+
+      .mr-2 {
+        margin-right: 0.5rem;
+      }
+
+      .mr-3 {
+        margin-right: 0.75rem;
+      }
+
+      .mr-4 {
+        margin-right: 1rem;
+      }
+
+      .mr-5 {
+        margin-right: 1.25rem;
+      }
+
+      .mr-6 {
+        margin-right: 1.5rem;
+      }
+
+      .mr-8 {
+        margin-right: 2rem;
+      }
+
+      .mr-10 {
+        margin-right: 2.5rem;
+      }
+
+      .mr-12 {
+        margin-right: 3rem;
+      }
+
+      .mr-16 {
+        margin-right: 4rem;
+      }
+
+      .mr-20 {
+        margin-right: 5rem;
+      }
+
+      .mt-1 {
+        margin-top: 0.25rem;
+      }
+
+      .mt-2 {
+        margin-top: 0.5rem;
+      }
+
+      .mt-3 {
+        margin-top: 0.75rem;
+      }
+
+      .mt-4 {
+        margin-top: 1rem;
+      }
+
+      .mt-5 {
+        margin-top: 1.25rem;
+      }
+
+      .mt-6 {
+        margin-top: 1.5rem;
+      }
+
+      .mt-8 {
+        margin-top: 2rem;
+      }
+
+      .mt-10 {
+        margin-top: 2.5rem;
+      }
+
+      .mt-12 {
+        margin-top: 3rem;
+      }
+
+      .mt-16 {
+        margin-top: 4rem;
+      }
+
+      .mt-20 {
+        margin-top: 5rem;
+      }
+
+      .w-1\/2 {
+        width: 50%;
+      }
+
+      .w-1\/3 {
+        width: 33.333333%;
+      }
+
+      .w-2\/3 {
+        width: 66.666667%;
+      }
+
+      .w-1\/4 {
+        width: 25%;
+      }
+
+      .w-3\/4 {
+        width: 75%;
+      }
+
+      .w-1\/5 {
+        width: 20%;
+      }
+
+      .w-2\/5 {
+        width: 40%;
+      }
+
+      .w-3\/5 {
+        width: 60%;
+      }
+
+      .w-4\/5 {
+        width: 80%;
+      }
+
+      .w-1\/6 {
+        width: 16.666667%;
+      }
+
+      .w-5\/6 {
+        width: 83.333333%;
+      }
+
+      .w-full {
+        width: 100%;
+      }
+
+      .underline {
+        text-decoration: underline;
+      }
+
+      .border-bottom {
+        border-bottom: 1px solid #f4f5f6;
+      }
+
+      .border {
+        border: 1px solid #f4f5f6;
+      }
+
+      .border-ft-red {
+        border-color: #d60000;
+      }
+
+      .border-top {
+        border-top: 1px solid #f4f5f6;
+      }
+
+      .border-left {
+        border-left: 1px solid #f4f5f6;
+      }
+
+      .border-right {
+        border-right: 1px solid #f4f5f6;
+      }
+
+      .border-none {
+        border: none;
+      }
+
+      .border-collapse {
+        border-collapse: collapse;
+      }
+
+      .border-separate {
+        border-collapse: separate;
+      }
+
+      .border-transparent {
+        border-color: transparent;
+      }
+
+      .border-primary {
+        border-color: #4b4b4d !important;
+      }
+
+      .border-black {
+        border-color: #111017;
+      }
+
+      .border-mxg-alt {
+        border-color: #4c4847;
+      }
+
+      .border-white {
+        border-color: #fff;
+      }
+
+      .border-2 {
+        border-width: 2px;
+      }
+
+      .border-4 {
+        border-width: 4px;
+      }
+
+      .border-8 {
+        border-width: 8px;
+      }
+
+      .rounded {
+        border-radius: 0.25rem;
+      }
+
+      .rounded-t {
+        border-top-left-radius: 0.25rem;
+        border-top-right-radius: 0.25rem;
+      }
+
+      .rounded-b {
+        border-bottom-right-radius: 0.25rem;
+        border-bottom-left-radius: 0.25rem;
+      }
+
+      .rounded-l {
+        border-top-left-radius: 0.25rem;
+        border-bottom-left-radius: 0.25rem;
+      }
+
+      .rounded-r {
+        border-top-right-radius: 0.25rem;
+        border-bottom-right-radius: 0.25rem;
+      }
+
+      .rounded-tl {
+        border-top-left-radius: 0.25rem;
+      }
+
+      .rounded-tr {
+        border-top-right-radius: 0.25rem;
+      }
+
+      .rounded-bl {
+        border-bottom-left-radius: 0.25rem;
+      }
+
+      .rounded-br {
+        border-bottom-right-radius: 0.25rem;
+      }
+
+      .rounded-t-none {
+        border-top-left-radius: 0;
+        border-top-right-radius: 0;
+      }
+
+      .rounded-r-none {
+        border-top-right-radius: 0;
+        border-bottom-right-radius: 0;
+      }
+
+      .rounded-b-none {
+        border-bottom-right-radius: 0;
+        border-bottom-left-radius: 0;
+      }
+
+      .rounded-l-none {
+        border-top-left-radius: 0;
+        border-bottom-left-radius: 0;
+      }
+
+      .rounded-tl-none {
+        border-top-left-radius: 0;
+      }
+
+      .rounded-tr-none {
+        border-top-right-radius: 0;
+      }
+
+      .rounded-bl-none {
+        border-bottom-left-radius: 0;
+      }
+
+      .rounded-br-none {
+        border-bottom-right-radius: 0;
+      }
+
+      .rounded-sm {
+        border-radius: 0.125rem;
+      }
+
+      .rounded-lg {
+        border-radius: 0.5rem;
+      }
+
+      .rounded-full {
+        border-radius: 9999px;
+      }
+
+      .rounded-t-sm {
+        border-top-left-radius: 0.125rem;
+        border-top-right-radius: 0.125rem;
+      }
+
+      .relative {
+        position: relative !important;
+      }
+
+      .absolute {
+        position: absolute;
+      }
+
+      .fixed {
+        position: fixed;
+      }
+
+      .px-1 {
+        padding-left: 0.25rem;
+        padding-right: 0.25rem;
+      }
+
+      .px-2 {
+        padding-left: 0.5rem;
+        padding-right: 0.5rem;
+      }
+
+      .px-3 {
+        padding-left: 0.75rem;
+        padding-right: 0.75rem;
+      }
+
+      .px-4 {
+        padding-left: 1rem;
+        padding-right: 1rem;
+      }
+
+      .px-5 {
+        padding-left: 1.25rem;
+        padding-right: 1.25rem;
+      }
+
+      .px-6 {
+        padding-left: 1.5rem;
+        padding-right: 1.5rem;
+      }
+
+      .px-8 {
+        padding-left: 2rem;
+        padding-right: 2rem;
+      }
+
+      .px-10 {
+        padding-left: 2.5rem;
+        padding-right: 2.5rem;
+      }
+
+      .px-12 {
+        padding-left: 3rem;
+        padding-right: 3rem;
+      }
+
+      .px-16 {
+        padding-left: 4rem;
+        padding-right: 4rem;
+      }
+
+      .px-20 {
+        padding-left: 5rem;
+        padding-right: 5rem;
+      }
+
+      .py-1 {
+        padding-top: 0.25rem;
+        padding-bottom: 0.25rem;
+      }
+
+      .py-2 {
+        padding-top: 0.5rem;
+        padding-bottom: 0.5rem;
+      }
+
+      .py-3 {
+        padding-top: 0.75rem;
+        padding-bottom: 0.75rem;
+      }
+
+      .py-4 {
+        padding-top: 1rem;
+        padding-bottom: 1rem;
+      }
+
+      .py-5 {
+        padding-top: 1.25rem;
+        padding-bottom: 1.25rem;
+      }
+
+      .py-6 {
+        padding-top: 1.5rem;
+        padding-bottom: 1.5rem;
+      }
+
+      .py-8 {
+        padding-top: 2rem;
+        padding-bottom: 2rem;
+      }
+
+      .py-10 {
+        padding-top: 2.5rem;
+        padding-bottom: 2.5rem;
+      }
+
+      .py-12 {
+        padding-top: 3rem;
+        padding-bottom: 3rem;
+      }
+
+      .py-16 {
+        padding-top: 4rem;
+        padding-bottom: 4rem;
+      }
+
+      .py-20 {
+        padding-top: 5rem;
+        padding-bottom: 5rem;
+      }
+
+      .pt-1 {
+        padding-top: 0.25rem;
+      }
+
+      .pt-2 {
+        padding-top: 0.5rem;
+      }
+
+      .pt-3 {
+        padding-top: 0.75rem;
+      }
+
+      .pt-4 {
+        padding-top: 1rem;
+      }
+
+      .pt-5 {
+        padding-top: 1.25rem;
+      }
+
+      .pt-6 {
+        padding-top: 1.5rem;
+      }
+
+      .pt-8 {
+        padding-top: 2rem;
+      }
+
+      .pt-10 {
+        padding-top: 2.5rem;
+      }
+
+      .pt-12 {
+        padding-top: 3rem;
+      }
+
+      .pt-16 {
+        padding-top: 4rem;
+      }
+
+      .pt-20 {
+        padding-top: 5rem;
+      }
+
+      .pb-0 {
+        padding-bottom: 0 !important;
+      }
+
+      .pb-1 {
+        padding-bottom: 0.25rem;
+      }
+
+      .pb-2 {
+        padding-bottom: 0.5rem;
+      }
+
+      .pb-3 {
+        padding-bottom: 0.75rem;
+      }
+
+      .pb-4 {
+        padding-bottom: 1rem;
+      }
+
+      .pb-5 {
+        padding-bottom: 1.25rem;
+      }
+
+      .pb-6 {
+        padding-bottom: 1.5rem;
+      }
+
+      .pb-8 {
+        padding-bottom: 2rem;
+      }
+
+      .pb-10 {
+        padding-bottom: 2.5rem;
+      }
+
+      .pb-12 {
+        padding-bottom: 3rem;
+      }
+
+      .pb-16 {
+        padding-bottom: 4rem;
+      }
+
+      .pb-20 {
+        padding-bottom: 5rem;
+      }
+
+      .logo-machine {
+        width: 80px;
+      }
+
+      body {
+        height: 260mm;
+      }
+
+      .print-format img {
+        max-width: none;
+      }
+
+      .m-0 {
+        margin: 0;
+      }
+
+      .border-red {
+        border-color: #ec1c24 !important;
+      }
+
+      .text-mxg {
+        color: #4b4b4d !important;
+      }
+
+      .text-mxg-red {
+        color: #ec1c24 !important;
+      }
+
+      .text-sm {
+        font-size: 0.875rem;
+      }
+
+      .text-base {
+        font-size: 1rem;
+      }
+
+      .text-lg {
+        font-size: 1.125rem;
+      }
+
+      .text-xl {
+        font-size: 1.25rem;
+      }
+
+      .text-2xl {
+        font-size: 1.5rem;
+      }
+
+      .text-3xl {
+        font-size: 1.875rem;
+      }
+
+      .text-4xl {
+        font-size: 2.25rem;
+      }
+
+      .text-nowrap {
+        white-space: nowrap;
+      }
+
+      .text-right {
+        text-align: right;
+      }
+
+      .text-left {
+        text-align: left;
+      }
+
+      .text-center {
+        text-align: center;
+      }
+
+      .text-xs {
+        font-size: 0.65rem;
+      }
+
+      .text-xxs {
+        font-size: 0.55rem;
+      }
+
+      .uppercase {
+        text-transform: uppercase;
+      }
+
+      .table-bordered {
+        border-collapse: collapse;
+        border: 1px solid #111017 !important;
+      }
+
+      .table-bordered th,
+      .table-bordered td {
+        border: 1px solid #111017 !important;
+      }
+
+      .table-bordered thead th,
+      .table-bordered thead td {
+        border-bottom-width: 1px;
+      }
+
+      .table-bordered thead th,
+      .table-bordered thead td {
+        border-bottom-width: 1px;
+      }
+
+      .table-bordered th,
+      .table-bordered td {
+        border: 1px solid #111017 !important;
+      }
+
+      .table-bordered thead th,
+      .table-bordered thead td {
+        border-bottom-width: 1px;
+      }
+
+      .table-bordered th,
+      .table-bordered td {
+        border: 1px solid #111017 !important;
+      }
+
+      .table-bordered thead th,
+      .table-bordered thead td {
+        border-bottom-width: 1px;
+      }
+
+      .table-bordered th,
+      .table-bordered td {
+        border: 1px solid #111017 !important;
+      }
+
+      .table-bordered thead th,
+      .table-bordered thead td {
+        border-bottom-width: 1px;
+      }
+
+      .table-bordered th,
+      .table-bordered td {
+        border: 1px solid #111017 !important;
+      }
+
+      .text-black {
+        color: #111017 !important;
+      }
+
+      .bg-black {
+        background-color: #111017 !important;
+      }
+
+      .px-0 {
+        padding-left: 0 !important;
+        padding-right: 0 !important;
+      }
+      .watermark {
+        position: fixed;
+        /* bottom: 5px;
+                right: 5px; */
+        opacity: 0.08;
+        z-index: 99;
+        color: black;
+        left: 50%;
+        top: 50%;
+        transform: translate(-50%, -50%);
+      }
+
+      .text-ft-red {
+        color: #d60000;
+      }
+
+      .bg-ft-red {
+        background-color: #d60000;
+        color: #fff !important;
+      }
+
+      .bg-white {
+        background-color: #fff;
+      }
+
+      .py-0\.5 {
+        padding-top: 0.05rem;
+        padding-bottom: 0.05rem;
+      }
+      .border-ft-red {
+        border-color: #d60000;
+      }
+    </style>
+  </head>
+  {% set machine = frappe.get_doc("FT Machine", doc.machine) %}
+  <body class="document">
+    <div class="flex items-center justify-between gap-4">
+      <div class="flex gap-4 items-center flex-col">
+        <img style="width: 250px" src="/assets/mxg_fleet_track/img/fleetrack-logo.png" alt="Fleetrack Logo" />
+      </div>
+      <div>
+        <table style="border-collapse: separate">
+          <thead>
+            <tr>
+              <th style="padding: 0 !important" colspan="7" class="text-right px-0">
+                <h1 class="text-3xl text-nowrap font-bold text-black m-0 p-0">Warranty & Maintenance Notification</h1>
+              </th>
+            </tr>
+          </thead>
+          <tr>
+            <th style="padding: 0 0 5px 0 !important" colspan="7" class="text-right px-0">
+              <h1 style="color: #a3a4a5" class="text-2xl text-mxg-alt font-bold my-0 m-0 p-0">{{ machine.model }}</h1>
+              <div class="flex items-center justify-end gap-1">
+                <h5 style="color: #a3a4a5" class="text-base text-mxg-alt font-bold my-0 m-0 p-0">{{ machine.type }}</h5>
+              </div>
+            </th>
+          </tr>
+          <tr>
+            <td class="text-ft-red tiny-td-padding font-bold text-lg uppercase px-2"></td>
+            <td class="bg-ft-red tiny-td-padding border border-ft-red px-2 text-xs font-bold text-nowrap">
+              Machine SRN
+            </td>
+            <td class="px-2 tiny-td-padding border border-black uppercase text-xs font-bold text-nowrap">
+              {{ doc.machine }}
+            </td>
+            <td class="bg-ft-red tiny-td-padding border border-ft-red px-2 text-xs font-bold text-nowrap">
+              Customer Ref
+            </td>
+            <td class="text-sm tiny-td-padding border border-black px-1 text-xs font-bold text-nowrap">
+              {{ machine.fleet_no }}
+            </td>
+            <td class="bg-ft-red tiny-td-padding border border-ft-red py-1 px-4 text-center text-xs text-nowrap">
+              <div class="flex flex-col">
+                <span class="text-white">Fleet No</span>
+              </div>
+            </td>
+            <td class="text-sm tiny-td-padding border border-black px-1 text-xs font-bold text-nowrap">
+              {{ machine.mxg_fleet_no|default("&nbsp;", True) }}
+            </td>
+          </tr>
+          <tr>
+            <td class="text-black tiny-td-padding text-lg uppercase px-2 text-nowrap"></td>
+            <td class="bg-ft-red tiny-td-padding border border-ft-red px-2 py-0 text-xs font-bold text-nowrap">
+              Engine Make
+            </td>
+            <td class="px-2 border tiny-td-padding border-black uppercase text-xs font-bold text-nowrap">
+              {{ machine.engine_type }}
+            </td>
+            <td class="bg-ft-red tiny-td-padding border border-ft-red px-2 text-xs font-bold text-nowrap">
+              Engine SRN
+            </td>
+            <td colspan="3" class="text-sm tiny-td-padding border border-black px-1 text-xs font-bold text-nowrap">
+              {{ machine.esn }}
+            </td>
+          </tr>
+          <tr>
+            <td class="text-black tiny-td-padding text-sm px-2"></td>
+            <td class="bg-ft-red tiny-td-padding border border-ft-red px-2 py-0 text-xs font-bold text-nowrap">
+              Warranty Hours
+            </td>
+            <td class="px-2 border tiny-td-padding border-black uppercase text-xs font-bold text-nowrap">
+              {{ machine.warranty_hours }}
+              <span style="color: #a3a4a5">HRS</span>
+            </td>
+            <td class="bg-ft-red tiny-td-padding border border-ft-red px-2 text-xs font-bold text-nowrap">
+              Warranty Period
+            </td>
+            <td colspan="3" class="text-sm tiny-td-padding border border-black px-1 text-xs font-bold">
+              {{machine.warranty_period}}
+              <span style="color: #a3a4a5">MONTHS</span>
+            </td>
+          </tr>
+          <tr>
+            <td class="text-black tiny-td-padding text-sm px-2"></td>
+            <td class="bg-mxg-alt tiny-td-padding border border-ft-red px-2 py-0 text-xs font-bold text-nowrap">
+              Handover Date
+            </td>
+            <td class="px-2 border tiny-td-padding border-black text-xs font-bold text-nowrap">
+              {{ frappe.format_date(machine.handover_date) }}
+            </td>
+            <td class="bg-mxg-alt tiny-td-padding border border-ft-red px-2 text-xs font-bold text-nowrap">
+              Warranty Expiry Date
+            </td>
+            <td colspan="3" class="text-sm tiny-td-padding border border-black px-1 text-xs font-bold">
+              {{frappe.format_date(machine.expiry_date)}}
+            </td>
+          </tr>
+
+          <tr>
+            <td class="text-black text-nowrap tiny-td-padding text-lg font-bold px-2"></td>
+
+            <td colspan="5" class="text-sm tiny-td-padding px-1 text-xxs">
+              fleetrack@machinery-exchange.com | https://fleetrack.machinery-exchange.com | +263 784 488 801
+            </td>
+          </tr>
+        </table>
+      </div>
+    </div>
+    <table style="border-collapse: separate">
+      <tr>
+        <th colspan="6" class="text-left" style="padding: 0 !important">
+          <h1 style="padding-right: 5px" class="text-xl flex items-center font-bold text-black my-0">
+            <svg
+              width="24px"
+              height="24px"
+              viewBox="0 0 24 24"
+              stroke-width="2"
+              fill="none"
+              xmlns="http://www.w3.org/2000/svg"
+              color="#000000">
+              <path
+                d="M12 12a4 4 0 100-8 4 4 0 000 8z"
+                stroke="#000000"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"></path>
+              <path
+                d="M5 20v-1a7 7 0 0110-6.326M21 22l1-6-3.5 1.8L17 16l-1.5 1.8L12 16l1 6h8z"
+                stroke="#000000"
+                stroke-width="2"
+                stroke-linecap="round"
+                stroke-linejoin="round"></path>
+            </svg>
+            <span class="pl-2">{{ machine.customer }}</span>
+          </h1>
+        </th>
+      </tr>
+    </table>
+    <table class="text-sm mt-3">
+      <tr>
+        <td style="padding: 2px 3px !important" class="text-right">Printed by</td>
+        <td style="padding: 2px 3px !important">
+          {{ frappe.db.get_value("User",{"name":frappe.session.user}, "full_name") }}
+        </td>
+      </tr>
+      <tr>
+        <td style="padding: 2px 3px !important" class="text-right">Date</td>
+        <td style="padding: 2px 3px !important">{{ frappe.format_date(frappe.utils.today()) }}</td>
+      </tr>
+    </table>
+
+    <table style="border-collapse: collapse !important" class="w-full mt-10 mb-3">
+      <tbody>
+        <tr>
+          <td style="padding: 0 !important" class="tiny-td-padding">
+            <div class="">
+              Dear valued customer, Welcome to MXG Fleetrack&trade;!
+
+              <p>We wish to take this opportunity to thank you for doing business with us.</p>
+              <p>
+                Kindly utilise this notification for relevant information pertaining to
+                <span class="text-mxg-red font-bold">Equipment maintenance, Warranty & Aftersales Support.</span>
+              </p>
+            </div>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+
+    <table style="border-collapse: collapse !important" class="w-full">
+      <thead>
+        <tr>
+          <th class="bg-ft-red border text-lg border-ft-red text-white uppercase font-bold text-center">
+            Important Notice
+          </th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td style="padding: 16px 0px !important" class="tiny-td-padding">
+            <div class="">
+              Please note: To maintain an active warranty status, all service and repairs of machines/equipment are to
+              be carried out by
+              <b class="text-mxg-red">Machinery Exchange</b>
+              .
+
+              <p>
+                Make use of the attached daily/weekly
+                <b class="text-mxg-red">Operators Daily Checklist</b>
+                (To be completed daily by the Operator before starting the machine)
+              </p>
+
+              <p>If you have any questions or enquiries, do not hesitate to call.</p>
+            </div>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+
+    <table style="border-collapse: collapse !important" class="w-full">
+      <thead>
+        <tr>
+          <th colspan="3" class="bg-mxg-alt border text-lg border-mxg-alt text-white uppercase font-bold text-center">
+            Other details
+          </th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr class="text-lg">
+          <td style="padding: 2px 0px !important" class="tiny-td-padding">
+            Warranty Type ~ {{ machine.warranty_type }}
+          </td>
+          <td style="padding: 2px 5px !important" class="tiny-td-padding">
+            Service Interval (HRS) ~ {{ machine.service_interval_hours }}
+          </td>
+          <td style="padding: 2px 5px !important" class="tiny-td-padding">
+            Standard Fuel Cons. (LPH) ~ {{ machine.standard_fuel_consumption }}
+          </td>
+        </tr>
+      </tbody>
+    </table>
+
+    <p class="mt-5">Thank you for your support</p>
+
+    <p>
+      Best Regards,
+      <br />
+
+      <b>
+        <span class="text-black">MXG</span>
+        |
+        <span class="text-mxg-red">Fleetrack</span>
+      </b>
+    </p>
+
+    <table class="w-full">
+      <thead>
+        <tr>
+          <th colspan="3" class="text-center border border-ft-red bg-ft-red text-white uppercase">
+            Photographic Detail
+          </th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td style="padding: 0 !important" class="w-1/3">
+            <div class="flex justify-center flex-col border border-mxg-alt">
+              <div class="w-full bg-mxg-alt text-white py-1 px-4 text-center">Machine</div>
+              <div style="height: 11rem" class="w-auto py-1">
+                <img src="{{ machine.machine_picture|default("/assets/mxg_fleet_track/img/placeholder-image.webp", True)
+                }}" style="height: 100%; object-fit: contain" class="w-full" alt="" />
+              </div>
+            </div>
+          </td>
+          <td style="padding: 0 !important" class="w-1/3">
+            <div class="flex justify-center flex-col border border-mxg-alt">
+              <div class="w-full bg-mxg-alt text-white py-1 px-4 text-center">Data Plate</div>
+              <div style="height: 11rem" class="w-full py-1">
+                <img src="{{ machine.machine_data_plate|default("/assets/mxg_fleet_track/img/placeholder-image.webp",
+                True) }}" style="height: 100%; object-fit: contain" class="w-full" alt="" />
+              </div>
+            </div>
+          </td>
+          <td style="padding: 0 !important" class="w-1/3">
+            <div class="flex justify-center flex-col border border-mxg-alt">
+              <div class="w-full bg-mxg-alt text-white py-1 px-4 text-center">Engine Name Plate</div>
+              <div style="height: 11rem" class="w-full py-1">
+                <img src="{{ machine.engine_data_plate|default("/assets/mxg_fleet_track/img/placeholder-image.webp",
+                True) }}" style="height: 100%; object-fit: contain" class="w-full" alt="" />
+              </div>
+            </div>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+
+    <!-- Signatures -->
+    <table class="w-full mt-4">
+      <thead>
+        <tr>
+          <th style="padding: 2px 5px !important" class="text-center border border-ft-red bg-ft-red text-white">
+            Fleetrack
+          </th>
+          <th style="padding: 2px 5px !important" class="text-center border border-ft-red bg-ft-red text-white">
+            Customer Service Coordinator
+          </th>
+          <th style="padding: 2px 5px !important" class="text-center border border-ft-red bg-ft-red text-white">
+            CSD Manager
+          </th>
+          <th style="padding: 2px 5px !important" class="text-center border border-ft-red bg-ft-red text-white">
+            SRD Manager
+          </th>
+          <th style="padding: 2px 5px !important" class="text-center border border-ft-red bg-ft-red text-white">
+            Managing Director
+          </th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td class="border border-ft-red pt-5">&nbsp;</td>
+          <td class="border border-ft-red pt-5"></td>
+          <td class="border border-ft-red pt-5"></td>
+          <td class="border border-ft-red pt-5"></td>
+          <td class="border border-ft-red pt-5"></td>
+        </tr>
+      </tbody>
+    </table>
+  </body>
+</html>

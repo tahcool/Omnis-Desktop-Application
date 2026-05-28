@@ -1,0 +1,112 @@
+[
+ {
+  "docstatus": 0,
+  "doctype": "Custom Role",
+  "modified": "2022-10-19 17:45:43.830628",
+  "name": "9afb83cad8",
+  "page": null,
+  "ref_doctype": "FT Alert",
+  "report": "Fleetrack Activity List",
+  "roles": [
+   {
+    "parent": "9afb83cad8",
+    "parentfield": "roles",
+    "parenttype": "Custom Role",
+    "role": "MXG-CONTROLLER"
+   },
+   {
+    "parent": "9afb83cad8",
+    "parentfield": "roles",
+    "parenttype": "Custom Role",
+    "role": "System Manager"
+   }
+  ]
+ },
+ {
+  "docstatus": 0,
+  "doctype": "Custom Role",
+  "modified": "2022-10-19 17:45:58.583354",
+  "name": "92ffaa765d",
+  "page": null,
+  "ref_doctype": "FT Machine",
+  "report": "Machines Due for Service",
+  "roles": [
+   {
+    "parent": "92ffaa765d",
+    "parentfield": "roles",
+    "parenttype": "Custom Role",
+    "role": "System Manager"
+   },
+   {
+    "parent": "92ffaa765d",
+    "parentfield": "roles",
+    "parenttype": "Custom Role",
+    "role": "MXG-CONTROLLER"
+   },
+   {
+    "parent": "92ffaa765d",
+    "parentfield": "roles",
+    "parenttype": "Custom Role",
+    "role": "MXG-STANDARD"
+   }
+  ]
+ },
+ {
+  "docstatus": 0,
+  "doctype": "Custom Role",
+  "modified": "2022-10-19 17:46:10.909747",
+  "name": "0e15685791",
+  "page": null,
+  "ref_doctype": "FT Machine",
+  "report": "Fleetrack Machine Summary",
+  "roles": [
+   {
+    "parent": "0e15685791",
+    "parentfield": "roles",
+    "parenttype": "Custom Role",
+    "role": "System Manager"
+   },
+   {
+    "parent": "0e15685791",
+    "parentfield": "roles",
+    "parenttype": "Custom Role",
+    "role": "MXG-CONTROLLER"
+   },
+   {
+    "parent": "0e15685791",
+    "parentfield": "roles",
+    "parenttype": "Custom Role",
+    "role": "MXG-STANDARD"
+   }
+  ]
+ },
+ {
+  "docstatus": 0,
+  "doctype": "Custom Role",
+  "modified": "2022-11-16 14:51:45.413878",
+  "name": "961e18f409",
+  "page": "backups",
+  "ref_doctype": null,
+  "report": null,
+  "roles": [
+   {
+    "parent": "961e18f409",
+    "parentfield": "roles",
+    "parenttype": "Custom Role",
+    "role": "System Manager"
+   },
+   {
+    "parent": "961e18f409",
+    "parentfield": "roles",
+    "parenttype": "Custom Role",
+    "role": "MXG-CONTROLLER"
+   },
+   {
+    "parent": "961e18f409",
+    "parentfield": "roles",
+    "parenttype": "Custom Role",
+    "role": "MXG-MD"
+   }
+  ]
+ }
+]

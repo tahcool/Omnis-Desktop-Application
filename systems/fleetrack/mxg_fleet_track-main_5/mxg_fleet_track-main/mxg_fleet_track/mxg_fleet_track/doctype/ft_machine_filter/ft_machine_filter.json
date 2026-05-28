@@ -1,0 +1,190 @@
+{
+ "actions": [],
+ "allow_import": 1,
+ "allow_rename": 1,
+ "autoname": "format:{filter_type}-{machine}-{#}",
+ "creation": "2023-10-08 15:20:04.110100",
+ "default_view": "List",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "machine",
+  "image",
+  "column_break_stre0",
+  "filter_type",
+  "column_break_i8wuj",
+  "specified_type",
+  "column_break_fj6eq",
+  "part_no",
+  "measurements_section",
+  "od",
+  "column_break_tvktx",
+  "id",
+  "column_break_zzava",
+  "l"
+ ],
+ "fields": [
+  {
+   "fieldname": "machine",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Machine",
+   "options": "FT Machine",
+   "reqd": 1
+  },
+  {
+   "fieldname": "image",
+   "fieldtype": "Attach Image",
+   "label": "Image"
+  },
+  {
+   "fieldname": "column_break_stre0",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "filter_type",
+   "fieldtype": "Select",
+   "in_list_view": 1,
+   "label": "Type",
+   "options": "\nHydraulic Filter\nAir Filter\nTansmission Filter\nOther",
+   "reqd": 1
+  },
+  {
+   "fieldname": "column_break_i8wuj",
+   "fieldtype": "Column Break",
+   "mandatory_depends_on": "eval:doc.filter_type == \"Other\""
+  },
+  {
+   "allow_in_quick_entry": 1,
+   "depends_on": "eval:doc.filter_type == \"Other\"",
+   "fieldname": "specified_type",
+   "fieldtype": "Data",
+   "label": "Specified Type",
+   "mandatory_depends_on": "eval:doc.filter_type == \"Other\""
+  },
+  {
+   "fieldname": "column_break_fj6eq",
+   "fieldtype": "Column Break"
+  },
+  {
+   "allow_in_quick_entry": 1,
+   "fieldname": "part_no",
+   "fieldtype": "Data",
+   "label": "Part No"
+  },
+  {
+   "fieldname": "measurements_section",
+   "fieldtype": "Section Break",
+   "label": "Measurements"
+  },
+  {
+   "allow_in_quick_entry": 1,
+   "fieldname": "od",
+   "fieldtype": "Float",
+   "label": "OD",
+   "non_negative": 1,
+   "precision": "1",
+   "reqd": 1
+  },
+  {
+   "fieldname": "column_break_tvktx",
+   "fieldtype": "Column Break"
+  },
+  {
+   "allow_in_quick_entry": 1,
+   "fieldname": "id",
+   "fieldtype": "Float",
+   "label": "ID",
+   "non_negative": 1,
+   "precision": "1",
+   "reqd": 1
+  },
+  {
+   "fieldname": "column_break_zzava",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "l",
+   "fieldtype": "Float",
+   "label": "L",
+   "non_negative": 1,
+   "precision": "1",
+   "reqd": 1
+  }
+ ],
+ "image_field": "image",
+ "in_create": 1,
+ "index_web_pages_for_search": 1,
+ "links": [],
+ "modified": "2023-10-08 15:21:57.274669",
+ "modified_by": "Administrator",
+ "module": "MXG Fleet Track",
+ "name": "FT Machine Filter",
+ "naming_rule": "Expression",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "MXG-CONTROLLER",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "create": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "MXG-STANDARD",
+   "share": 1,
+   "write": 1
+  },
+  {
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "MXG-READ-ONLY",
+   "share": 1
+  },
+  {
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "MXG-MD",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "quick_entry": 1,
+ "read_only": 1,
+ "show_title_field_in_link": 1,
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": [],
+ "title_field": "filter_type",
+ "track_changes": 1
+}

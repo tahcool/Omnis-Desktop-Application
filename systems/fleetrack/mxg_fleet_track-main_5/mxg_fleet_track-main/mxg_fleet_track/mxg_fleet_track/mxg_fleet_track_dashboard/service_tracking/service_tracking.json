@@ -1,0 +1,31 @@
+{
+ "cards": [
+  {
+   "card": "MXG Machines"
+  },
+  {
+   "card": "Major Defects"
+  },
+  {
+   "card": "Breakdowns"
+  }
+ ],
+ "charts": [
+  {
+   "chart": "Machines due for service",
+   "width": "Half"
+  }
+ ],
+ "creation": "2022-10-10 19:31:47.584798",
+ "dashboard_name": "Service Tracking",
+ "docstatus": 0,
+ "doctype": "Dashboard",
+ "idx": 0,
+ "is_default": 1,
+ "is_standard": 1,
+ "modified": "2022-10-11 12:50:37.071577",
+ "modified_by": "Administrator",
+ "module": "MXG Fleet Track",
+ "name": "Service Tracking",
+ "owner": "Administrator"
+}

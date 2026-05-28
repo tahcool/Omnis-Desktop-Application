@@ -1,0 +1,48 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "creation": "2023-10-08 13:28:16.300988",
+ "default_view": "List",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "index",
+  "column_break_raajy",
+  "service_guide"
+ ],
+ "fields": [
+  {
+   "fieldname": "service_guide",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Service Guide",
+   "options": "FT Machine Service Guide",
+   "reqd": 1
+  },
+  {
+   "fieldname": "index",
+   "fieldtype": "Int",
+   "in_list_view": 1,
+   "label": "Index",
+   "reqd": 1
+  },
+  {
+   "fieldname": "column_break_raajy",
+   "fieldtype": "Column Break"
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "istable": 1,
+ "links": [],
+ "modified": "2023-10-08 13:51:54.013696",
+ "modified_by": "Administrator",
+ "module": "MXG Fleet Track",
+ "name": "FT Machine Standard Service Config",
+ "owner": "Administrator",
+ "permissions": [],
+ "quick_entry": 1,
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": []
+}

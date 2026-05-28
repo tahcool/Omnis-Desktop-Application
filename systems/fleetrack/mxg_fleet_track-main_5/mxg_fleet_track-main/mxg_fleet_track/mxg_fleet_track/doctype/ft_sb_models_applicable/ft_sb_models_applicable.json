@@ -1,0 +1,48 @@
+{
+ "actions": [],
+ "allow_rename": 1,
+ "creation": "2023-09-16 15:36:07.898981",
+ "doctype": "DocType",
+ "editable_grid": 1,
+ "engine": "InnoDB",
+ "field_order": [
+  "model",
+  "column_break_9jcas",
+  "affected"
+ ],
+ "fields": [
+  {
+   "columns": 2,
+   "fieldname": "model",
+   "fieldtype": "Link",
+   "in_list_view": 1,
+   "label": "Model",
+   "options": "FT Machine Model",
+   "reqd": 1
+  },
+  {
+   "fieldname": "column_break_9jcas",
+   "fieldtype": "Column Break"
+  },
+  {
+   "columns": 2,
+   "default": "0",
+   "fieldname": "affected",
+   "fieldtype": "Check",
+   "in_list_view": 1,
+   "label": "Affected"
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "istable": 1,
+ "links": [],
+ "modified": "2023-09-16 15:41:16.656308",
+ "modified_by": "Administrator",
+ "module": "MXG Fleet Track",
+ "name": "FT SB Models Applicable",
+ "owner": "Administrator",
+ "permissions": [],
+ "sort_field": "modified",
+ "sort_order": "DESC",
+ "states": []
+}
