@@ -174,7 +174,9 @@ server.tool(
   },
   async ({ table, select = '*', filters = {}, limit = 20, count_only = false }) => {
     try {
-      let q = sb.from(table).select(count_only ? '*', { count: 'exact', head: true } : select);
+      let q = count_only
+        ? sb.from(table).select('*', { count: 'exact', head: true })
+        : sb.from(table).select(select);
       for (const [k, v] of Object.entries(filters)) q = q.eq(k, v);
       if (!count_only) q = q.limit(limit);
       const { data, error, count } = await q;
