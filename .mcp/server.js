@@ -374,6 +374,190 @@ server.tool(
   }
 );
 
+// ═══════════════════════════════════════════════════════════════════════════
+// TOOL: refresh_schema
+// Live-queries Supabase information_schema and rewrites database_schema.md
+// ═══════════════════════════════════════════════════════════════════════════
+server.tool(
+  'refresh_schema',
+  'Live-refresh the database schema knowledge from Supabase. Queries information_schema and rewrites database_schema.md. Call at the start of any schema-related session.',
+  {
+    include_storage_policies: z.boolean().optional().describe('Also fetch storage RLS policies (default: true)'),
+  },
+  async ({ include_storage_policies = true }) => {
+    try {
+      // 1. Fetch all public tables + columns
+      const { data: cols, error: colErr } = await sb
+        .from('information_schema.columns')
+        .select('table_name,column_name,data_type,is_nullable,column_default')
+        .eq('table_schema', 'public')
+        .order('table_name')
+        .order('ordinal_position');
+
+      if (colErr) throw new Error(`Schema query failed: ${colErr.message}`);
+
+      // 2. Fetch primary keys
+      const { data: pks } = await sb
+        .from('information_schema.table_constraints')
+        .select('table_name,constraint_type')
+        .eq('table_schema', 'public')
+        .eq('constraint_type', 'PRIMARY KEY');
+
+      // 3. Group columns by table
+      const tables = {};
+      for (const col of (cols || [])) {
+        if (!tables[col.table_name]) tables[col.table_name] = [];
+        tables[col.table_name].push(col);
+      }
+
+      // 4. Build markdown
+      let md = `# Supabase Database Schema\n_Auto-generated: ${new Date().toISOString()}_\n\n`;
+      md += `**Tables:** ${Object.keys(tables).length}\n\n`;
+
+      for (const [tableName, columns] of Object.entries(tables).sort()) {
+        md += `## \`${tableName}\`\n\n`;
+        md += `| Column | Type | Nullable | Default |\n|--------|------|----------|---------|\n`;
+        for (const col of columns) {
+          const nullable = col.is_nullable === 'YES' ? '✓' : '✗';
+          const def = col.column_default ? `\`${col.column_default.substring(0, 40)}\`` : '—';
+          md += `| \`${col.column_name}\` | ${col.data_type} | ${nullable} | ${def} |\n`;
+        }
+        md += '\n';
+      }
+
+      // 5. Fetch storage policies if requested
+      if (include_storage_policies) {
+        const { data: policies } = await sb
+          .from('pg_policies')
+          .select('tablename,policyname,cmd,permissive')
+          .eq('schemaname', 'storage');
+
+        if (policies?.length) {
+          md += `## Storage RLS Policies\n\n| Table | Policy | Command | Permissive |\n|-------|--------|---------|------------|\n`;
+          for (const p of policies) {
+            md += `| ${p.tablename} | ${p.policyname} | ${p.cmd} | ${p.permissive} |\n`;
+          }
+        } else {
+          md += `## Storage RLS Policies\n_None found — or pg_policies not accessible via REST_\n`;
+        }
+      }
+
+      // 6. Write to knowledge base
+      writeKnowledge('_shared/database_schema.md', md);
+
+      return {
+        content: [{
+          type: 'text',
+          text: `✅ Schema refreshed: ${Object.keys(tables).length} tables written to database_schema.md\n\nTables found:\n${Object.keys(tables).sort().map(t => `  - ${t}`).join('\n')}`
+        }]
+      };
+    } catch (e) {
+      return { content: [{ type: 'text', text: `Error refreshing schema: ${e.message}` }] };
+    }
+  }
+);
+
+// ═══════════════════════════════════════════════════════════════════════════
+// TOOL: count_frappe_calls
+// Counts remaining callFrappe() calls per system and updates the API maps
+// ═══════════════════════════════════════════════════════════════════════════
+server.tool(
+  'count_frappe_calls',
+  'Count remaining callFrappe() calls in each system\'s HTML files. Updates migration progress automatically. Call at the start of any API replacement session.',
+  {},
+  async () => {
+    const systemFiles = {
+      fleetrack:     path.join(ROOT, 'systems', 'fleetrack', 'index.html'),
+      salestrack:    path.join(ROOT, 'systems', 'salestrack', 'index.html'),
+      spe:           path.join(ROOT, 'systems', 'SPE', 'index.html'),
+      group_accounts: path.join(ROOT, 'systems', 'group_accounts', 'index.html'),
+    };
+
+    const results = [];
+    const timestamp = new Date().toISOString();
+    let grandTotal = 0;
+
+    for (const [system, filePath] of Object.entries(systemFiles)) {
+      if (!fs.existsSync(filePath)) {
+        results.push(`**${system}:** file not found`);
+        continue;
+      }
+
+      const content = fs.readFileSync(filePath, 'utf8');
+      const matches = content.match(/callFrappe\(/g) || [];
+      // Subtract 1 for the function definition itself
+      const defCount = (content.match(/async function callFrappe\(|function callFrappe\(/g) || []).length;
+      const callCount = Math.max(0, matches.length - defCount);
+      grandTotal += callCount;
+
+      // Also extract the distinct endpoint strings for context
+      const endpoints = [...new Set(
+        [...content.matchAll(/callFrappe\(['"`]([^'"`]+)['"`]/g)].map(m => m[1])
+      )].slice(0, 10);
+
+      const line = `**${system}:** ${callCount} callFrappe() call${callCount !== 1 ? 's' : ''} remaining`;
+      results.push(line);
+
+      // Append a progress update to the system's migration_status.md
+      const statusPath = `${system}/migration_status.md`;
+      const statusEntry = `\n\n---\n### Auto-update: ${timestamp}\n- callFrappe() calls remaining: **${callCount}**\n- Distinct endpoints (first 10):\n${endpoints.map(e => `  - \`${e}\``).join('\n')}`;
+      appendKnowledge(statusPath, statusEntry);
+    }
+
+    const summary = [
+      `# Frappe API Call Count — ${new Date().toLocaleDateString()}`,
+      '',
+      ...results,
+      '',
+      `**Grand total remaining: ${grandTotal}**`,
+      '',
+      '_Migration status files updated automatically._',
+    ].join('\n');
+
+    return { content: [{ type: 'text', text: summary }] };
+  }
+);
+
+// ═══════════════════════════════════════════════════════════════════════════
+// TOOL: get_recent_commits
+// Shows recent git history for context on what has changed
+// ═══════════════════════════════════════════════════════════════════════════
+server.tool(
+  'get_recent_commits',
+  'Get recent git commit history to understand what has changed. Useful at session start to catch up on work done in previous sessions.',
+  {
+    count: z.number().optional().describe('Number of commits to show (default: 15)'),
+    branch: z.string().optional().describe('Branch to show (default: current)'),
+  },
+  async ({ count = 15, branch = '' }) => {
+    try {
+      const branchArg = branch ? branch : '';
+      const log = execSync(
+        `git log ${branchArg} --oneline --decorate -n ${count} --format="%h %ad %s" --date=short`,
+        { cwd: ROOT, encoding: 'utf8' }
+      ).trim();
+
+      const currentBranch = execSync('git branch --show-current', { cwd: ROOT, encoding: 'utf8' }).trim();
+      const status = execSync('git status --short', { cwd: ROOT, encoding: 'utf8' }).trim();
+
+      const text = [
+        `**Current branch:** \`${currentBranch}\``,
+        '',
+        '**Recent commits:**',
+        '```',
+        log,
+        '```',
+        '',
+        status ? `**Uncommitted changes:**\n\`\`\`\n${status}\n\`\`\`` : '**Working tree:** clean',
+      ].join('\n');
+
+      return { content: [{ type: 'text', text: text }] };
+    } catch (e) {
+      return { content: [{ type: 'text', text: `Git error: ${e.message}` }] };
+    }
+  }
+);
+
 // ─────────────────────────────────────────────────────────────────────────────
 // Start server
 // ─────────────────────────────────────────────────────────────────────────────
