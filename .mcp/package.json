@@ -1,0 +1,15 @@
+{
+  "name": "omnis-mcp",
+  "version": "1.0.0",
+  "description": "Omnis Unified MCP Server — shared knowledge base and tools for all Omnis sub-agents",
+  "type": "module",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.12.0",
+    "@supabase/supabase-js": "^2.105.3",
+    "zod": "^3.25.28"
+  }
+}

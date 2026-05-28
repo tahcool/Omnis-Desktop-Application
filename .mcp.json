@@ -1,0 +1,9 @@
+{
+  "mcpServers": {
+    "omnis": {
+      "command": "node",
+      "args": [".mcp/server.js"],
+      "cwd": "c:\\Users\\Administrator\\omnis"
+    }
+  }
+}
