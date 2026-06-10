@@ -3619,6 +3619,53 @@ window.OmnisDashboardV6 = class OmnisDashboardV6 {
         }
     }
 
+
+    renderDeliveryCalendar() {
+        const cal = document.getElementById('dash-cal-body');
+        if (!cal) return;
+
+        const orders = (this.data && this.data.active_orders) ? this.data.active_orders : [];
+
+        if (orders.length === 0) {
+            cal.innerHTML = `<div style="text-align:center;padding:20px 0;color:#94a3b8;font-size:12px;font-style:italic;">
+                <i class="fas fa-calendar-check" style="font-size:20px;opacity:0.3;display:block;margin-bottom:6px;"></i>
+                No upcoming deliveries
+            </div>`;
+            return;
+        }
+
+        const today = new Date();
+        const upcoming = orders
+            .filter(o => o.delivery_date)
+            .map(o => {
+                const d = new Date(o.delivery_date);
+                const diff = Math.ceil((d - today) / (1000 * 60 * 60 * 24));
+                return { ...o, _daysLeft: diff, _date: d };
+            })
+            .filter(o => o._daysLeft >= 0)
+            .sort((a, b) => a._daysLeft - b._daysLeft)
+            .slice(0, 5);
+
+        if (upcoming.length === 0) {
+            cal.innerHTML = `<div style="text-align:center;padding:20px 0;color:#94a3b8;font-size:12px;font-style:italic;">No upcoming deliveries this period</div>`;
+            return;
+        }
+
+        cal.innerHTML = upcoming.map(o => {
+            const urgency = o._daysLeft <= 3 ? '#ef4444' : o._daysLeft <= 7 ? '#f59e0b' : '#10b981';
+            const label = o._daysLeft === 0 ? 'TODAY' : o._daysLeft === 1 ? 'TOMORROW' : `${o._daysLeft}d`;
+            return `<div style="display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid #f1f5f9;">
+                <div style="min-width:40px;height:40px;border-radius:8px;background:${urgency}15;border:1px solid ${urgency}40;display:flex;flex-direction:column;align-items:center;justify-content:center;">
+                    <span style="font-size:9px;font-weight:900;color:${urgency};line-height:1;">${label}</span>
+                </div>
+                <div style="flex:1;min-width:0;">
+                    <div style="font-size:12px;font-weight:700;color:#0f172a;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${o.customer_name || o.customer || 'Customer'}</div>
+                    <div style="font-size:10px;color:#64748b;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${o.item_description || o.item_id || 'Order'} · ${o.delivery_date}</div>
+                </div>
+            </div>`;
+        }).join('');
+    }
+
     openFullRiskModal() {
         const risks = this.data.orders_at_risk || [];
         let html = '<div class="risk-list">';
