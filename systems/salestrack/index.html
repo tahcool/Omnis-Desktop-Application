@@ -8429,6 +8429,10 @@
               style="border:none; background:transparent; font-size:12px; font-weight:700; color:#334155; outline:none; width:115px;">
           </div>
 
+          <button id="ol-defects-report-btn" class="btn-secondary" onclick="if(window.openDefectsReport) window.openDefectsReport();"
+            style="padding:0 20px; border-radius:10px; font-weight:800; height: 42px; font-size: 12px; text-transform:uppercase; letter-spacing:0.02em; margin-right:8px; background:#fef2f2; color:#991b1b; border:1px solid #fca5a5;">
+            <i class="fas fa-exclamation-triangle" style="margin-right:8px;"></i> Defects Report
+          </button>
           <button id="ol-refresh-btn" class="btn-secondary"
             style="padding:0 20px; border-radius:10px; font-weight:800; height: 42px; font-size: 12px; text-transform:uppercase; letter-spacing:0.02em;">
             <i class="fas fa-sync-alt" style="margin-right:8px;"></i> Refresh
@@ -17307,8 +17311,8 @@
   </div>
 
   <!-- External Logic Modules -->
-  <script src="dashboard_logic.js?v=20"></script>
-  <script src="orders_logic.js?v=10"></script>
+  <script src="dashboard_logic.js?v=27"></script>
+  <script src="orders_logic.js?v=20"></script>
     <script src="training_logic.js"></script>
   <script src="cyber_fx.js"></script>
 
@@ -24444,6 +24448,51 @@ Commercial Team`);
 
 })();
 </script>
+  <!-- MACHINE DEFECTS MODAL (For Edit Order Screen) -->
+  <div id="defects-modal-overlay" class="hidden" style="position:fixed; inset:0; z-index:20000; background:rgba(0,0,0,0.6); backdrop-filter:blur(4px); display:flex; align-items:center; justify-content:center;">
+    <div style="background:white; width:550px; border-radius:12px; box-shadow:0 25px 50px -12px rgba(0,0,0,0.25); overflow:hidden; display:flex; flex-direction:column; max-height:85vh;">
+      
+      <!-- Header -->
+      <div style="padding:20px 24px; border-bottom:1px solid #e2e8f0; display:flex; align-items:center; justify-content:space-between; background:#f8fafc;">
+        <div>
+            <h3 style="margin:0; font-size:16px; font-weight:800; color:#0f172a; display:flex; align-items:center; gap:8px;">
+                <i class="fas fa-exclamation-triangle" style="color:#f59e0b;"></i> Machine Defects List
+            </h3>
+            <div style="font-size:12px; color:#64748b; margin-top:4px;">
+                <span id="defect-machine-name" style="font-weight:700; color:#3b82f6;"></span>
+            </div>
+        </div>
+        <button onclick="salestrack.closeDefectsModal()" style="background:none; border:none; font-size:24px; color:#94a3b8; cursor:pointer; line-height:1;">&times;</button>
+      </div>
+      
+      <!-- Hidden Fields -->
+      <input type="hidden" id="defect-input-machine">
+      <input type="hidden" id="defect-input-orderid">
+      <input type="hidden" id="defect-input-customer">
+
+      <!-- Body -->
+      <div style="padding:20px; overflow-y:auto; flex:1; background:#f1f5f9;">
+        
+        <!-- Add New Defect Form -->
+        <div style="background:white; border:1px solid #e2e8f0; border-radius:8px; padding:16px; margin-bottom:20px; box-shadow:0 1px 2px rgba(0,0,0,0.05);">
+            <div style="display:flex; gap:12px; align-items:flex-start;">
+                <textarea id="defect-new-desc" rows="2" placeholder="Describe the defect or missing part..." style="flex:1; padding:10px; border:1px solid #cbd5e1; border-radius:6px; font-size:13px; font-family:inherit; resize:vertical;"></textarea>
+                <button id="btn-save-defect" onclick="salestrack.saveNewDefect()" style="background:#f59e0b; color:white; border:none; padding:10px 16px; border-radius:6px; font-weight:700; font-size:13px; cursor:pointer; flex-shrink:0; height:42px;"><i class="fas fa-plus"></i> Add</button>
+            </div>
+        </div>
+        
+        <!-- Existing Defects Table -->
+        <div style="background:white; border:1px solid #e2e8f0; border-radius:8px; overflow:hidden; box-shadow:0 1px 2px rgba(0,0,0,0.05);">
+            <table style="width:100%; border-collapse:collapse; text-align:left;">
+                <tbody id="defects-tbody">
+                    <!-- Loaded dynamically -->
+                </tbody>
+            </table>
+        </div>
+
+      </div>
+    </div>
+  </div>
 </body>
 
 

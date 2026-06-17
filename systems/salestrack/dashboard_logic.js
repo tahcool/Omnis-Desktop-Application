@@ -4780,6 +4780,8 @@ window.OmnisDashboardV6 = class OmnisDashboardV6 {
         }
 
         // Render Machines Table Rows
+        const safeCustomerName = (order ? order.customer : (fullDoc ? fullDoc.customer_name : 'Unknown')).replace(/'/g, "\\'").replace(/"/g, '&quot;');
+        
         const renderMachineRows = () => {
             if (machines.length === 0) return `<tr><td colspan="6" style="padding:16px; text-align:center; color:#64748b;">No machines found.</td></tr>`;
             const baseUrl = (window.getCurrentSystem ? window.getCurrentSystem().baseUrl : "https://salestrack.powerstar.co.zw").replace(/\/$/, '');
@@ -4807,7 +4809,10 @@ window.OmnisDashboardV6 = class OmnisDashboardV6 {
                     </td>
                     <td style="padding:10px 12px; border-bottom:1px solid #f1f5f9;">
                          <div style="display:flex; gap:8px; align-items:stretch; width:100%;">
-                            <textarea class="m-notes" rows="2" style="flex:1; min-height:60px; padding:8px; border:1px solid #cbd5e1; border-radius:8px; font-size:12px; font-family:inherit; background:white; line-height:1.4; resize:vertical; border-color:#d1d5db;" placeholder="Machine status...">${m.notes || ''}</textarea>
+                            <div style="flex:1; display:flex; flex-direction:column; gap:6px;">
+                                <textarea class="m-notes" rows="2" style="flex:1; min-height:60px; padding:8px; border:1px solid #cbd5e1; border-radius:8px; font-size:12px; font-family:inherit; background:white; line-height:1.4; resize:vertical; border-color:#d1d5db;" placeholder="Machine status...">${m.notes || ''}</textarea>
+                                <button onclick="salestrack.openDefectsModal('${(m.item_name || m.machine || m.item || '').replace(/'/g, "\\'").replace(/"/g, '&quot;')}', '${(reportId || '').replace(/'/g, "\\'")}', '${safeCustomerName}')" title="Log Defects" style="align-self:flex-start; background:#fffbeb; color:#d97706; border:1px solid #fde68a; border-radius:6px; padding:4px 10px; font-size:11px; font-weight:700; cursor:pointer; display:flex; align-items:center; gap:4px; transition:all 0.2s;"><i class="fas fa-exclamation-triangle"></i> Defects Log</button>
+                            </div>
                             <div style="display:flex; flex-direction:column; gap:4px; flex-shrink:0;">
                                 <div class="photo-slot" data-field="images_one" onclick="salestrack.triggerMachineImageUpload(this)" title="Attach Photo 1" style="width:34px; height:34px; border:1.5px dashed #cbd5e1; border-radius:6px; display:flex; align-items:center; justify-content:center; cursor:pointer; background:white; position:relative; overflow:hidden; transition:all 0.2s;">
                                     ${img1 ? `
@@ -5208,7 +5213,7 @@ window.OmnisDashboardV6 = class OmnisDashboardV6 {
 
             // Fetch the ID because upsert proxy doesn't support onConflict chaining
             const getRes = await window.supabase.from('fmb_reports').select('id, frappe_id');
-            const parentRow = getRes.data ? getRes.data.find(r => r.frappe_id === reportId) : null;
+            const parentRow = (getRes && getRes.data) ? getRes.data.find(r => r.frappe_id === reportId) : null;
             
             const parentPayload = {
                 frappe_id: reportId,
@@ -7052,6 +7057,145 @@ window.OmnisDashboardV6 = class OmnisDashboardV6 {
         const detail = document.getElementById('migration-detail-text');
         if (detail) detail.innerText = msg;
     }
+
+    // ---------- DEFECTS LOGIC (SIMPLIFIED) ----------
+    async openDefectsModal(machineName, orderId, customerName) {
+        if (!machineName) machineName = "Unknown Machine";
+        if (!orderId) orderId = "Unknown Order";
+        
+        const overlay = document.getElementById('defects-modal-overlay');
+        if (!overlay) return;
+        
+        document.getElementById('defect-machine-name').textContent = machineName;
+        
+        // Setup hidden fields for saving
+        document.getElementById('defect-input-machine').value = machineName;
+        document.getElementById('defect-input-orderid').value = orderId;
+        document.getElementById('defect-input-customer').value = customerName;
+        
+        overlay.classList.remove('hidden');
+        
+        this.loadDefectsForMachine(machineName, orderId);
+    }
+    
+    closeDefectsModal() {
+        const overlay = document.getElementById('defects-modal-overlay');
+        if (overlay) overlay.classList.add('hidden');
+    }
+    
+    async loadDefectsForMachine(machineName, orderId) {
+        const tbody = document.getElementById('defects-tbody');
+        if (!tbody) return;
+        
+        tbody.innerHTML = `<tr><td style="text-align:center; padding:20px; color:#64748b;">Loading defects...</td></tr>`;
+        
+        try {
+            if (!window.electron) throw new Error("Electron not available");
+            const res = await window.electron.invoke('supabase:query', {
+                table: 'ft_defect',
+                method: 'select',
+                params: { filters: { machine: machineName, order_id: orderId, status: 'Open' } }
+            });
+            
+            if (res.error) throw new Error(res.error);
+            
+            const defects = res.data || [];
+            
+            if (defects.length === 0) {
+                tbody.innerHTML = `<tr><td style="text-align:center; padding:20px; color:#64748b;">No defects logged for this machine.</td></tr>`;
+                return;
+            }
+            
+            tbody.innerHTML = defects.map(d => {
+                const dateStr = d.start_date ? new Date(d.start_date).toLocaleDateString('en-GB') : '';
+                return `
+                <tr style="border-bottom:1px solid #f1f5f9; background:white;">
+                    <td style="padding:12px; font-size:13px; color:#0f172a; line-height:1.4; position:relative;">
+                        <div style="display:flex; justify-content:space-between; align-items:flex-start; gap:12px;">
+                            <div>
+                                <span style="font-size:10px; font-weight:700; color:#94a3b8; display:block; margin-bottom:4px;">${dateStr}</span>
+                                ${d.description}
+                            </div>
+                            <button onclick="salestrack.markDefectClosed(${d.id}, '${machineName.replace(/'/g, "\\'")}', '${orderId.replace(/'/g, "\\'")}')" title="Remove" style="background:#fef2f2; border:1px solid #fecaca; border-radius:6px; padding:6px 10px; font-size:12px; font-weight:600; cursor:pointer; color:#ef4444; flex-shrink:0; transition:all 0.2s hover:bg-red-50;"><i class="fas fa-trash"></i></button>
+                        </div>
+                    </td>
+                </tr>
+                `;
+            }).join('');
+            
+        } catch(e) {
+            console.error("Load defects error:", e);
+            tbody.innerHTML = `<tr><td style="text-align:center; padding:20px; color:#ef4444;">Failed to load defects: ${e.message}</td></tr>`;
+        }
+    }
+    
+    async saveNewDefect() {
+        const descInput = document.getElementById('defect-new-desc');
+        const machineName = document.getElementById('defect-input-machine').value;
+        const orderId = document.getElementById('defect-input-orderid').value;
+        const customerName = document.getElementById('defect-input-customer').value;
+        
+        const desc = descInput.value.trim();
+        if (!desc) return alert("Please enter a description.");
+        
+        const btn = document.getElementById('btn-save-defect');
+        if (btn) { btn.disabled = true; btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>'; }
+        
+        try {
+            if (!window.electron) throw new Error("Electron not available");
+            
+            const payload = {
+                machine: machineName,
+                order_id: orderId,
+                customer: customerName,
+                description: desc,
+                priority: 'Low',
+                defect_type: 'Minor',
+                status: 'Open',
+                start_date: new Date().toISOString().split('T')[0]
+            };
+            
+            const res = await window.electron.invoke('supabase:query', {
+                table: 'ft_defect',
+                method: 'insert',
+                params: { data: payload }
+            });
+            
+            if (res.error) throw new Error(res.error);
+            
+            // Clear inputs
+            descInput.value = '';
+            
+            // Reload table
+            this.loadDefectsForMachine(machineName, orderId);
+            
+        } catch(e) {
+            console.error("Save defect error:", e);
+            alert("Error saving defect: " + e.message);
+        } finally {
+            if (btn) { btn.disabled = false; btn.innerHTML = '<i class="fas fa-plus"></i> Add'; }
+        }
+    }
+    
+    async markDefectClosed(defectId, machineName, orderId) {
+        if (!confirm("Remove this defect from the list?")) return;
+        
+        try {
+            if (!window.electron) throw new Error("Electron not available");
+            const res = await window.electron.invoke('supabase:query', {
+                table: 'ft_defect',
+                method: 'update',
+                params: { data: { status: 'Closed', closed_date: new Date().toISOString().split('T')[0] }, match: { id: defectId } }
+            });
+            
+            if (res.error) throw new Error(res.error);
+            this.loadDefectsForMachine(machineName, orderId);
+        } catch(e) {
+            console.error("Close defect error:", e);
+            alert("Error removing defect: " + e.message);
+        }
+    }
+
 }
 
 // Initialize settings on load

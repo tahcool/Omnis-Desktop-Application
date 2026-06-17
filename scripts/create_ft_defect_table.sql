@@ -7,12 +7,14 @@
 CREATE TABLE IF NOT EXISTS public.ft_defect (
   id            BIGSERIAL PRIMARY KEY,
   name          TEXT UNIQUE,                    -- Frappe-style doc ID (auto-gen if null)
+  order_id      TEXT,                           -- Linked Order ID from Salestrack
   machine       TEXT,                           -- Machine SN / identifier
   model         TEXT,                           -- Machine model name
   customer      TEXT,
   region        TEXT,
   location      TEXT,
   description   TEXT NOT NULL,
+  image_url     TEXT,                           -- Optional photo of defect
   defect_type   TEXT DEFAULT 'Minor',           -- Minor | Major | Critical
   priority      TEXT DEFAULT 'Low',             -- Low | Medium | High
   status        TEXT DEFAULT 'Open',            -- Open | WIP | On Hold | Closed

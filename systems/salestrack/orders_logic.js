@@ -217,6 +217,52 @@ async function loadOrdersList(force = false) {
                 }
             } catch(e) { console.error('[OrdersLogic] Failed to augment terms from Supabase', e); }
 
+            // Fetch Defect Counts
+            try {
+                if (window.electron) {
+                    let defRes = await window.electron.invoke('supabase:query', {
+                        table: 'ft_defect', method: 'select', params:{columns:'order_id, machine, status', filters: { status: 'Open' }, order: {column: 'created_at', ascending: false}, limit: 5000}
+                    });
+                    if(defRes.ok && defRes.data) {
+                        const defectMap = new Map();
+                        // Map by order_id -> array of machines with defects
+                        console.log("[OrdersLogic] Raw Defect Data fetched:", JSON.stringify(defRes.data));
+                        defRes.data.forEach(d => {
+                            if (d.status === 'Open') {
+                                if (!defectMap.has(d.order_id)) defectMap.set(d.order_id, []);
+                                defectMap.get(d.order_id).push((d.machine || '').trim().toLowerCase());
+                            }
+                        });
+                        
+                        console.log("[OrdersLogic] Defect Map by Order ID:", JSON.stringify(Object.fromEntries(defectMap)));
+                        
+                        ordersList.forEach(o => {
+                            let defectCount = 0;
+                            if (defectMap.has(o.report_id)) {
+                                const machinesWithDefects = defectMap.get(o.report_id);
+                                const possibleNames = [
+                                    (o.item_name || '').trim().toLowerCase().replace(/\s+/g, ' '),
+                                    (o.machine || '').trim().toLowerCase().replace(/\s+/g, ' '),
+                                    (o.item || '').trim().toLowerCase().replace(/\s+/g, ' ')
+                                ].filter(Boolean);
+                                
+                                // Count how many defects match any of this row's possible machine names
+                                machinesWithDefects.forEach(defectMachine => {
+                                    const normDefectMachine = defectMachine.replace(/\s+/g, ' ');
+                                    const match = possibleNames.includes(normDefectMachine) || possibleNames.some(n => normDefectMachine.includes(n) || n.includes(normDefectMachine));
+                                    console.log(`[OrdersLogic MATCH] order_id: ${o.report_id}, possibleNames: ${JSON.stringify(possibleNames)}, normDefectMachine: "${normDefectMachine}", match: ${match}`);
+                                    if (match) {
+                                        defectCount++;
+                                    }
+                                });
+                            }
+                            console.log(`[OrdersLogic] Mapping order: ${o.report_id} -> defects: ${defectCount}`);
+                            o.open_defects_count = defectCount;
+                        });
+                    }
+                }
+            } catch(e) { console.error('[OrdersLogic] Failed to augment defects from Supabase', e); }
+
             const normalizeCompany = (c) => {
                 if (!c) return "Unassigned";
                 const cl = c.toLowerCase();
@@ -243,22 +289,6 @@ async function loadOrdersList(force = false) {
                 ordersList = ordersList.filter(o => o.company === targetCompany);
             }
             
-            // DIAGNOSTIC DUMP
-            try {
-                if (window.electron && window.electron.invoke) {
-                    window.electron.invoke('fs:writeFile', {
-                        path: 'C:\\\\Users\\\\Administrator\\\\omnis\\\\scratch\\\\debug_orders.json',
-                        content: JSON.stringify({
-                            isUnassigned: isUnassigned,
-                            args: args,
-                            total_fetched: data.current_orders.length,
-                            filtered_length: ordersList.length,
-                            companies: data.current_orders.map(o => o.company)
-                        }, null, 2)
-                    });
-                }
-            } catch(e) {}
-
             olOrdersData = ordersList;
 
             window.olOrdersData = olOrdersData; // Expose globally for Aftersales
@@ -585,6 +615,7 @@ function renderOrdersList() {
             <div class="ai-order-cell" onclick="window.dashManager.openOrderModal('${safeReportId}', '${safeMachineId}')">
               <span class="cell-label">Machine Product</span>
               <div style="font-weight:800; font-size:14px; color:#000000; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden;" title="${(r.machine || '').replace(/\"/g, '')}">${(r.machine || "-").replace(/\"/g, '')}</div>
+              ${r.open_defects_count > 0 ? `<div style="margin-top:4px; font-size:10px; font-weight:800; color:#b45309; background:#fef3c7; border:1px solid #fde68a; padding:2px 6px; border-radius:4px; display:inline-flex; align-items:center; gap:4px;"><i class="fas fa-exclamation-triangle"></i> ${r.open_defects_count} Defect${r.open_defects_count > 1 ? 's' : ''}</div>` : ''}
             </div>
 
             <div class="ai-order-cell" style="text-align:center;" onclick="window.dashManager.openOrderModal('${safeReportId}', '${safeMachineId}')">
@@ -718,3 +749,73 @@ if (document.readyState === "loading") {
 } else {
     bindAiRiskButton();
 }
+
+window.openDefectsReport = async function() {
+    if (!window.salestrack || !window.salestrack.openListModal) {
+        alert("Modal functionality not ready.");
+        return;
+    }
+    
+    window.salestrack.openListModal("Defects Report", "<div style='padding:60px;text-align:center;color:#64748b;font-weight:600;'><i class='fas fa-spinner fa-spin' style='margin-right:10px;'></i> Generating active defects report...</div>", "1000px");
+
+    let res = await window.electron.invoke('supabase:query', {
+        table: 'ft_defect',
+        method: 'select',
+        params: {
+            columns: '*',
+            filters: { status: 'Open' },
+            order: { column: 'created_at', ascending: false },
+            limit: 1000
+        }
+    });
+
+    if (!res.ok || !res.data) {
+        window.salestrack.openListModal("Defects Report", "<div style='padding:40px;text-align:center;color:#ef4444;'>Failed to load defects from database.</div>", "1000px");
+        return;
+    }
+
+    let defects = res.data;
+    if (defects.length === 0) {
+        window.salestrack.openListModal("Defects Report", "<div style='padding:60px;text-align:center;color:#64748b;font-size:14px;font-style:italic;'>No active defects or missing items currently reported.</div>", "1000px");
+        return;
+    }
+
+    let html = `
+    <div style="padding:20px; background:#f8fafc;">
+        <h2 style="margin-top:0; color:#0f172a; font-size:20px; border-bottom:2px solid #e2e8f0; padding-bottom:10px; margin-bottom:20px;">
+            <i class="fas fa-exclamation-triangle" style="color:#ef4444; margin-right:10px;"></i> Order Defects Report
+        </h2>
+        <div style="background:white; border-radius:12px; border:1px solid #e2e8f0; overflow:hidden;">
+            <table style="width:100%; border-collapse:collapse; font-size:13px; text-align:left;">
+                <thead style="background:#f1f5f9; color:#475569; font-weight:700; text-transform:uppercase; font-size:11px; letter-spacing:0.05em;">
+                    <tr>
+                        <th style="padding:16px; border-bottom:1px solid #e2e8f0; width:20%;">Customer / Order</th>
+                        <th style="padding:16px; border-bottom:1px solid #e2e8f0; width:25%;">Machine</th>
+                        <th style="padding:16px; border-bottom:1px solid #e2e8f0;">Defect Description</th>
+                        <th style="padding:16px; border-bottom:1px solid #e2e8f0; width:15%;">Date Logged</th>
+                    </tr>
+                </thead>
+                <tbody>`;
+
+    for (let d of defects) {
+        let desc = (d.description || d.name || 'No Description').trim().replace(/\n/g, '<br>');
+        let date = d.start_date || (d.created_at ? d.created_at.substring(0, 10) : '-');
+        let customer = d.customer || d.order_id || 'Unknown';
+        
+        html += `
+            <tr style="border-bottom:1px solid #e2e8f0; transition:background 0.2s;" onmouseover="this.style.background='#fef2f2'" onmouseout="this.style.background='white'">
+                <td style="padding:16px; font-weight:700; color:#334155; vertical-align:top;">${customer}</td>
+                <td style="padding:16px; font-weight:600; color:#0f172a; vertical-align:top;">${d.machine || '-'}</td>
+                <td style="padding:16px; color:#991b1b; font-weight:500; vertical-align:top;">
+                    <div style="background:#fef2f2; padding:8px 12px; border-radius:6px; border:1px solid #fecaca; display:inline-block; width:100%; box-sizing:border-box;">
+                        ${desc}
+                    </div>
+                </td>
+                <td style="padding:16px; vertical-align:top; color:#64748b; font-weight:600;">${date}</td>
+            </tr>
+        `;
+    }
+
+    html += `</tbody></table></div></div>`;
+    window.salestrack.openListModal("Defects Report", html, "1200px");
+};
