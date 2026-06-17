@@ -10,3 +10,5 @@
   Files: .mcp/create_contacts_table.mjs,.mcp/knowledge/_shared/commit_log.md,.mcp/query_openapi.mjs,.mcp/query_openapi2.mjs,.mcp/query_openapi_specific.mjs,.mcp/query_orders.mjs,.mcp/query_orders2.mjs,.mcp/query_orders_sql.mjs,.mcp/rls_contacts.sql,.mcp/setup_company_contacts.mjs,add_company_fmb.sql,create_service_log.js,fix_companies.py,fix_init_email.js,fleetrack-web-deploy.zip,import_technicians.js,lib/email-manager.js,main.js,migrate/.frappe_creds.json,migrate/1_discover.js,
 - `761de1f` 2026-06-17 [supabase-migration] checkpoint: added whatsapp contact config to settings, improved email styles
   Files: .mcp/knowledge/_shared/commit_log.md,systems/salestrack/dashboard_logic.js,systems/salestrack/index.html,
+- `3bd712b` 2026-06-17 [supabase-migration] feat(salestrack): migrated defects to supabase ft_defect table, added defects UI report, fixed pagination issue
+  Files: .mcp/knowledge/_shared/commit_log.md,dump_defects.js,scripts/add_defects_list_to_fmb_reports.sql,scripts/create_ft_defect_table.sql,scripts/drop_ft_defect_machine_fk.sql,systems/salestrack/dashboard_logic.js,systems/salestrack/index.html,systems/salestrack/orders_logic.js,

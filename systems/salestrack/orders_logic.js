@@ -512,6 +512,9 @@ function renderOrdersList() {
         else document.getElementById('ol-stat-efficiency').style.color = "#ef4444";
     }
 
+    // Expose for printing
+    window.olFilteredRows = rows;
+
     // 3. Render (Paginated)
     const total = rows.length;
     const start = (olPage - 1) * olRowsPerPage;
@@ -775,13 +778,24 @@ window.openDefectsReport = async function() {
     }
 
     let defects = res.data;
+    
+    // Filter by Company dropdown if active
+    const companyEl = document.getElementById("ol-company");
+    const selectedCompany = companyEl ? companyEl.value : "";
+    if (selectedCompany && selectedCompany.toLowerCase() !== "all" && selectedCompany.trim() !== "") {
+        if (window.olOrdersData) {
+            const validOrderIds = new Set(window.olOrdersData.map(o => o.report_id));
+            defects = defects.filter(d => validOrderIds.has(d.order_id));
+        }
+    }
     if (defects.length === 0) {
         window.salestrack.openListModal("Defects Report", "<div style='padding:60px;text-align:center;color:#64748b;font-size:14px;font-style:italic;'>No active defects or missing items currently reported.</div>", "1000px");
         return;
     }
 
     let html = `
-    <div style="padding:20px; background:#f8fafc;">
+    <div style="padding:20px; background:#f8fafc; position:relative;">
+        <button onclick="window.printReportContent('Order Defects Report')" style="position:absolute; right:20px; top:20px; padding:8px 16px; background:#0f172a; color:white; border:none; border-radius:8px; cursor:pointer; font-size:12px; font-weight:700; box-shadow:0 4px 6px -1px rgba(0,0,0,0.1);"><i class="fas fa-print" style="margin-right:6px;"></i> Print PDF</button>
         <h2 style="margin-top:0; color:#0f172a; font-size:20px; border-bottom:2px solid #e2e8f0; padding-bottom:10px; margin-bottom:20px;">
             <i class="fas fa-exclamation-triangle" style="color:#ef4444; margin-right:10px;"></i> Order Defects Report
         </h2>
@@ -797,25 +811,246 @@ window.openDefectsReport = async function() {
                 </thead>
                 <tbody>`;
 
+    
+    // Group defects by customer + machine
+    let grouped = {};
     for (let d of defects) {
-        let desc = (d.description || d.name || 'No Description').trim().replace(/\n/g, '<br>');
-        let date = d.start_date || (d.created_at ? d.created_at.substring(0, 10) : '-');
         let customer = d.customer || d.order_id || 'Unknown';
+        let machine = d.machine || '-';
+        let key = customer + '|||' + machine;
+        if (!grouped[key]) {
+            grouped[key] = { customer: customer, machine: machine, defects: [] };
+        }
+        grouped[key].defects.push(d);
+    }
+
+    for (let key in grouped) {
+        let group = grouped[key];
         
+        let defectsHtml = group.defects.map(d => {
+            let desc = (d.description || d.name || 'No Description').trim().replace(/\n/g, '<br>');
+            let date = d.start_date || (d.created_at ? d.created_at.substring(0, 10) : '-');
+            return `
+                <div style="background:#fef2f2; padding:8px 12px; border-radius:6px; border:1px solid #fecaca; margin-bottom:6px; display:flex; justify-content:space-between; align-items:flex-start; gap:16px;">
+                    <div style="flex:1;">${desc}</div>
+                    <div style="font-size:11px; color:#991b1b; font-weight:700; white-space:nowrap; background:#fee2e2; padding:2px 6px; border-radius:4px;">${date}</div>
+                </div>
+            `;
+        }).join('');
+
         html += `
-            <tr style="border-bottom:1px solid #e2e8f0; transition:background 0.2s;" onmouseover="this.style.background='#fef2f2'" onmouseout="this.style.background='white'">
-                <td style="padding:16px; font-weight:700; color:#334155; vertical-align:top;">${customer}</td>
-                <td style="padding:16px; font-weight:600; color:#0f172a; vertical-align:top;">${d.machine || '-'}</td>
-                <td style="padding:16px; color:#991b1b; font-weight:500; vertical-align:top;">
-                    <div style="background:#fef2f2; padding:8px 12px; border-radius:6px; border:1px solid #fecaca; display:inline-block; width:100%; box-sizing:border-box;">
-                        ${desc}
-                    </div>
+            <tr style="border-bottom:1px solid #e2e8f0; transition:background 0.2s;" onmouseover="this.style.background='#f8fafc'" onmouseout="this.style.background='white'">
+                <td style="padding:16px; font-weight:700; color:#334155; vertical-align:top;">${group.customer}</td>
+                <td style="padding:16px; font-weight:600; color:#0f172a; vertical-align:top;">${group.machine}</td>
+                <td style="padding:16px; color:#991b1b; font-weight:500; vertical-align:top;" colspan="2">
+                    ${defectsHtml}
                 </td>
-                <td style="padding:16px; vertical-align:top; color:#64748b; font-weight:600;">${date}</td>
             </tr>
         `;
     }
 
     html += `</tbody></table></div></div>`;
     window.salestrack.openListModal("Defects Report", html, "1200px");
+};
+
+window.openTrainingReport = async function() {
+    if (!window.salestrack || !window.salestrack.openListModal) {
+        alert("Modal functionality not ready.");
+        return;
+    }
+    
+    window.salestrack.openListModal("Training Report", "<div style='padding:60px;text-align:center;color:#64748b;font-weight:600;'><i class='fas fa-spinner fa-spin' style='margin-right:10px;'></i> Generating planned trainings report...</div>", "1000px");
+
+    let res = await window.electron.invoke('supabase:query', {
+        table: 'ft_operator_training',
+        method: 'select',
+        params: {
+            columns: '*',
+            order: { column: 'training_date', ascending: true },
+            limit: 1000
+        }
+    });
+
+    if (!res.ok || !res.data) {
+        window.salestrack.openListModal("Training Report", "<div style='padding:40px;text-align:center;color:#ef4444;'>Failed to load trainings from database.</div>", "1000px");
+        return;
+    }
+
+    let trainings = res.data;
+    
+    // Filter by Company dropdown if active
+    const tCompanyEl = document.getElementById("ol-company");
+    const tSelectedCompany = tCompanyEl ? tCompanyEl.value : "";
+    if (tSelectedCompany && tSelectedCompany.toLowerCase() !== "all" && tSelectedCompany.trim() !== "") {
+        if (window.olOrdersData) {
+            const validOrderIds = new Set(window.olOrdersData.map(o => o.report_id));
+            trainings = trainings.filter(t => validOrderIds.has(t.order_id));
+        }
+    }
+    if (trainings.length === 0) {
+        window.salestrack.openListModal("Training Report", "<div style='padding:60px;text-align:center;color:#64748b;font-size:14px;font-style:italic;'>No operator trainings currently planned.</div>", "1000px");
+        return;
+    }
+
+    let html = `
+    <div style="padding:20px; background:#f8fafc;">
+        <h2 style="margin-top:0; color:#0f172a; font-size:20px; border-bottom:2px solid #e2e8f0; padding-bottom:10px; margin-bottom:20px;">
+            <i class="fas fa-user-graduate" style="color:#0891b2; margin-right:10px;"></i> Planned Operator Trainings
+            <button onclick="window.printReportContent('Planned Operator Trainings Report')" style="float:right; padding:8px 16px; background:#0f172a; color:white; border:none; border-radius:8px; cursor:pointer; font-size:12px; font-weight:700; box-shadow:0 4px 6px -1px rgba(0,0,0,0.1);"><i class="fas fa-print" style="margin-right:6px;"></i> Print PDF</button>
+        </h2>
+        <div style="background:white; border-radius:12px; border:1px solid #e2e8f0; overflow:hidden;">
+            <table style="width:100%; border-collapse:collapse; font-size:13px; text-align:left;">
+                <thead style="background:#f1f5f9; color:#475569; font-weight:700; text-transform:uppercase; font-size:11px; letter-spacing:0.05em;">
+                    <tr>
+                        <th style="padding:16px; border-bottom:1px solid #e2e8f0; width:20%;">Customer / Order</th>
+                        <th style="padding:16px; border-bottom:1px solid #e2e8f0; width:20%;">Machine</th>
+                        <th style="padding:16px; border-bottom:1px solid #e2e8f0; width:20%;">Location</th>
+                        <th style="padding:16px; border-bottom:1px solid #e2e8f0; width:15%;">Trainer</th>
+                        <th style="padding:16px; border-bottom:1px solid #e2e8f0; width:10%; text-align:center;">Operators</th>
+                        <th style="padding:16px; border-bottom:1px solid #e2e8f0; width:15%;">Date</th>
+                    </tr>
+                </thead>
+                <tbody>`;
+
+    for (let t of trainings) {
+        let customer = t.customer || t.order_id || 'Unknown';
+        
+        html += `
+            <tr style="border-bottom:1px solid #e2e8f0; transition:background 0.2s;" onmouseover="this.style.background='#ecfeff'" onmouseout="this.style.background='white'">
+                <td style="padding:16px; font-weight:700; color:#334155; vertical-align:middle;">${customer}</td>
+                <td style="padding:16px; font-weight:600; color:#0f172a; vertical-align:middle;">${t.machine || '-'}</td>
+                <td style="padding:16px; color:#475569; vertical-align:middle;">
+                    <i class="fas fa-map-marker-alt" style="color:#ef4444; margin-right:4px;"></i> ${t.location || '-'}
+                </td>
+                <td style="padding:16px; color:#475569; vertical-align:middle;">${t.trainer_name || '-'}</td>
+                <td style="padding:16px; color:#0f172a; font-weight:700; text-align:center; vertical-align:middle;">${t.number_of_operators || 1}</td>
+                <td style="padding:16px; vertical-align:middle;">
+                    <div style="background:#ecfeff; color:#0891b2; font-weight:700; padding:6px 10px; border-radius:6px; display:inline-block; border:1px solid #a5f3fc;">
+                        ${t.training_date ? t.training_date.substring(0, 10) : '-'}
+                    </div>
+                </td>
+            </tr>
+        `;
+    }
+
+    html += `</tbody></table></div></div>`;
+    window.salestrack.openListModal("Training Report", html, "1200px");
+};
+
+
+
+
+window.printReportContent = function(title) {
+    let container = document.getElementById('dash-generic-body') || document.querySelector('.modal-content') || document.querySelector('.salestrack-modal-body');
+    if (!container) {
+        alert("Could not find report content.");
+        return;
+    }
+    
+    let clone = container.cloneNode(true);
+    let btns = clone.querySelectorAll('button');
+    btns.forEach(b => b.remove());
+    let contentHTML = clone.innerHTML;
+
+    let logoUrl = new URL('../../assets/images/omnis-logo.png', window.location.href).href;
+
+    let win = window.open('', '_blank');
+    win.document.write(`
+        <html><head><title>${title}</title>
+        <style>
+            @page { size: landscape; margin: 15mm; }
+            body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; padding: 40px; color: #0f172a; }
+            table { width: 100%; border-collapse: collapse; margin-top: 20px; font-size: 13px; }
+            th, td { border: 1px solid #cbd5e1; padding: 12px; text-align: left; vertical-align: top; }
+            th { background: #f8fafc; font-weight: bold; text-transform: uppercase; font-size: 11px; }
+            .no-print { display: none !important; }
+            h2 { display: none; } /* Hide the duplicate title from modal */
+            .btn, button { display: none !important; }
+        </style>
+        </head><body>
+        <div style="text-align:center; margin-bottom: 30px; border-bottom: 2px solid #e2e8f0; padding-bottom: 20px;">
+            <img src="${logoUrl}" style="height:60px; margin-bottom:15px;" />
+            <h1 style="margin: 0; font-size:24px; color: #1e293b;">${title}</h1>
+            <div style="font-size:12px; color:#64748b; margin-top:8px;">Generated: ${new Date().toLocaleString()}</div>
+        </div>
+        ${contentHTML}
+        <script>
+            setTimeout(() => { window.print(); window.close(); }, 800);
+        </script>
+        </body></html>
+    `);
+    win.document.close();
+};
+
+
+window.printMainOrdersReport = function() {
+    const rows = window.olFilteredRows || [];
+    if (rows.length === 0) {
+        alert("No records to print based on current filters.");
+        return;
+    }
+
+    let logoUrl = new URL('../../assets/images/omnis-logo.png', window.location.href).href;
+    const companyEl = document.getElementById("ol-company");
+    const selectedCompany = companyEl && companyEl.options[companyEl.selectedIndex] ? companyEl.options[companyEl.selectedIndex].text : "All Companies";
+
+    let tableHtml = `
+        <table>
+            <thead>
+                <tr>
+                    <th style="width:15%;">Report ID</th>
+                    <th style="width:25%;">Customer</th>
+                    <th style="width:30%;">Machinery Details</th>
+                    <th style="width:15%;">Status</th>
+                    <th style="width:15%;">Handover</th>
+                </tr>
+            </thead>
+            <tbody>
+    `;
+
+    for (let r of rows) {
+        let machines = (r.machines || []).map(m => `<div>${m.item_name || m.item_code} (${m.qty})</div>`).join('');
+        if (!machines) machines = r.items_summary || '-';
+
+        let statusColor = '#64748b';
+        if (r.status === 'Pre-Delivery') statusColor = '#d97706';
+        if (r.status === 'Delivered') statusColor = '#10b981';
+
+        tableHtml += `
+            <tr>
+                <td style="font-weight:700;">${r.report_id}</td>
+                <td style="font-weight:600; color:#334155;">${r.customer}</td>
+                <td style="color:#475569;">${machines}</td>
+                <td style="font-weight:700; color:${statusColor};">${r.status}</td>
+                <td style="color:#0f172a;">${r.handover_date ? r.handover_date : '-'}</td>
+            </tr>
+        `;
+    }
+    tableHtml += `</tbody></table>`;
+
+    let win = window.open('', '_blank');
+    win.document.write(`
+        <html><head><title>Orders Report</title>
+        <style>
+            @page { size: landscape; margin: 15mm; }
+            body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; padding: 40px; color: #0f172a; }
+            table { width: 100%; border-collapse: collapse; margin-top: 20px; font-size: 13px; }
+            th, td { border: 1px solid #cbd5e1; padding: 12px; text-align: left; vertical-align: top; }
+            th { background: #f8fafc; font-weight: bold; text-transform: uppercase; font-size: 11px; color:#475569; }
+            .no-print { display: none !important; }
+        </style>
+        </head><body>
+        <div style="text-align:center; margin-bottom: 30px; border-bottom: 2px solid #e2e8f0; padding-bottom: 20px;">
+            <img src="${logoUrl}" style="height:60px; margin-bottom:15px;" />
+            <h1 style="margin: 0; font-size:24px; color: #1e293b;">Active Orders Report</h1>
+            <div style="font-size:14px; font-weight:600; color:#475569; margin-top:8px;">Filtered By: ${selectedCompany}</div>
+            <div style="font-size:12px; color:#64748b; margin-top:4px;">Generated: ${new Date().toLocaleString()} | ${rows.length} Records</div>
+        </div>
+        ${tableHtml}
+        <script>
+            setTimeout(() => { window.print(); window.close(); }, 800);
+        </script>
+        </body></html>
+    `);
+    win.document.close();
 };
