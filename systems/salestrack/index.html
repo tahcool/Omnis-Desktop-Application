@@ -8433,6 +8433,14 @@
             style="padding:0 20px; border-radius:10px; font-weight:800; height: 42px; font-size: 12px; text-transform:uppercase; letter-spacing:0.02em; margin-right:8px; background:#fef2f2; color:#991b1b; border:1px solid #fca5a5;">
             <i class="fas fa-exclamation-triangle" style="margin-right:8px;"></i> Defects Report
           </button>
+                    <button id="ol-training-report-btn" class="btn-secondary" onclick="if(window.openTrainingReport) window.openTrainingReport();"
+            style="padding:0 20px; border-radius:10px; font-weight:800; height: 42px; font-size: 12px; text-transform:uppercase; letter-spacing:0.02em; margin-right:8px; background:#ecfeff; color:#0891b2; border:1px solid #a5f3fc;">
+            <i class="fas fa-user-graduate" style="margin-right:8px;"></i> Training
+          </button>
+          <button id="ol-print-report-btn" class="btn-secondary" onclick="if(window.printMainOrdersReport) window.printMainOrdersReport();"
+            style="padding:0 20px; border-radius:10px; font-weight:800; height: 42px; font-size: 12px; text-transform:uppercase; letter-spacing:0.02em; margin-right:8px; background:#f8fafc; color:#334155; border:1px solid #cbd5e1;">
+            <i class="fas fa-print" style="margin-right:8px;"></i> Print
+          </button>
           <button id="ol-refresh-btn" class="btn-secondary"
             style="padding:0 20px; border-radius:10px; font-weight:800; height: 42px; font-size: 12px; text-transform:uppercase; letter-spacing:0.02em;">
             <i class="fas fa-sync-alt" style="margin-right:8px;"></i> Refresh
@@ -20046,6 +20054,7 @@
                 </div>
 
             </body>
+
             </html>
         `);
         printWindow.document.close();
@@ -25011,6 +25020,24 @@ Commercial Team`);
       </div>
     </div>
   </div>
+
+  <script>
+    // --- DEEP LINK LISTENER ---
+    if (window.electron && window.electron.on) {
+      window.electron.on('deep-link', (event, url) => {
+        try {
+          if (url && url.includes('omnis://quote/')) {
+            const quoteId = url.split('omnis://quote/')[1].replace('/', '').trim();
+            if (quoteId && window.salestrack && window.salestrack.openDoc) {
+              window.salestrack.openDoc('Quotation', quoteId);
+            }
+          }
+        } catch (err) {
+          console.error("Failed to parse deep link:", err);
+        }
+      });
+    }
+  </script>
 </body>
 
 

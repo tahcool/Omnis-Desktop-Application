@@ -118,12 +118,16 @@ Deno.serve(async (req) => {
           
           tableRows += `
             <tr>
-              <td style="padding:12px;border-bottom:1px solid #e2e8f0;font-size:13px;color:#334155;font-weight:600;">${q.name}</td>
+              <td style="padding:12px;border-bottom:1px solid #e2e8f0;font-size:13px;font-weight:600;">
+                <a href="omnis://quote/${q.name}" style="color:#2563eb;text-decoration:none;">${q.name}</a>
+              </td>
               <td style="padding:12px;border-bottom:1px solid #e2e8f0;font-size:13px;color:#334155;">${q.title || '-'}</td>
               <td style="padding:12px;border-bottom:1px solid #e2e8f0;font-size:13px;color:#334155;">${q.customer_name || '-'}</td>
               <td style="padding:12px;border-bottom:1px solid #e2e8f0;font-size:13px;color:#334155;">${dt}</td>
-              <td style="padding:12px;border-bottom:1px solid #e2e8f0;font-size:13px;color:#334155;">${q.status || '-'}</td>
-              <td style="padding:12px;border-bottom:1px solid #e2e8f0;font-size:13px;color:#ea580c;font-weight:bold;">${fup}</td>
+              <td style="padding:12px;border-bottom:1px solid #e2e8f0;font-size:13px;color:#334155;">
+                <span style="display:inline-block;padding:2px 8px;background:#f1f5f9;border-radius:12px;font-size:11px;font-weight:600;">${q.status}</span>
+              </td>
+              <td style="padding:12px;border-bottom:1px solid #e2e8f0;font-size:13px;font-weight:700;color:#ef4444;">${fup}</td>
             </tr>
           `;
         }

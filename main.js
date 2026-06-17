@@ -66,8 +66,51 @@ if (process.platform === 'win32') {
 
 app.commandLine.appendSwitch('ignore-certificate-errors');
 
+// --- DEEP LINKING SETUP ---
+if (process.defaultApp) {
+  if (process.argv.length >= 2) {
+    app.setAsDefaultProtocolClient('omnis', process.execPath, [path.resolve(process.argv[1])]);
+  }
+} else {
+  app.setAsDefaultProtocolClient('omnis');
+}
 
-// 🔹 Will hold the Shantui auth headers once captured
+const gotTheLock = app.requestSingleInstanceLock();
+if (!gotTheLock) {
+  app.quit();
+} else {
+  app.on('second-instance', (event, commandLine, workingDirectory) => {
+    // Someone tried to run a second instance, we should focus our window.
+    let url = null;
+    if (process.platform === 'win32') {
+       url = commandLine.find(arg => arg.startsWith('omnis://'));
+    }
+    const wins = BrowserWindow.getAllWindows();
+    if (wins.length > 0) {
+      // Find the dashboard window if it exists, else use the first window
+      let targetWin = wins.find(w => !w.isDestroyed() && w.getTitle() !== 'Omnis'); // Basic heuristic for dashWin, but let's just use the first visible non-destroyed
+      if (!targetWin) targetWin = wins.find(w => !w.isDestroyed());
+      
+      if (targetWin) {
+        if (targetWin.isMinimized()) targetWin.restore();
+        targetWin.focus();
+        if (url) {
+          targetWin.webContents.send('deep-link', url);
+        }
+      }
+    }
+  });
+
+  app.on('open-url', (event, url) => {
+     event.preventDefault();
+     const wins = BrowserWindow.getAllWindows();
+     if (wins.length > 0) {
+        const targetWin = wins.find(w => !w.isDestroyed()) || wins[0];
+        if (targetWin) targetWin.webContents.send('deep-link', url);
+     }
+  });
+}
+// --- END DEEP LINKING ---// 🔹 Will hold the Shantui auth headers once captured
 let shantuiAuthHeaders = null;
 
 // 🔹 Shantui login page (adjust if different)
