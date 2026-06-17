@@ -1,0 +1,32 @@
+{"name":"Transmission","defect_description":"Transmission"}
+{"name":"Engine","defect_description":"Engine"}
+{"name":"Cooling System (Coolant)","defect_description":"Cooling System (Coolant)"}
+{"name":"Radiator","defect_description":"Radiator"}
+{"name":"Air Conditioning","defect_description":"Air Conditioning"}
+{"name":"Electrical (Shut off solenoid)","defect_description":"Electrical (Shut off solenoid)"}
+{"name":"Electrical General","defect_description":"Electrical General"}
+{"name":"Accident Damage","defect_description":"Accident Damage"}
+{"name":"Drive Train","defect_description":"Drive Train"}
+{"name":"Undercarriage","defect_description":"Undercarriage"}
+{"name":"Final Drives & Tandems","defect_description":"Final Drives & Tandems"}
+{"name":"Body (Frame work) - Pins, frames, bushing","defect_description":"Body (Frame work) - Pins, frames, bushing"}
+{"name":"Attachment","defect_description":"Attachment"}
+{"name":"Hydraulic Leaks General","defect_description":"Hydraulic Leaks General"}
+{"name":"Hydraulic Component Leaks","defect_description":"Hydraulic Component Leaks"}
+{"name":"Cab (Interior)","defect_description":"Cab (Interior)"}
+{"name":"Cluster","defect_description":"Cluster"}
+{"name":"Electronic (ECU, CAN)","defect_description":"Electronic (ECU, CAN)"}
+{"name":"Other","defect_description":"Other"}
+{"name":"Aircon regassing","defect_description":"Aircon regassing"}
+{"name":"Fuel System (Injection, Lines, Pump)","defect_description":"Fuel System (Injection, Lines, Pump)"}
+{"name":"Electrical (Lighting & Accessories)","defect_description":"Electrical (Lighting & Accessories)"}
+{"name":"Braking System","defect_description":"Braking System"}
+{"name":"Power train","defect_description":"Power train"}
+{"name":"Steering","defect_description":"Steering"}
+{"name":"GET","defect_description":"GET"}
+{"name":"Oil leaks (general)","defect_description":"Oil leaks (general)"}
+{"name":"Cantre Articulation","defect_description":"Cantre Articulation"}
+{"name":"Air intake system","defect_description":"Air intake system"}
+{"name":"Battery","defect_description":"Battery"}
+{"name":"Tyres","defect_description":"Tyres"}
+{"name":"Needs bucket tips urgently","defect_description":"Needs bucket tips urgently"}

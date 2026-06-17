@@ -1,0 +1,1 @@
+{"name":"gmail.com","domain_name":"gmail.com","email_server":"imap.gmail.com","use_imap":1,"use_ssl":1,"use_starttls":0,"incoming_port":"993","attachment_limit":10,"smtp_server":"smtp.gmail.com","use_tls":0,"use_ssl_for_outgoing":1,"smtp_port":"465","append_emails_to_sent_folder":0}

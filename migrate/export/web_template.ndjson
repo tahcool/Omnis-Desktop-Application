@@ -1,0 +1,23 @@
+{"name":"Hero with Right Image","type":"Section","standard":1,"module":null,"template":""}
+{"name":"Full Width Image","type":"Section","standard":1,"module":"Website","template":""}
+{"name":"Section with Tabs","type":"Section","standard":1,"module":null,"template":null}
+{"name":"Section with Image","type":"Section","standard":1,"module":"Website","template":null}
+{"name":"Section with CTA","type":"Section","standard":1,"module":null,"template":null}
+{"name":"Hero","type":"Section","standard":1,"module":"Website","template":""}
+{"name":"Markdown","type":"Section","standard":1,"module":"Website","template":null}
+{"name":"Section with Cards","type":"Section","standard":1,"module":"Website","template":null}
+{"name":"Testimonial","type":"Section","standard":1,"module":null,"template":null}
+{"name":"Split Section with Image","type":"Section","standard":1,"module":"Website","template":""}
+{"name":"Section with Small CTA","type":"Section","standard":1,"module":null,"template":null}
+{"name":"Section with Image Grid","type":"Section","standard":1,"module":null,"template":""}
+{"name":"Section with Collapsible Content","type":"Section","standard":1,"module":"Website","template":""}
+{"name":"Section with Features","type":"Section","standard":1,"module":"Website","template":null}
+{"name":"Section with Embed","type":"Section","standard":1,"module":null,"template":null}
+{"name":"Standard Navbar","type":"Navbar","standard":1,"module":null,"template":null}
+{"name":"Standard Footer","type":"Footer","standard":1,"module":null,"template":null}
+{"name":"Slideshow","type":"Section","standard":1,"module":null,"template":null}
+{"name":"Primary Navbar","type":"Navbar","standard":1,"module":"Website","template":""}
+{"name":"Discussions","type":"Section","standard":1,"module":"Website","template":""}
+{"name":"Cover Image","type":"Component","standard":1,"module":"Website","template":""}
+{"name":"Section with Testimonials","type":"Section","standard":1,"module":"Website","template":""}
+{"name":"Section with Videos","type":"Section","standard":1,"module":"Website","template":""}

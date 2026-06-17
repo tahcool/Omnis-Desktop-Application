@@ -18,6 +18,9 @@ syncManager.setSupabase(supabase); // Inject supabase client
 // WhatsApp Built-in Integration
 const whatsappManager = require('./lib/whatsapp-client');
 
+// Email System (Supabase-first)
+const emailManager = require('./lib/email-manager');
+
 // --- SOFTWARE-DEFINED DNS FOR OMNIS ECOSYSTEM ---
 const SPE_IP = '102.218.13.123';
 const SPE_DOMAIN = 'omnis.spareparts-exchange.com';
@@ -1502,6 +1505,14 @@ app.whenReady().then(async () => {
     console.log('[Omnis] WhatsApp client initialized');
   } catch (err) {
     console.error('[Omnis] WhatsApp init failed:', err);
+  }
+
+  // ✅ Initialize Email Manager (registers email:send IPC handlers)
+  try {
+    emailManager.initialize();
+    console.log('[Omnis] EmailManager initialized');
+  } catch (err) {
+    console.error('[Omnis] EmailManager init failed:', err);
   }
 
   // ✅ Initialize Auto-Updater

@@ -1,0 +1,8 @@
+{
+  "type": "token",
+  "key": "07660480c74686c",
+  "secret": "6d1be4dbed4e3b3",
+  "authHeaders": {
+    "Authorization": "token 07660480c74686c:6d1be4dbed4e3b3"
+  }
+}

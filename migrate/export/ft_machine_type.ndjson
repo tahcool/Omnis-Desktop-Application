@@ -1,0 +1,66 @@
+{"name":"Telehandler","type_name":"Telehandler"}
+{"name":"Skid Steer","type_name":"Skid Steer"}
+{"name":"Engine","type_name":"Engine"}
+{"name":"Forklift","type_name":"Forklift"}
+{"name":"Excavator","type_name":"Excavator"}
+{"name":"Roller","type_name":"Roller"}
+{"name":"Grader","type_name":"Grader"}
+{"name":"Paver","type_name":"Paver"}
+{"name":"Generator","type_name":"Generator"}
+{"name":"ADT","type_name":"ADT"}
+{"name":"Horse","type_name":"Horse"}
+{"name":"TLB","type_name":"TLB"}
+{"name":"Smooth drum roller","type_name":"Smooth drum roller"}
+{"name":"TBA","type_name":"TBA"}
+{"name":"Cone Crusher","type_name":"Cone Crusher"}
+{"name":"Bobcat","type_name":"Bobcat"}
+{"name":"Recycler","type_name":"Recycler"}
+{"name":"Classic Paver","type_name":"Classic Paver"}
+{"name":"Reclaimer","type_name":"Reclaimer"}
+{"name":"Tracked loader","type_name":"Tracked loader"}
+{"name":"Tandem Roller","type_name":"Tandem Roller"}
+{"name":"Dump Trailer","type_name":"Dump Trailer"}
+{"name":"Crane","type_name":"Crane"}
+{"name":"Truck","type_name":"Truck"}
+{"name":"Trencher","type_name":"Trencher"}
+{"name":"Bulldozer","type_name":"Bulldozer"}
+{"name":"Mining Truck","type_name":"Mining Truck"}
+{"name":"Reach truck","type_name":"Reach truck"}
+{"name":"Shantui","type_name":"Shantui"}
+{"name":"Jaw Crusher","type_name":"Jaw Crusher"}
+{"name":"DT05","type_name":"DT05"}
+{"name":"RDT","type_name":"RDT"}
+{"name":"Struemaster","type_name":"Struemaster"}
+{"name":"Bus","type_name":"Bus"}
+{"name":"Final Drive","type_name":"Final Drive"}
+{"name":"Surface Miner","type_name":"Surface Miner"}
+{"name":"Drill Rig - Engine","type_name":"Drill Rig - Engine"}
+{"name":"Transmission","type_name":"Transmission"}
+{"name":"Hub","type_name":"Hub"}
+{"name":"air compressor","type_name":"air compressor"}
+{"name":"Tractor","type_name":"Tractor"}
+{"name":"Mobiscreen","type_name":"Mobiscreen"}
+{"name":"Attachment","type_name":"Attachment"}
+{"name":"SEC","type_name":"SEC"}
+{"name":"Poker","type_name":"Poker"}
+{"name":"Broom","type_name":"Broom"}
+{"name":"Tractor Excavator","type_name":"Tractor Excavator"}
+{"name":"Front End Loader","type_name":"Front End Loader"}
+{"name":"ASPHALT PLANT","type_name":"ASPHALT PLANT"}
+{"name":"Vibration Roller","type_name":"Vibration Roller"}
+{"name":"Electric Pallet Stacker","type_name":"Electric Pallet Stacker"}
+{"name":"Tractor Trencher","type_name":"Tractor Trencher"}
+{"name":"Drill Rig","type_name":"Drill Rig"}
+{"name":"Tracked Milling Machine","type_name":"Tracked Milling Machine"}
+{"name":"Underground Loader","type_name":"Underground Loader"}
+{"name":"Mini Excavator","type_name":"Mini Excavator"}
+{"name":"Mobile Crusher","type_name":"Mobile Crusher"}
+{"name":"Walk Behind Roller","type_name":"Walk Behind Roller"}
+{"name":"Concrete Mixer","type_name":"Concrete Mixer"}
+{"name":"Soil Compactor","type_name":"Soil Compactor"}
+{"name":"Compressor","type_name":"Compressor"}
+{"name":"Compactor","type_name":"Compactor"}
+{"name":"Sideshifter","type_name":"Sideshifter"}
+{"name":"Telescopic Boom Lift","type_name":"Telescopic Boom Lift"}
+{"name":"Axle","type_name":"Axle"}
+{"name":"Rock breaker","type_name":"Rock breaker"}

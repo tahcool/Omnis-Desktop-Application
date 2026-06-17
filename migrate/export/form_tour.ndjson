@@ -1,0 +1,4 @@
+{"name":"Letter Head","title":"Letter Head","reference_doctype":"Letter Head","module":"Printing","is_standard":1,"save_on_complete":1,"first_document":0,"include_name_field":0}
+{"name":"Custom Field","title":"Custom Field","reference_doctype":"Custom Field","module":"Custom","is_standard":1,"save_on_complete":1,"first_document":0,"include_name_field":0}
+{"name":"Doctype","title":"Doctype","reference_doctype":"DocType","module":"Core","is_standard":1,"save_on_complete":1,"first_document":0,"include_name_field":1}
+{"name":"Print Format","title":"Print Format","reference_doctype":"Print Format","module":"Printing","is_standard":1,"save_on_complete":1,"first_document":0,"include_name_field":1}

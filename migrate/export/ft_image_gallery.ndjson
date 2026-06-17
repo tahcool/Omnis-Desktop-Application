@@ -1,0 +1,548 @@
+{"name":"GI-23-05602","reference_doctype":"FT Machine Failure","reference_name":"MFR05601","caption":"Cooling sys. condition","image":"/private/files/WhatsApp Image 2023-11-08 at 5.19.58 PM.jpeg"}
+{"name":"GI-23-05603","reference_doctype":"FT Machine Failure","reference_name":"MFR05601","caption":"Melted Fuse Box","image":"/private/files/WhatsApp Image 2023-11-08 at 5.21.07 PM.jpeg"}
+{"name":"GI-23-05604","reference_doctype":"FT Machine Failure","reference_name":"MFR05601","caption":"Worn Belts","image":"/private/files/WhatsApp Image 2023-11-08 at 5.19.59 PM.jpeg"}
+{"name":"GI-23-05734","reference_doctype":"FT Machine Failure","reference_name":"MFR05733","caption":"Machine Picture","image":"/private/files/WhatsApp Image 2023-11-28 at 11.47.19 AM.jpeg"}
+{"name":"GI-23-05735","reference_doctype":"FT Machine Failure","reference_name":"MFR05733","caption":"Component picture","image":"/private/files/WhatsApp Image 2023-11-28 at 11.47.19 AM (1).jpeg"}
+{"name":"GI-23-05736","reference_doctype":"FT Machine Failure","reference_name":"MFR05733","caption":"Component Picture","image":"/private/files/WhatsApp Image 2023-11-28 at 11.47.20 AM.jpeg"}
+{"name":"GI-23-05737","reference_doctype":"FT Machine Failure","reference_name":"MFR05733","caption":"Component Picture","image":"/private/files/WhatsApp Image 2023-11-28 at 11.47.21 AM (1).jpeg"}
+{"name":"GI-23-05738","reference_doctype":"FT Machine Failure","reference_name":"MFR05733","caption":"Component Picture","image":"/private/files/WhatsApp Image 2023-11-28 at 11.47.21 AM.jpeg"}
+{"name":"GI-23-05739","reference_doctype":"FT Machine Failure","reference_name":"MFR05733","caption":"Component Picture","image":"/private/files/WhatsApp Image 2023-11-28 at 11.47.21 AM.jpeg"}
+{"name":"GI-23-05740","reference_doctype":"FT Machine Failure","reference_name":"MFR05733","caption":"Component Picture","image":"/private/files/WhatsApp Image 2023-11-28 at 11.47.22 AM (1).jpeg"}
+{"name":"GI-23-05741","reference_doctype":"FT Machine Failure","reference_name":"MFR05733","caption":"Component Picture","image":"/private/files/WhatsApp Image 2023-11-28 at 11.47.22 AM.jpeg"}
+{"name":"GI-23-05742","reference_doctype":"FT Machine Failure","reference_name":"MFR05733","caption":"Component Picture","image":"/private/files/WhatsApp Image 2023-11-28 at 11.47.23 AM (1).jpeg"}
+{"name":"GI-23-05743","reference_doctype":"FT Machine Failure","reference_name":"MFR05733","caption":"Component Picture","image":"/private/files/WhatsApp Image 2023-11-28 at 11.47.24 AM.jpeg"}
+{"name":"GI-23-05744","reference_doctype":"FT Machine Failure","reference_name":"MFR05733","caption":"Component Picture","image":"/private/files/WhatsApp Image 2023-11-28 at 11.47.23 AM.jpeg"}
+{"name":"GI-23-05785","reference_doctype":"FT Maintenance Warning Report","reference_name":"MWR05784","caption":"Fines In Cone Crusher Feed","image":"/private/files/WhatsApp Image 2023-12-01 at 2.59.59 PM.jpeg"}
+{"name":"GI-23-05786","reference_doctype":"FT Maintenance Warning Report","reference_name":"MWR05784","caption":"Belts no adequately tensioned","image":"/private/files/WhatsApp Image 2023-12-01 at 2.58.51 PM.jpeg"}
+{"name":"GI-23-05992","reference_doctype":"FT Machine Failure","reference_name":"MFR05991","caption":"Machine data plate","image":"/private/files/IMG_20220414_152550.jpg"}
+{"name":"GI-23-05994","reference_doctype":"FT Machine Failure","reference_name":"MFR05991","caption":"Machine Picture","image":"/private/files/WhatsApp Image 2022-05-24 at 8.01.36 AM (3).jpeg"}
+{"name":"GI-23-05995","reference_doctype":"FT Machine Failure","reference_name":"MFR05991","caption":"Damaged pump barrell","image":"/private/files/WhatsApp Image 2023-12-13 at 8.46.51 AM.jpeg"}
+{"name":"GI-23-06119","reference_doctype":"FT Machine Failure","reference_name":"MFR06118","caption":"Machine HMR","image":"/private/files/WhatsApp Image 2023-12-29 at 1.26.24 PM.jpeg"}
+{"name":"GI-23-06120","reference_doctype":"FT Machine Failure","reference_name":"MFR06118","caption":"Front axle LHS","image":"/private/files/WhatsApp Image 2023-12-29 at 1.26.19 PM.jpeg"}
+{"name":"GI-23-06121","reference_doctype":"FT Machine Failure","reference_name":"MFR06118","caption":"Front axle LHS","image":"/private/files/WhatsApp Image 2023-12-29 at 1.26.20 PM.jpeg"}
+{"name":"GI-23-06122","reference_doctype":"FT Machine Failure","reference_name":"MFR06118","caption":"Worn-C Frame","image":"/private/files/WhatsApp Image 2023-12-29 at 1.46.53 PM (1).jpeg"}
+{"name":"GI-23-06123","reference_doctype":"FT Machine Failure","reference_name":"MFR06118","caption":"Worn Pin","image":"/private/files/WhatsApp Image 2023-12-29 at 1.46.50 PM (1).jpeg"}
+{"name":"GI-23-06124","reference_doctype":"FT Machine Failure","reference_name":"MFR06118","caption":"Stripped Axle","image":"/private/files/WhatsApp Image 2023-12-29 at 1.46.54 PM.jpeg"}
+{"name":"GI-23-06125","reference_doctype":"FT Machine Failure","reference_name":"MFR06118","caption":"Modified Axle","image":"/private/files/WhatsApp Image 2023-12-29 at 1.46.47 PM.jpeg"}
+{"name":"GI-24-06517","reference_doctype":"FT Machine Failure","reference_name":"MFR06516","caption":"Worn pump components","image":"/private/files/WhatsApp Image 2024-01-22 at 9.41.37 AM.jpeg"}
+{"name":"GI-24-06518","reference_doctype":"FT Machine Failure","reference_name":"MFR06516","caption":"Filings in control valve","image":"/private/files/WhatsApp Image 2024-01-22 at 9.41.38 AM (1).jpeg"}
+{"name":"GI-24-06519","reference_doctype":"FT Machine Failure","reference_name":"MFR06516","caption":"Pump interior","image":"/private/files/WhatsApp Image 2024-01-22 at 9.41.38 AM.jpeg"}
+{"name":"GI-24-06520","reference_doctype":"FT Machine Failure","reference_name":"MFR06516","caption":"Damaged K3 K4 Clutch Shell","image":"/private/files/WhatsApp Image 2024-01-22 at 9.41.39 AM (1).jpeg"}
+{"name":"GI-24-06521","reference_doctype":"FT Machine Failure","reference_name":"MFR06516","caption":"K3 K4 Gear","image":"/private/files/WhatsApp Image 2024-01-22 at 9.41.40 AM.jpeg"}
+{"name":"GI-24-06522","reference_doctype":"FT Machine Failure","reference_name":"MFR06516","caption":"K3 K4 Shaft","image":"/private/files/WhatsApp Image 2024-01-22 at 9.41.41 AM.jpeg"}
+{"name":"GI-24-06572","reference_doctype":"FT Machine Failure","reference_name":"MFR06516","caption":"Metal filings found in oil","image":"/private/files/WhatsApp Image 2024-01-22 at 9.41.42 AM (1).jpeg"}
+{"name":"GI-24-06586","reference_doctype":"FT Machine Condition Assessment","reference_name":"MCAR06556","caption":"Full Picture of Machine","image":"/private/files/Machine Pic.jpeg"}
+{"name":"GI-24-06587","reference_doctype":"FT Machine Condition Assessment","reference_name":"MCAR06556","caption":"Technician checking Hydraulic filters","image":"/private/files/WhatsApp Image 2024-01-18 at 2.43.42 PM.jpeg"}
+{"name":"GI-24-06588","reference_doctype":"FT Machine Condition Assessment","reference_name":"MCAR06556","caption":"Dusty aircon filter","image":"/private/files/WhatsApp Image 2024-01-18 at 2.43.52 PM (1).jpeg"}
+{"name":"GI-24-06589","reference_doctype":"FT Machine Condition Assessment","reference_name":"MCAR06556","caption":"Worn out bucket tips","image":"/private/files/WhatsApp Image 2024-01-18 at 2.43.50 PM (1).jpeg"}
+{"name":"GI-24-06590","reference_doctype":"FT Machine Condition Assessment","reference_name":"MCAR06556","caption":"HMR","image":"/private/files/WhatsApp Image 2024-01-18 at 2.44.12 PM (1).jpeg"}
+{"name":"GI-24-06593","reference_doctype":"FT Machine Failure","reference_name":"MFR06592","caption":"Machine data plate ","image":"/files/WhatsApp Image 2023-10-23 at 8.59.44 AM.jpeg"}
+{"name":"GI-24-06594","reference_doctype":"FT Machine Failure","reference_name":"MFR06592","caption":"Broken arm ","image":"/files/WhatsApp Image 2023-10-22 at 6.32.54 PM.jpeg"}
+{"name":"GI-24-06595","reference_doctype":"FT Machine Failure","reference_name":"MFR06592","caption":"Stripped armsand paddle","image":"/files/WhatsApp Image 2023-10-22 at 6.33.01 PM (1).jpeg"}
+{"name":"GI-24-06596","reference_doctype":"FT Machine Failure","reference_name":"MFR06592","caption":"Broken arm ","image":"/files/WhatsApp Image 2023-10-22 at 6.32.58 PM.jpeg"}
+{"name":"GI-24-06603","reference_doctype":"FT Machine Failure","reference_name":"MFR06592","caption":"Broken paddle","image":"/files/WhatsApp Image 2023-10-22 at 6.32.59 PM.jpeg"}
+{"name":"GI-24-06604","reference_doctype":"FT Machine Failure","reference_name":"MFR06592","caption":"Reassembled new paddles and arms ","image":"/files/WhatsApp Image 2024-01-23 at 4.50.52 PM.jpeg"}
+{"name":"GI-24-06605","reference_doctype":"FT Machine Failure","reference_name":"MFR06592","caption":"Cleaned mixing drum ","image":"/files/WhatsApp Image 2024-01-23 at 4.50.51 PM (1).jpeg"}
+{"name":"GI-24-06606","reference_doctype":"FT Machine Failure","reference_name":"MFR06592","caption":"pre-assembled arms and paddles ","image":"/files/WhatsApp Image 2024-01-23 at 4.50.51 PM.jpeg"}
+{"name":"GI-24-06607","reference_doctype":"FT Machine Failure","reference_name":"MFR06592","caption":"Assembled arms and paddles","image":"/files/WhatsApp Image 2024-01-23 at 4.50.51 PM (2).jpeg"}
+{"name":"GI-24-06657","reference_doctype":"FT Machine Failure","reference_name":"MFR06656","caption":"Damaged bearing ","image":"/files/WhatsApp Image 2024-01-25 at 8.46.59 AM (1).jpeg"}
+{"name":"GI-24-06658","reference_doctype":"FT Machine Failure","reference_name":"MFR06656","caption":"Damaged bearing ","image":"/files/WhatsApp Image 2024-01-25 at 8.46.58 AM.jpeg"}
+{"name":"GI-24-06659","reference_doctype":"FT Machine Failure","reference_name":"MFR06656","caption":"Bearing ","image":"/files/WhatsApp Image 2024-01-25 at 8.46.54 AM.jpeg"}
+{"name":"GI-24-06753","reference_doctype":"FT Machine Failure","reference_name":"MFR06656","caption":"Pre-assembled bearing  ","image":"/files/WhatsApp Image 2024-01-25 at 8.47.01 AM.jpeg"}
+{"name":"GI-24-06754","reference_doctype":"FT Machine Failure","reference_name":"MFR06656","caption":"Stripped bearing ","image":"/files/WhatsApp Image 2024-01-25 at 8.47.00 AM.jpeg"}
+{"name":"GI-24-06755","reference_doctype":"FT Machine Failure","reference_name":"MFR06656","caption":"Pre-assembled bearing ","image":"/files/WhatsApp Image 2024-01-25 at 8.47.01 AM (1).jpeg"}
+{"name":"GI-24-06756","reference_doctype":"FT Machine Failure","reference_name":"MFR06656","caption":"Repaired bearing fitted onto machine ","image":"/files/WhatsApp Image 2024-01-25 at 3.42.43 PM.jpeg"}
+{"name":"GI-24-06799","reference_doctype":"FT Machine Failure","reference_name":"MFR06798","caption":"Pump bearings","image":"/private/files/WhatsApp Image 2024-01-31 at 12.52.51 PM.jpeg"}
+{"name":"GI-24-06800","reference_doctype":"FT Machine Failure","reference_name":"MFR06798","caption":"Damaged Pump Bearing","image":"/private/files/WhatsApp Image 2024-01-31 at 12.52.52 PM (1).jpeg"}
+{"name":"GI-24-06801","reference_doctype":"FT Machine Failure","reference_name":"MFR06798","caption":"Turbo shaft","image":"/private/files/WhatsApp Image 2024-01-31 at 12.52.53 PM (1).jpeg"}
+{"name":"GI-24-06802","reference_doctype":"FT Machine Failure","reference_name":"MFR06798","caption":"Drive pump assy","image":"/private/files/WhatsApp Image 2024-01-31 at 12.53.02 PM.jpeg"}
+{"name":"GI-24-06803","reference_doctype":"FT Machine Failure","reference_name":"MFR06798","caption":"Bearing","image":"/private/files/WhatsApp Image 2024-01-31 at 12.52.53 PM.jpeg"}
+{"name":"GI-24-06805","reference_doctype":"FT Machine Failure","reference_name":"MFR06798","caption":"Failed pump components","image":"/private/files/WhatsApp Image 2024-02-01 at 8.46.42 AM.jpeg"}
+{"name":"GI-24-06806","reference_doctype":"FT Machine Failure","reference_name":"MFR06798","caption":"Failed pump components","image":"/private/files/WhatsApp Image 2024-02-01 at 8.46.43 AM.jpeg"}
+{"name":"GI-24-06807","reference_doctype":"FT Machine Failure","reference_name":"MFR06798","caption":"Failed pump components","image":"/private/files/WhatsApp Image 2024-02-01 at 8.46.44 AM.jpeg"}
+{"name":"GI-24-07074","reference_doctype":"FT Machine Failure","reference_name":"MFR07037","caption":"Machine at workshop","image":"/private/files/WhatsApp Image 2024-02-13 at 9.42.59 AM (9).jpeg"}
+{"name":"GI-24-07075","reference_doctype":"FT Machine Failure","reference_name":"MFR07037","caption":"Steering clutch inspection","image":"/private/files/WhatsApp Image 2024-02-13 at 9.42.59 AM (5).jpeg"}
+{"name":"GI-24-07076","reference_doctype":"FT Machine Failure","reference_name":"MFR07037","caption":"Bearing Cage","image":"/private/files/WhatsApp Image 2024-02-13 at 9.42.59 AM.jpeg"}
+{"name":"GI-24-07662","reference_doctype":"FT Service Bulletin","reference_name":"SBMXG03-2024-7622","caption":"Melted old wiring","image":"/private/files/WhatsApp Image 2024-03-13 at 8.20.26 AM (2).jpeg"}
+{"name":"GI-24-07663","reference_doctype":"FT Service Bulletin","reference_name":"SBMXG03-2024-7622","caption":"Replacement with think cable","image":"/private/files/WhatsApp Image 2024-03-13 at 8.20.25 AM.jpeg"}
+{"name":"GI-24-08308","reference_doctype":"FT Maintenance Warning Report","reference_name":"MWR08307","caption":"Required Parts","image":"/private/files/WhatsApp Image 2024-04-10 at 5.09.07 PM.jpeg"}
+{"name":"GI-24-08309","reference_doctype":"FT Maintenance Warning Report","reference_name":"MWR08307","caption":"Current state of machine","image":"/private/files/WhatsApp Image 2024-04-10 at 4.20.31 PM.jpeg"}
+{"name":"GI-24-08917","reference_doctype":"FT Machine Failure","reference_name":"MFR08913","caption":"Damaged Thrust Washers & Flange","image":"/private/files/WhatsApp Image 2024-05-09 at 2.33.48 PM.jpeg"}
+{"name":"GI-24-08918","reference_doctype":"FT Machine Failure","reference_name":"MFR08913","caption":"Damaged turbo shaft","image":"/private/files/WhatsApp Image 2024-05-09 at 2.33.17 PM.jpeg"}
+{"name":"GI-24-08919","reference_doctype":"FT Machine Failure","reference_name":"MFR08913","caption":"Damaged Washers","image":"/private/files/WhatsApp Image 2024-05-09 at 2.33.49 PM (1).jpeg"}
+{"name":"GI-24-08920","reference_doctype":"FT Machine Failure","reference_name":"MFR08913","caption":"Damaged Components","image":"/private/files/WhatsApp Image 2024-05-09 at 2.33.49 PM.jpeg"}
+{"name":"GI-24-08921","reference_doctype":"FT Machine Failure","reference_name":"MFR08913","caption":"Damaged Clutch Shaft","image":"/private/files/WhatsApp Image 2024-05-09 at 2.41.04 PM.jpeg"}
+{"name":"GI-24-09162","reference_doctype":"FT Maintenance Warning Report","reference_name":"MWR09161","caption":"Dust Entry","image":"/private/files/WhatsApp Image 2024-05-16 at 8.14.22 AM.jpeg"}
+{"name":"GI-24-09163","reference_doctype":"FT Maintenance Warning Report","reference_name":"MWR09161","caption":"Dust Entry","image":"/private/files/WhatsApp Image 2024-05-16 at 8.14.23 AM.jpeg"}
+{"name":"GI-24-09164","reference_doctype":"FT Maintenance Warning Report","reference_name":"MWR09161","caption":"Dust Entry","image":"/private/files/WhatsApp Image 2024-05-16 at 8.14.24 AM (1).jpeg"}
+{"name":"GI-24-09166","reference_doctype":"FT Maintenance Warning Report","reference_name":"MWR09161","caption":"Dust Entry","image":"/private/files/WhatsApp Image 2024-05-16 at 8.14.25 AM.jpeg"}
+{"name":"GI-24-09207","reference_doctype":"FT Machine Failure","reference_name":"MFR09206","caption":"Hyd. tank sight glass","image":"/private/files/9 - Copy.jpg"}
+{"name":"GI-24-09209","reference_doctype":"FT Machine Failure","reference_name":"MFR09206","caption":"Drive pump","image":"/private/files/10 - Copy.jpg"}
+{"name":"GI-24-09212","reference_doctype":"FT Machine Failure","reference_name":"MFR09206","caption":"Pre-Removal from machine","image":"/private/files/WhatsApp Image 2024-05-17 at 12.26.31 PM (1).jpeg"}
+{"name":"GI-24-09213","reference_doctype":"FT Machine Failure","reference_name":"MFR09206","caption":"Post removal","image":"/private/files/WhatsApp Image 2024-05-17 at 12.26.32 PM (1).jpeg"}
+{"name":"GI-24-09214","reference_doctype":"FT Machine Failure","reference_name":"MFR09206","caption":"Machine Picture","image":"/private/files/WhatsApp Image 2024-05-17 at 12.27.12 PM (1).jpeg"}
+{"name":"GI-24-09215","reference_doctype":"FT Machine Failure","reference_name":"MFR09206","caption":"Machine Data Plate","image":"/private/files/WhatsApp Image 2024-05-17 at 12.27.14 PM (2).jpeg"}
+{"name":"GI-24-09216","reference_doctype":"FT Machine Failure","reference_name":"MFR09206","caption":"Post removal","image":"/private/files/WhatsApp Image 2024-05-17 at 12.27.13 PM.jpeg"}
+{"name":"GI-24-09260","reference_doctype":"FT Machine Failure","reference_name":"MFR09259","caption":"Collapsed Bearing","image":"/private/files/WhatsApp Image 2024-05-21 at 9.27.26 AM.jpeg"}
+{"name":"GI-24-09261","reference_doctype":"FT Machine Failure","reference_name":"MFR09259","caption":"Collapsed Bearing","image":"/private/files/WhatsApp Image 2024-05-21 at 9.27.27 AM (1).jpeg"}
+{"name":"GI-24-09262","reference_doctype":"FT Machine Failure","reference_name":"MFR09259","caption":"Collapsed Bearing","image":"/private/files/WhatsApp Image 2024-05-21 at 9.27.27 AM.jpeg"}
+{"name":"GI-24-09263","reference_doctype":"FT Machine Failure","reference_name":"MFR09259","caption":"Shaft","image":"/private/files/WhatsApp Image 2024-05-21 at 9.24.42 AM (1).jpeg"}
+{"name":"GI-24-09566","reference_doctype":"FT Maintenance Warning Report","reference_name":"MWR09561","caption":"Contaminated fuel","image":"/private/files/WhatsApp Image 2024-05-27 at 6.43.10 PM (1).jpeg"}
+{"name":"GI-24-09567","reference_doctype":"FT Maintenance Warning Report","reference_name":"MWR09561","caption":"Contaminated fuel","image":"/private/files/WhatsApp Image 2024-05-27 at 6.41.54 PM.jpeg"}
+{"name":"GI-24-09568","reference_doctype":"FT Maintenance Warning Report","reference_name":"MWR09561","caption":"Damaged fuel Cap","image":"/private/files/WhatsApp Image 2024-05-28 at 11.23.37 AM.jpeg"}
+{"name":"GI-24-09569","reference_doctype":"FT Maintenance Warning Report","reference_name":"MWR09561","caption":"Damaged Fuel Cap","image":"/private/files/WhatsApp Image 2024-05-28 at 11.23.40 AM.jpeg"}
+{"name":"GI-24-09571","reference_doctype":"FT Maintenance Warning Report","reference_name":"MWR09570","caption":"Accident Damaged Section on recycler","image":"/private/files/WhatsApp Image 2024-05-28 at 11.21.43 AM.jpeg"}
+{"name":"GI-24-09572","reference_doctype":"FT Maintenance Warning Report","reference_name":"MWR09570","caption":"Dozer","image":"/private/files/WhatsApp Image 2024-05-28 at 11.22.38 AM.jpeg"}
+{"name":"GI-24-09573","reference_doctype":"FT Maintenance Warning Report","reference_name":"MWR09570","caption":"Damaged - Pre Cleaner","image":"/private/files/WhatsApp Image 2024-05-28 at 11.22.39 AM.jpeg"}
+{"name":"GI-24-10083","reference_doctype":"FT Maintenance Warning Report","reference_name":"MWR10082","caption":"1","image":"/private/files/WhatsApp Image 2024-06-05 at 4.52.13 PM.jpeg"}
+{"name":"GI-24-10084","reference_doctype":"FT Maintenance Warning Report","reference_name":"MWR10082","caption":"2","image":"/private/files/WhatsApp Image 2024-06-05 at 4.52.12 PM.jpeg"}
+{"name":"GI-24-10085","reference_doctype":"FT Maintenance Warning Report","reference_name":"MWR10082","caption":"3","image":"/private/files/WhatsApp Image 2024-06-05 at 4.52.11 PM.jpeg"}
+{"name":"GI-24-10707","reference_doctype":"FT Machine Failure","reference_name":"MFR10704","caption":"Bent cyl.","image":"/private/files/WhatsApp Image 2024-07-16 at 8.40.48 AM.jpeg"}
+{"name":"GI-24-10708","reference_doctype":"FT Machine Failure","reference_name":"MFR10704","caption":"Stick","image":"/private/files/WhatsApp Image 2024-07-16 at 8.40.47 AM (1).jpeg"}
+{"name":"GI-24-10709","reference_doctype":"FT Machine Failure","reference_name":"MFR10704","caption":"Backhoe bucket","image":"/private/files/WhatsApp Image 2024-07-16 at 8.40.45 AM.jpeg"}
+{"name":"GI-24-11178","reference_doctype":"FT Maintenance Warning Report","reference_name":"MWR11177","caption":"Worn Drum Segment(s)","image":"/private/files/cce05a94-1a55-499f-96b6-b8a6b1ed085d.jpeg"}
+{"name":"GI-24-11179","reference_doctype":"FT Maintenance Warning Report","reference_name":"MWR11177","caption":"Worn Segment(s)","image":"/private/files/WhatsApp Image 2024-08-06 at 9.36.58 AM.jpeg"}
+{"name":"GI-24-11180","reference_doctype":"FT Maintenance Warning Report","reference_name":"MWR11177","caption":"Worn Segment(s)","image":"/private/files/WhatsApp Image 2024-08-06 at 9.36.59 AM (1).jpeg"}
+{"name":"GI-24-11181","reference_doctype":"FT Maintenance Warning Report","reference_name":"MWR11177","caption":"Worn Segment(s)","image":"/private/files/WhatsApp Image 2024-08-06 at 9.36.59 AM.jpeg"}
+{"name":"GI-24-11433","reference_doctype":"FT Machine Failure","reference_name":"MFR11430","caption":"damaged seal","image":"/private/files/WhatsApp Image 2024-08-22 at 3.35.52 PM.jpeg"}
+{"name":"GI-24-11434","reference_doctype":"FT Machine Failure","reference_name":"MFR11430","caption":"Damaged duocone seal","image":"/private/files/WhatsApp Image 2024-08-22 at 3.35.51 PM (1).jpeg"}
+{"name":"GI-24-11435","reference_doctype":"FT Machine Failure","reference_name":"MFR11430","caption":"failure","image":"/private/files/WhatsApp Image 2024-08-22 at 3.35.51 PM.jpeg"}
+{"name":"GI-24-11436","reference_doctype":"FT Machine Failure","reference_name":"MFR11430","caption":"Leaking final drive","image":"/private/files/WhatsApp Image 2024-08-22 at 3.33.24 PM (1).jpeg"}
+{"name":"GI-24-11669","reference_doctype":"FT Machine Failure","reference_name":"MFR11668","caption":"Stripped Components","image":"/private/files/WhatsApp Image 2024-09-04 at 3.26.43 PM.jpeg"}
+{"name":"GI-24-11670","reference_doctype":"FT Machine Failure","reference_name":"MFR11668","caption":"Bearings","image":"/private/files/WhatsApp Image 2024-09-04 at 3.26.48 PM.jpeg"}
+{"name":"GI-24-11671","reference_doctype":"FT Machine Failure","reference_name":"MFR11668","caption":"Internal Measurements","image":"/private/files/WhatsApp Image 2024-09-04 at 3.26.50 PM (1).jpeg"}
+{"name":"GI-24-11672","reference_doctype":"FT Machine Failure","reference_name":"MFR11668","caption":"Internal measurements","image":"/private/files/WhatsApp Image 2024-09-04 at 3.26.50 PM (2).jpeg"}
+{"name":"GI-24-11673","reference_doctype":"FT Machine Failure","reference_name":"MFR11668","caption":"Measurements","image":"/private/files/WhatsApp Image 2024-09-04 at 3.26.50 PM.jpeg"}
+{"name":"GI-24-11674","reference_doctype":"FT Machine Failure","reference_name":"MFR11668","caption":"Hub","image":"/private/files/WhatsApp Image 2024-09-04 at 3.26.52 PM.jpeg"}
+{"name":"GI-24-11675","reference_doctype":"FT Machine Failure","reference_name":"MFR11668","caption":"Wheels off","image":"/private/files/WhatsApp Image 2024-09-04 at 3.26.54 PM.jpeg"}
+{"name":"GI-24-11676","reference_doctype":"FT Machine Failure","reference_name":"MFR11668","caption":"HMR","image":"/private/files/WhatsApp Image 2024-09-04 at 3.26.58 PM.jpeg"}
+{"name":"GI-24-11677","reference_doctype":"FT Machine Failure","reference_name":"MFR11668","caption":"Data Plate","image":"/private/files/WhatsApp Image 2024-09-04 at 3.26.59 PM.jpeg"}
+{"name":"GI-24-11678","reference_doctype":"FT Machine Failure","reference_name":"MFR11668","caption":"Brake Calliper","image":"/private/files/WhatsApp Image 2024-09-04 at 3.27.01 PM.jpeg"}
+{"name":"GI-24-12564","reference_doctype":"FT Service Bulletin","reference_name":"SBMXG10-2024-12563","caption":"Plate","image":"/private/files/WhatsApp Image 2024-10-16 at 3.31.21 PM.jpeg"}
+{"name":"GI-24-12567","reference_doctype":"FT Service Bulletin","reference_name":"SBMXG10-2024-12566","caption":"Turbine Box","image":"/private/files/ffghh.png"}
+{"name":"GI-24-12805","reference_doctype":"FT Machine Failure","reference_name":"MFR12804","caption":"Damaged loom","image":"/files/WhatsApp Image 2024-10-28 at 16.48.59 (2).jpeg"}
+{"name":"GI-24-12806","reference_doctype":"FT Machine Failure","reference_name":"MFR12804","caption":"Damaged cruise coupling","image":"/files/WhatsApp Image 2024-10-28 at 16.48.59 (1).jpeg"}
+{"name":"GI-24-12807","reference_doctype":"FT Machine Failure","reference_name":"MFR12804","caption":"Damaged loom","image":"/private/files/WhatsApp Image 2024-10-28 at 16.48.58.jpeg"}
+{"name":"GI-24-12808","reference_doctype":"FT Machine Failure","reference_name":"MFR12804","caption":"Chain protection still intact","image":"/private/files/WhatsApp Image 2024-10-28 at 16.48.59.jpeg"}
+{"name":"GI-24-12835","reference_doctype":"FT Machine Failure","reference_name":"MFR12834","caption":"Steering clutch housing ","image":"/private/files/WhatsApp Image 2024-10-29 at 15.47.34.jpeg"}
+{"name":"GI-24-12836","reference_doctype":"FT Machine Failure","reference_name":"MFR12834","caption":"Crack on the steering clutch housing ","image":"/private/files/WhatsApp Image 2024-10-29 at 15.47.35.jpeg"}
+{"name":"GI-24-12908","reference_doctype":"FT Maintenance Warning Report","reference_name":"MWR12907","caption":"Jaw Crusher","image":"/private/files/WhatsApp Image 2024-10-29 at 11.23.47 AM.jpeg"}
+{"name":"GI-24-12909","reference_doctype":"FT Maintenance Warning Report","reference_name":"MWR12907","caption":"Air filter housing","image":"/private/files/WhatsApp Image 2024-10-29 at 11.23.48 AM.jpeg"}
+{"name":"GI-24-12912","reference_doctype":"FT Maintenance Warning Report","reference_name":"MWR12911","caption":"Inlet Manifold","image":"/private/files/WhatsApp Image 2024-10-29 at 3.05.59 PM.jpeg"}
+{"name":"GI-24-12913","reference_doctype":"FT Maintenance Warning Report","reference_name":"MWR12911","caption":"Dust","image":"/private/files/WhatsApp Image 2024-10-29 at 3.05.08 PM.jpeg"}
+{"name":"GI-24-12990","reference_doctype":"FT Machine Failure","reference_name":"MFR12989","caption":"Worn cylinder bore from piston seizure","image":"/private/files/WhatsApp Image 2024-09-24 at 10.21.07 (1).jpeg"}
+{"name":"GI-24-12991","reference_doctype":"FT Machine Failure","reference_name":"MFR12989","caption":"Worn cylinder bore from piston seizure","image":"/private/files/WhatsApp Image 2024-09-24 at 10.21.07 (2).jpeg"}
+{"name":"GI-24-12992","reference_doctype":"FT Machine Failure","reference_name":"MFR12989","caption":"Worn cylinder bore from piston seizure","image":"/private/files/WhatsApp Image 2024-09-24 at 10.21.07.jpeg"}
+{"name":"GI-24-12994","reference_doctype":"FT Machine Failure","reference_name":"MFR12993","caption":"Worn cylinder bore from piston pick up","image":"/private/files/WhatsApp Image 2024-11-07 at 10.45.58.jpeg"}
+{"name":"GI-24-12995","reference_doctype":"FT Machine Failure","reference_name":"MFR12993","caption":"Worn cylinder bore from piston pick up","image":"/private/files/WhatsApp Image 2024-11-07 at 10.46.10.jpeg"}
+{"name":"GI-24-12996","reference_doctype":"FT Machine Failure","reference_name":"MFR12993","caption":"Worn cylinder bore from piston pick up","image":"/private/files/WhatsApp Image 2024-11-07 at 10.46.30.jpeg"}
+{"name":"GI-24-13040","reference_doctype":"FT Machine Failure","reference_name":"MFR13039","caption":"Machine picture","image":"/private/files/WhatsApp Image 2024-10-29 at 11.23.47 AM.jpeg"}
+{"name":"GI-24-13041","reference_doctype":"FT Machine Failure","reference_name":"MFR13039","caption":"Air filter duct","image":"/private/files/WhatsApp Image 2024-10-29 at 11.42.41 AM (1).jpeg"}
+{"name":"GI-24-13042","reference_doctype":"FT Machine Failure","reference_name":"MFR13039","caption":"Air filter","image":"/private/files/WhatsApp Image 2024-10-29 at 11.23.48 AM.jpeg"}
+{"name":"GI-24-13044","reference_doctype":"FT Machine Failure","reference_name":"MFR13043","caption":"Dust on intake","image":"/private/files/WhatsApp Image 2024-10-29 at 3.05.59 PM.jpeg"}
+{"name":"GI-24-13045","reference_doctype":"FT Machine Failure","reference_name":"MFR13043","caption":"Dust entry in manifold","image":"/private/files/WhatsApp Image 2024-10-29 at 3.05.08 PM.jpeg"}
+{"name":"GI-24-13469","reference_doctype":"FT Machine Failure","reference_name":"MFR13468","caption":"1","image":"/private/files/WhatsApp Image 2024-12-04 at 13.54.51 (2).jpeg"}
+{"name":"GI-24-13470","reference_doctype":"FT Machine Failure","reference_name":"MFR13468","caption":"2","image":"/private/files/WhatsApp Image 2024-12-04 at 13.54.51 (1).jpeg"}
+{"name":"GI-24-13471","reference_doctype":"FT Machine Failure","reference_name":"MFR13468","caption":"3","image":"/private/files/WhatsApp Image 2024-12-04 at 13.54.50 (1).jpeg"}
+{"name":"GI-24-13472","reference_doctype":"FT Machine Failure","reference_name":"MFR13468","caption":"4","image":"/private/files/WhatsApp Image 2024-12-04 at 13.54.50.jpeg"}
+{"name":"GI-24-13473","reference_doctype":"FT Machine Failure","reference_name":"MFR13468","caption":"6","image":"/private/files/WhatsApp Image 2024-12-04 at 13.54.49 (1).jpeg"}
+{"name":"GI-24-13474","reference_doctype":"FT Machine Failure","reference_name":"MFR13468","caption":"7","image":"/private/files/WhatsApp Image 2024-12-04 at 13.54.47 (2).jpeg"}
+{"name":"GI-24-13475","reference_doctype":"FT Machine Failure","reference_name":"MFR13468","caption":"8","image":"/private/files/WhatsApp Image 2024-12-04 at 13.54.47.jpeg"}
+{"name":"GI-24-13476","reference_doctype":"FT Machine Failure","reference_name":"MFR13468","caption":"9","image":"/private/files/WhatsApp Image 2024-12-04 at 13.54.46.jpeg"}
+{"name":"GI-25-13868","reference_doctype":"FT Machine Failure","reference_name":"MFR13866","caption":"Broken AC compressor bracket. ","image":"/private/files/WhatsApp Image 2025-01-21 at 09.08.54.jpeg"}
+{"name":"GI-25-13869","reference_doctype":"FT Machine Failure","reference_name":"MFR13866","caption":"AC Compressor","image":"/private/files/002.jpg"}
+{"name":"GI-25-14140","reference_doctype":"FT Machine Failure","reference_name":"MFR14139","caption":"Machine data plate","image":"/private/files/WhatsApp Image 2025-01-20 at 17.03.01.jpeg"}
+{"name":"GI-25-14141","reference_doctype":"FT Machine Failure","reference_name":"MFR14139","caption":"Hour meter reading","image":"/private/files/WhatsApp Image 2025-01-20 at 17.03.31.jpeg"}
+{"name":"GI-25-14142","reference_doctype":"FT Machine Failure","reference_name":"MFR14139","caption":"Broken parts","image":"/private/files/WhatsApp Image 2025-01-20 at 17.03.30.jpeg"}
+{"name":"GI-25-14143","reference_doctype":"FT Machine Failure","reference_name":"MFR14139","caption":"Broken parts","image":"/private/files/WhatsApp Image 2025-01-21 at 13.31.14.jpeg"}
+{"name":"GI-25-14144","reference_doctype":"FT Machine Failure","reference_name":"MFR14139","caption":"Gearbox data plate","image":"/private/files/WhatsApp Image 2025-01-21 at 13.31.08.jpeg"}
+{"name":"GI-25-14145","reference_doctype":"FT Machine Failure","reference_name":"MFR14139","caption":"Damaged parts","image":"/private/files/WhatsApp Image 2025-01-21 at 13.31.04.jpeg"}
+{"name":"GI-25-14156","reference_doctype":"FT Machine Failure","reference_name":"MFR14155","caption":"Coolant bubbling ","image":"/private/files/Screenshot 2025-02-05 110552.png"}
+{"name":"GI-25-14157","reference_doctype":"FT Machine Failure","reference_name":"MFR14155","caption":"Engine data plate ","image":"/private/files/Screenshot 2025-02-05 110552.png"}
+{"name":"GI-25-14192","reference_doctype":"FT Machine Failure","reference_name":"MFR14191","caption":"Hour meter reading","image":"/private/files/WhatsApp Image 2025-02-07 at 11.08.47.jpeg"}
+{"name":"GI-25-14193","reference_doctype":"FT Machine Failure","reference_name":"MFR14191","caption":"Gearbox data plate","image":"/private/files/WhatsApp Image 2025-02-07 at 11.07.53.jpeg"}
+{"name":"GI-25-14194","reference_doctype":"FT Machine Failure","reference_name":"MFR14191","caption":"Machine data plate ","image":"/private/files/WhatsApp Image 2025-02-07 at 11.07.52 (1).jpeg"}
+{"name":"GI-25-14195","reference_doctype":"FT Machine Failure","reference_name":"MFR14191","caption":"Oil drained from the RHS gearbox","image":"/private/files/WhatsApp Image 2025-02-07 at 11.07.52.jpeg"}
+{"name":"GI-25-14403","reference_doctype":"FT Machine Failure","reference_name":"MFR14402","caption":"Cylinder block","image":"/private/files/WhatsApp Image 2025-02-18 at 13.56.04 (1).jpeg"}
+{"name":"GI-25-14404","reference_doctype":"FT Machine Failure","reference_name":"MFR14402","caption":"Cylinder head","image":"/private/files/WhatsApp Image 2025-02-18 at 13.56.04.jpeg"}
+{"name":"GI-25-14405","reference_doctype":"FT Machine Failure","reference_name":"MFR14402","caption":"Bent crank shaft","image":"/private/files/WhatsApp Image 2025-02-18 at 13.56.03.jpeg"}
+{"name":"GI-25-14406","reference_doctype":"FT Machine Failure","reference_name":"MFR14402","caption":"Damaged piston","image":"/private/files/WhatsApp Image 2025-02-18 at 16.49.23 (3).jpeg"}
+{"name":"GI-25-14407","reference_doctype":"FT Machine Failure","reference_name":"MFR14402","caption":"Damaged piston","image":"/private/files/WhatsApp Image 2025-02-18 at 16.49.23 (2).jpeg"}
+{"name":"GI-25-14408","reference_doctype":"FT Machine Failure","reference_name":"MFR14402","caption":"Damaged liner","image":"/private/files/WhatsApp Image 2025-02-18 at 16.49.23 (1).jpeg"}
+{"name":"GI-25-14409","reference_doctype":"FT Machine Failure","reference_name":"MFR14402","caption":"Worn No1 big end bearing on crank shaft","image":"/private/files/WhatsApp Image 2025-02-18 at 16.49.22.jpeg"}
+{"name":"GI-25-14410","reference_doctype":"FT Machine Failure","reference_name":"MFR14402","caption":"Burnt conrod","image":"/private/files/WhatsApp Image 2025-02-18 at 16.48.45.jpeg"}
+{"name":"GI-25-14518","reference_doctype":"FT Machine Failure","reference_name":"MFR14511","caption":"Fault Codes","image":"/private/files/WhatsApp Image 2025-02-27 at 3.47.37 PM.jpeg"}
+{"name":"GI-25-14519","reference_doctype":"FT Machine Failure","reference_name":"MFR14511","caption":"Fault Codes","image":"/private/files/WhatsApp Image 2025-02-27 at 3.47.38 PM (1).jpeg"}
+{"name":"GI-25-14520","reference_doctype":"FT Machine Failure","reference_name":"MFR14511","caption":"Fault Codes","image":"/private/files/WhatsApp Image 2025-02-27 at 3.47.38 PM.jpeg"}
+{"name":"GI-25-14589","reference_doctype":"FT Machine Failure","reference_name":"MFR14588","caption":"Engine loom","image":"/private/files/WhatsApp Image 2025-03-05 at 09.34.24(1).jpeg"}
+{"name":"GI-25-14590","reference_doctype":"FT Machine Failure","reference_name":"MFR14588","caption":"Fuel pump oil manifold leak","image":"/private/files/WhatsApp Image 2025-03-05 at 09.34.01(1).jpeg"}
+{"name":"GI-25-14591","reference_doctype":"FT Machine Failure","reference_name":"MFR14588","caption":"Breather leak","image":"/private/files/WhatsApp Image 2025-03-05 at 09.33.34(1).jpeg"}
+{"name":"GI-25-14592","reference_doctype":"FT Machine Failure","reference_name":"MFR14588","caption":"Tappet cover leak","image":"/private/files/WhatsApp Image 2025-03-05 at 09.33.15(1).jpeg"}
+{"name":"GI-25-14593","reference_doctype":"FT Machine Failure","reference_name":"MFR14588","caption":"Hard air cleaner hoses","image":"/private/files/WhatsApp Image 2025-03-05 at 09.32.52(1).jpeg"}
+{"name":"GI-25-14594","reference_doctype":"FT Machine Failure","reference_name":"MFR14588","caption":"Broken dust ejector pipe","image":"/private/files/WhatsApp Image 2025-03-05 at 09.32.07(1).jpeg"}
+{"name":"GI-25-14595","reference_doctype":"FT Machine Failure","reference_name":"MFR14588","caption":"Missing precleaner clamps","image":"/private/files/WhatsApp Image 2025-03-05 at 09.31.25(1).jpeg"}
+{"name":"GI-25-14596","reference_doctype":"FT Machine Failure","reference_name":"MFR14588","caption":"Hard coolant hoses","image":"/private/files/WhatsApp Image 2025-03-05 at 09.30.59(1).jpeg"}
+{"name":"GI-25-14597","reference_doctype":"FT Machine Failure","reference_name":"MFR14588","caption":"Hard coolant hoses","image":"/private/files/WhatsApp Image 2025-03-05 at 09.30.48(1).jpeg"}
+{"name":"GI-25-14598","reference_doctype":"FT Machine Failure","reference_name":"MFR14588","caption":"Centre articulation","image":"/private/files/WhatsApp Image 2025-03-05 at 09.23.33(1).jpeg"}
+{"name":"GI-25-14599","reference_doctype":"FT Machine Failure","reference_name":"MFR14588","caption":"Battery posts need building.battery terminals need replacing","image":"/private/files/WhatsApp Image 2025-03-05 at 09.24.10(2).jpeg"}
+{"name":"GI-25-14600","reference_doctype":"FT Machine Failure","reference_name":"MFR14588","caption":"Machine serial Number","image":"/private/files/WhatsApp Image 2025-03-05 at 09.24.54(1).jpeg"}
+{"name":"GI-25-14601","reference_doctype":"FT Machine Failure","reference_name":"MFR14588","caption":"Hour meter","image":"/files/WhatsApp Image 2025-03-05 at 09.25.47(1).jpeg"}
+{"name":"GI-25-14602","reference_doctype":"FT Machine Failure","reference_name":"MFR14588","caption":"Loose bolt and nut","image":"/private/files/WhatsApp Image 2025-03-05 at 09.26.45(1).jpeg"}
+{"name":"GI-25-14603","reference_doctype":"FT Machine Failure","reference_name":"MFR14588","caption":"Leak on steering cylinder","image":"/private/files/WhatsApp Image 2025-03-05 at 09.27.01(1).jpeg"}
+{"name":"GI-25-14604","reference_doctype":"FT Machine Failure","reference_name":"MFR14588","caption":"Circle wear strips missing","image":"/private/files/WhatsApp Image 2025-03-05 at 09.28.01(1).jpeg"}
+{"name":"GI-25-14605","reference_doctype":"FT Machine Failure","reference_name":"MFR14588","caption":"Circle mounting bolts and washers","image":"/private/files/WhatsApp Image 2025-03-05 at 09.29.17(1).jpeg"}
+{"name":"GI-25-14606","reference_doctype":"FT Machine Failure","reference_name":"MFR14588","caption":"Leak on tandem","image":"/private/files/WhatsApp Image 2025-03-05 at 09.29.52(1).jpeg"}
+{"name":"GI-25-14607","reference_doctype":"FT Machine Failure","reference_name":"MFR14588","caption":"Tandem leak","image":"/private/files/WhatsApp Image 2025-03-05 at 09.30.17(1).jpeg"}
+{"name":"GI-25-15003","reference_doctype":"FT Maintenance Warning Report","reference_name":"MWR15002","caption":"State of the machine","image":"/private/files/WhatsApp Image 2025-03-25 at 6.08.13 PM.jpeg"}
+{"name":"GI-25-15004","reference_doctype":"FT Maintenance Warning Report","reference_name":"MWR15002","caption":"Dirt accumulation","image":"/private/files/WhatsApp Image 2025-03-25 at 6.08.14 PM.jpeg"}
+{"name":"GI-25-15056","reference_doctype":"FT Maintenance Warning Report","reference_name":"MWR15055","caption":"1","image":"/private/files/WhatsApp Image 2025-03-28 at 10.21.29 AM.jpeg"}
+{"name":"GI-25-15057","reference_doctype":"FT Maintenance Warning Report","reference_name":"MWR15055","caption":"2","image":"/private/files/WhatsApp Image 2025-03-28 at 10.21.30 AM (1).jpeg"}
+{"name":"GI-25-15058","reference_doctype":"FT Maintenance Warning Report","reference_name":"MWR15055","caption":"3","image":"/private/files/WhatsApp Image 2025-03-28 at 10.21.30 AM (2).jpeg"}
+{"name":"GI-25-15059","reference_doctype":"FT Maintenance Warning Report","reference_name":"MWR15055","caption":"4","image":"/private/files/WhatsApp Image 2025-03-28 at 10.21.30 AM.jpeg"}
+{"name":"GI-25-15060","reference_doctype":"FT Maintenance Warning Report","reference_name":"MWR15055","caption":"5","image":"/private/files/WhatsApp Image 2025-03-28 at 10.21.31 AM (1).jpeg"}
+{"name":"GI-25-15139","reference_doctype":"FT Machine Failure","reference_name":"MFR15138","caption":"Stripping engine","image":"/private/files/20250328_123220.jpg"}
+{"name":"GI-25-15140","reference_doctype":"FT Machine Failure","reference_name":"MFR15138","caption":"Cylinder head off ","image":"/private/files/20250328_141203(0).jpg"}
+{"name":"GI-25-15141","reference_doctype":"FT Machine Failure","reference_name":"MFR15138","caption":"Piston number 4 not flash at TDC (Far left)","image":"/private/files/20250328_144031.jpg"}
+{"name":"GI-25-15142","reference_doctype":"FT Machine Failure","reference_name":"MFR15138","caption":"Bent No4 Conrod","image":"/private/files/20250331_092246.jpg"}
+{"name":"GI-25-15143","reference_doctype":"FT Machine Failure","reference_name":"MFR15138","caption":"Broken cylinder block","image":"/private/files/20250331_092327.jpg"}
+{"name":"GI-25-15144","reference_doctype":"FT Machine Failure","reference_name":"MFR15138","caption":"Hit mark on bent conrod","image":"/private/files/20250331_092457.jpg"}
+{"name":"GI-25-15176","reference_doctype":"FT Machine Failure","reference_name":"MFR15175","caption":"Burst Tyre","image":"/private/files/WhatsApp Image 2025-04-04 at 4.18.17 PM.jpeg"}
+{"name":"GI-25-15227","reference_doctype":"FT Maintenance Warning Report","reference_name":"MWR15226","caption":"Cover","image":"/private/files/WhatsApp Image 2025-04-09 at 9.22.43 AM.jpeg"}
+{"name":"GI-25-15228","reference_doctype":"FT Maintenance Warning Report","reference_name":"MWR15226","caption":"Dust inside","image":"/private/files/WhatsApp Image 2025-04-09 at 9.23.12 AM.jpeg"}
+{"name":"GI-25-15229","reference_doctype":"FT Maintenance Warning Report","reference_name":"MWR15226","caption":"Dust","image":"/private/files/WhatsApp Image 2025-04-09 at 9.23.28 AM.jpeg"}
+{"name":"GI-25-15439","reference_doctype":"FT Machine Failure","reference_name":"MFR15438","caption":"Machine condition","image":"/private/files/WhatsApp Image 2025-04-08 at 14.25.02.jpeg"}
+{"name":"GI-25-15440","reference_doctype":"FT Machine Failure","reference_name":"MFR15438","caption":"Machine data plate","image":"/private/files/WhatsApp Image 2025-04-10 at 16.45.43.jpeg"}
+{"name":"GI-25-15441","reference_doctype":"FT Machine Failure","reference_name":"MFR15438","caption":"Worn tensioner pulley","image":"/private/files/WhatsApp Image 2025-04-08 at 14.27.08.jpeg"}
+{"name":"GI-25-15442","reference_doctype":"FT Machine Failure","reference_name":"MFR15438","caption":"Jaw drive pulley","image":"/private/files/WhatsApp Image 2025-04-08 at 14.28.13.jpeg"}
+{"name":"GI-25-15443","reference_doctype":"FT Machine Failure","reference_name":"MFR15438","caption":"Cracked bowl liner","image":"/private/files/WhatsApp Image 2025-04-08 at 14.29.56.jpeg"}
+{"name":"GI-25-15444","reference_doctype":"FT Machine Failure","reference_name":"MFR15438","caption":"Leaking tensioner pulley","image":"/private/files/WhatsApp Image 2025-04-08 at 14.31.05.jpeg"}
+{"name":"GI-25-15445","reference_doctype":"FT Machine Failure","reference_name":"MFR15438","caption":"Inner brass bush","image":"/private/files/WhatsApp Image 2025-04-10 at 17.04.21.jpeg"}
+{"name":"GI-25-15446","reference_doctype":"FT Machine Failure","reference_name":"MFR15438","caption":"Machine hour meter","image":"/private/files/WhatsApp Image 2025-04-10 at 16.45.55.jpeg"}
+{"name":"GI-25-15843","reference_doctype":"FT Machine Failure","reference_name":"MFR15842","caption":"Hour meter","image":"/private/files/WhatsApp Image 2025-05-12 at 11.41.46.jpeg"}
+{"name":"GI-25-15844","reference_doctype":"FT Machine Failure","reference_name":"MFR15842","caption":"Machine data plate","image":"/private/files/WhatsApp Image 2025-05-12 at 11.39.53.jpeg"}
+{"name":"GI-25-15941","reference_doctype":"FT Machine Failure","reference_name":"MFR15842","caption":"Magnetic motor","image":"/private/files/K116 Motor.png"}
+{"name":"GI-25-16087","reference_doctype":"FT Machine Failure","reference_name":"MFR16086","caption":"Burnt clutch housings","image":"/private/files/WhatsApp Image 2025-05-29 at 11.30.47.jpeg"}
+{"name":"GI-25-16088","reference_doctype":"FT Machine Failure","reference_name":"MFR16086","caption":"Burnt control valve","image":"/private/files/WhatsApp Image 2025-05-29 at 11.30.48.jpeg"}
+{"name":"GI-25-16089","reference_doctype":"FT Machine Failure","reference_name":"MFR16086","caption":"Worn torque convertor shaft","image":"/private/files/WhatsApp Image 2025-05-29 at 11.30.50.jpeg"}
+{"name":"GI-25-16090","reference_doctype":"FT Machine Failure","reference_name":"MFR16086","caption":"Worn input shaft","image":"/private/files/WhatsApp Image 2025-05-29 at 11.30.49 (1).jpeg"}
+{"name":"GI-25-16091","reference_doctype":"FT Machine Failure","reference_name":"MFR16086","caption":"Wear on input shaft","image":"/private/files/WhatsApp Image 2025-05-29 at 11.30.49 (2).jpeg"}
+{"name":"GI-25-16092","reference_doctype":"FT Machine Failure","reference_name":"MFR16086","caption":"Burnt transmission solenoids","image":"/private/files/WhatsApp Image 2025-05-29 at 11.30.48 (1).jpeg"}
+{"name":"GI-25-16093","reference_doctype":"FT Machine Failure","reference_name":"MFR16086","caption":"Blued bearings from excessive heat","image":"/private/files/WhatsApp Image 2025-05-29 at 11.30.49.jpeg"}
+{"name":"GI-25-16094","reference_doctype":"FT Machine Failure","reference_name":"MFR16086","caption":"Normal vs burnt clutches","image":"/private/files/WhatsApp Image 2025-05-29 at 11.30.50 (1).jpeg"}
+{"name":"GI-25-16095","reference_doctype":"FT Machine Failure","reference_name":"MFR16085","caption":"Data Plate","image":"/private/files/WhatsApp Image 2025-05-29 at 2.40.19 PM.jpeg"}
+{"name":"GI-25-16096","reference_doctype":"FT Machine Failure","reference_name":"MFR16085","caption":"HMR","image":"/private/files/WhatsApp Image 2025-05-29 at 2.40.20 PM.jpeg"}
+{"name":"GI-25-16097","reference_doctype":"FT Machine Failure","reference_name":"MFR16085","caption":"Worn Splines Rear Drive Motor","image":"/private/files/WhatsApp Image 2025-05-29 at 2.40.11 PM.jpeg"}
+{"name":"GI-25-16098","reference_doctype":"FT Machine Failure","reference_name":"MFR16085","caption":"Worn splines - Drive Coupling","image":"/private/files/WhatsApp Image 2025-05-29 at 2.39.12 PM (1).jpeg"}
+{"name":"GI-25-16099","reference_doctype":"FT Machine Failure","reference_name":"MFR16085","caption":"Front Drive Motor","image":"/private/files/WhatsApp Image 2025-05-29 at 2.40.15 PM.jpeg"}
+{"name":"GI-25-16227","reference_doctype":"FT Maintenance Warning Report","reference_name":"MWR16226","caption":"Primary filter","image":"/private/files/WhatsApp Image 2025-06-04 at 3.18.33 PM.jpeg"}
+{"name":"GI-25-16228","reference_doctype":"FT Maintenance Warning Report","reference_name":"MWR16226","caption":"Cover","image":"/private/files/WhatsApp Image 2025-06-04 at 3.18.29 PM (1).jpeg"}
+{"name":"GI-25-16229","reference_doctype":"FT Maintenance Warning Report","reference_name":"MWR16226","caption":"Secondary filter","image":"/private/files/WhatsApp Image 2025-06-04 at 3.18.28 PM.jpeg"}
+{"name":"GI-25-16230","reference_doctype":"FT Maintenance Warning Report","reference_name":"MWR16226","caption":"Cover","image":"/private/files/WhatsApp Image 2025-06-04 at 3.18.29 PM.jpeg"}
+{"name":"GI-25-16592","reference_doctype":"FT Maintenance Warning Report","reference_name":"MWR16591","caption":"Damaged section","image":"/private/files/WhatsApp Image 2025-06-20 at 12.16.53 PM.jpeg"}
+{"name":"GI-25-16662","reference_doctype":"FT Maintenance Warning Report","reference_name":"MWR16661","caption":"Dirt on radiator","image":"/private/files/WhatsApp Image 2025-06-23 at 8.17.33 AM.jpeg"}
+{"name":"GI-25-16663","reference_doctype":"FT Maintenance Warning Report","reference_name":"MWR16661","caption":"Dirt","image":"/private/files/WhatsApp Image 2025-06-23 at 8.17.34 AM.jpeg"}
+{"name":"GI-25-16719","reference_doctype":"FT Maintenance Warning Report","reference_name":"MWR16718","caption":"4 Jun","image":"/private/files/4.6.25.PNG"}
+{"name":"GI-25-16720","reference_doctype":"FT Maintenance Warning Report","reference_name":"MWR16718","caption":"6 June","image":"/private/files/6.6.25.PNG"}
+{"name":"GI-25-17327","reference_doctype":"FT Machine Failure","reference_name":"MFR17083","caption":"Water ingress","image":"/private/files/WhatsApp Image 2025-07-31 at 6.21.15 PM.jpeg"}
+{"name":"GI-25-17328","reference_doctype":"FT Machine Failure","reference_name":"MFR17083","caption":"Water ingress","image":"/private/files/WhatsApp Image 2025-07-31 at 6.21.15 PM.jpeg"}
+{"name":"GI-25-17341","reference_doctype":"FT Service Bulletin","reference_name":"SBMXG08-2025-17340","caption":"Worn splines on shaft","image":"/private/files/WhatsApp Image 2025-05-29 at 2.40.11 PM.jpeg"}
+{"name":"GI-25-17342","reference_doctype":"FT Service Bulletin","reference_name":"SBMXG08-2025-17340","caption":"Worn splines on coupling","image":"/private/files/WhatsApp Image 2025-05-29 at 2.39.12 PM (1).jpeg"}
+{"name":"GI-25-17436","reference_doctype":"FT Machine Failure","reference_name":"MFR17419","caption":"FL Motor Forward drive - Wheel not turning","image":"/private/files/FL - Forward.jpg"}
+{"name":"GI-25-17437","reference_doctype":"FT Machine Failure","reference_name":"MFR17419","caption":"Front left reverse - The wheel does not turn","image":"/private/files/FL - Reverse.jpg"}
+{"name":"GI-25-17438","reference_doctype":"FT Machine Failure","reference_name":"MFR17419","caption":"Rear left in forward. Pressure equalises - Wheel turns","image":"/private/files/RL - Forward.jpg"}
+{"name":"GI-25-17502","reference_doctype":"FT Maintenance Warning Report","reference_name":"MWR17501","caption":"Dirt in fuel","image":"/private/files/WhatsApp Image 2025-08-08 at 2.58.20 PM.jpeg"}
+{"name":"GI-25-17503","reference_doctype":"FT Maintenance Warning Report","reference_name":"MWR17501","caption":"Dirt in fuel bowl","image":"/private/files/WhatsApp Image 2025-08-08 at 2.58.21 PM.jpeg"}
+{"name":"GI-25-17540","reference_doctype":"FT Service Bulletin","reference_name":"SBMXG08-2025-17539","caption":"Broken part","image":"/private/files/WhatsApp Image 2025-08-14 at 1.20.31 PM.jpeg"}
+{"name":"GI-25-17541","reference_doctype":"FT Service Bulletin","reference_name":"SBMXG08-2025-17539","caption":"Neck came off","image":"/private/files/WhatsApp Image 2025-08-14 at 1.20.29 PM.jpeg"}
+{"name":"GI-25-17630","reference_doctype":"FT Maintenance Warning Report","reference_name":"MWR17629","caption":"Rust","image":"/private/files/WhatsApp Image 2025-08-19 at 4.26.15 PM.jpeg"}
+{"name":"GI-25-17631","reference_doctype":"FT Maintenance Warning Report","reference_name":"MWR17629","caption":"Diesel filters","image":"/private/files/WhatsApp Image 2025-08-19 at 4.26.16 PM.jpeg"}
+{"name":"GI-25-17646","reference_doctype":"FT Machine Failure","reference_name":"MFR16982","caption":"Hour Meter","image":"/private/files/WhatsApp Image 2025-07-14 at 1.50.42 PM (1).jpeg"}
+{"name":"GI-25-17647","reference_doctype":"FT Machine Failure","reference_name":"MFR16982","caption":"Worn splines on dribe motor shaft","image":"/private/files/WhatsApp Image 2025-07-14 at 1.46.03 PM.jpeg"}
+{"name":"GI-25-17648","reference_doctype":"FT Machine Failure","reference_name":"MFR16982","caption":"Worn coupling","image":"/private/files/WhatsApp Image 2025-07-14 at 2.03.36 PM.jpeg"}
+{"name":"GI-25-17967","reference_doctype":"FT Machine Failure","reference_name":"MFR17593","caption":"Machine data plate","image":"/private/files/WhatsApp Image 2025-08-07 at 09.19.18.jpeg"}
+{"name":"GI-25-17968","reference_doctype":"FT Machine Failure","reference_name":"MFR17593","caption":"Hour meter reading","image":"/private/files/WhatsApp Image 2025-08-07 at 09.22.56 (1).jpeg"}
+{"name":"GI-25-17969","reference_doctype":"FT Machine Failure","reference_name":"MFR17593","caption":"Machine position","image":"/private/files/WhatsApp Image 2025-08-09 at 07.29.11 (1).jpeg"}
+{"name":"GI-25-17970","reference_doctype":"FT Machine Failure","reference_name":"MFR17593","caption":"Machine position ","image":"/private/files/WhatsApp Image 2025-08-07 at 09.18.49.jpeg"}
+{"name":"GI-25-17971","reference_doctype":"FT Machine Failure","reference_name":"MFR17593","caption":"Machine position ","image":"/private/files/WhatsApp Image 2025-08-07 at 09.18.07.jpeg"}
+{"name":"GI-25-17972","reference_doctype":"FT Machine Failure","reference_name":"MFR17593","caption":"Machine position ","image":"/private/files/WhatsApp Image 2025-08-07 at 09.09.21 (1).jpeg"}
+{"name":"GI-25-17973","reference_doctype":"FT Machine Failure","reference_name":"MFR17593","caption":"Broken wheel leg","image":"/private/files/WhatsApp Image 2025-08-07 at 09.05.11 (1).jpeg"}
+{"name":"GI-25-17974","reference_doctype":"FT Machine Failure","reference_name":"MFR17593","caption":"Bent lift cylinder","image":"/private/files/WhatsApp Image 2025-08-07 at 09.05.11 (2).jpeg"}
+{"name":"GI-25-17975","reference_doctype":"FT Machine Failure","reference_name":"MFR17593","caption":"Damage to the trust barrels","image":"/private/files/WhatsApp Image 2025-08-07 at 09.05.10 (3).jpeg"}
+{"name":"GI-25-17976","reference_doctype":"FT Machine Failure","reference_name":"MFR17593","caption":"Damaged lift cylinder","image":"/private/files/WhatsApp Image 2025-08-09 at 11.47.29 (1).jpeg"}
+{"name":"GI-25-17978","reference_doctype":"FT Machine Failure","reference_name":"MFR17593","caption":"Machine at MXGs workshop","image":"/private/files/WhatsApp Image 2025-09-04 at 10.21.41 (1).jpeg"}
+{"name":"GI-25-17979","reference_doctype":"FT Machine Failure","reference_name":"MFR17593","caption":"Stripped wheel assembly","image":"/private/files/WhatsApp Image 2025-09-04 at 10.21.41.jpeg"}
+{"name":"GI-25-17980","reference_doctype":"FT Machine Failure","reference_name":"MFR17593","caption":"Broken barrel","image":"/private/files/WhatsApp Image 2025-09-04 at 10.21.40.jpeg"}
+{"name":"GI-25-17981","reference_doctype":"FT Machine Failure","reference_name":"MFR17593","caption":"Flared chassis barrel","image":"/private/files/WhatsApp Image 2025-09-04 at 10.21.36.jpeg"}
+{"name":"GI-25-17982","reference_doctype":"FT Machine Failure","reference_name":"MFR17593","caption":"Scores on chassis barrel","image":"/private/files/WhatsApp Image 2025-09-04 at 10.21.35 (2).jpeg"}
+{"name":"GI-25-18015","reference_doctype":"FT Machine Failure","reference_name":"MFR18014","caption":"RHS Final drive oil sample","image":"/private/files/WhatsApp Image 2025-09-04 at 16.50.26.jpeg"}
+{"name":"GI-25-18016","reference_doctype":"FT Machine Failure","reference_name":"MFR18014","caption":"LHS Final drive oil ","image":"/private/files/WhatsApp Image 2025-09-05 at 11.13.56.jpeg"}
+{"name":"GI-25-18018","reference_doctype":"FT Machine Failure","reference_name":"MFR18014","caption":"FD Oil RHS","image":"/private/files/IMG-20250904-WA0093.jpg"}
+{"name":"GI-25-18019","reference_doctype":"FT Machine Failure","reference_name":"MFR18014","caption":"FD Oil LHS","image":"/private/files/IMG-20250904-WA0096.jpg"}
+{"name":"GI-25-18020","reference_doctype":"FT Machine Failure","reference_name":"MFR18014","caption":"RHS - Paving mode pressure","image":"/private/files/RHS - Paving mode.png"}
+{"name":"GI-25-18021","reference_doctype":"FT Machine Failure","reference_name":"MFR18014","caption":"RHS - Work mode pressure","image":"/private/files/RHS - Work mode.png"}
+{"name":"GI-25-18022","reference_doctype":"FT Machine Failure","reference_name":"MFR18014","caption":"LHS - Paving mode","image":"/private/files/LHS - Paving mode.png"}
+{"name":"GI-25-18023","reference_doctype":"FT Machine Failure","reference_name":"MFR18014","caption":"LHS - Work mode","image":"/private/files/Screenshot 2025-09-05 112555.png"}
+{"name":"GI-25-18024","reference_doctype":"FT Machine Failure","reference_name":"MFR18014","caption":"Final drive","image":"/private/files/IMG-20250904-WA0103.jpg"}
+{"name":"GI-25-18025","reference_doctype":"FT Machine Failure","reference_name":"MFR18014","caption":"Final drive","image":"/private/files/IMG-20250904-WA0102.jpg"}
+{"name":"GI-25-18026","reference_doctype":"FT Machine Failure","reference_name":"MFR18014","caption":"Machine Data Plate","image":"/private/files/IMG-20250904-WA0015.jpg"}
+{"name":"GI-25-18027","reference_doctype":"FT Machine Failure","reference_name":"MFR18014","caption":"Hour meter reading","image":"/private/files/IMG-20250904-WA0101.jpg"}
+{"name":"GI-25-18046","reference_doctype":"FT Maintenance Warning Report","reference_name":"MWR18044","caption":"Clogged Radiator","image":"/private/files/WhatsApp Image 2025-09-05 at 1.27.05 PM.jpeg"}
+{"name":"GI-25-18047","reference_doctype":"FT Maintenance Warning Report","reference_name":"MWR18044","caption":"Water in fuel","image":"/private/files/WhatsApp Image 2025-09-05 at 1.27.04 PM.jpeg"}
+{"name":"GI-25-18129","reference_doctype":"FT Machine Failure","reference_name":"MFR18128","caption":"Loom damaged by rats","image":"/private/files/WhatsApp Image 2025-09-09 at 14.46.48 (1).jpeg"}
+{"name":"GI-25-18130","reference_doctype":"FT Machine Failure","reference_name":"MFR18128","caption":"Loom damaged by rats","image":"/private/files/WhatsApp Image 2025-09-09 at 14.47.28 (1).jpeg"}
+{"name":"GI-25-18131","reference_doctype":"FT Machine Failure","reference_name":"MFR18128","caption":"Broken terminal on the steering motor","image":"/private/files/Screenshot 2025-09-09 161627.png"}
+{"name":"GI-25-18132","reference_doctype":"FT Machine Failure","reference_name":"MFR18128","caption":"Damaged EPS - PCB board","image":"/private/files/WhatsApp Image 2025-09-03 at 15.18.10.jpeg"}
+{"name":"GI-25-18772","reference_doctype":"FT Machine Failure","reference_name":"MFR18771","caption":"Current Hours","image":"/private/files/WhatsApp Image 2025-10-07 at 12.49.38 PM (1).jpeg"}
+{"name":"GI-25-18773","reference_doctype":"FT Machine Failure","reference_name":"MFR18771","caption":"Apparent leak","image":"/private/files/WhatsApp Image 2025-10-07 at 12.49.38 PM.jpeg"}
+{"name":"GI-25-18774","reference_doctype":"FT Machine Failure","reference_name":"MFR18771","caption":"Cyl Rod. Worn","image":"/private/files/WhatsApp Image 2025-10-07 at 12.49.37 PM.jpeg"}
+{"name":"GI-25-18775","reference_doctype":"FT Machine Failure","reference_name":"MFR18771","caption":"Cyl Rod Scored ","image":"/private/files/WhatsApp Image 2025-10-07 at 12.49.38 PM (2).jpeg"}
+{"name":"GI-25-18817","reference_doctype":"FT Machine Failure","reference_name":"MFR18816","caption":"Images","image":"/private/files/Downloads.jpg"}
+{"name":"GI-25-18818","reference_doctype":"FT Machine Failure","reference_name":"MFR18816","caption":"Image 2","image":"/private/files/Image 2.jpg"}
+{"name":"GI-25-18819","reference_doctype":"FT Machine Failure","reference_name":"MFR18816","caption":"Image 3","image":"/private/files/Image 3.jpg"}
+{"name":"GI-25-18820","reference_doctype":"FT Machine Failure","reference_name":"MFR18816","caption":"Image 4","image":"/private/files/Image 4.jpg"}
+{"name":"GI-25-19064","reference_doctype":"FT Machine Failure","reference_name":"MFR19063","caption":"Broken exhaust muffler","image":"/private/files/WhatsApp Image 2025-10-16 at 3.32.54 PM (1).jpeg"}
+{"name":"GI-25-19065","reference_doctype":"FT Machine Failure","reference_name":"MFR19063","caption":"Overheating motor - RHS","image":"/private/files/WhatsApp Image 2025-10-16 at 2.15.15 PM.jpeg"}
+{"name":"GI-25-19127","reference_doctype":"FT Machine Failure","reference_name":"MFR19063","caption":"Inside terminal box","image":"/private/files/WhatsApp Image 2025-10-21 at 9.56.32 AM (1).jpeg"}
+{"name":"GI-25-19385","reference_doctype":"FT Machine Failure","reference_name":"MFR19384","caption":"Coolant Leak","image":"/private/files/WhatsApp Image 2025-10-30 at 8.52.15 AM.jpeg"}
+{"name":"GI-25-19386","reference_doctype":"FT Machine Failure","reference_name":"MFR19384","caption":"Coolant Residue","image":"/private/files/WhatsApp Image 2025-10-30 at 8.52.47 AM (1).jpeg"}
+{"name":"GI-25-19387","reference_doctype":"FT Machine Failure","reference_name":"MFR19384","caption":"Return Pipe leak","image":"/private/files/WhatsApp Image 2025-10-30 at 8.54.10 AM.jpeg"}
+{"name":"GI-25-19388","reference_doctype":"FT Machine Failure","reference_name":"MFR19384","caption":"Block & Bell housing","image":"/private/files/WhatsApp Image 2025-10-30 at 8.55.49 AM.jpeg"}
+{"name":"GI-25-19390","reference_doctype":"FT Machine Failure","reference_name":"MFR19389","caption":"Bell housing & Engine (Leak)","image":"/private/files/WhatsApp Image 2025-10-30 at 8.55.49 AM.jpeg"}
+{"name":"GI-25-19694","reference_doctype":"FT Maintenance Warning Report","reference_name":"MWR19689","caption":"Blocked banjo","image":"/private/files/WhatsApp Image 2025-11-11 at 10.30.31 AM.jpeg"}
+{"name":"GI-25-19695","reference_doctype":"FT Maintenance Warning Report","reference_name":"MWR19689","caption":"Dirt from tank","image":"/private/files/WhatsApp Image 2025-11-11 at 10.31.04 AM.jpeg"}
+{"name":"GI-25-19696","reference_doctype":"FT Maintenance Warning Report","reference_name":"MWR19689","caption":"Damaged cap strainer","image":"/private/files/WhatsApp Image 2025-11-11 at 10.30.52 AM.jpeg"}
+{"name":"GI-25-19697","reference_doctype":"FT Maintenance Warning Report","reference_name":"MWR19689","caption":"Dirt in fuel sys.","image":"/private/files/WhatsApp Image 2025-11-11 at 10.30.28 AM.jpeg"}
+{"name":"GI-25-19755","reference_doctype":"FT Machine Failure","reference_name":"MFR19732","caption":"Air filters","image":"/private/files/WhatsApp Image 2025-11-12 at 14.12.43.jpeg"}
+{"name":"GI-25-19756","reference_doctype":"FT Machine Failure","reference_name":"MFR19732","caption":"Intake pipe","image":"/private/files/WhatsApp Image 2025-11-12 at 14.12.42 (1).jpeg"}
+{"name":"GI-25-19757","reference_doctype":"FT Machine Failure","reference_name":"MFR19732","caption":"intake pipe","image":"/private/files/WhatsApp Image 2025-11-12 at 14.12.41.jpeg"}
+{"name":"GI-25-19758","reference_doctype":"FT Machine Failure","reference_name":"MFR19732","caption":"Dust in the intake pipe","image":"/private/files/WhatsApp Image 2025-11-12 at 14.12.41 (2).jpeg"}
+{"name":"GI-25-19759","reference_doctype":"FT Machine Failure","reference_name":"MFR19732","caption":"Dust in the intake pipe","image":"/private/files/WhatsApp Image 2025-11-12 at 14.12.41 (1).jpeg"}
+{"name":"GI-25-19760","reference_doctype":"FT Machine Failure","reference_name":"MFR19732","caption":"Dust in the intake pipe","image":"/private/files/WhatsApp Image 2025-11-12 at 14.12.40.jpeg"}
+{"name":"GI-25-19761","reference_doctype":"FT Machine Failure","reference_name":"MFR19732","caption":"Worn and pitted bearings","image":"/private/files/1000061787.jpg"}
+{"name":"GI-25-19762","reference_doctype":"FT Machine Failure","reference_name":"MFR19732","caption":"Worn pistons and rings","image":"/private/files/1000061784.jpg"}
+{"name":"GI-25-19763","reference_doctype":"FT Machine Failure","reference_name":"MFR19732","caption":"broken liners","image":"/private/files/1000061786.jpg"}
+{"name":"GI-25-19764","reference_doctype":"FT Machine Failure","reference_name":"MFR19732","caption":"Collapsed engine oil filter","image":"/private/files/WhatsApp Image 2025-10-24 at 16.18.04.jpeg"}
+{"name":"GI-25-19765","reference_doctype":"FT Machine Failure","reference_name":"MFR19732","caption":"Turbo charger failure report","image":"/private/files/Screenshot 2025-11-11 163404.png"}
+{"name":"GI-25-19766","reference_doctype":"FT Machine Failure","reference_name":"MFR19732","caption":"Engine data plate","image":"/private/files/WhatsApp Image 2025-11-11 at 16.41.20.jpeg"}
+{"name":"GI-25-19767","reference_doctype":"FT Machine Failure","reference_name":"MFR19732","caption":"Hour meter reading","image":"/private/files/WhatsApp Image 2025-11-12 at 14.13.44.jpeg"}
+{"name":"GI-25-19998","reference_doctype":"FT Machine Failure","reference_name":"MFR19951","caption":"Intake manifold","image":"/private/files/WhatsApp Image 2025-11-19 at 11.57.37 (5).jpeg"}
+{"name":"GI-25-19999","reference_doctype":"FT Machine Failure","reference_name":"MFR19951","caption":"Intake manifold with dust","image":"/private/files/WhatsApp Image 2025-11-21 at 10.26.20.jpeg"}
+{"name":"GI-25-20000","reference_doctype":"FT Machine Failure","reference_name":"MFR19951","caption":"Oil in exhaust manifold","image":"/private/files/WhatsApp Image 2025-11-19 at 11.57.37 (13).jpeg"}
+{"name":"GI-25-20001","reference_doctype":"FT Machine Failure","reference_name":"MFR19951","caption":"Engine data plate","image":"/private/files/WhatsApp Image 2025-11-21 at 16.33.23.jpeg"}
+{"name":"GI-25-20002","reference_doctype":"FT Machine Failure","reference_name":"MFR19951","caption":"Hour meter reading","image":"/private/files/WhatsApp Image 2025-11-19 at 11.57.37.jpeg"}
+{"name":"GI-25-20369","reference_doctype":"FT Machine Failure","reference_name":"MFR20367","caption":"Displacement motor","image":"/private/files/WhatsApp Image 2025-12-04 at 12.00.21 PM.jpeg"}
+{"name":"GI-25-20370","reference_doctype":"FT Machine Failure","reference_name":"MFR20367","caption":"Drive Coupling","image":"/private/files/WhatsApp Image 2025-12-04 at 12.00.22 PM (1).jpeg"}
+{"name":"GI-25-20371","reference_doctype":"FT Machine Failure","reference_name":"MFR20367","caption":"Coupling","image":"/private/files/WhatsApp Image 2025-12-04 at 12.00.20 PM.jpeg"}
+{"name":"GI-25-20476","reference_doctype":"FT Machine Failure","reference_name":"MFR20473","caption":"Image 1","image":"/private/files/WhatsApp Image 2025-12-09 at 9.51.30 AM.jpeg"}
+{"name":"GI-25-20477","reference_doctype":"FT Machine Failure","reference_name":"MFR20473","caption":"Image 2","image":"/private/files/WhatsApp Image 2025-12-09 at 9.51.31 AM (1).jpeg"}
+{"name":"GI-25-20478","reference_doctype":"FT Machine Failure","reference_name":"MFR20473","caption":"Image 3","image":"/private/files/WhatsApp Image 2025-12-09 at 9.51.31 AM.jpeg"}
+{"name":"GI-25-20479","reference_doctype":"FT Machine Failure","reference_name":"MFR20473","caption":"Image 4","image":"/private/files/WhatsApp Image 2025-12-09 at 9.51.32 AM (1).jpeg"}
+{"name":"GI-25-20480","reference_doctype":"FT Machine Failure","reference_name":"MFR20473","caption":"Image 5","image":"/private/files/WhatsApp Image 2025-12-09 at 9.51.32 AM (2).jpeg"}
+{"name":"GI-25-20481","reference_doctype":"FT Machine Failure","reference_name":"MFR20473","caption":"Image 6","image":"/private/files/WhatsApp Image 2025-12-09 at 9.51.32 AM.jpeg"}
+{"name":"GI-25-20588","reference_doctype":"FT Machine Failure","reference_name":"MFR20473","caption":"Image 1","image":"/private/files/WhatsApp Image 2025-12-11 at 9.52.39 PM (1).jpeg"}
+{"name":"GI-25-20589","reference_doctype":"FT Machine Failure","reference_name":"MFR20473","caption":"Image 2","image":"/private/files/WhatsApp Image 2025-12-11 at 9.52.39 PM.jpeg"}
+{"name":"GI-25-20590","reference_doctype":"FT Machine Failure","reference_name":"MFR20473","caption":"Image 3","image":"/private/files/WhatsApp Image 2025-12-11 at 9.52.40 PM.jpeg"}
+{"name":"GI-25-20591","reference_doctype":"FT Machine Failure","reference_name":"MFR20473","caption":"Image 4","image":"/private/files/WhatsApp Image 2025-12-11 at 9.52.42 PM (1).jpeg"}
+{"name":"GI-25-20592","reference_doctype":"FT Machine Failure","reference_name":"MFR20473","caption":"Image 5","image":"/private/files/WhatsApp Image 2025-12-11 at 9.52.42 PM.jpeg"}
+{"name":"GI-25-20593","reference_doctype":"FT Machine Failure","reference_name":"MFR20473","caption":"Image 6","image":"/files/WhatsApp Image 2025-12-11 at 9.52.47 PM.jpeg"}
+{"name":"GI-25-20594","reference_doctype":"FT Machine Failure","reference_name":"MFR20473","caption":"Image 7","image":"/files/WhatsApp Image 2025-12-11 at 9.52.51 PM.jpeg"}
+{"name":"GI-25-20595","reference_doctype":"FT Machine Failure","reference_name":"MFR20473","caption":"Image 8","image":"/files/WhatsApp Image 2025-12-11 at 9.52.57 PM.jpeg"}
+{"name":"GI-25-20596","reference_doctype":"FT Machine Failure","reference_name":"MFR20473","caption":"Image 8","image":"/files/WhatsApp Image 2025-12-11 at 9.53.03 PM.jpeg"}
+{"name":"GI-25-20597","reference_doctype":"FT Machine Failure","reference_name":"MFR20473","caption":"Image 9","image":"/files/WhatsApp Image 2025-12-11 at 9.53.18 PM (1).jpeg"}
+{"name":"GI-25-20598","reference_doctype":"FT Machine Failure","reference_name":"MFR20473","caption":"Image 10","image":"/files/WhatsApp Image 2025-12-11 at 9.53.23 PM.jpeg"}
+{"name":"GI-25-20599","reference_doctype":"FT Machine Failure","reference_name":"MFR20473","caption":"Image 11","image":"/files/WhatsApp Image 2025-12-11 at 9.48.21 PM.jpeg"}
+{"name":"GI-25-20600","reference_doctype":"FT Machine Failure","reference_name":"MFR20473","caption":"Image 13","image":"/files/WhatsApp Image 2025-12-11 at 9.48.08 PM.jpeg"}
+{"name":"GI-25-20601","reference_doctype":"FT Machine Failure","reference_name":"MFR20473","caption":"Image 14","image":"/files/WhatsApp Image 2025-12-11 at 9.47.35 PM.jpeg"}
+{"name":"GI-25-20602","reference_doctype":"FT Machine Failure","reference_name":"MFR20473","caption":"Image 15","image":"/files/WhatsApp Image 2025-12-11 at 9.47.40 PM.jpeg"}
+{"name":"GI-25-20603","reference_doctype":"FT Machine Failure","reference_name":"MFR20473","caption":"Image 16","image":"/files/WhatsApp Image 2025-12-11 at 9.47.57 PM.jpeg"}
+{"name":"GI-25-20604","reference_doctype":"FT Machine Failure","reference_name":"MFR20473","caption":"Image 17","image":"/files/WhatsApp Image 2025-12-11 at 9.48.30 PM.jpeg"}
+{"name":"GI-25-20605","reference_doctype":"FT Machine Failure","reference_name":"MFR20473","caption":"Image 18","image":"/files/WhatsApp Image 2025-12-11 at 9.48.03 PM (1).jpeg"}
+{"name":"GI-25-20606","reference_doctype":"FT Machine Failure","reference_name":"MFR20473","caption":"Image 18","image":"/files/WhatsApp Image 2025-12-11 at 9.48.03 PM (2).jpeg"}
+{"name":"GI-25-20607","reference_doctype":"FT Machine Failure","reference_name":"MFR20473","caption":"Image 19","image":"/files/WhatsApp Image 2025-12-11 at 9.48.23 PM(1).jpeg"}
+{"name":"GI-25-20608","reference_doctype":"FT Machine Failure","reference_name":"MFR20473","caption":"Image 20","image":"/files/WhatsApp Image 2025-12-11 at 9.48.36 PM.jpeg"}
+{"name":"GI-25-20609","reference_doctype":"FT Machine Failure","reference_name":"MFR20473","caption":"Image 21","image":"/files/WhatsApp Image 2025-12-11 at 9.47.33 PM.jpeg"}
+{"name":"GI-25-20610","reference_doctype":"FT Machine Failure","reference_name":"MFR20473","caption":"Image 22","image":"/files/WhatsApp Image 2025-12-11 at 9.46.11 PM.jpeg"}
+{"name":"GI-25-20611","reference_doctype":"FT Machine Failure","reference_name":"MFR20473","caption":"Image 23","image":"/files/WhatsApp Image 2025-12-11 at 9.46.22 PM.jpeg"}
+{"name":"GI-26-21224","reference_doctype":"FT Maintenance Warning Report","reference_name":"MWR21223","caption":"Image 1","image":"/private/files/Image 1.jpg"}
+{"name":"GI-26-21225","reference_doctype":"FT Maintenance Warning Report","reference_name":"MWR21223","caption":"Image 2","image":"/private/files/Image 259d7b1.jpg"}
+{"name":"GI-26-21441","reference_doctype":"FT Service Bulletin","reference_name":"SBMXG01-2026-21437","caption":"1","image":"/private/files/WhatsApp Image 2025-12-04 at 12.00.22 PM (1).jpeg"}
+{"name":"GI-26-21442","reference_doctype":"FT Service Bulletin","reference_name":"SBMXG01-2026-21437","caption":"2","image":"/private/files/WhatsApp Image 2025-05-29 at 2.40.11 PM.jpeg"}
+{"name":"GI-26-21443","reference_doctype":"FT Service Bulletin","reference_name":"SBMXG01-2026-21437","caption":"3","image":"/private/files/WhatsApp Image 2025-05-29 at 2.39.12 PM (1).jpeg"}
+{"name":"GI-26-21444","reference_doctype":"FT Service Bulletin","reference_name":"SBMXG01-2026-21437","caption":"4","image":"/private/files/WhatsApp Image 2025-05-29 at 2.39.18 PM.jpeg"}
+{"name":"GI-26-21501","reference_doctype":"FT Service Bulletin","reference_name":"SBMXG02-2026-21500","caption":"Shield air intake","image":"/private/files/Screenshot 2026-02-02 140951.png"}
+{"name":"GI-26-22457","reference_doctype":"FT Machine Failure","reference_name":"MFR22456","caption":"1","image":"/files/WhatsApp Image 2026-03-09 at 12.10.47.jpeg"}
+{"name":"GI-26-22458","reference_doctype":"FT Machine Failure","reference_name":"MFR22456","caption":"2","image":"/files/WhatsApp Image 2026-03-09 at 12.10.48 (1).jpeg"}
+{"name":"GI-26-22459","reference_doctype":"FT Machine Failure","reference_name":"MFR22456","caption":"3","image":"/files/WhatsApp Image 2026-03-09 at 12.10.48.jpeg"}
+{"name":"GI-26-22460","reference_doctype":"FT Machine Failure","reference_name":"MFR22456","caption":"4","image":"/files/WhatsApp Image 2026-03-09 at 12.10.49 (1).jpeg"}
+{"name":"GI-26-22461","reference_doctype":"FT Machine Failure","reference_name":"MFR22456","caption":"5","image":"/files/WhatsApp Image 2026-03-09 at 12.10.49.jpeg"}
+{"name":"GI-26-22475","reference_doctype":"FT Machine Failure","reference_name":"MFR22456","caption":"MSN","image":"/files/WhatsApp Image 2026-03-10 at 11.38.10 AM.jpeg"}
+{"name":"GI-26-22476","reference_doctype":"FT Machine Failure","reference_name":"MFR22456","caption":"Oil","image":"/files/WhatsApp Image 2026-03-10 at 11.38.41 AM (1).jpeg"}
+{"name":"GI-26-22477","reference_doctype":"FT Machine Failure","reference_name":"MFR22456","caption":"5","image":"/files/WhatsApp Image 2026-03-10 at 11.38.41 AM.jpeg"}
+{"name":"GI-26-22478","reference_doctype":"FT Machine Failure","reference_name":"MFR22456","caption":"6","image":"/files/WhatsApp Image 2026-03-10 at 11.38.42 AM (1).jpeg"}
+{"name":"GI-26-22479","reference_doctype":"FT Machine Failure","reference_name":"MFR22456","caption":"8","image":"/files/WhatsApp Image 2026-03-10 at 11.38.42 AM (2).jpeg"}
+{"name":"GI-26-22580","reference_doctype":"FT Machine Failure","reference_name":"MFR22500","caption":"1","image":"/files/WhatsApp Image 2026-03-13 at 08.29.59.jpeg"}
+{"name":"GI-26-22581","reference_doctype":"FT Machine Failure","reference_name":"MFR22500","caption":"2","image":"/files/WhatsApp Image 2026-03-13 at 08.29.59 (1).jpeg"}
+{"name":"GI-26-22582","reference_doctype":"FT Machine Failure","reference_name":"MFR22500","caption":"3","image":"/files/WhatsApp Image 2026-03-13 at 08.30.00.jpeg"}
+{"name":"GI-26-22583","reference_doctype":"FT Machine Failure","reference_name":"MFR22500","caption":"4","image":"/files/WhatsApp Image 2026-03-13 at 08.30.01.jpeg"}
+{"name":"GI-26-22584","reference_doctype":"FT Machine Failure","reference_name":"MFR22500","caption":"5","image":"/files/WhatsApp Image 2026-03-13 at 08.30.02.jpeg"}
+{"name":"GI-26-22585","reference_doctype":"FT Machine Failure","reference_name":"MFR22500","caption":"6","image":"/files/WhatsApp Image 2026-03-13 at 08.30.03.jpeg"}
+{"name":"GI-26-22586","reference_doctype":"FT Machine Failure","reference_name":"MFR22500","caption":"7","image":"/files/WhatsApp Image 2026-03-13 at 08.30.04.jpeg"}
+{"name":"GI-26-22587","reference_doctype":"FT Machine Failure","reference_name":"MFR22500","caption":"8","image":"/files/WhatsApp Image 2026-03-13 at 08.30.04 (1).jpeg"}
+{"name":"GI-26-22588","reference_doctype":"FT Machine Failure","reference_name":"MFR22500","caption":"9","image":"/files/WhatsApp Image 2026-03-13 at 08.30.05.jpeg"}
+{"name":"GI-26-22589","reference_doctype":"FT Machine Failure","reference_name":"MFR22500","caption":"10","image":"/files/WhatsApp Image 2026-03-13 at 08.30.07.jpeg"}
+{"name":"GI-26-22590","reference_doctype":"FT Machine Failure","reference_name":"MFR22500","caption":"11","image":"/files/WhatsApp Image 2026-03-13 at 08.30.07 (1).jpeg"}
+{"name":"GI-26-22591","reference_doctype":"FT Machine Failure","reference_name":"MFR22500","caption":"12","image":"/files/WhatsApp Image 2026-03-13 at 08.30.09.jpeg"}
+{"name":"GI-26-22592","reference_doctype":"FT Machine Failure","reference_name":"MFR22500","caption":"13","image":"/files/WhatsApp Image 2026-03-13 at 08.30.10.jpeg"}
+{"name":"GI-26-22593","reference_doctype":"FT Machine Failure","reference_name":"MFR22500","caption":"14","image":"/files/WhatsApp Image 2026-03-13 at 08.30.11.jpeg"}
+{"name":"GI-26-22594","reference_doctype":"FT Machine Failure","reference_name":"MFR22500","caption":"14","image":"/files/WhatsApp Image 2026-03-13 at 08.30.12.jpeg"}
+{"name":"GI-26-22595","reference_doctype":"FT Machine Failure","reference_name":"MFR22500","caption":"15","image":"/files/WhatsApp Image 2026-03-13 at 08.30.14.jpeg"}
+{"name":"GI-26-22596","reference_doctype":"FT Machine Failure","reference_name":"MFR22500","caption":"15","image":"/files/WhatsApp Image 2026-03-13 at 08.30.15.jpeg"}
+{"name":"GI-26-22597","reference_doctype":"FT Machine Failure","reference_name":"MFR22500","caption":"16","image":"/files/WhatsApp Image 2026-03-13 at 08.30.16.jpeg"}
+{"name":"GI-26-22598","reference_doctype":"FT Machine Failure","reference_name":"MFR22500","caption":"19","image":"/private/files/WhatsApp Image 2026-03-13 at 08.30.17.jpeg"}
+{"name":"GI-26-22599","reference_doctype":"FT Machine Failure","reference_name":"MFR22500","caption":"20","image":"/files/WhatsApp Image 2026-03-13 at 08.30.18.jpeg"}
+{"name":"GI-26-22600","reference_doctype":"FT Machine Failure","reference_name":"MFR22500","caption":"21","image":"/files/WhatsApp Image 2026-03-13 at 08.30.20.jpeg"}
+{"name":"GI-26-22601","reference_doctype":"FT Machine Failure","reference_name":"MFR22500","caption":"22","image":"/private/files/WhatsApp Image 2026-03-13 at 08.30.21.jpeg"}
+{"name":"GI-26-22602","reference_doctype":"FT Machine Failure","reference_name":"MFR22500","caption":"23","image":"/private/files/WhatsApp Image 2026-03-13 at 08.30.22.jpeg"}
+{"name":"GI-26-22603","reference_doctype":"FT Machine Failure","reference_name":"MFR22500","caption":"24","image":"/files/WhatsApp Image 2026-03-13 at 08.30.23.jpeg"}
+{"name":"GI-26-22604","reference_doctype":"FT Machine Failure","reference_name":"MFR22500","caption":"25","image":"/files/WhatsApp Image 2026-03-13 at 08.30.25.jpeg"}
+{"name":"GI-26-22605","reference_doctype":"FT Machine Failure","reference_name":"MFR22500","caption":"26","image":"/files/WhatsApp Image 2026-03-13 at 08.30.26.jpeg"}
+{"name":"GI-26-22606","reference_doctype":"FT Machine Failure","reference_name":"MFR22500","caption":"27","image":"/private/files/WhatsApp Image 2026-03-13 at 08.30.28.jpeg"}
+{"name":"GI-26-22607","reference_doctype":"FT Machine Failure","reference_name":"MFR22500","caption":"28","image":"/private/files/WhatsApp Image 2026-03-13 at 08.30.30.jpeg"}
+{"name":"GI-26-22764","reference_doctype":"FT Machine Failure","reference_name":"MFR22760","caption":"HMR","image":"/files/WhatsApp Image 2026-03-16 at 2.53.08 PM (1).jpeg"}
+{"name":"GI-26-22765","reference_doctype":"FT Machine Failure","reference_name":"MFR22760","caption":"MSN","image":"/files/WhatsApp Image 2026-03-16 at 2.53.08 PM.jpeg"}
+{"name":"GI-26-22766","reference_doctype":"FT Machine Failure","reference_name":"MFR22760","caption":"IMG1","image":"/files/WhatsApp Image 2026-03-16 at 2.53.09 PM (3).jpeg"}
+{"name":"GI-26-22767","reference_doctype":"FT Machine Failure","reference_name":"MFR22760","caption":"IMG2","image":"/files/WhatsApp Image 2026-03-16 at 2.53.10 PM.jpeg"}
+{"name":"GI-26-22803","reference_doctype":"FT Machine Failure","reference_name":"MFR22747","caption":"1","image":"/files/3fbabd4f-3dcf-4ed7-be58-a0c6c4b648a7.jpg"}
+{"name":"GI-26-22804","reference_doctype":"FT Machine Failure","reference_name":"MFR22747","caption":"2","image":"/files/93a4c31c-26b8-4301-9225-255242d0a664.jpg"}
+{"name":"GI-26-22805","reference_doctype":"FT Machine Failure","reference_name":"MFR22747","caption":"3","image":"/files/b6a3ed1f-0d6e-4bbe-a9e3-176adb5b64a9.jpg"}
+{"name":"GI-26-22806","reference_doctype":"FT Machine Failure","reference_name":"MFR22747","caption":"4","image":"/files/ba3c0d1a-a611-44d4-8e28-d04693d6cbbe.jpg"}
+{"name":"GI-26-22807","reference_doctype":"FT Machine Failure","reference_name":"MFR22747","caption":"5","image":"/files/4368015f-69e3-479c-a6e6-8f8164310b5c.jpg"}
+{"name":"GI-26-22811","reference_doctype":"FT Machine Failure","reference_name":"MFR22747","caption":"6","image":"/files/5db0d9a5-1bff-4d18-a3c6-f27249891ecb.jpg"}
+{"name":"GI-26-22896","reference_doctype":"FT Machine Failure","reference_name":"MFR22895","caption":"1","image":"/files/7e9469e2-b5c9-4905-865b-d250d2658024.jpg"}
+{"name":"GI-26-22897","reference_doctype":"FT Machine Failure","reference_name":"MFR22895","caption":"2","image":"/files/38d4a28a-b19a-47ec-a899-eb25a624288e.jpg"}
+{"name":"GI-26-22898","reference_doctype":"FT Machine Failure","reference_name":"MFR22895","caption":"3","image":"/files/b29c6917-7c88-48e6-ac75-504e72189072.jpg"}
+{"name":"GI-26-22899","reference_doctype":"FT Machine Failure","reference_name":"MFR22895","caption":"4","image":"/private/files/9ee0f6f9-00d2-4f47-924a-0c1297ad71d5.jpg"}
+{"name":"GI-26-22900","reference_doctype":"FT Machine Failure","reference_name":"MFR22895","caption":"5","image":"/private/files/fcdc672d-9b31-4148-875d-acf5637e3f95.jpg"}
+{"name":"GI-26-22996","reference_doctype":"FT Maintenance Warning Report","reference_name":"MWR22995","caption":"Location of pads","image":"/files/ca0f9a91-c16c-4ed3-9235-ce1a47560b3b.jpg"}
+{"name":"GI-26-23155","reference_doctype":"FT Machine Failure","reference_name":"MFR23152","caption":"Machine Picture","image":"/files/WhatsApp Image 2026-03-30 at 9.30.38 AM (1).jpeg"}
+{"name":"GI-26-23157","reference_doctype":"FT Machine Failure","reference_name":"MFR23152","caption":"HMR","image":"/files/WhatsApp Image 2026-03-30 at 9.30.38 AM.jpeg"}
+{"name":"GI-26-23158","reference_doctype":"FT Machine Failure","reference_name":"MFR23152","caption":"MSN","image":"/files/WhatsApp Image 2026-03-30 at 9.30.40 AM.jpeg"}
+{"name":"GI-26-23159","reference_doctype":"FT Machine Failure","reference_name":"MFR23152","caption":"Working area","image":"/files/WhatsApp Image 2026-03-30 at 9.30.39 AM.jpeg"}
+{"name":"GI-26-23160","reference_doctype":"FT Machine Failure","reference_name":"MFR23152","caption":"1","image":"/files/WhatsApp Image 2026-03-30 at 9.30.39 AM (1).jpeg"}
+{"name":"GI-26-23187","reference_doctype":"FT Machine Failure","reference_name":"MFR23172","caption":"Cracked Housing","image":"/private/files/591e6072-ea50-4e92-b4b9-fb62d8937129.jpg"}
+{"name":"GI-26-23188","reference_doctype":"FT Machine Failure","reference_name":"MFR23172","caption":"Cracked PTO housing","image":"/private/files/bbceff47-cbfc-4a39-b722-ed47569f3989.jpg"}
+{"name":"GI-26-23189","reference_doctype":"FT Machine Failure","reference_name":"MFR23172","caption":"Damaged PTO gear","image":"/private/files/b2db4a40-d7d0-4626-b448-67033463c3a2.jpg"}
+{"name":"GI-26-23190","reference_doctype":"FT Machine Failure","reference_name":"MFR23172","caption":"PTO gear","image":"/private/files/97e000cf-4a66-474f-9731-2da95d433d63.jpg"}
+{"name":"GI-26-23191","reference_doctype":"FT Machine Failure","reference_name":"MFR23172","caption":"Broken PTO housing","image":"/private/files/ec70c8e8-e69c-451b-83ff-780120be9865.jpg"}
+{"name":"GI-26-23414","reference_doctype":"FT Machine Condition Assessment","reference_name":"MCAR23062","caption":"1","image":"/private/files/a919f088-7ed2-45f2-9dfb-d4256518e3a0.jpg"}
+{"name":"GI-26-23415","reference_doctype":"FT Machine Condition Assessment","reference_name":"MCAR23062","caption":"2","image":"/private/files/df7315ee-d52f-4096-b41c-86a02bf8918e.jpg"}
+{"name":"GI-26-23416","reference_doctype":"FT Machine Condition Assessment","reference_name":"MCAR23062","caption":"3","image":"/private/files/8bfbc27c-e0c8-4e6f-823a-e3b48a3efbba.jpg"}
+{"name":"GI-26-23417","reference_doctype":"FT Machine Condition Assessment","reference_name":"MCAR23062","caption":"4","image":"/private/files/571e6798-71af-41c5-894d-b4ab21da4ce5.jpg"}
+{"name":"GI-26-23418","reference_doctype":"FT Machine Condition Assessment","reference_name":"MCAR23062","caption":"5","image":"/private/files/1cf0fd27-c362-4080-99f2-ec33c41369ee.jpg"}
+{"name":"GI-26-23419","reference_doctype":"FT Machine Condition Assessment","reference_name":"MCAR23061","caption":"1","image":"/private/files/2e35f1bc-6db3-4f28-8a48-fed3d2f4cd56.jpg"}
+{"name":"GI-26-23420","reference_doctype":"FT Machine Condition Assessment","reference_name":"MCAR23061","caption":"2","image":"/files/4fe4d27b-9978-4e65-ba30-f687fe65741c.jpg"}
+{"name":"GI-26-23421","reference_doctype":"FT Machine Condition Assessment","reference_name":"MCAR23061","caption":"3","image":"/files/5816845a-8896-46e7-862c-1af3aece80bb.jpg"}
+{"name":"GI-26-23422","reference_doctype":"FT Machine Condition Assessment","reference_name":"MCAR23061","caption":"4","image":"/files/2e3f200b-e00b-4b2d-bb49-2bdac1cfbc1f.jpg"}
+{"name":"GI-26-23423","reference_doctype":"FT Machine Condition Assessment","reference_name":"MCAR23061","caption":"5","image":"/files/7496fc8f-88ce-430b-80fb-caa015e264a7.jpg"}
+{"name":"GI-26-23424","reference_doctype":"FT Machine Condition Assessment","reference_name":"MCAR23061","caption":"6","image":"/private/files/e3249b21-8030-4ede-9680-f43b8ac7c165.jpg"}
+{"name":"GI-26-23425","reference_doctype":"FT Machine Condition Assessment","reference_name":"MCAR23061","caption":"7","image":"/files/f29ea1b4-f690-4e73-93c3-fe677430b00a.jpg"}
+{"name":"GI-26-23426","reference_doctype":"FT Machine Condition Assessment","reference_name":"MCAR23061","caption":"8","image":"/files/d345483f-4d05-44cf-84e2-3eb09c2b4bb0.jpg"}
+{"name":"GI-26-23427","reference_doctype":"FT Machine Condition Assessment","reference_name":"MCAR23061","caption":"9","image":"/private/files/9164aa4b-b561-4004-a713-0e75c08a90a6.jpg"}
+{"name":"GI-26-23428","reference_doctype":"FT Machine Condition Assessment","reference_name":"MCAR23061","caption":"10","image":"/private/files/52d883d3-ddc4-488a-be99-244b8c25fd1a.jpg"}
+{"name":"GI-26-23429","reference_doctype":"FT Machine Condition Assessment","reference_name":"MCAR23061","caption":"11","image":"/files/2eb98820-6de4-40ce-a062-2d517111b8c3.jpg"}
+{"name":"GI-26-23430","reference_doctype":"FT Machine Condition Assessment","reference_name":"MCAR23061","caption":"12","image":"/files/ff93e4a0-37b8-4731-88ee-1840eaabee59.jpg"}
+{"name":"GI-26-23432","reference_doctype":"FT Machine Condition Assessment","reference_name":"MCAR23062","caption":"1","image":"/files/23c5e55a-c453-44fa-b2cf-e9cd210725e1.jpg"}
+{"name":"GI-26-23435","reference_doctype":"FT Machine Condition Assessment","reference_name":"MCAR23062","caption":"test","image":"/files/about-us-flyer.png"}
+{"name":"GI-26-23498","reference_doctype":"FT Machine Failure","reference_name":"MFR23497","caption":"1","image":"/files/WhatsApp Image 2026-04-13 at 9.02.18 AM (2).jpeg"}
+{"name":"GI-26-23499","reference_doctype":"FT Machine Failure","reference_name":"MFR23497","caption":"2","image":"/files/WhatsApp Image 2026-04-13 at 9.02.18 AM (1).jpeg"}
+{"name":"GI-26-23500","reference_doctype":"FT Machine Failure","reference_name":"MFR23497","caption":"3","image":"/files/WhatsApp Image 2026-04-13 at 9.02.18 AM.jpeg"}
+{"name":"GI-26-23501","reference_doctype":"FT Machine Failure","reference_name":"MFR23497","caption":"4","image":"/files/WhatsApp Image 2026-04-13 at 9.02.17 AM.jpeg"}
+{"name":"GI-26-23502","reference_doctype":"FT Machine Failure","reference_name":"MFR23497","caption":"5","image":"/files/WhatsApp Image 2026-04-13 at 9.02.15 AM.jpeg"}
+{"name":"GI-26-23545","reference_doctype":"FT Machine Failure","reference_name":"MFR23528","caption":"1","image":"/files/23c5e55a-c453-44fa-b2cf-e9cd210725e1.jpg"}
+{"name":"GI-26-23546","reference_doctype":"FT Machine Failure","reference_name":"MFR23528","caption":"2","image":"/files/WhatsApp Image 2026-04-14 at 8.51.26 AM.jpeg"}
+{"name":"GI-26-23547","reference_doctype":"FT Machine Failure","reference_name":"MFR23528","caption":"3","image":"/files/WhatsApp Image 2026-04-14 at 8.51.28 AM.jpeg"}
+{"name":"GI-26-23548","reference_doctype":"FT Machine Failure","reference_name":"MFR23528","caption":"4","image":"/files/WhatsApp Image 2026-04-14 at 8.51.29 AM.jpeg"}
+{"name":"GI-26-23549","reference_doctype":"FT Machine Failure","reference_name":"MFR23528","caption":"5","image":"/files/WhatsApp Image 2026-04-14 at 8.51.31 AM.jpeg"}
+{"name":"GI-26-23608","reference_doctype":"FT Machine Failure","reference_name":"MFR23607","caption":"1","image":"/files/WhatsApp Image 2026-04-14 at 8.52.18 AM.jpeg"}
+{"name":"GI-26-23609","reference_doctype":"FT Machine Failure","reference_name":"MFR23607","caption":"2","image":"/files/4fe4d27b-9978-4e65-ba30-f687fe65741c.jpg"}
+{"name":"GI-26-23610","reference_doctype":"FT Machine Failure","reference_name":"MFR23607","caption":"3","image":"/files/5816845a-8896-46e7-862c-1af3aece80bb.jpg"}
+{"name":"GI-26-23611","reference_doctype":"FT Machine Failure","reference_name":"MFR23607","caption":"4","image":"/files/2e3f200b-e00b-4b2d-bb49-2bdac1cfbc1f.jpg"}
+{"name":"GI-26-23612","reference_doctype":"FT Machine Failure","reference_name":"MFR23607","caption":"5","image":"/files/7496fc8f-88ce-430b-80fb-caa015e264a7.jpg"}
+{"name":"GI-26-23613","reference_doctype":"FT Machine Failure","reference_name":"MFR23607","caption":"6","image":"/files/WhatsApp Image 2026-04-14 at 8.52.28 AM.jpeg"}
+{"name":"GI-26-23614","reference_doctype":"FT Machine Failure","reference_name":"MFR23607","caption":"7","image":"/files/f29ea1b4-f690-4e73-93c3-fe677430b00a.jpg"}
+{"name":"GI-26-23615","reference_doctype":"FT Machine Failure","reference_name":"MFR23607","caption":"8","image":"/files/d345483f-4d05-44cf-84e2-3eb09c2b4bb0.jpg"}
+{"name":"GI-26-23616","reference_doctype":"FT Machine Failure","reference_name":"MFR23607","caption":"9","image":"/files/WhatsApp Image 2026-04-14 at 8.52.33 AM.jpeg"}
+{"name":"GI-26-23617","reference_doctype":"FT Machine Failure","reference_name":"MFR23607","caption":"10","image":"/files/WhatsApp Image 2026-04-14 at 8.52.35 AM.jpeg"}
+{"name":"GI-26-23618","reference_doctype":"FT Machine Failure","reference_name":"MFR23607","caption":"11","image":"/files/2eb98820-6de4-40ce-a062-2d517111b8c3.jpg"}
+{"name":"GI-26-23619","reference_doctype":"FT Machine Failure","reference_name":"MFR23607","caption":"12","image":"/files/ff93e4a0-37b8-4731-88ee-1840eaabee59.jpg"}
+{"name":"GI-26-23695","reference_doctype":"FT Machine Failure","reference_name":"MFR23528","caption":"6","image":"/files/WhatsApp Image 2026-04-16 at 9.58.43 AM.jpeg"}
+{"name":"GI-26-23696","reference_doctype":"FT Machine Failure","reference_name":"MFR23528","caption":"7","image":"/files/WhatsApp Image 2026-04-16 at 9.58.41 AM.jpeg"}
+{"name":"GI-26-23697","reference_doctype":"FT Machine Failure","reference_name":"MFR23528","caption":"8","image":"/files/WhatsApp Image 2026-04-16 at 9.58.42 AM (2).jpeg"}
+{"name":"GI-26-23698","reference_doctype":"FT Machine Failure","reference_name":"MFR23528","caption":"9","image":"/files/WhatsApp Image 2026-04-16 at 9.58.42 AM (3).jpeg"}
+{"name":"GI-26-23699","reference_doctype":"FT Machine Failure","reference_name":"MFR23528","caption":"10","image":"/files/WhatsApp Image 2026-04-16 at 9.58.42 AM.jpeg"}
+{"name":"GI-26-23700","reference_doctype":"FT Machine Failure","reference_name":"MFR23528","caption":"11","image":"/files/WhatsApp Image 2026-04-16 at 9.58.43 AM (1).jpeg"}
+{"name":"GI-26-23701","reference_doctype":"FT Machine Failure","reference_name":"MFR23528","caption":"12","image":"/files/WhatsApp Image 2026-04-16 at 9.58.43 AM.jpeg"}
+{"name":"GI-26-23742","reference_doctype":"FT Maintenance Warning Report","reference_name":"MWR23740","caption":"1","image":"/private/files/17393749-aaa5-4940-beff-f25c2a4c02d6.jpg"}
+{"name":"GI-26-23743","reference_doctype":"FT Maintenance Warning Report","reference_name":"MWR23740","caption":"2","image":"/private/files/a0122181-b208-4484-a568-bdcb46837374.jpg"}
+{"name":"GI-26-23744","reference_doctype":"FT Maintenance Warning Report","reference_name":"MWR23740","caption":"3","image":"/private/files/693bf9b5-f257-4c4f-809b-f9621e9ec484.jpg"}
+{"name":"GI-26-23745","reference_doctype":"FT Maintenance Warning Report","reference_name":"MWR23740","caption":"4","image":"/private/files/cbfe2ef8-37ef-4077-b321-6648dcdcd23e.jpg"}
+{"name":"GI-26-23786","reference_doctype":"FT Machine Failure","reference_name":"MFR23783","caption":"1","image":"/private/files/1b73b530-be53-4fa2-8551-e92c55743043.jpg"}
+{"name":"GI-26-23787","reference_doctype":"FT Machine Failure","reference_name":"MFR23783","caption":"2","image":"/private/files/47d3b7b4-cbc5-4a56-9c85-2cb3d81e54dd.jpg"}
+{"name":"GI-26-23788","reference_doctype":"FT Machine Failure","reference_name":"MFR23783","caption":"3","image":"/private/files/54ea1f8f-354b-4656-b798-9b0dac195f0a.jpg"}
+{"name":"GI-26-23789","reference_doctype":"FT Machine Failure","reference_name":"MFR23783","caption":"4","image":"/private/files/787f7c32-9f6d-4206-930a-a006e983d7f2.jpg"}
+{"name":"GI-26-23790","reference_doctype":"FT Machine Failure","reference_name":"MFR23783","caption":"5","image":"/private/files/3f1a290b-1694-496e-b744-5ea90ed4365b.jpg"}
+{"name":"GI-26-23791","reference_doctype":"FT Machine Failure","reference_name":"MFR23783","caption":"6","image":"/private/files/65e21c54-7e3a-4564-8c5f-00f0f49c3875.jpg"}
+{"name":"GI-26-23792","reference_doctype":"FT Machine Failure","reference_name":"MFR23783","caption":"7","image":"/private/files/bdaaaea8-d023-4728-9299-9307ddbe8aef.jpg"}
+{"name":"GI-26-23793","reference_doctype":"FT Machine Failure","reference_name":"MFR23783","caption":"8","image":"/private/files/90853561-84fa-4f82-87a0-4893b0540226.jpg"}
+{"name":"GI-26-23794","reference_doctype":"FT Machine Failure","reference_name":"MFR23783","caption":"9","image":"/private/files/664969ba-b891-4e86-b163-e7e31284b5fe.jpg"}
+{"name":"GI-26-23795","reference_doctype":"FT Machine Failure","reference_name":"MFR23783","caption":"10","image":"/private/files/0082255a-e42f-4074-8a71-dc3bf5116e9f.jpg"}
+{"name":"GI-26-23796","reference_doctype":"FT Machine Failure","reference_name":"MFR23783","caption":"11","image":"/private/files/79f727e8-02bc-4907-9411-b7630c9808ad.jpg"}
+{"name":"GI-26-23797","reference_doctype":"FT Machine Failure","reference_name":"MFR23783","caption":"13","image":"/private/files/db9128b9-2e02-4e80-b2c1-c4c576a6df3b.jpg"}
+{"name":"GI-26-23798","reference_doctype":"FT Machine Failure","reference_name":"MFR23783","caption":"14","image":"/private/files/6296f82b-f5e4-4812-bf1b-40ba70136809.jpg"}
+{"name":"GI-26-23799","reference_doctype":"FT Machine Failure","reference_name":"MFR23783","caption":"15","image":"/private/files/2768154b-9436-40b1-8424-2a7f3349e518.jpg"}
+{"name":"GI-26-23800","reference_doctype":"FT Machine Failure","reference_name":"MFR23783","caption":"17","image":"/private/files/c71934ab-695c-4fa4-bd5e-21260b01ca71.jpg"}
+{"name":"GI-26-23801","reference_doctype":"FT Machine Failure","reference_name":"MFR23783","caption":"18","image":"/private/files/c71934ab-695c-4fa4-bd5e-21260b01ca71.jpg"}
+{"name":"GI-26-23802","reference_doctype":"FT Machine Failure","reference_name":"MFR23783","caption":"19","image":"/private/files/13879b20-b88c-4d29-a717-82c1cf01870a.jpg"}
+{"name":"GI-26-24104","reference_doctype":"FT Maintenance Warning Report","reference_name":"MWR24103","caption":"1","image":"/private/files/b04571d2-bf72-4665-a0b8-41ab0a42ddd3.jpg"}
+{"name":"GI-26-24105","reference_doctype":"FT Maintenance Warning Report","reference_name":"MWR24103","caption":"2","image":"/private/files/d71d2896-3b6e-41ce-813d-f3e301e13d68.jpg"}
+{"name":"GI-26-24106","reference_doctype":"FT Maintenance Warning Report","reference_name":"MWR24103","caption":"3","image":"/private/files/aacb45da-2b4c-47f1-b898-8367fffa040e.jpg"}
+{"name":"GI-26-24160","reference_doctype":"FT Machine Failure","reference_name":"MFR24159","caption":"1","image":"/private/files/3c458d83-4bd4-4b56-8213-7bf9fe33f0ea.jpg"}
+{"name":"GI-26-24161","reference_doctype":"FT Machine Failure","reference_name":"MFR24159","caption":"2","image":"/private/files/ccd16f03-664c-449c-9837-b5cd32aa26bb.jpg"}
+{"name":"GI-26-24162","reference_doctype":"FT Machine Failure","reference_name":"MFR24159","caption":"3","image":"/private/files/49ec23e8-a51c-4b92-aab3-388aa4f43e4b.jpg"}
+{"name":"GI-26-24163","reference_doctype":"FT Machine Failure","reference_name":"MFR24159","caption":"4","image":"/private/files/7a0e9d10-d1cb-4a8d-9daa-8243ab11e7db.jpg"}
+{"name":"GI-26-24164","reference_doctype":"FT Machine Failure","reference_name":"MFR24159","caption":"5","image":"/private/files/093d8ab7-d5b9-4dfb-a65b-20f5a06d59f7.jpg"}
+{"name":"GI-26-24165","reference_doctype":"FT Machine Failure","reference_name":"MFR24159","caption":"6","image":"/private/files/e0a1261b-87e1-451c-9c6e-04e3d6d7cbd1.jpg"}
+{"name":"GI-26-24168","reference_doctype":"FT Machine Failure","reference_name":"MFR24167","caption":"1","image":"/private/files/6aeda218-3ca9-4a3d-a0f0-4efa39b57c1e.jpg"}
+{"name":"GI-26-24169","reference_doctype":"FT Machine Failure","reference_name":"MFR24167","caption":"2","image":"/private/files/2db29599-1eac-4ff1-91de-289f79e464de.jpg"}
+{"name":"GI-26-24170","reference_doctype":"FT Machine Failure","reference_name":"MFR24167","caption":"3","image":"/private/files/c76616c0-4e92-4fba-9a20-8d59fbcdd6ba.jpg"}
+{"name":"GI-26-24171","reference_doctype":"FT Machine Failure","reference_name":"MFR24167","caption":"4","image":"/private/files/f57818db-ade0-4c57-91cb-c8fc3bdc2000.jpg"}
+{"name":"GI-26-24328","reference_doctype":"FT Machine Failure","reference_name":"MFR24327","caption":"Seals","image":"/private/files/2aabc898-577d-48a2-981c-4d04aca48b04.jpg"}
+{"name":"GI-26-24329","reference_doctype":"FT Machine Failure","reference_name":"MFR24327","caption":"Scratched rod","image":"/private/files/a57fe7ee-5d40-4e67-a54b-8033a9dfae66.jpg"}
+{"name":"GI-26-24330","reference_doctype":"FT Machine Failure","reference_name":"MFR24327","caption":"Stripped Rod","image":"/private/files/d03504a2-5782-4750-8ce4-637f4965224d.jpg"}
+{"name":"GI-26-24331","reference_doctype":"FT Machine Failure","reference_name":"MFR24327","caption":"Seals","image":"/private/files/17829dec-0396-425f-bbb6-b59da1cf8f86.jpg"}
+{"name":"GI-26-24332","reference_doctype":"FT Machine Failure","reference_name":"MFR24327","caption":"damaged rod","image":"/private/files/739d4ec3-f5dd-4a04-9184-637d126337fd.jpg"}
+{"name":"GI-26-24333","reference_doctype":"FT Machine Failure","reference_name":"MFR24327","caption":"Scratched rod","image":"/private/files/6fc47fe0-823e-412b-8a18-efdc1ddb6611.jpg"}
+{"name":"GI-26-24429","reference_doctype":"FT Maintenance Warning Report","reference_name":"MWR24428","caption":"dry bushes","image":"/private/files/ac147936-761e-477e-9afa-be7a533a6694.jpg"}
+{"name":"GI-26-24430","reference_doctype":"FT Maintenance Warning Report","reference_name":"MWR24428","caption":"Missing Nipple","image":"/private/files/669509be-e3dd-43d0-bc83-89ede60e1fa0.jpg"}
+{"name":"GI-26-24455","reference_doctype":"FT Machine Failure","reference_name":"MFR24454","caption":"1","image":"/private/files/5c9892f3-96eb-4703-8289-df83c1a36c20.jpg"}
+{"name":"GI-26-24456","reference_doctype":"FT Machine Failure","reference_name":"MFR24454","caption":"2","image":"/private/files/69814d23-0dad-477d-a13c-afaf6637d3a3.jpg"}
+{"name":"GI-26-24457","reference_doctype":"FT Machine Failure","reference_name":"MFR24454","caption":"3","image":"/private/files/d072eb44-b379-4ce5-a0a4-d3b5fdefa8ed.jpg"}
+{"name":"GI-26-24458","reference_doctype":"FT Machine Failure","reference_name":"MFR24454","caption":"4","image":"/private/files/25c05e0e-046d-4e70-bb94-34f22138476e.jpg"}
+{"name":"GI-26-24459","reference_doctype":"FT Machine Failure","reference_name":"MFR24454","caption":"5","image":"/private/files/f73f4eb2-fa82-4ebc-b218-e91457809a75.jpg"}
+{"name":"GI-26-24460","reference_doctype":"FT Machine Failure","reference_name":"MFR24454","caption":"6","image":"/private/files/293ac2d8-fe92-4eb2-ba5c-d52679f40893.jpg"}
+{"name":"GI-26-24461","reference_doctype":"FT Machine Failure","reference_name":"MFR24454","caption":"7","image":"/private/files/a045899c-e71e-4076-b2fd-09adacbfbca3.jpg"}
+{"name":"GI-26-24462","reference_doctype":"FT Machine Failure","reference_name":"MFR24454","caption":"8","image":"/private/files/73965396-be4a-41b4-99fc-7f3579e77a68.jpg"}
+{"name":"GI-26-24463","reference_doctype":"FT Machine Failure","reference_name":"MFR24454","caption":"9","image":"/private/files/73965396-be4a-41b4-99fc-7f3579e77a68.jpg"}
+{"name":"GI-26-24464","reference_doctype":"FT Machine Failure","reference_name":"MFR24454","caption":"10","image":"/private/files/cec015d4-5933-4d68-8d0d-7302dc4849f3.jpg"}
+{"name":"GI-26-24632","reference_doctype":"FT Machine Failure","reference_name":"MFR24548","caption":"1","image":"/private/files/d3958a48-7db9-446b-8c1f-dd6b4579c9dc.jpg"}
+{"name":"GI-26-24633","reference_doctype":"FT Machine Failure","reference_name":"MFR24548","caption":"2","image":"/private/files/97b10cf4-79d8-41ae-8d3a-6b60158fb608.jpg"}
+{"name":"GI-26-24634","reference_doctype":"FT Machine Failure","reference_name":"MFR24548","caption":"3","image":"/private/files/011cac17-72ac-4323-9996-278b58907065.jpg"}
+{"name":"GI-26-24636","reference_doctype":"FT Machine Failure","reference_name":"MFR24548","caption":"6","image":"/private/files/WhatsApp Video 2026-05-19 at 09_frame_0_06_14f.jpeg"}
+{"name":"GI-26-24637","reference_doctype":"FT Machine Failure","reference_name":"MFR24548","caption":"7","image":"/private/files/WhatsApp Video 2026-05-19 at 09_frame_0_06_17f.jpeg"}
+{"name":"GI-26-24638","reference_doctype":"FT Machine Failure","reference_name":"MFR24548","caption":"8","image":"/private/files/WhatsApp Video 2026-05-19 at 09_frame_0_06_19f.jpeg"}
+{"name":"GI-26-24639","reference_doctype":"FT Machine Failure","reference_name":"MFR24548","caption":"9","image":"/private/files/WhatsApp Video 2026-05-19 at 09_frame_0_07_13f.jpeg"}
+{"name":"GI-26-24640","reference_doctype":"FT Machine Failure","reference_name":"MFR24548","caption":"10","image":"/private/files/WhatsApp Video 2026-05-19 at 09_frame_0_16_17f.jpeg"}
+{"name":"GI-26-24641","reference_doctype":"FT Machine Failure","reference_name":"MFR24548","caption":"11","image":"/private/files/WhatsApp Video 2026-05-19 at 09_frame_0_46_18f.jpeg"}
+{"name":"GI-26-24642","reference_doctype":"FT Machine Failure","reference_name":"MFR24548","caption":"13","image":"/private/files/WhatsApp Video 2026-05-19 at 09_frame_0_53_0f.jpeg"}
+{"name":"GI-26-24643","reference_doctype":"FT Machine Failure","reference_name":"MFR24548","caption":"14","image":"/private/files/WhatsApp Video 2026-05-19 at 09_frame_0_59_22f.jpeg"}
+{"name":"GI-26-24644","reference_doctype":"FT Machine Failure","reference_name":"MFR24548","caption":"15","image":"/private/files/WhatsApp Video 2026-05-19 at 09_frame_1_04_10f.jpeg"}

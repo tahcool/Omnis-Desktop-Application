@@ -1,0 +1,5099 @@
+{
+  "scanned_at": "2026-06-09T07:35:07.492Z",
+  "total": 727,
+  "with_data": [
+    {
+      "name": "Data Import Log",
+      "module": "Core",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 192240
+    },
+    {
+      "name": "Communication Link",
+      "module": "Core",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 8216
+    },
+    {
+      "name": "Quotation Item",
+      "module": "Selling",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 7171
+    },
+    {
+      "name": "Deleted Document",
+      "module": "Core",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 1976
+    },
+    {
+      "name": "Contact Phone",
+      "module": "Contacts",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 1394
+    },
+    {
+      "name": "Contact Email",
+      "module": "Contacts",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 770
+    },
+    {
+      "name": "Block Module",
+      "module": "Core",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 257
+    },
+    {
+      "name": "Scheduled Job Type",
+      "module": "Core",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 89
+    },
+    {
+      "name": "Supplier Scorecard Variable",
+      "module": "Buying",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 20
+    },
+    {
+      "name": "Navbar Item",
+      "module": "Core",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 18
+    },
+    {
+      "name": "Report Filter",
+      "module": "Core",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 13
+    },
+    {
+      "name": "Logs To Clear",
+      "module": "Core",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 12
+    },
+    {
+      "name": "Role Profile",
+      "module": "Core",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 12
+    },
+    {
+      "name": "Purchase Order Item",
+      "module": "Buying",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 11
+    },
+    {
+      "name": "Custom DocPerm",
+      "module": "Core",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 10
+    },
+    {
+      "name": "Salutation",
+      "module": "Contacts",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 10
+    },
+    {
+      "name": "Gender",
+      "module": "Contacts",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 8
+    },
+    {
+      "name": "Purchase Order",
+      "module": "Buying",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 7
+    },
+    {
+      "name": "Supplier",
+      "module": "Buying",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 7
+    },
+    {
+      "name": "Address Template",
+      "module": "Contacts",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 5
+    },
+    {
+      "name": "Supplier Scorecard Standing",
+      "module": "Buying",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 4
+    },
+    {
+      "name": "Domain",
+      "module": "Core",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 2
+    },
+    {
+      "name": "Module Profile",
+      "module": "Core",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 2
+    },
+    {
+      "name": "Document Share Key",
+      "module": "Core",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 1
+    },
+    {
+      "name": "RQ Worker",
+      "module": "Core",
+      "is_child": false,
+      "is_single": false,
+      "record_count": "1+"
+    },
+    {
+      "name": "Route History",
+      "module": "Desk",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 5035
+    },
+    {
+      "name": "Payment Schedule",
+      "module": "Accounts",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 3134
+    },
+    {
+      "name": "Quotation",
+      "module": "Selling",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 3123
+    },
+    {
+      "name": "Email Queue Recipient",
+      "module": "Email",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 2529
+    },
+    {
+      "name": "Customer",
+      "module": "Selling",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 2015
+    },
+    {
+      "name": "Item Default",
+      "module": "Stock",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 805
+    },
+    {
+      "name": "Email Queue",
+      "module": "Email",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 685
+    },
+    {
+      "name": "UOM Conversion Detail",
+      "module": "Stock",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 570
+    },
+    {
+      "name": "Item",
+      "module": "Stock",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 563
+    },
+    {
+      "name": "Process Subscription",
+      "module": "Accounts",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 543
+    },
+    {
+      "name": "Notification Log",
+      "module": "Desk",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 530
+    },
+    {
+      "name": "Email Group Member",
+      "module": "Email",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 458
+    },
+    {
+      "name": "Item Price",
+      "module": "Stock",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 332
+    },
+    {
+      "name": "FMB Report Machine",
+      "module": "Salestrack",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 326
+    },
+    {
+      "name": "Group Sales",
+      "module": "Salestrack",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 299
+    },
+    {
+      "name": "Order Update Contacts",
+      "module": "Salestrack",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 296
+    },
+    {
+      "name": "FMB Report",
+      "module": "Salestrack",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 270
+    },
+    {
+      "name": "Account",
+      "module": "Accounts",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 246
+    },
+    {
+      "name": "UOM",
+      "module": "Setup",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 239
+    },
+    {
+      "name": "UOM Conversion Factor",
+      "module": "Setup",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 235
+    },
+    {
+      "name": "Web Template Field",
+      "module": "Website",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 153
+    },
+    {
+      "name": "Workspace Shortcut",
+      "module": "Desk",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 125
+    },
+    {
+      "name": "Web Form Field",
+      "module": "Website",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 114
+    },
+    {
+      "name": "Form Tour Step",
+      "module": "Desk",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 110
+    },
+    {
+      "name": "Hot Lead Items",
+      "module": "Salestrack",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 110
+    },
+    {
+      "name": "Customer Visits",
+      "module": "Salestrack",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 106
+    },
+    {
+      "name": "Hot Leads",
+      "module": "Salestrack",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 100
+    },
+    {
+      "name": "View Log",
+      "module": "Core",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 81
+    },
+    {
+      "name": "Onboarding Step",
+      "module": "Desk",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 74
+    },
+    {
+      "name": "Variant Field",
+      "module": "Stock",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 72
+    },
+    {
+      "name": "Opportunity Item",
+      "module": "CRM",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 69
+    },
+    {
+      "name": "Item Group",
+      "module": "Setup",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 68
+    },
+    {
+      "name": "Process Deferred Accounting",
+      "module": "Accounts",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 68
+    },
+    {
+      "name": "Asset Register",
+      "module": "Salestrack",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 67
+    },
+    {
+      "name": "Industry Type",
+      "module": "Selling",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 61
+    },
+    {
+      "name": "Opportunity",
+      "module": "CRM",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 57
+    },
+    {
+      "name": "Global Search DocType",
+      "module": "Desk",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 52
+    },
+    {
+      "name": "Onboarding Step Map",
+      "module": "Desk",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 50
+    },
+    {
+      "name": "GSM Task Manager",
+      "module": "Salestrack",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 44
+    },
+    {
+      "name": "Department",
+      "module": "Setup",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 41
+    },
+    {
+      "name": "Number Card",
+      "module": "Desk",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 39
+    },
+    {
+      "name": "Brand",
+      "module": "Setup",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 38
+    },
+    {
+      "name": "Stock Pipeline",
+      "module": "Salestrack",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 36
+    },
+    {
+      "name": "Lead",
+      "module": "CRM",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 33
+    },
+    {
+      "name": "Notification Settings",
+      "module": "Desk",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 33
+    },
+    {
+      "name": "Designation",
+      "module": "Setup",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 31
+    },
+    {
+      "name": "Onboarding Permission",
+      "module": "Desk",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 31
+    },
+    {
+      "name": "User Social Login",
+      "module": "Core",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 31
+    },
+    {
+      "name": "Workflow Action Permitted Role",
+      "module": "Workflow",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 31
+    },
+    {
+      "name": "Number Card Link",
+      "module": "Desk",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 26
+    },
+    {
+      "name": "Form Tour",
+      "module": "Desk",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 25
+    },
+    {
+      "name": "Newsletter Email Group",
+      "module": "Email",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 24
+    },
+    {
+      "name": "Dashboard Settings",
+      "module": "Desk",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 23
+    },
+    {
+      "name": "Web Template",
+      "module": "Website",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 23
+    },
+    {
+      "name": "Sales Person",
+      "module": "Setup",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 18
+    },
+    {
+      "name": "Workspace Number Card",
+      "module": "Desk",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 18
+    },
+    {
+      "name": "UOM Category",
+      "module": "Stock",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 17
+    },
+    {
+      "name": "Warehouse",
+      "module": "Stock",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 15
+    },
+    {
+      "name": "Bin",
+      "module": "Stock",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 14
+    },
+    {
+      "name": "Portal Menu Item",
+      "module": "Website",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 14
+    },
+    {
+      "name": "Supplier Group",
+      "module": "Setup",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 12
+    },
+    {
+      "name": "Incoterm",
+      "module": "Setup",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 11
+    },
+    {
+      "name": "Lead Source",
+      "module": "CRM",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 11
+    },
+    {
+      "name": "List View Settings",
+      "module": "Desk",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 11
+    },
+    {
+      "name": "Workflow Action Master",
+      "module": "Workflow",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 11
+    },
+    {
+      "name": "Incoming Stock Earmark",
+      "module": "Salestrack",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 10
+    },
+    {
+      "name": "Item Attribute Value",
+      "module": "Stock",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 10
+    },
+    {
+      "name": "Module Onboarding",
+      "module": "Desk",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 10
+    },
+    {
+      "name": "Employee",
+      "module": "Setup",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 9
+    },
+    {
+      "name": "Stock Entry Type",
+      "module": "Stock",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 9
+    },
+    {
+      "name": "Energy Point Rule",
+      "module": "Social",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 8
+    },
+    {
+      "name": "Sales Stage",
+      "module": "CRM",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 8
+    },
+    {
+      "name": "Stock Movement Log",
+      "module": "Stock Pipeline",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 8
+    },
+    {
+      "name": "Load Tracking Schedule",
+      "module": "loadtrack",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 7
+    },
+    {
+      "name": "Notification Recipient",
+      "module": "Email",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 7
+    },
+    {
+      "name": "Sales Partner Type",
+      "module": "Selling",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 7
+    },
+    {
+      "name": "Stock Pipeline Entry",
+      "module": "Stock Pipeline",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 7
+    },
+    {
+      "name": "Cost Center",
+      "module": "Accounts",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 6
+    },
+    {
+      "name": "Quotation Follow Up",
+      "module": "Salestrack",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 6
+    },
+    {
+      "name": "Success Action",
+      "module": "Core",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 6
+    },
+    {
+      "name": "User Permission",
+      "module": "Core",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 6
+    },
+    {
+      "name": "Activity Type",
+      "module": "Projects",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 5
+    },
+    {
+      "name": "Console Log",
+      "module": "Desk",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 5
+    },
+    {
+      "name": "Customer Group",
+      "module": "Setup",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 5
+    },
+    {
+      "name": "IMAP Folder",
+      "module": "Email",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 5
+    },
+    {
+      "name": "Mode of Payment",
+      "module": "Accounts",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 5
+    },
+    {
+      "name": "Purchase Taxes and Charges",
+      "module": "Accounts",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 5
+    },
+    {
+      "name": "Workspace Custom Block",
+      "module": "Desk",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 5
+    },
+    {
+      "name": "Custom HTML Block",
+      "module": "Desk",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 4
+    },
+    {
+      "name": "Party Type",
+      "module": "Setup",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 4
+    },
+    {
+      "name": "Print Style",
+      "module": "Printing",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 4
+    },
+    {
+      "name": "Sales Order",
+      "module": "Selling",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 4
+    },
+    {
+      "name": "Sales Order Item",
+      "module": "Selling",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 4
+    },
+    {
+      "name": "Fiscal Year",
+      "module": "Accounts",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 3
+    },
+    {
+      "name": "Issue Priority",
+      "module": "Support",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 3
+    },
+    {
+      "name": "Item Tax Template",
+      "module": "Accounts",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 3
+    },
+    {
+      "name": "Item Tax Template Detail",
+      "module": "Accounts",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 3
+    },
+    {
+      "name": "Market Segment",
+      "module": "CRM",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 3
+    },
+    {
+      "name": "Mode of Payment Account",
+      "module": "Accounts",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 3
+    },
+    {
+      "name": "Opportunity Type",
+      "module": "CRM",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 3
+    },
+    {
+      "name": "Product Pricing",
+      "module": "Salestrack",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 3
+    },
+    {
+      "name": "Project Type",
+      "module": "Projects",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 3
+    },
+    {
+      "name": "Purchase Taxes and Charges Template",
+      "module": "Accounts",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 3
+    },
+    {
+      "name": "Sales Taxes and Charges",
+      "module": "Accounts",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 3
+    },
+    {
+      "name": "Sales Taxes and Charges Template",
+      "module": "Accounts",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 3
+    },
+    {
+      "name": "User Type",
+      "module": "Core",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 3
+    },
+    {
+      "name": "Color",
+      "module": "Website",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 2
+    },
+    {
+      "name": "Currency Exchange Settings Details",
+      "module": "Accounts",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 2
+    },
+    {
+      "name": "Currency Exchange Settings Result",
+      "module": "Accounts",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 2
+    },
+    {
+      "name": "Dashboard Chart Field",
+      "module": "Desk",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 2
+    },
+    {
+      "name": "Dashboard Chart Source",
+      "module": "Desk",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 2
+    },
+    {
+      "name": "Email Unsubscribe",
+      "module": "Email",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 2
+    },
+    {
+      "name": "Incident Report",
+      "module": "Salestrack",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 2
+    },
+    {
+      "name": "Item Attribute",
+      "module": "Stock",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 2
+    },
+    {
+      "name": "Price List",
+      "module": "Stock",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 2
+    },
+    {
+      "name": "Print Heading",
+      "module": "Setup",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 2
+    },
+    {
+      "name": "QFU Update",
+      "module": "Selling",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 2
+    },
+    {
+      "name": "Share Type",
+      "module": "Accounts",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 2
+    },
+    {
+      "name": "SPW Follow Up",
+      "module": "SPW Parts",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 2
+    },
+    {
+      "name": "Webhook Header",
+      "module": "Integrations",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 2
+    },
+    {
+      "name": "Workspace Quick List",
+      "module": "Desk",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 2
+    },
+    {
+      "name": "Aftersales Handover Form",
+      "module": "Salestrack",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 1
+    },
+    {
+      "name": "Bank",
+      "module": "Accounts",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 1
+    },
+    {
+      "name": "Bank Account",
+      "module": "Accounts",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 1
+    },
+    {
+      "name": "CDV",
+      "module": "Salestrack",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 1
+    },
+    {
+      "name": "Email Digest",
+      "module": "Setup",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 1
+    },
+    {
+      "name": "Email Digest Recipient",
+      "module": "Setup",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 1
+    },
+    {
+      "name": "Email Domain",
+      "module": "Email",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 1
+    },
+    {
+      "name": "Google Calendar",
+      "module": "Integrations",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 1
+    },
+    {
+      "name": "Machine Stock",
+      "module": "Salestrack",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 1
+    },
+    {
+      "name": "Material Request",
+      "module": "Stock",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 1
+    },
+    {
+      "name": "Material Request Item",
+      "module": "Stock",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 1
+    },
+    {
+      "name": "Portal User",
+      "module": "Utilities",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 1
+    },
+    {
+      "name": "PT Customer Enquiry",
+      "module": "Salestrack",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 1
+    },
+    {
+      "name": "Quality Inspection",
+      "module": "Stock",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 1
+    },
+    {
+      "name": "Stock Entry",
+      "module": "Stock",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 1
+    },
+    {
+      "name": "Stock Entry Detail",
+      "module": "Stock",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 1
+    },
+    {
+      "name": "Terms and Conditions",
+      "module": "Setup",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 1
+    },
+    {
+      "name": "User Email",
+      "module": "Core",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 1
+    },
+    {
+      "name": "Visit Log",
+      "module": "Salestrack",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 1
+    },
+    {
+      "name": "Warehouse Type",
+      "module": "Stock",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 1
+    },
+    {
+      "name": "Webhook",
+      "module": "Integrations",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 1
+    },
+    {
+      "name": "Website Theme",
+      "module": "Website",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 1
+    }
+  ],
+  "empty": [
+    {
+      "name": "Amended Document Naming Settings",
+      "module": "Core",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 0
+    },
+    {
+      "name": "Asset Category",
+      "module": "Assets",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 0
+    },
+    {
+      "name": "Asset Depreciation Schedule",
+      "module": "Assets",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 0
+    },
+    {
+      "name": "Asset Maintenance Task",
+      "module": "Assets",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 0
+    },
+    {
+      "name": "Asset Maintenance Team",
+      "module": "Assets",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 0
+    },
+    {
+      "name": "Asset Movement",
+      "module": "Assets",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 0
+    },
+    {
+      "name": "Asset Movement Item",
+      "module": "Assets",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 0
+    },
+    {
+      "name": "Asset Repair",
+      "module": "Assets",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 0
+    },
+    {
+      "name": "Asset Repair Consumed Item",
+      "module": "Assets",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 0
+    },
+    {
+      "name": "Asset Shift Allocation",
+      "module": "Assets",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 0
+    },
+    {
+      "name": "Asset Shift Factor",
+      "module": "Assets",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 0
+    },
+    {
+      "name": "Asset Value Adjustment",
+      "module": "Assets",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 0
+    },
+    {
+      "name": "Assignment Rule",
+      "module": "Automation",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 0
+    },
+    {
+      "name": "Assignment Rule Day",
+      "module": "Automation",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 0
+    },
+    {
+      "name": "Assignment Rule User",
+      "module": "Automation",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 0
+    },
+    {
+      "name": "Auto Repeat",
+      "module": "Automation",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 0
+    },
+    {
+      "name": "Auto Repeat Day",
+      "module": "Automation",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 0
+    },
+    {
+      "name": "Bulk Transaction Log",
+      "module": "Bulk Transaction",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 0
+    },
+    {
+      "name": "Bulk Transaction Log Detail",
+      "module": "Bulk Transaction",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 0
+    },
+    {
+      "name": "Communication Medium",
+      "module": "Communication",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 0
+    },
+    {
+      "name": "Communication Medium Timeslot",
+      "module": "Communication",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 0
+    },
+    {
+      "name": "Custom Role",
+      "module": "Core",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 0
+    },
+    {
+      "name": "Depreciation Schedule",
+      "module": "Assets",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 0
+    },
+    {
+      "name": "Document Naming Rule",
+      "module": "Core",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 0
+    },
+    {
+      "name": "Document Naming Rule Condition",
+      "module": "Core",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 0
+    },
+    {
+      "name": "Has Domain",
+      "module": "Core",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 0
+    },
+    {
+      "name": "Linked Location",
+      "module": "Assets",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 0
+    },
+    {
+      "name": "Location",
+      "module": "Assets",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 0
+    },
+    {
+      "name": "Log Setting User",
+      "module": "Core",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 0
+    },
+    {
+      "name": "Maintenance Team Member",
+      "module": "Assets",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 0
+    },
+    {
+      "name": "Milestone",
+      "module": "Automation",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 0
+    },
+    {
+      "name": "Milestone Tracker",
+      "module": "Automation",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 0
+    },
+    {
+      "name": "Package",
+      "module": "Core",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 0
+    },
+    {
+      "name": "Package Import",
+      "module": "Core",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 0
+    },
+    {
+      "name": "Package Release",
+      "module": "Core",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 0
+    },
+    {
+      "name": "Permission Inspector",
+      "module": "Core",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 0
+    },
+    {
+      "name": "Prepared Report",
+      "module": "Core",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 0
+    },
+    {
+      "name": "Purchase Order Item Supplied",
+      "module": "Buying",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 0
+    },
+    {
+      "name": "Purchase Receipt Item Supplied",
+      "module": "Buying",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 0
+    },
+    {
+      "name": "Recorder",
+      "module": "Core",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 0
+    },
+    {
+      "name": "Reminder",
+      "module": "Automation",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 0
+    },
+    {
+      "name": "Report Column",
+      "module": "Core",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 0
+    },
+    {
+      "name": "Request for Quotation",
+      "module": "Buying",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 0
+    },
+    {
+      "name": "Request for Quotation Item",
+      "module": "Buying",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 0
+    },
+    {
+      "name": "Request for Quotation Supplier",
+      "module": "Buying",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 0
+    },
+    {
+      "name": "SMS Parameter",
+      "module": "Core",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 0
+    },
+    {
+      "name": "Supplier Quotation",
+      "module": "Buying",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 0
+    },
+    {
+      "name": "Supplier Quotation Item",
+      "module": "Buying",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 0
+    },
+    {
+      "name": "Supplier Scorecard",
+      "module": "Buying",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 0
+    },
+    {
+      "name": "Supplier Scorecard Criteria",
+      "module": "Buying",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 0
+    },
+    {
+      "name": "Supplier Scorecard Period",
+      "module": "Buying",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 0
+    },
+    {
+      "name": "Supplier Scorecard Scoring Criteria",
+      "module": "Buying",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 0
+    },
+    {
+      "name": "Supplier Scorecard Scoring Standing",
+      "module": "Buying",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 0
+    },
+    {
+      "name": "Supplier Scorecard Scoring Variable",
+      "module": "Buying",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 0
+    },
+    {
+      "name": "Transaction Log",
+      "module": "Core",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 0
+    },
+    {
+      "name": "About Us Team Member",
+      "module": "Website",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 0
+    },
+    {
+      "name": "Account Closing Balance",
+      "module": "Accounts",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 0
+    },
+    {
+      "name": "Accounting Dimension",
+      "module": "Accounts",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 0
+    },
+    {
+      "name": "Accounting Dimension Detail",
+      "module": "Accounts",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 0
+    },
+    {
+      "name": "Accounting Dimension Filter",
+      "module": "Accounts",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 0
+    },
+    {
+      "name": "Accounting Period",
+      "module": "Accounts",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 0
+    },
+    {
+      "name": "Activity Cost",
+      "module": "Projects",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 0
+    },
+    {
+      "name": "Advance Payment Ledger Entry",
+      "module": "Accounts",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 0
+    },
+    {
+      "name": "Advance Tax",
+      "module": "Accounts",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 0
+    },
+    {
+      "name": "Advance Taxes and Charges",
+      "module": "Accounts",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 0
+    },
+    {
+      "name": "Allowed Dimension",
+      "module": "Accounts",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 0
+    },
+    {
+      "name": "Allowed To Transact With",
+      "module": "Accounts",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 0
+    },
+    {
+      "name": "Applicable On Account",
+      "module": "Accounts",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 0
+    },
+    {
+      "name": "Appointment",
+      "module": "CRM",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 0
+    },
+    {
+      "name": "Appointment Booking Slots",
+      "module": "CRM",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 0
+    },
+    {
+      "name": "Asset",
+      "module": "Assets",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 0
+    },
+    {
+      "name": "Asset Activity",
+      "module": "Assets",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 0
+    },
+    {
+      "name": "Asset Capitalization",
+      "module": "Assets",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 0
+    },
+    {
+      "name": "Asset Capitalization Asset Item",
+      "module": "Assets",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 0
+    },
+    {
+      "name": "Asset Capitalization Service Item",
+      "module": "Assets",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 0
+    },
+    {
+      "name": "Asset Capitalization Stock Item",
+      "module": "Assets",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 0
+    },
+    {
+      "name": "Asset Category Account",
+      "module": "Assets",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 0
+    },
+    {
+      "name": "Asset Finance Book",
+      "module": "Assets",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 0
+    },
+    {
+      "name": "Asset Maintenance",
+      "module": "Assets",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 0
+    },
+    {
+      "name": "Asset Maintenance Log",
+      "module": "Assets",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 0
+    },
+    {
+      "name": "Authorization Rule",
+      "module": "Setup",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 0
+    },
+    {
+      "name": "Auto Email Report",
+      "module": "Email",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 0
+    },
+    {
+      "name": "Availability Of Slots",
+      "module": "CRM",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 0
+    },
+    {
+      "name": "Bank Account Subtype",
+      "module": "Accounts",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 0
+    },
+    {
+      "name": "Bank Account Type",
+      "module": "Accounts",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 0
+    },
+    {
+      "name": "Bank Clearance Detail",
+      "module": "Accounts",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 0
+    },
+    {
+      "name": "Bank Guarantee",
+      "module": "Accounts",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 0
+    },
+    {
+      "name": "Bank Statement Import",
+      "module": "Accounts",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 0
+    },
+    {
+      "name": "Bank Transaction",
+      "module": "Accounts",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 0
+    },
+    {
+      "name": "Bank Transaction Mapping",
+      "module": "Accounts",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 0
+    },
+    {
+      "name": "Bank Transaction Payments",
+      "module": "Accounts",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 0
+    },
+    {
+      "name": "Batch",
+      "module": "Stock",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 0
+    },
+    {
+      "name": "Bisect Nodes",
+      "module": "Accounts",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 0
+    },
+    {
+      "name": "Blanket Order",
+      "module": "Manufacturing",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 0
+    },
+    {
+      "name": "Blanket Order Item",
+      "module": "Manufacturing",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 0
+    },
+    {
+      "name": "Blog Category",
+      "module": "Website",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 0
+    },
+    {
+      "name": "Blogger",
+      "module": "Website",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 0
+    },
+    {
+      "name": "BOM",
+      "module": "Manufacturing",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 0
+    },
+    {
+      "name": "BOM Creator",
+      "module": "Manufacturing",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 0
+    },
+    {
+      "name": "BOM Creator Item",
+      "module": "Manufacturing",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 0
+    },
+    {
+      "name": "BOM Explosion Item",
+      "module": "Manufacturing",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 0
+    },
+    {
+      "name": "BOM Item",
+      "module": "Manufacturing",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 0
+    },
+    {
+      "name": "BOM Operation",
+      "module": "Manufacturing",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 0
+    },
+    {
+      "name": "BOM Scrap Item",
+      "module": "Manufacturing",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 0
+    },
+    {
+      "name": "BOM Update Batch",
+      "module": "Manufacturing",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 0
+    },
+    {
+      "name": "BOM Update Log",
+      "module": "Manufacturing",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 0
+    },
+    {
+      "name": "BOM Website Item",
+      "module": "Manufacturing",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 0
+    },
+    {
+      "name": "BOM Website Operation",
+      "module": "Manufacturing",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 0
+    },
+    {
+      "name": "Branch",
+      "module": "Setup",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 0
+    },
+    {
+      "name": "Budget",
+      "module": "Accounts",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 0
+    },
+    {
+      "name": "Budget Account",
+      "module": "Accounts",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 0
+    },
+    {
+      "name": "Calendar View",
+      "module": "Desk",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 0
+    },
+    {
+      "name": "Call Log",
+      "module": "Telephony",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 0
+    },
+    {
+      "name": "Campaign",
+      "module": "CRM",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 0
+    },
+    {
+      "name": "Campaign Email Schedule",
+      "module": "CRM",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 0
+    },
+    {
+      "name": "Campaign Item",
+      "module": "Accounts",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 0
+    },
+    {
+      "name": "Cashflow Transaction",
+      "module": "Group Accounts",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 0
+    },
+    {
+      "name": "Cashier Closing",
+      "module": "Accounts",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 0
+    },
+    {
+      "name": "Cashier Closing Payments",
+      "module": "Accounts",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 0
+    },
+    {
+      "name": "Changelog Feed",
+      "module": "Desk",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 0
+    },
+    {
+      "name": "Cheque Print Template",
+      "module": "Accounts",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 0
+    },
+    {
+      "name": "Closed Document",
+      "module": "Accounts",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 0
+    },
+    {
+      "name": "Closing Stock Balance",
+      "module": "Stock",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 0
+    },
+    {
+      "name": "Code List",
+      "module": "EDI",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 0
+    },
+    {
+      "name": "Common Code",
+      "module": "EDI",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 0
+    },
+    {
+      "name": "Company History",
+      "module": "Website",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 0
+    },
+    {
+      "name": "Competitor",
+      "module": "CRM",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 0
+    },
+    {
+      "name": "Competitor Detail",
+      "module": "CRM",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 0
+    },
+    {
+      "name": "Connected App",
+      "module": "Integrations",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 0
+    },
+    {
+      "name": "Contract",
+      "module": "CRM",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 0
+    },
+    {
+      "name": "Contract Fulfilment Checklist",
+      "module": "CRM",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 0
+    },
+    {
+      "name": "Contract Template",
+      "module": "CRM",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 0
+    },
+    {
+      "name": "Contract Template Fulfilment Terms",
+      "module": "CRM",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 0
+    },
+    {
+      "name": "Cost Center Allocation",
+      "module": "Accounts",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 0
+    },
+    {
+      "name": "Cost Center Allocation Percentage",
+      "module": "Accounts",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 0
+    },
+    {
+      "name": "Coupon Code",
+      "module": "Accounts",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 0
+    },
+    {
+      "name": "CRM Note",
+      "module": "CRM",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 0
+    },
+    {
+      "name": "Customer Credit Limit",
+      "module": "Selling",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 0
+    },
+    {
+      "name": "Customer Group Item",
+      "module": "Accounts",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 0
+    },
+    {
+      "name": "Customer Item",
+      "module": "Accounts",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 0
+    },
+    {
+      "name": "Customize Form Field",
+      "module": "Custom",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 0
+    },
+    {
+      "name": "Customs Tariff Number",
+      "module": "Stock",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 0
+    },
+    {
+      "name": "Delivery Note",
+      "module": "Stock",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 0
+    },
+    {
+      "name": "Delivery Note Item",
+      "module": "Stock",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 0
+    },
+    {
+      "name": "Delivery Stop",
+      "module": "Stock",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 0
+    },
+    {
+      "name": "Delivery Trip",
+      "module": "Stock",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 0
+    },
+    {
+      "name": "Dependent Task",
+      "module": "Projects",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 0
+    },
+    {
+      "name": "Desktop Icon",
+      "module": "Desk",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 0
+    },
+    {
+      "name": "Discounted Invoice",
+      "module": "Accounts",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 0
+    },
+    {
+      "name": "Discussion Reply",
+      "module": "Website",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 0
+    },
+    {
+      "name": "Discussion Topic",
+      "module": "Website",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 0
+    },
+    {
+      "name": "DocType Layout Field",
+      "module": "Custom",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 0
+    },
+    {
+      "name": "Document Follow",
+      "module": "Email",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 0
+    },
+    {
+      "name": "Downtime Entry",
+      "module": "Manufacturing",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 0
+    },
+    {
+      "name": "Driver",
+      "module": "Setup",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 0
+    },
+    {
+      "name": "Driving License Category",
+      "module": "Setup",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 0
+    },
+    {
+      "name": "Dunning",
+      "module": "Accounts",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 0
+    },
+    {
+      "name": "Dunning Letter Text",
+      "module": "Accounts",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 0
+    },
+    {
+      "name": "Dunning Type",
+      "module": "Accounts",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 0
+    },
+    {
+      "name": "Email Campaign",
+      "module": "CRM",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 0
+    },
+    {
+      "name": "Email Flag Queue",
+      "module": "Email",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 0
+    },
+    {
+      "name": "Email Rule",
+      "module": "Email",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 0
+    },
+    {
+      "name": "Employee Education",
+      "module": "Setup",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 0
+    },
+    {
+      "name": "Employee External Work History",
+      "module": "Setup",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 0
+    },
+    {
+      "name": "Employee Group",
+      "module": "Setup",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 0
+    },
+    {
+      "name": "Employee Group Table",
+      "module": "Setup",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 0
+    },
+    {
+      "name": "Employee Internal Work History",
+      "module": "Setup",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 0
+    },
+    {
+      "name": "Energy Point Log",
+      "module": "Social",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 0
+    },
+    {
+      "name": "Event Participants",
+      "module": "Desk",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 0
+    },
+    {
+      "name": "Exchange Rate Revaluation",
+      "module": "Accounts",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 0
+    },
+    {
+      "name": "Exchange Rate Revaluation Account",
+      "module": "Accounts",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 0
+    },
+    {
+      "name": "Finance Book",
+      "module": "Accounts",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 0
+    },
+    {
+      "name": "Fiscal Year Company",
+      "module": "Accounts",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 0
+    },
+    {
+      "name": "FT Machine",
+      "module": "Salestrack",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 0
+    },
+    {
+      "name": "GL Entry",
+      "module": "Accounts",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 0
+    },
+    {
+      "name": "Google Contacts",
+      "module": "Integrations",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 0
+    },
+    {
+      "name": "Help Article",
+      "module": "Website",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 0
+    },
+    {
+      "name": "Help Category",
+      "module": "Website",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 0
+    },
+    {
+      "name": "Holiday",
+      "module": "Setup",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 0
+    },
+    {
+      "name": "Holiday List",
+      "module": "Setup",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 0
+    },
+    {
+      "name": "Homepage Section",
+      "module": "Portal",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 0
+    },
+    {
+      "name": "Homepage Section Card",
+      "module": "Portal",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 0
+    },
+    {
+      "name": "Import Supplier Invoice",
+      "module": "Regional",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 0
+    },
+    {
+      "name": "Incoming Call Handling Schedule",
+      "module": "Telephony",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 0
+    },
+    {
+      "name": "Incoming Call Settings",
+      "module": "Telephony",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 0
+    },
+    {
+      "name": "Installation Note",
+      "module": "Selling",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 0
+    },
+    {
+      "name": "Installation Note Item",
+      "module": "Selling",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 0
+    },
+    {
+      "name": "Integration Request",
+      "module": "Integrations",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 0
+    },
+    {
+      "name": "Inventory Dimension",
+      "module": "Stock",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 0
+    },
+    {
+      "name": "Invoice Discounting",
+      "module": "Accounts",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 0
+    },
+    {
+      "name": "Issue",
+      "module": "Support",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 0
+    },
+    {
+      "name": "Issue Type",
+      "module": "Support",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 0
+    },
+    {
+      "name": "Item Alternative",
+      "module": "Stock",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 0
+    },
+    {
+      "name": "Item Barcode",
+      "module": "Stock",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 0
+    },
+    {
+      "name": "Item Customer Detail",
+      "module": "Stock",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 0
+    },
+    {
+      "name": "Item Manufacturer",
+      "module": "Stock",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 0
+    },
+    {
+      "name": "Item Quality Inspection Parameter",
+      "module": "Stock",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 0
+    },
+    {
+      "name": "Item Reorder",
+      "module": "Stock",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 0
+    },
+    {
+      "name": "Item Supplier",
+      "module": "Stock",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 0
+    },
+    {
+      "name": "Item Tax",
+      "module": "Stock",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 0
+    },
+    {
+      "name": "Item Variant",
+      "module": "Stock",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 0
+    },
+    {
+      "name": "Item Variant Attribute",
+      "module": "Stock",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 0
+    },
+    {
+      "name": "Item Website Specification",
+      "module": "Stock",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 0
+    },
+    {
+      "name": "Job Card",
+      "module": "Manufacturing",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 0
+    },
+    {
+      "name": "Job Card Item",
+      "module": "Manufacturing",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 0
+    },
+    {
+      "name": "Job Card Operation",
+      "module": "Manufacturing",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 0
+    },
+    {
+      "name": "Job Card Scheduled Time",
+      "module": "Manufacturing",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 0
+    },
+    {
+      "name": "Job Card Scrap Item",
+      "module": "Manufacturing",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 0
+    },
+    {
+      "name": "Job Card Time Log",
+      "module": "Manufacturing",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 0
+    },
+    {
+      "name": "Journal Entry",
+      "module": "Accounts",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 0
+    },
+    {
+      "name": "Journal Entry Account",
+      "module": "Accounts",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 0
+    },
+    {
+      "name": "Journal Entry Template",
+      "module": "Accounts",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 0
+    },
+    {
+      "name": "Journal Entry Template Account",
+      "module": "Accounts",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 0
+    },
+    {
+      "name": "Kanban Board",
+      "module": "Desk",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 0
+    },
+    {
+      "name": "Kanban Board Column",
+      "module": "Desk",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 0
+    },
+    {
+      "name": "Landed Cost Item",
+      "module": "Stock",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 0
+    },
+    {
+      "name": "Landed Cost Purchase Receipt",
+      "module": "Stock",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 0
+    },
+    {
+      "name": "Landed Cost Taxes and Charges",
+      "module": "Stock",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 0
+    },
+    {
+      "name": "Landed Cost Voucher",
+      "module": "Stock",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 0
+    },
+    {
+      "name": "LDAP Group Mapping",
+      "module": "Integrations",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 0
+    },
+    {
+      "name": "Ledger Health",
+      "module": "Accounts",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 0
+    },
+    {
+      "name": "Ledger Health Monitor Company",
+      "module": "Accounts",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 0
+    },
+    {
+      "name": "Ledger Merge",
+      "module": "Accounts",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 0
+    },
+    {
+      "name": "Ledger Merge Accounts",
+      "module": "Accounts",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 0
+    },
+    {
+      "name": "List Filter",
+      "module": "Desk",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 0
+    },
+    {
+      "name": "Lost Reason Detail",
+      "module": "CRM",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 0
+    },
+    {
+      "name": "Lower Deduction Certificate",
+      "module": "Regional",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 0
+    },
+    {
+      "name": "Loyalty Point Entry",
+      "module": "Accounts",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 0
+    },
+    {
+      "name": "Loyalty Point Entry Redemption",
+      "module": "Accounts",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 0
+    },
+    {
+      "name": "Loyalty Program",
+      "module": "Accounts",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 0
+    },
+    {
+      "name": "Loyalty Program Collection",
+      "module": "Accounts",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 0
+    },
+    {
+      "name": "LT Defects Tracking",
+      "module": "loadtrack",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 0
+    },
+    {
+      "name": "LT Fleet",
+      "module": "loadtrack",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 0
+    },
+    {
+      "name": "Maintenance Schedule",
+      "module": "Maintenance",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 0
+    },
+    {
+      "name": "Maintenance Schedule Detail",
+      "module": "Maintenance",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 0
+    },
+    {
+      "name": "Maintenance Schedule Item",
+      "module": "Maintenance",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 0
+    },
+    {
+      "name": "Maintenance Visit",
+      "module": "Maintenance",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 0
+    },
+    {
+      "name": "Maintenance Visit Purpose",
+      "module": "Maintenance",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 0
+    },
+    {
+      "name": "Manufacturer",
+      "module": "Stock",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 0
+    },
+    {
+      "name": "Marketing Campaign",
+      "module": "Website",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 0
+    },
+    {
+      "name": "Material Request Plan Item",
+      "module": "Manufacturing",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 0
+    },
+    {
+      "name": "Monthly Distribution",
+      "module": "Accounts",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 0
+    },
+    {
+      "name": "Monthly Distribution Percentage",
+      "module": "Accounts",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 0
+    },
+    {
+      "name": "MXG Weekly Report",
+      "module": "Salestrack",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 0
+    },
+    {
+      "name": "MXG Weekly Report Salesperson",
+      "module": "Salestrack",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 0
+    },
+    {
+      "name": "Network Printer Settings",
+      "module": "Printing",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 0
+    },
+    {
+      "name": "Newsletter Attachment",
+      "module": "Email",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 0
+    },
+    {
+      "name": "Non Conformance",
+      "module": "Quality Management",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 0
+    },
+    {
+      "name": "Note",
+      "module": "Desk",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 0
+    },
+    {
+      "name": "Note Seen By",
+      "module": "Desk",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 0
+    },
+    {
+      "name": "Notification Subscribed Document",
+      "module": "Desk",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 0
+    },
+    {
+      "name": "OAuth Authorization Code",
+      "module": "Integrations",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 0
+    },
+    {
+      "name": "OAuth Bearer Token",
+      "module": "Integrations",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 0
+    },
+    {
+      "name": "OAuth Client",
+      "module": "Integrations",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 0
+    },
+    {
+      "name": "OAuth Client Role",
+      "module": "Integrations",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 0
+    },
+    {
+      "name": "OAuth Scope",
+      "module": "Integrations",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 0
+    },
+    {
+      "name": "Opening Invoice Creation Tool Item",
+      "module": "Accounts",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 0
+    },
+    {
+      "name": "Operation",
+      "module": "Manufacturing",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 0
+    },
+    {
+      "name": "Opportunity Lost Reason",
+      "module": "CRM",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 0
+    },
+    {
+      "name": "Opportunity Lost Reason Detail",
+      "module": "CRM",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 0
+    },
+    {
+      "name": "Overdue Payment",
+      "module": "Accounts",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 0
+    },
+    {
+      "name": "Packed Item",
+      "module": "Stock",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 0
+    },
+    {
+      "name": "Packing Slip",
+      "module": "Stock",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 0
+    },
+    {
+      "name": "Packing Slip Item",
+      "module": "Stock",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 0
+    },
+    {
+      "name": "Party Account",
+      "module": "Accounts",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 0
+    },
+    {
+      "name": "Party Link",
+      "module": "Accounts",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 0
+    },
+    {
+      "name": "Party Specific Item",
+      "module": "Selling",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 0
+    },
+    {
+      "name": "Pause SLA On Status",
+      "module": "Support",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 0
+    },
+    {
+      "name": "Payment Entry",
+      "module": "Accounts",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 0
+    },
+    {
+      "name": "Payment Entry Deduction",
+      "module": "Accounts",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 0
+    },
+    {
+      "name": "Payment Entry Reference",
+      "module": "Accounts",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 0
+    },
+    {
+      "name": "Payment Gateway Account",
+      "module": "Accounts",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 0
+    },
+    {
+      "name": "Payment Ledger Entry",
+      "module": "Accounts",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 0
+    },
+    {
+      "name": "Payment Order",
+      "module": "Accounts",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 0
+    },
+    {
+      "name": "Payment Order Reference",
+      "module": "Accounts",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 0
+    },
+    {
+      "name": "Payment Reconciliation",
+      "module": "Accounts",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 0
+    },
+    {
+      "name": "Payment Request",
+      "module": "Accounts",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 0
+    },
+    {
+      "name": "Payment Term",
+      "module": "Accounts",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 0
+    },
+    {
+      "name": "Payment Terms Template",
+      "module": "Accounts",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 0
+    },
+    {
+      "name": "Payment Terms Template Detail",
+      "module": "Accounts",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 0
+    },
+    {
+      "name": "Period Closing Voucher",
+      "module": "Accounts",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 0
+    },
+    {
+      "name": "Personal Data Deletion Request",
+      "module": "Website",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 0
+    },
+    {
+      "name": "Personal Data Deletion Step",
+      "module": "Website",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 0
+    },
+    {
+      "name": "Personal Data Download Request",
+      "module": "Website",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 0
+    },
+    {
+      "name": "Pick List",
+      "module": "Stock",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 0
+    },
+    {
+      "name": "Pick List Item",
+      "module": "Stock",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 0
+    },
+    {
+      "name": "Plant Floor",
+      "module": "Manufacturing",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 0
+    },
+    {
+      "name": "POS Closing Entry",
+      "module": "Accounts",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 0
+    },
+    {
+      "name": "POS Closing Entry Detail",
+      "module": "Accounts",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 0
+    },
+    {
+      "name": "POS Closing Entry Taxes",
+      "module": "Accounts",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 0
+    },
+    {
+      "name": "POS Customer Group",
+      "module": "Accounts",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 0
+    },
+    {
+      "name": "POS Field",
+      "module": "Accounts",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 0
+    },
+    {
+      "name": "POS Invoice",
+      "module": "Accounts",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 0
+    },
+    {
+      "name": "POS Invoice Item",
+      "module": "Accounts",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 0
+    },
+    {
+      "name": "POS Invoice Merge Log",
+      "module": "Accounts",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 0
+    },
+    {
+      "name": "POS Invoice Reference",
+      "module": "Accounts",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 0
+    },
+    {
+      "name": "POS Item Group",
+      "module": "Accounts",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 0
+    },
+    {
+      "name": "POS Opening Entry",
+      "module": "Accounts",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 0
+    },
+    {
+      "name": "POS Opening Entry Detail",
+      "module": "Accounts",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 0
+    },
+    {
+      "name": "POS Payment Method",
+      "module": "Accounts",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 0
+    },
+    {
+      "name": "POS Profile",
+      "module": "Accounts",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 0
+    },
+    {
+      "name": "POS Profile User",
+      "module": "Accounts",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 0
+    },
+    {
+      "name": "POS Search Fields",
+      "module": "Accounts",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 0
+    },
+    {
+      "name": "Price List Country",
+      "module": "Stock",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 0
+    },
+    {
+      "name": "Pricing Rule",
+      "module": "Accounts",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 0
+    },
+    {
+      "name": "Pricing Rule Brand",
+      "module": "Accounts",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 0
+    },
+    {
+      "name": "Pricing Rule Detail",
+      "module": "Accounts",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 0
+    },
+    {
+      "name": "Pricing Rule Item Code",
+      "module": "Accounts",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 0
+    },
+    {
+      "name": "Pricing Rule Item Group",
+      "module": "Accounts",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 0
+    },
+    {
+      "name": "Print Format Field Template",
+      "module": "Printing",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 0
+    },
+    {
+      "name": "Process Payment Reconciliation",
+      "module": "Accounts",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 0
+    },
+    {
+      "name": "Process Payment Reconciliation Log",
+      "module": "Accounts",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 0
+    },
+    {
+      "name": "Process Payment Reconciliation Log Allocations",
+      "module": "Accounts",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 0
+    },
+    {
+      "name": "Process Statement Of Accounts",
+      "module": "Accounts",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 0
+    },
+    {
+      "name": "Process Statement Of Accounts Customer",
+      "module": "Accounts",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 0
+    },
+    {
+      "name": "Product Bundle",
+      "module": "Selling",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 0
+    },
+    {
+      "name": "Product Bundle Item",
+      "module": "Selling",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 0
+    },
+    {
+      "name": "Production Plan",
+      "module": "Manufacturing",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 0
+    },
+    {
+      "name": "Production Plan Item",
+      "module": "Manufacturing",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 0
+    },
+    {
+      "name": "Production Plan Item Reference",
+      "module": "Manufacturing",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 0
+    },
+    {
+      "name": "Production Plan Material Request",
+      "module": "Manufacturing",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 0
+    },
+    {
+      "name": "Production Plan Material Request Warehouse",
+      "module": "Manufacturing",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 0
+    },
+    {
+      "name": "Production Plan Sales Order",
+      "module": "Manufacturing",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 0
+    },
+    {
+      "name": "Production Plan Sub Assembly Item",
+      "module": "Manufacturing",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 0
+    },
+    {
+      "name": "Project",
+      "module": "Projects",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 0
+    },
+    {
+      "name": "Project Template",
+      "module": "Projects",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 0
+    },
+    {
+      "name": "Project Template Task",
+      "module": "Projects",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 0
+    },
+    {
+      "name": "Project Update",
+      "module": "Projects",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 0
+    },
+    {
+      "name": "Project User",
+      "module": "Projects",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 0
+    },
+    {
+      "name": "Promotional Scheme",
+      "module": "Accounts",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 0
+    },
+    {
+      "name": "Promotional Scheme Price Discount",
+      "module": "Accounts",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 0
+    },
+    {
+      "name": "Promotional Scheme Product Discount",
+      "module": "Accounts",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 0
+    },
+    {
+      "name": "Prospect",
+      "module": "CRM",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 0
+    },
+    {
+      "name": "Prospect Lead",
+      "module": "CRM",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 0
+    },
+    {
+      "name": "Prospect Opportunity",
+      "module": "CRM",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 0
+    },
+    {
+      "name": "PSOA Cost Center",
+      "module": "Accounts",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 0
+    },
+    {
+      "name": "PSOA Project",
+      "module": "Accounts",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 0
+    },
+    {
+      "name": "Purchase Invoice",
+      "module": "Accounts",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 0
+    },
+    {
+      "name": "Purchase Invoice Advance",
+      "module": "Accounts",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 0
+    },
+    {
+      "name": "Purchase Invoice Item",
+      "module": "Accounts",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 0
+    },
+    {
+      "name": "Purchase Receipt",
+      "module": "Stock",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 0
+    },
+    {
+      "name": "Purchase Receipt Item",
+      "module": "Stock",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 0
+    },
+    {
+      "name": "Putaway Rule",
+      "module": "Stock",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 0
+    },
+    {
+      "name": "Quality Action",
+      "module": "Quality Management",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 0
+    },
+    {
+      "name": "Quality Action Resolution",
+      "module": "Quality Management",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 0
+    },
+    {
+      "name": "Quality Feedback",
+      "module": "Quality Management",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 0
+    },
+    {
+      "name": "Quality Feedback Parameter",
+      "module": "Quality Management",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 0
+    },
+    {
+      "name": "Quality Feedback Template",
+      "module": "Quality Management",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 0
+    },
+    {
+      "name": "Quality Feedback Template Parameter",
+      "module": "Quality Management",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 0
+    },
+    {
+      "name": "Quality Goal",
+      "module": "Quality Management",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 0
+    },
+    {
+      "name": "Quality Goal Objective",
+      "module": "Quality Management",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 0
+    },
+    {
+      "name": "Quality Inspection Parameter",
+      "module": "Stock",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 0
+    },
+    {
+      "name": "Quality Inspection Parameter Group",
+      "module": "Stock",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 0
+    },
+    {
+      "name": "Quality Inspection Reading",
+      "module": "Stock",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 0
+    },
+    {
+      "name": "Quality Inspection Template",
+      "module": "Stock",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 0
+    },
+    {
+      "name": "Quality Meeting",
+      "module": "Quality Management",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 0
+    },
+    {
+      "name": "Quality Meeting Agenda",
+      "module": "Quality Management",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 0
+    },
+    {
+      "name": "Quality Meeting Minutes",
+      "module": "Quality Management",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 0
+    },
+    {
+      "name": "Quality Procedure",
+      "module": "Quality Management",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 0
+    },
+    {
+      "name": "Quality Procedure Process",
+      "module": "Quality Management",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 0
+    },
+    {
+      "name": "Quality Review",
+      "module": "Quality Management",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 0
+    },
+    {
+      "name": "Quality Review Objective",
+      "module": "Quality Management",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 0
+    },
+    {
+      "name": "Query Parameters",
+      "module": "Integrations",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 0
+    },
+    {
+      "name": "Quotation Lost Reason",
+      "module": "Setup",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 0
+    },
+    {
+      "name": "Quotation Lost Reason Detail",
+      "module": "Setup",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 0
+    },
+    {
+      "name": "Repost Accounting Ledger",
+      "module": "Accounts",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 0
+    },
+    {
+      "name": "Repost Accounting Ledger Items",
+      "module": "Accounts",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 0
+    },
+    {
+      "name": "Repost Allowed Types",
+      "module": "Accounts",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 0
+    },
+    {
+      "name": "Repost Item Valuation",
+      "module": "Stock",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 0
+    },
+    {
+      "name": "Repost Payment Ledger",
+      "module": "Accounts",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 0
+    },
+    {
+      "name": "Repost Payment Ledger Items",
+      "module": "Accounts",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 0
+    },
+    {
+      "name": "Review Level",
+      "module": "Social",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 0
+    },
+    {
+      "name": "Routing",
+      "module": "Manufacturing",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 0
+    },
+    {
+      "name": "Sales Invoice",
+      "module": "Accounts",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 0
+    },
+    {
+      "name": "Sales Invoice Advance",
+      "module": "Accounts",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 0
+    },
+    {
+      "name": "Sales Invoice Item",
+      "module": "Accounts",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 0
+    },
+    {
+      "name": "Sales Invoice Payment",
+      "module": "Accounts",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 0
+    },
+    {
+      "name": "Sales Invoice Timesheet",
+      "module": "Accounts",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 0
+    },
+    {
+      "name": "Sales Partner",
+      "module": "Setup",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 0
+    },
+    {
+      "name": "Sales Partner Item",
+      "module": "Accounts",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 0
+    },
+    {
+      "name": "Sales Team",
+      "module": "Selling",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 0
+    },
+    {
+      "name": "Serial and Batch Bundle",
+      "module": "Stock",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 0
+    },
+    {
+      "name": "Serial and Batch Entry",
+      "module": "Stock",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 0
+    },
+    {
+      "name": "Serial No",
+      "module": "Stock",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 0
+    },
+    {
+      "name": "Service Day",
+      "module": "Support",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 0
+    },
+    {
+      "name": "Service Level Agreement",
+      "module": "Support",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 0
+    },
+    {
+      "name": "Service Level Priority",
+      "module": "Support",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 0
+    },
+    {
+      "name": "Share Balance",
+      "module": "Accounts",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 0
+    },
+    {
+      "name": "Share Transfer",
+      "module": "Accounts",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 0
+    },
+    {
+      "name": "Shareholder",
+      "module": "Accounts",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 0
+    },
+    {
+      "name": "Shipment",
+      "module": "Stock",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 0
+    },
+    {
+      "name": "Shipment Delivery Note",
+      "module": "Stock",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 0
+    },
+    {
+      "name": "Shipment Parcel",
+      "module": "Stock",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 0
+    },
+    {
+      "name": "Shipment Parcel Template",
+      "module": "Stock",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 0
+    },
+    {
+      "name": "Shipping Rule",
+      "module": "Accounts",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 0
+    },
+    {
+      "name": "Shipping Rule Condition",
+      "module": "Accounts",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 0
+    },
+    {
+      "name": "Shipping Rule Country",
+      "module": "Accounts",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 0
+    },
+    {
+      "name": "SLA Fulfilled On Status",
+      "module": "Support",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 0
+    },
+    {
+      "name": "Slack Webhook URL",
+      "module": "Integrations",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 0
+    },
+    {
+      "name": "SMS Log",
+      "module": "Utilities",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 0
+    },
+    {
+      "name": "Social Link Settings",
+      "module": "Website",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 0
+    },
+    {
+      "name": "Social Login Key",
+      "module": "Integrations",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 0
+    },
+    {
+      "name": "South Africa VAT Account",
+      "module": "Accounts",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 0
+    },
+    {
+      "name": "South Africa VAT Settings",
+      "module": "Regional",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 0
+    },
+    {
+      "name": "Specification Sheets",
+      "module": "Salestrack",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 0
+    },
+    {
+      "name": "SRD Product Support Visit Defects",
+      "module": "SRD",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 0
+    },
+    {
+      "name": "SRD Rental Agreement Equipment",
+      "module": "SRD",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 0
+    },
+    {
+      "name": "SRD Rental Certificate Machine Hours",
+      "module": "Salestrack",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 0
+    },
+    {
+      "name": "Stock Ledger Entry",
+      "module": "Stock",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 0
+    },
+    {
+      "name": "Stock Reconciliation",
+      "module": "Stock",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 0
+    },
+    {
+      "name": "Stock Reconciliation Item",
+      "module": "Stock",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 0
+    },
+    {
+      "name": "Stock Reservation Entry",
+      "module": "Stock",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 0
+    },
+    {
+      "name": "Stock Sheet",
+      "module": "Salestrack",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 0
+    },
+    {
+      "name": "Sub Operation",
+      "module": "Manufacturing",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 0
+    },
+    {
+      "name": "Subcontracting BOM",
+      "module": "Subcontracting",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 0
+    },
+    {
+      "name": "Subcontracting Order",
+      "module": "Subcontracting",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 0
+    },
+    {
+      "name": "Subcontracting Order Item",
+      "module": "Subcontracting",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 0
+    },
+    {
+      "name": "Subcontracting Order Service Item",
+      "module": "Subcontracting",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 0
+    },
+    {
+      "name": "Subcontracting Order Supplied Item",
+      "module": "Subcontracting",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 0
+    },
+    {
+      "name": "Subcontracting Receipt",
+      "module": "Subcontracting",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 0
+    },
+    {
+      "name": "Subcontracting Receipt Item",
+      "module": "Subcontracting",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 0
+    },
+    {
+      "name": "Subcontracting Receipt Supplied Item",
+      "module": "Subcontracting",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 0
+    },
+    {
+      "name": "Submission Queue",
+      "module": "Core",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 0
+    },
+    {
+      "name": "Subscription",
+      "module": "Accounts",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 0
+    },
+    {
+      "name": "Subscription Invoice",
+      "module": "Accounts",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 0
+    },
+    {
+      "name": "Subscription Plan",
+      "module": "Accounts",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 0
+    },
+    {
+      "name": "Subscription Plan Detail",
+      "module": "Accounts",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 0
+    },
+    {
+      "name": "Supplier Group Item",
+      "module": "Accounts",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 0
+    },
+    {
+      "name": "Supplier Item",
+      "module": "Accounts",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 0
+    },
+    {
+      "name": "Support Search Source",
+      "module": "Support",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 0
+    },
+    {
+      "name": "Tally Migration",
+      "module": "ERPNext Integrations",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 0
+    },
+    {
+      "name": "Target Detail",
+      "module": "Setup",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 0
+    },
+    {
+      "name": "Task",
+      "module": "Projects",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 0
+    },
+    {
+      "name": "Task Depends On",
+      "module": "Projects",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 0
+    },
+    {
+      "name": "Task Type",
+      "module": "Projects",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 0
+    },
+    {
+      "name": "Tax Category",
+      "module": "Accounts",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 0
+    },
+    {
+      "name": "Tax Rule",
+      "module": "Accounts",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 0
+    },
+    {
+      "name": "Tax Withheld Vouchers",
+      "module": "Accounts",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 0
+    },
+    {
+      "name": "Tax Withholding Account",
+      "module": "Accounts",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 0
+    },
+    {
+      "name": "Tax Withholding Category",
+      "module": "Accounts",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 0
+    },
+    {
+      "name": "Tax Withholding Rate",
+      "module": "Accounts",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 0
+    },
+    {
+      "name": "Telephony Call Type",
+      "module": "Telephony",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 0
+    },
+    {
+      "name": "Territory Item",
+      "module": "Accounts",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 0
+    },
+    {
+      "name": "Timesheet",
+      "module": "Projects",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 0
+    },
+    {
+      "name": "Timesheet Detail",
+      "module": "Projects",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 0
+    },
+    {
+      "name": "Token Cache",
+      "module": "Integrations",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 0
+    },
+    {
+      "name": "Top Bar Item",
+      "module": "Website",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 0
+    },
+    {
+      "name": "Transaction Deletion Record",
+      "module": "Setup",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 0
+    },
+    {
+      "name": "Transaction Deletion Record Details",
+      "module": "Accounts",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 0
+    },
+    {
+      "name": "Transaction Deletion Record Item",
+      "module": "Setup",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 0
+    },
+    {
+      "name": "UAE VAT Account",
+      "module": "Regional",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 0
+    },
+    {
+      "name": "UAE VAT Settings",
+      "module": "Regional",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 0
+    },
+    {
+      "name": "Unhandled Email",
+      "module": "Email",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 0
+    },
+    {
+      "name": "Unreconcile Payment",
+      "module": "Accounts",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 0
+    },
+    {
+      "name": "Unreconcile Payment Entries",
+      "module": "Accounts",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 0
+    },
+    {
+      "name": "User Document Type",
+      "module": "Core",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 0
+    },
+    {
+      "name": "User Group",
+      "module": "Core",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 0
+    },
+    {
+      "name": "User Group Member",
+      "module": "Core",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 0
+    },
+    {
+      "name": "User Select Document Type",
+      "module": "Core",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 0
+    },
+    {
+      "name": "User Type Module",
+      "module": "Core",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 0
+    },
+    {
+      "name": "Vehicle",
+      "module": "Setup",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 0
+    },
+    {
+      "name": "Video",
+      "module": "Utilities",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 0
+    },
+    {
+      "name": "Voice Call Settings",
+      "module": "Telephony",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 0
+    },
+    {
+      "name": "Warranty Claim",
+      "module": "Support",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 0
+    },
+    {
+      "name": "Web Form List Column",
+      "module": "Website",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 0
+    },
+    {
+      "name": "Web Page Block",
+      "module": "Website",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 0
+    },
+    {
+      "name": "Web Page View",
+      "module": "Website",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 0
+    },
+    {
+      "name": "Webhook Data",
+      "module": "Integrations",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 0
+    },
+    {
+      "name": "Webhook Request Log",
+      "module": "Integrations",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 0
+    },
+    {
+      "name": "Website Attribute",
+      "module": "Portal",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 0
+    },
+    {
+      "name": "Website Filter Field",
+      "module": "Portal",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 0
+    },
+    {
+      "name": "Website Item Group",
+      "module": "Setup",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 0
+    },
+    {
+      "name": "Website Meta Tag",
+      "module": "Website",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 0
+    },
+    {
+      "name": "Website Route Meta",
+      "module": "Website",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 0
+    },
+    {
+      "name": "Website Route Redirect",
+      "module": "Website",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 0
+    },
+    {
+      "name": "Website Sidebar",
+      "module": "Website",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 0
+    },
+    {
+      "name": "Website Sidebar Item",
+      "module": "Website",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 0
+    },
+    {
+      "name": "Website Slideshow",
+      "module": "Website",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 0
+    },
+    {
+      "name": "Website Slideshow Item",
+      "module": "Website",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 0
+    },
+    {
+      "name": "Website Theme Ignore App",
+      "module": "Website",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 0
+    },
+    {
+      "name": "Work Order",
+      "module": "Manufacturing",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 0
+    },
+    {
+      "name": "Work Order Item",
+      "module": "Manufacturing",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 0
+    },
+    {
+      "name": "Work Order Operation",
+      "module": "Manufacturing",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 0
+    },
+    {
+      "name": "Workflow Document State",
+      "module": "Workflow",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 0
+    },
+    {
+      "name": "Workflow Transition",
+      "module": "Workflow",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 0
+    },
+    {
+      "name": "Workstation",
+      "module": "Manufacturing",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 0
+    },
+    {
+      "name": "Workstation Type",
+      "module": "Manufacturing",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 0
+    },
+    {
+      "name": "Workstation Working Hour",
+      "module": "Manufacturing",
+      "is_child": false,
+      "is_single": false,
+      "record_count": 0
+    }
+  ],
+  "denied": [
+    {
+      "name": "Audit Trail",
+      "module": "Core",
+      "is_child": false,
+      "is_single": false,
+      "record_count": -1
+    },
+    {
+      "name": "Buying Settings",
+      "module": "Buying",
+      "is_child": false,
+      "is_single": false,
+      "record_count": -1
+    },
+    {
+      "name": "Document Naming Settings",
+      "module": "Core",
+      "is_child": false,
+      "is_single": false,
+      "record_count": -1
+    },
+    {
+      "name": "Domain Settings",
+      "module": "Core",
+      "is_child": false,
+      "is_single": false,
+      "record_count": -1
+    },
+    {
+      "name": "Installed Applications",
+      "module": "Core",
+      "is_child": false,
+      "is_single": false,
+      "record_count": -1
+    },
+    {
+      "name": "Log Settings",
+      "module": "Core",
+      "is_child": false,
+      "is_single": false,
+      "record_count": -1
+    },
+    {
+      "name": "Navbar Settings",
+      "module": "Core",
+      "is_child": false,
+      "is_single": false,
+      "record_count": -1
+    },
+    {
+      "name": "Recorder Query",
+      "module": "Core",
+      "is_child": false,
+      "is_single": false,
+      "record_count": -1
+    },
+    {
+      "name": "Recorder Suggested Index",
+      "module": "Core",
+      "is_child": false,
+      "is_single": false,
+      "record_count": -1
+    },
+    {
+      "name": "Role Permission for Page and Report",
+      "module": "Core",
+      "is_child": false,
+      "is_single": false,
+      "record_count": -1
+    },
+    {
+      "name": "RQ Job",
+      "module": "Core",
+      "is_child": false,
+      "is_single": false,
+      "record_count": -1
+    },
+    {
+      "name": "About Us Settings",
+      "module": "Website",
+      "is_child": false,
+      "is_single": false,
+      "record_count": -1
+    },
+    {
+      "name": "Accounts Settings",
+      "module": "Accounts",
+      "is_child": false,
+      "is_single": false,
+      "record_count": -1
+    },
+    {
+      "name": "Appointment Booking Settings",
+      "module": "CRM",
+      "is_child": false,
+      "is_single": false,
+      "record_count": -1
+    },
+    {
+      "name": "Authorization Control",
+      "module": "Setup",
+      "is_child": false,
+      "is_single": false,
+      "record_count": -1
+    },
+    {
+      "name": "Bank Clearance",
+      "module": "Accounts",
+      "is_child": false,
+      "is_single": false,
+      "record_count": -1
+    },
+    {
+      "name": "Bank Reconciliation Tool",
+      "module": "Accounts",
+      "is_child": false,
+      "is_single": false,
+      "record_count": -1
+    },
+    {
+      "name": "Bisect Accounting Statements",
+      "module": "Accounts",
+      "is_child": false,
+      "is_single": false,
+      "record_count": -1
+    },
+    {
+      "name": "Blog Settings",
+      "module": "Website",
+      "is_child": false,
+      "is_single": false,
+      "record_count": -1
+    },
+    {
+      "name": "BOM Update Tool",
+      "module": "Manufacturing",
+      "is_child": false,
+      "is_single": false,
+      "record_count": -1
+    },
+    {
+      "name": "Chart of Accounts Importer",
+      "module": "Accounts",
+      "is_child": false,
+      "is_single": false,
+      "record_count": -1
+    },
+    {
+      "name": "Contact Us Settings",
+      "module": "Website",
+      "is_child": false,
+      "is_single": false,
+      "record_count": -1
+    },
+    {
+      "name": "CRM Settings",
+      "module": "CRM",
+      "is_child": false,
+      "is_single": false,
+      "record_count": -1
+    },
+    {
+      "name": "Currency Exchange Settings",
+      "module": "Accounts",
+      "is_child": false,
+      "is_single": false,
+      "record_count": -1
+    },
+    {
+      "name": "Customize Form",
+      "module": "Custom",
+      "is_child": false,
+      "is_single": false,
+      "record_count": -1
+    },
+    {
+      "name": "Delivery Settings",
+      "module": "Stock",
+      "is_child": false,
+      "is_single": false,
+      "record_count": -1
+    },
+    {
+      "name": "Dropbox Settings",
+      "module": "Integrations",
+      "is_child": false,
+      "is_single": false,
+      "record_count": -1
+    },
+    {
+      "name": "Energy Point Settings",
+      "module": "Social",
+      "is_child": false,
+      "is_single": false,
+      "record_count": -1
+    },
+    {
+      "name": "Global Defaults",
+      "module": "Setup",
+      "is_child": false,
+      "is_single": false,
+      "record_count": -1
+    },
+    {
+      "name": "Global Search Settings",
+      "module": "Desk",
+      "is_child": false,
+      "is_single": false,
+      "record_count": -1
+    },
+    {
+      "name": "Google Drive",
+      "module": "Integrations",
+      "is_child": false,
+      "is_single": false,
+      "record_count": -1
+    },
+    {
+      "name": "Google Settings",
+      "module": "Integrations",
+      "is_child": false,
+      "is_single": false,
+      "record_count": -1
+    },
+    {
+      "name": "Homepage",
+      "module": "Portal",
+      "is_child": false,
+      "is_single": false,
+      "record_count": -1
+    },
+    {
+      "name": "Item Variant Settings",
+      "module": "Stock",
+      "is_child": false,
+      "is_single": false,
+      "record_count": -1
+    },
+    {
+      "name": "LDAP Settings",
+      "module": "Integrations",
+      "is_child": false,
+      "is_single": false,
+      "record_count": -1
+    },
+    {
+      "name": "Ledger Health Monitor",
+      "module": "Accounts",
+      "is_child": false,
+      "is_single": false,
+      "record_count": -1
+    },
+    {
+      "name": "Manufacturing Settings",
+      "module": "Manufacturing",
+      "is_child": false,
+      "is_single": false,
+      "record_count": -1
+    },
+    {
+      "name": "OAuth Provider Settings",
+      "module": "Integrations",
+      "is_child": false,
+      "is_single": false,
+      "record_count": -1
+    },
+    {
+      "name": "Opening Invoice Creation Tool",
+      "module": "Accounts",
+      "is_child": false,
+      "is_single": false,
+      "record_count": -1
+    },
+    {
+      "name": "Payment Reconciliation Allocation",
+      "module": "Accounts",
+      "is_child": false,
+      "is_single": false,
+      "record_count": -1
+    },
+    {
+      "name": "Payment Reconciliation Invoice",
+      "module": "Accounts",
+      "is_child": false,
+      "is_single": false,
+      "record_count": -1
+    },
+    {
+      "name": "Payment Reconciliation Payment",
+      "module": "Accounts",
+      "is_child": false,
+      "is_single": false,
+      "record_count": -1
+    },
+    {
+      "name": "Plaid Settings",
+      "module": "ERPNext Integrations",
+      "is_child": false,
+      "is_single": false,
+      "record_count": -1
+    },
+    {
+      "name": "Portal Settings",
+      "module": "Website",
+      "is_child": false,
+      "is_single": false,
+      "record_count": -1
+    },
+    {
+      "name": "POS Settings",
+      "module": "Accounts",
+      "is_child": false,
+      "is_single": false,
+      "record_count": -1
+    },
+    {
+      "name": "Print Settings",
+      "module": "Printing",
+      "is_child": false,
+      "is_single": false,
+      "record_count": -1
+    },
+    {
+      "name": "Projects Settings",
+      "module": "Projects",
+      "is_child": false,
+      "is_single": false,
+      "record_count": -1
+    },
+    {
+      "name": "Push Notification Settings",
+      "module": "Integrations",
+      "is_child": false,
+      "is_single": false,
+      "record_count": -1
+    },
+    {
+      "name": "Quick Stock Balance",
+      "module": "Stock",
+      "is_child": false,
+      "is_single": false,
+      "record_count": -1
+    },
+    {
+      "name": "QuickBooks Migrator",
+      "module": "ERPNext Integrations",
+      "is_child": false,
+      "is_single": false,
+      "record_count": -1
+    },
+    {
+      "name": "Rename Tool",
+      "module": "Utilities",
+      "is_child": false,
+      "is_single": false,
+      "record_count": -1
+    },
+    {
+      "name": "Repost Accounting Ledger Settings",
+      "module": "Accounts",
+      "is_child": false,
+      "is_single": false,
+      "record_count": -1
+    },
+    {
+      "name": "S3 Backup Settings",
+      "module": "Integrations",
+      "is_child": false,
+      "is_single": false,
+      "record_count": -1
+    },
+    {
+      "name": "Selling Settings",
+      "module": "Selling",
+      "is_child": false,
+      "is_single": false,
+      "record_count": -1
+    },
+    {
+      "name": "Session Default Settings",
+      "module": "Core",
+      "is_child": false,
+      "is_single": false,
+      "record_count": -1
+    },
+    {
+      "name": "SMS Center",
+      "module": "Selling",
+      "is_child": false,
+      "is_single": false,
+      "record_count": -1
+    },
+    {
+      "name": "SMS Settings",
+      "module": "Core",
+      "is_child": false,
+      "is_single": false,
+      "record_count": -1
+    },
+    {
+      "name": "Stock Pipeline Dashboard",
+      "module": "Stock Pipeline",
+      "is_child": false,
+      "is_single": false,
+      "record_count": -1
+    },
+    {
+      "name": "Stock Reposting Settings",
+      "module": "Stock",
+      "is_child": false,
+      "is_single": false,
+      "record_count": -1
+    },
+    {
+      "name": "Stock Settings",
+      "module": "Stock",
+      "is_child": false,
+      "is_single": false,
+      "record_count": -1
+    },
+    {
+      "name": "Subscription Settings",
+      "module": "Accounts",
+      "is_child": false,
+      "is_single": false,
+      "record_count": -1
+    },
+    {
+      "name": "Support Settings",
+      "module": "Support",
+      "is_child": false,
+      "is_single": false,
+      "record_count": -1
+    },
+    {
+      "name": "System Console",
+      "module": "Desk",
+      "is_child": false,
+      "is_single": false,
+      "record_count": -1
+    },
+    {
+      "name": "System Health Report",
+      "module": "Desk",
+      "is_child": false,
+      "is_single": false,
+      "record_count": -1
+    },
+    {
+      "name": "System Health Report Errors",
+      "module": "Desk",
+      "is_child": false,
+      "is_single": false,
+      "record_count": -1
+    },
+    {
+      "name": "System Health Report Failing Jobs",
+      "module": "Desk",
+      "is_child": false,
+      "is_single": false,
+      "record_count": -1
+    },
+    {
+      "name": "System Health Report Queue",
+      "module": "Desk",
+      "is_child": false,
+      "is_single": false,
+      "record_count": -1
+    },
+    {
+      "name": "System Health Report Tables",
+      "module": "Desk",
+      "is_child": false,
+      "is_single": false,
+      "record_count": -1
+    },
+    {
+      "name": "System Health Report Workers",
+      "module": "Desk",
+      "is_child": false,
+      "is_single": false,
+      "record_count": -1
+    },
+    {
+      "name": "Video Settings",
+      "module": "Utilities",
+      "is_child": false,
+      "is_single": false,
+      "record_count": -1
+    },
+    {
+      "name": "Website Script",
+      "module": "Website",
+      "is_child": false,
+      "is_single": false,
+      "record_count": -1
+    }
+  ]
+}

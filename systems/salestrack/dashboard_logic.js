@@ -5520,6 +5520,7 @@ window.OmnisDashboardV6 = class OmnisDashboardV6 {
     }
 
     loadSettings() {
+        try { this.loadEmailRecipients(); } catch(e) {}
         const key = localStorage.getItem('omnis_openai_key');
         const input = document.getElementById('settings-openai-key');
         if (input && key) {
@@ -5968,11 +5969,9 @@ window.OmnisDashboardV6 = class OmnisDashboardV6 {
             }
 
             const introVariations = [
-                "Here is the latest status update for your equipment order.",
-                "Please find the current progress of your equipment order below.",
-                "We've updated the status of your equipment order. See details below.",
-                "Your equipment order has a new update. Current details are below.",
-                "Sharing the latest timeline and status for your equipment order."
+                `We hope this message finds you well. Thank you for choosing ${company || 'us'} as your equipment partner. Please find the latest progress update for ${customerName ? customerName + "'s" : "your"} order below.`,
+                `We appreciate your continued business. Here is the latest status update for ${customerName ? customerName + "'s" : "your"} equipment order.`,
+                `Thank you for trusting ${company || 'us'} with your equipment needs. Please see the current timeline and details for your order below.`
             ];
             const randomIntro = introVariations[Math.floor(Math.random() * introVariations.length)];
 
@@ -6124,11 +6123,9 @@ window.OmnisDashboardV6 = class OmnisDashboardV6 {
             for (const contact of validContacts) {
                 const greetingName = contact.salutation ? `${contact.salutation} ${contact.name}` : contact.name;
                 const introVariations = [
-                    "Here is the latest status update for your equipment order.",
-                    "Please find the current progress of your equipment order below.",
-                    "We've updated the status of your equipment order. See details below.",
-                    "Your equipment order has a new update. Current details are below.",
-                    "Sharing the latest timeline and status for your equipment order."
+                    `We hope this message finds you well. Thank you for choosing ${company || 'us'} as your equipment partner. Please find the latest progress update for ${this._currentFullDoc?.customer || "your"} order below.`,
+                    `We appreciate your continued business. Here is the latest status update for ${this._currentFullDoc?.customer || "your"} equipment order.`,
+                    `Thank you for trusting ${company || 'us'} with your equipment needs. Please see the current timeline and details for your order below.`
                 ];
                 const randomIntro = introVariations[Math.floor(Math.random() * introVariations.length)];
 
@@ -6230,14 +6227,206 @@ window.OmnisDashboardV6 = class OmnisDashboardV6 {
 
     /* ---------- EMAIL UPDATE INTEGRATION ---------- */
 
+    // ── EMAIL RECIPIENTS SETTINGS ──────────────────────────────
+    _defaultEmailRecipients() {
+        return {
+            mxg: [
+                'takunda@industrial-exchange.group', 'antony@industrial-exchange.group',
+                'sales.humphrey@machinery-exchange.com', 'chetan.samji@machinery-exchange.com',
+                'equipment@machinery-exchange.com', 'sales@machinery-exchange.com',
+                'robin.hunter@machinery-exchange.com', 'rutendo@industrial-exchange.group',
+                'mathew@industrial-exchange.group', 'barry@industrial-exchange.group',
+                'brendan@industrial-exchange.group'
+            ],
+            spz: [
+                'takunda@industrial-exchange.group', 'antony@industrial-exchange.group',
+                'logistics@sinopower.co.zw', 'brett@sinopower.co.zw', 'trucks@sinopower.co.zw',
+                'rutendo@industrial-exchange.group', 'louis@industrial-exchange.group',
+                'mathew@industrial-exchange.group', 'barry@industrial-exchange.group',
+                'brendan@industrial-exchange.group'
+            ]
+        };
+    }
+
+    loadEmailRecipients() {
+        try {
+            const saved = JSON.parse(localStorage.getItem('omnis_email_recipients') || '{}');
+            const defs  = this._defaultEmailRecipients();
+            const mxgEl = document.getElementById('email-recipients-mxg');
+            const spzEl = document.getElementById('email-recipients-spz');
+            if (mxgEl) mxgEl.value = (saved.mxg || defs.mxg).join('\n');
+            if (spzEl) spzEl.value = (saved.spz || defs.spz).join('\n');
+        } catch(e) { console.error('loadEmailRecipients', e); }
+    }
+
+    saveEmailRecipients() {
+        try {
+            const mxgEl = document.getElementById('email-recipients-mxg');
+            const spzEl = document.getElementById('email-recipients-spz');
+            const mxg = mxgEl ? mxgEl.value.split('\n').map(e => e.trim()).filter(Boolean) : [];
+            const spz = spzEl ? spzEl.value.split('\n').map(e => e.trim()).filter(Boolean) : [];
+            localStorage.setItem('omnis_email_recipients', JSON.stringify({ mxg, spz }));
+            this.showToast('Email recipients saved', 'success');
+        } catch(e) { this.showToast('Failed to save recipients', 'error'); }
+    }
+
+    resetEmailRecipients() {
+        const defs  = this._defaultEmailRecipients();
+        const mxgEl = document.getElementById('email-recipients-mxg');
+        const spzEl = document.getElementById('email-recipients-spz');
+        if (mxgEl) mxgEl.value = defs.mxg.join('\n');
+        if (spzEl) spzEl.value = defs.spz.join('\n');
+        this.saveEmailRecipients();
+    }
+
+    _getRecipients(company) {
+        let saved = {};
+        try { saved = JSON.parse(localStorage.getItem('omnis_email_recipients') || '{}'); } catch(e) {}
+        const defs = this._defaultEmailRecipients();
+        if (company && company.includes('Sinopower'))
+            return { label: 'Sinopower',          emails: saved.spz || defs.spz };
+        return     { label: 'Machinery Exchange', emails: saved.mxg || defs.mxg };
+    }
+
+    _buildEmailHTML(customerName, greetingName, company, machines, doc) {
+        const isUnassigned = !company || company.toLowerCase() === 'unassigned';
+        const isSino       = !isUnassigned && company.includes('Sinopower');
+        
+        let brand, colour, logo, contactEmail, contactName;
+        
+        if (isUnassigned) {
+            brand        = 'Unassigned Order';
+            colour       = '#475569'; // Neutral slate
+            logo         = null;
+            contactEmail = '';
+            contactName  = 'our Support Team';
+        } else if (isSino) {
+            brand        = 'Sinopower';
+            colour       = '#7b1515';
+            logo         = 'https://pfqaeewmlwfayxbgmuaq.supabase.co/storage/v1/object/public/public-assets/logos/spz-logo.png';
+            contactEmail = 'brett@sinopower.co.zw';
+            contactName  = 'Brett Berry';
+        } else {
+            brand        = 'Machinery Exchange';
+            colour       = '#c92222';
+            logo         = 'https://pfqaeewmlwfayxbgmuaq.supabase.co/storage/v1/object/public/public-assets/logos/mxg-logo.png';
+            contactEmail = 'chetan.samji@machinery-exchange.com';
+            contactName  = 'Chetan Samji';
+        }
+
+        const fmt = d => {
+            if (!d) return '';
+            try { const dt = new Date(d); return isNaN(dt) ? d : dt.toLocaleDateString('en-GB', {day:'2-digit',month:'long',year:'numeric'}); }
+            catch(e) { return d; }
+        };
+        const TH = (t, al='left', nw=false) =>
+            `<th style="padding:16px 20px;text-align:${al};color:white;font-size:12px;font-weight:800;text-transform:uppercase;letter-spacing:.05em;white-space:${nw?'nowrap':'normal'};border-bottom:2px solid rgba(0,0,0,0.1);">${t}</th>`;
+        const TD = (v, al='left', nw=false) =>
+            `<td style="padding:16px 20px;text-align:${al};font-size:15px;color:#334155;vertical-align:top;white-space:${nw?'nowrap':'normal'};border-bottom:1px solid #e2e8f0;">${v||''}</td>`;
+
+        const showQty   = machines.some(m=>m.qty)    || doc.quantity;
+        const showStat  = machines.some(m=>m.status) || !!doc.status_issue;
+        const showProd  = !!doc.production_completion_date;
+        const showEtd   = !!doc.estimated_time_of_departure;
+        const showEtaB  = !!doc.estimated_time_of_arrival_beira;
+        const showEtaH  = !!doc.estimated_time_of_arrival_harare;
+        const showThd   = machines.some(m=>m.target)  || doc.target_handover_date;
+        const showRthd  = machines.some(m=>m.revised) || doc.revised_target_handover_date;
+        const showAhd   = machines.some(m=>m.actual)  || doc.actual_handover_date;
+        const showNotes = machines.some(m=>m.notes)   || doc.comment;
+
+        let headers = TH('Machine Details');
+        if (showQty)   headers += TH('Qty','center');
+        if (showStat)  headers += TH('Status');
+        if (showProd)  headers += TH('Production Date','center',true);
+        if (showEtd)   headers += TH('Est. Shipping','center',true);
+        if (showEtaB)  headers += TH('ETA Beira','center',true);
+        if (showEtaH)  headers += TH('ETA Harare','center',true);
+        // Merge target+revised into one column header
+        if (showThd || showRthd) headers += TH('Target Handover','center',true);
+        if (showAhd)   headers += TH('Actual Handover','center',true);
+        if (showNotes) headers += TH('Notes');
+
+        const list = machines.length ? machines
+            : [{ name: doc.machine||'', serial:'', qty:doc.quantity||'', target:doc.target_handover_date||'', revised:'', actual:'', notes:doc.comment||'' }];
+
+        const rows = list.map((m,i) => {
+            const bg = i%2===0 ? '#f5fafd' : '#ffffff';
+            const sn = m.serial ? `<div style="color:#64748b;font-size:12px;margin-top:3px;">SN: ${m.serial}</div>` : '';
+            // Image thumbnail inline if present - increased size and made clickable
+            const imgHtml = m.imageUrl ? `<div style="margin-top:12px;"><a href="${m.imageUrl}" target="_blank" style="display:inline-block;"><img src="${m.imageUrl}" alt="Click to enlarge" style="height:160px;width:auto;border-radius:8px;border:2px solid #cbd5e1;box-shadow:0 3px 10px rgba(0,0,0,0.08);transition:opacity 0.2s;"></a></div>` : '';
+            let row = `<td style="padding:20px 24px;font-size:15px;color:#0f172a;font-weight:600;border-bottom:1px solid #cbd5e1;"><strong>${m.name}</strong>${sn}${imgHtml}</td>`;
+            if (showQty)   row += `<td style="padding:20px 24px;text-align:center;font-size:15px;color:#334155;vertical-align:top;border-bottom:1px solid #cbd5e1;">${m.qty||doc.quantity||''}</td>`;
+            if (showStat)  row += `<td style="padding:20px 24px;font-size:15px;color:#334155;vertical-align:top;border-bottom:1px solid #cbd5e1;">${m.status||doc.status_issue||''}</td>`;
+            if (showProd)  row += `<td style="padding:20px 24px;text-align:center;font-size:15px;color:#334155;vertical-align:top;white-space:nowrap;border-bottom:1px solid #cbd5e1;">${fmt(doc.production_completion_date)||'—'}</td>`;
+            if (showEtd)   row += `<td style="padding:20px 24px;text-align:center;font-size:15px;color:#334155;vertical-align:top;white-space:nowrap;border-bottom:1px solid #cbd5e1;">${fmt(doc.estimated_time_of_departure)||'—'}</td>`;
+            if (showEtaB)  row += `<td style="padding:20px 24px;text-align:center;font-size:15px;color:#334155;vertical-align:top;white-space:nowrap;border-bottom:1px solid #cbd5e1;">${fmt(doc.estimated_time_of_arrival_beira)||'—'}</td>`;
+            if (showEtaH)  row += `<td style="padding:20px 24px;text-align:center;font-size:15px;color:#334155;vertical-align:top;white-space:nowrap;border-bottom:1px solid #cbd5e1;">${fmt(doc.estimated_time_of_arrival_harare)||'—'}</td>`;
+            // Target handover: if revised exists, show revised in red with badge; else show target
+            if (showThd || showRthd) {
+                const tDate  = fmt(m.target||doc.target_handover_date);
+                const rDate  = fmt(m.revised||doc.revised_target_handover_date);
+                if (rDate) {
+                    row += `<td style="padding:20px 24px;text-align:center;font-size:15px;color:#334155;vertical-align:top;white-space:nowrap;border-bottom:1px solid #cbd5e1;">`
+                        + `<div style="color:#dc2626;font-weight:700;">${rDate}</div>`
+                        + `<div style="display:inline-block;background:#fee2e2;color:#dc2626;font-size:10px;font-weight:800;padding:3px 8px;border-radius:12px;margin-top:5px;text-transform:uppercase;letter-spacing:.05em;">REVISED</div>`
+                        + (tDate ? `<div style="color:#94a3b8;font-size:12px;margin-top:6px;text-decoration:line-through;">${tDate}</div>` : '')
+                        + `</td>`;
+                } else {
+                    row += `<td style="padding:20px 24px;text-align:center;font-size:15px;color:#334155;vertical-align:top;white-space:nowrap;border-bottom:1px solid #cbd5e1;">${tDate||'—'}</td>`;
+                }
+            }
+            if (showAhd)   row += `<td style="padding:20px 24px;text-align:center;font-size:15px;color:#334155;vertical-align:top;white-space:nowrap;border-bottom:1px solid #cbd5e1;">${fmt(m.actual||doc.actual_handover_date)||'—'}</td>`;
+            if (showNotes) row += `<td style="padding:20px 24px;font-size:14px;color:#334155;vertical-align:top;border-bottom:1px solid #cbd5e1;"><em>${m.notes||doc.comment||''}</em></td>`;
+            return `<tr style="background:${bg};">${row}</tr>`;
+        }).join('');
+
+        const currentDate = new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'long', year: 'numeric' });
+        const orderRef = doc.name ? `<div style="font-size:13px;color:rgba(255,255,255,.9);margin-top:8px;font-weight:600;">Ref: ${doc.name}</div>` : '';
+
+        return `<!DOCTYPE html><html><head><meta charset="utf-8"></head>
+<body style="margin:0;padding:24px;font-family:Arial,'Helvetica Neue',sans-serif;background:#f0f4f8;">
+<div style="max-width:920px;margin:0 auto;background:#fff;border-radius:12px;overflow:hidden;box-shadow:0 8px 30px rgba(0,0,0,0.12);">
+  <table style="width:100%;border-collapse:collapse;background:${colour};" cellpadding="0" cellspacing="0"><tr>
+    <td style="padding:24px 32px;vertical-align:middle;width:45%;">
+      ${logo ? `<img src="${logo}" alt="${brand}" style="display:block;height:125px;width:auto;max-width:300px;filter:drop-shadow(0 2px 4px rgba(0,0,0,0.2));">` : ''}
+    </td>
+    <td style="padding:24px 32px;vertical-align:middle;text-align:right;width:55%;">
+      <div style="font-size:24px;font-weight:800;color:#fff;letter-spacing:-0.5px;">${brand}</div>
+      <div style="font-size:13px;color:rgba(255,255,255,.8);margin-top:6px;text-transform:uppercase;letter-spacing:.08em;font-weight:700;">Equipment Order Status Report</div>
+      ${orderRef}
+      <div style="font-size:13px;color:rgba(255,255,255,.8);margin-top:4px;">Date: ${currentDate}</div>
+    </td>
+  </tr></table>
+  <div style="padding:32px 32px 16px;">
+    <p style="margin:0;font-size:16px;color:#0f172a;line-height:1.7;">
+      Dear <strong>${greetingName}</strong>,<br><br>
+      We hope this email finds you well. Thank you for choosing ${brand === 'Unassigned Order' ? 'us' : brand} as your equipment partner. Please find the latest status update for ${customerName ? customerName + "'s" : "your"} equipment order${doc.name ? ` (Ref: <strong>${doc.name}</strong>)` : ''} detailed below.<br><br>
+      We appreciate your continued business and trust in our team. Should you have any questions or require further assistance, please do not hesitate to contact ${contactEmail ? `our Commercial Manager, <a href="mailto:${contactEmail}" style="color:${colour};font-weight:700;text-decoration:none;">${contactName}</a>` : 'our Support Team'}.
+    </p>
+  </div>
+  <div style="padding:16px 32px 36px;overflow-x:auto;">
+    <table style="width:100%;border-collapse:separate;border-spacing:0;font-size:15px;border:1px solid #cbd5e1;border-radius:8px;overflow:hidden;box-shadow:0 4px 6px -1px rgba(0,0,0,0.05);" cellpadding="0" cellspacing="0">
+      <thead><tr style="background:${colour};">${headers}</tr></thead>
+      <tbody>${rows}</tbody>
+    </table>
+  </div>
+  <div style="background:#f8fafc;border-top:1px solid #e2e8f0;padding:12px 28px;font-size:11px;color:#94a3b8;text-align:center;">
+    This is an automated update from ${brand}. Please do not reply to this email.
+    &copy; ${brand} &mdash; Omnis Order Management System
+  </div>
+</div></body></html>`;
+    }
+
     async initEmailUpdate(reportId) {
         const btn = document.getElementById('btn-send-email-update');
         const originalHtml = btn ? btn.innerHTML : '';
 
+        // ── 1. Contacts (To) ──────────────────────────────────────────
         const emailContacts = [];
         document.querySelectorAll('#contacts-tbody tr').forEach(row => {
-            const sal = row.querySelector('input[data-field="salutation"]')?.value.trim() || '';
-            const name = row.querySelector('input[data-field="name1"]')?.value.trim() || '';
+            const sal   = row.querySelector('input[data-field="salutation"]')?.value.trim() || '';
+            const name  = row.querySelector('input[data-field="name1"]')?.value.trim() || '';
             const email = row.querySelector('input[data-field="email_address"]')?.value.trim() || '';
             if (email && email.includes('@')) {
                 emailContacts.push({ salutation: sal, name: name || 'Valued Customer', email });
@@ -6256,51 +6445,65 @@ window.OmnisDashboardV6 = class OmnisDashboardV6 {
         const customerName = document.querySelector('#dash-generic-body div[style*="font-size:18px"]')?.textContent.trim()
             || this._currentFullDoc?.customer_name || 'Customer';
 
-        const company = this._currentFullDoc?.company || "";
-        let internalTeamLabel = "Internal Team";
-        let ccList = [];
-        if (company.includes("Sinopower")) {
-            internalTeamLabel = "Sinopower";
-            ccList = [
-                "takunda@industrial-exchange.group", "antony@industrial-exchange.group",
-                "logistics@sinopower.co.zw", "brett@sinopower.co.zw", "trucks@sinopower.co.zw",
-                "rutendo@industrial-exchange.group", "louis@industrial-exchange.group",
-                "mathew@industrial-exchange.group", "barry@industrial-exchange.group",
-                "brendan@industrial-exchange.group"
-            ];
-        } else {
-            internalTeamLabel = "Machinery Exchange";
-            ccList = [
-                "takunda@industrial-exchange.group", "antony@industrial-exchange.group",
-                "sales.humphrey@machinery-exchange.com", "chetan.samji@machinery-exchange.com",
-                "equipment@machinery-exchange.com", "sales@machinery-exchange.com",
-                "robin.hunter@machinery-exchange.com", "rutendo@industrial-exchange.group",
-                "mathew@industrial-exchange.group", "barry@industrial-exchange.group",
-                "brendan@industrial-exchange.group"
-            ];
+        let company = '';
+        if (window.olOrdersData) {
+            const correctedOrder = window.olOrdersData.find(o => o.report_id === reportId);
+            if (correctedOrder && correctedOrder.company) company = correctedOrder.company;
         }
-        const ccListHtml = ccList.join(', ');
+        if (!company) company = this._currentFullDoc?.company || '';
+        
+        const isSino = company && company.includes('Sinopower');
+        const themeColor = isSino ? '#7b1515' : '#c92222';
+        const modalHeaderGradient = isSino ? 'linear-gradient(135deg,#7b1515,#450a0a)' : 'linear-gradient(135deg,#1d4ed8,#1e40af)';
+        const logoUrl = isSino ? 'https://pfqaeewmlwfayxbgmuaq.supabase.co/storage/v1/object/public/public-assets/logos/spz-logo.png' : 'https://pfqaeewmlwfayxbgmuaq.supabase.co/storage/v1/object/public/public-assets/logos/mxg-logo.png';
 
+        // ── 2. CC from Settings (localStorage) ───────────────────────
+        const recipients       = this._getRecipients(company);
+        const internalTeamLabel = recipients.label;
+        const ccList           = recipients.emails;
+        const ccListHtml       = ccList.join(', ');
+
+        // ── 3. Machines from DOM inputs ───────────────────────────────
         const machines = [];
         document.querySelectorAll('#machines-tbody tr').forEach(row => {
-            if (row.cells.length < 5) return;
-            const mName = row.cells[0]?.innerText.trim().split('\n')[0] || '';
-            const mQty = row.cells[2]?.innerText.trim() || '1';
-            const mTarget = row.cells[3]?.innerText.trim() || '-';
-            const mRevised = row.querySelector('.m-revised')?.value || '';
+            if (row.cells.length < 4) return;
+            // Name
+            const nameInput = row.cells[0]?.querySelector('input');
+            const mName     = nameInput?.value.trim() || row.cells[0]?.innerText.trim().split('\n')[0] || '';
+            // Qty
+            const qtyInput  = row.cells[1]?.querySelector('input');
+            const mQty      = qtyInput?.value.trim() || row.cells[1]?.innerText.trim() || '1';
+            // Target date (cell index 2)
+            const targetInput  = row.cells[2]?.querySelector('input[type="date"]');
+            const mTarget      = targetInput?.value || row.cells[2]?.innerText.trim() || '';
+            // Revised date (cell index 3)
+            const revisedInput = row.cells[3]?.querySelector('input[type="date"]');
+            const mRevised     = revisedInput?.value || row.querySelector('.m-revised')?.value || '';
+            // Status (cell index 5 — textarea)
+            const statusTA  = row.cells[5]?.querySelector('textarea') || row.querySelector('textarea');
+            const mStatus   = statusTA?.value.trim() || '';
+            // Image
+            const imgEl     = row.querySelector('img.machine-photo, img[data-type="machine"]')
+                           || [...(row.querySelectorAll('td img') || [])].find(i => !i.src.includes('placeholder'));
+            const mImageUrl = imgEl?.src || '';
+
             if (mName && mName !== 'Machine / Item') {
-                machines.push({ name: mName, qty: mQty, target: mTarget, revised: mRevised });
+                machines.push({ name: mName, qty: mQty, target: mTarget, revised: mRevised, status: mStatus, imageUrl: mImageUrl });
             }
         });
 
+        // ── 4. Preview rows ───────────────────────────────────────────
         const previewRows = machines.map((m, i) => {
-            const date = m.revised
-                ? `<span style="color:#ef4444;">${m.revised}</span> <em style="font-size:11px;">(Revised)</em>`
-                : m.target;
+            const hasRevised = m.revised && m.revised !== 'dd/mm/yyyy' && m.revised.length > 3;
+            const dateCell   = hasRevised
+                ? `<span style="color:#ef4444;font-weight:700;">${m.revised}</span> <em style="font-size:11px;color:#ef4444;">(Revised)</em>`
+                : (m.target || '—');
+            const statusCell = m.status ? `<td style="padding:8px 12px;font-size:12px;color:#475569;">${m.status}</td>` : '';
             return `<tr style="border-bottom:1px solid #f1f5f9;">
-                <td style="padding:8px 12px; font-size:13px; font-weight:600; color:#0f172a;">${i + 1}. ${m.name}</td>
-                <td style="padding:8px 12px; font-size:13px; color:#475569; text-align:center;">&times;${m.qty}</td>
-                <td style="padding:8px 12px; font-size:13px; color:#475569; white-space:nowrap;">${date}</td>
+                <td style="padding:8px 12px;font-size:13px;font-weight:600;color:#0f172a;">${i + 1}. ${m.name}</td>
+                <td style="padding:8px 12px;font-size:13px;color:#475569;text-align:center;">&times;${m.qty}</td>
+                <td style="padding:8px 12px;font-size:13px;color:#475569;white-space:nowrap;">${dateCell}</td>
+                ${statusCell}
             </tr>`;
         }).join('');
 
@@ -6316,11 +6519,12 @@ window.OmnisDashboardV6 = class OmnisDashboardV6 {
             <div style="font-size:11px;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:8px;">Order Contents</div>
             <div style="border:1px solid #e2e8f0;border-radius:10px;overflow:hidden;">
                 <table style="width:100%;border-collapse:collapse;">
-                    <thead style="background:#c92222;">
+                    <thead style="background:${themeColor};">
                         <tr>
                             <th style="padding:10px 12px;text-align:left;color:white;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.04em;">Machine / Item</th>
                             <th style="padding:10px 12px;text-align:center;color:white;font-size:11px;font-weight:700;text-transform:uppercase;">Qty</th>
-                            <th style="padding:10px 12px;text-align:left;color:white;font-size:11px;font-weight:700;text-transform:uppercase;">Handover Date</th>
+                            <th style="padding:10px 12px;text-align:left;color:white;font-size:11px;font-weight:700;text-transform:uppercase;">Target Handover</th>
+                            <th style="padding:10px 12px;text-align:left;color:white;font-size:11px;font-weight:700;text-transform:uppercase;">Status</th>
                         </tr>
                     </thead>
                     <tbody>${previewRows}</tbody>
@@ -6340,9 +6544,11 @@ window.OmnisDashboardV6 = class OmnisDashboardV6 {
                 animation:slideUp 0.25s cubic-bezier(0.16,1,0.3,1);
                 max-height:90vh; display:flex; flex-direction:column;
             ">
-                <div style="background:linear-gradient(135deg,#1d4ed8,#1e40af); padding:20px 24px; display:flex; justify-content:space-between; align-items:center; flex-shrink:0;">
+                <div style="background:${modalHeaderGradient}; padding:20px 24px; display:flex; justify-content:space-between; align-items:center; flex-shrink:0;">
                     <div style="display:flex; align-items:center; gap:12px;">
-                        <div style="width:40px; height:40px; background:rgba(255,255,255,0.15); border-radius:10px; display:flex; align-items:center; justify-content:center; font-size:20px;">&#128231;</div>
+                        <div style="width:40px; height:40px; background:rgba(255,255,255,0.15); border-radius:10px; display:flex; align-items:center; justify-content:center; overflow:hidden;">
+                            <img src="${logoUrl}" style="max-width:80%; max-height:80%; object-fit:contain;" />
+                        </div>
                         <div>
                             <div style="font-size:17px; font-weight:700; color:white;">Send Email Update</div>
                             <div style="font-size:12px; color:rgba(255,255,255,0.7); margin-top:2px;">Equipment Order Status Report</div>
@@ -6354,7 +6560,6 @@ window.OmnisDashboardV6 = class OmnisDashboardV6 {
                     <div style="background:#eff6ff; border:1px solid #bfdbfe; border-radius:10px; padding:14px 16px;">
                         <div style="font-size:11px; font-weight:700; color:#1d4ed8; text-transform:uppercase; letter-spacing:0.5px; margin-bottom:8px;">&#128236; Customers (To)</div>
                         <div style="font-size:13px; color:#1e40af; font-weight:500; line-height:1.8; margin-bottom:12px;">${recipientList}</div>
-                        
                         <div style="font-size:11px; font-weight:700; color:#1d4ed8; text-transform:uppercase; letter-spacing:0.5px; margin-bottom:6px;">&#128101; ${internalTeamLabel} (CC)</div>
                         <div style="font-size:12px; color:#3b82f6; font-weight:400; line-height:1.6;">${ccListHtml}</div>
                     </div>
@@ -6367,7 +6572,7 @@ window.OmnisDashboardV6 = class OmnisDashboardV6 {
                     <div style="background:#f0fdf4; border:1px solid #bbf7d0; border-radius:10px; padding:12px 16px; display:flex; gap:10px; align-items:flex-start;">
                         <span style="font-size:15px; flex-shrink:0;">&#128203;</span>
                         <div style="font-size:12px; color:#166534; line-height:1.5;">
-                            The email will be sent as a <strong>formatted Equipment Order Status Report</strong> including all available logistics dates (production, shipping, ETA Beira, ETA Harare, handover) pulled directly from the order record.
+                            The email will be sent as a <strong>formatted Equipment Order Status Report</strong> including all available logistics dates, handover dates (revised dates highlighted in red), machine status, and attached images.
                         </div>
                     </div>
                     <div style="display:flex; gap:12px; justify-content:flex-end; padding-top:8px; border-top:1px solid #f1f5f9;">
@@ -6382,39 +6587,36 @@ window.OmnisDashboardV6 = class OmnisDashboardV6 {
 
         document.getElementById('btn-confirm-send-email').onclick = () => {
             document.getElementById('email-preview-modal').remove();
-            this.sendEmailUpdate(btn, originalHtml, emailContacts, reportId);
+            this.sendEmailUpdate(btn, originalHtml, emailContacts, reportId, customerName, company, machines, ccList);
         };
     }
-
-    async sendEmailUpdate(btn, originalHtml, emailContacts, reportId) {
+    async sendEmailUpdate(btn, originalHtml, emailContacts, reportId, customerName, company, machines, ccList) {
         if (btn) { btn.disabled = true; btn.innerHTML = `<span>&#9203;</span> Sending...`; }
-
         try {
-            const sys = window.getCurrentSystem ? window.getCurrentSystem() : { baseUrl: 'https://salestrack.powerstar.co.zw' };
-            const baseUrl = sys.baseUrl || 'https://salestrack.powerstar.co.zw';
-
             const recipientEmails = emailContacts.map(c => c.email).join(',');
-            const recipientNames = emailContacts.map(c => c.salutation ? `${c.salutation} ${c.name}` : c.name).join(' and ');
-
-            const res = await window.callFrappeSequenced(baseUrl, 'powerstar_salestrack.omnis_dashboard.send_order_email_update', {
-                report_id: reportId || '',
-                recipient_email: recipientEmails,
-                recipient_name: recipientNames || 'Customer'
+            const greetingName = emailContacts.map(c => c.salutation ? `${c.salutation} ${c.name}` : c.name).join(' and ') || 'Valued Customer';
+            const subject = `Order Status Report \u2014 ${customerName}`;
+            const doc = this._currentFullDoc || {};
+            const enriched = machines.map(m => {
+                const dm = (doc.machines || []).find(d => {
+                    const n = d.item_name || d.item || '';
+                    return n.includes(m.name) || m.name.includes(n);
+                });
+                return { ...m, actual: dm?.actual_handover_date || '', notes: dm?.notes || '' };
             });
-            const payload = res.message || res;
-
-            if (payload && payload.ok) {
-                if (btn) btn.innerHTML = `<span>&#9989;</span> Sent!`;
-                this.showToast(`Email report sent to ${emailContacts.length} contact${emailContacts.length > 1 ? 's' : ''}!`, 'success');
+            const html = this._buildEmailHTML(customerName, greetingName, company, enriched, doc);
+            if (!window.electron || !window.electron.invoke) throw new Error('Electron IPC unavailable');
+            const res = await window.electron.invoke('email:send', {
+                to: recipientEmails, cc: ccList.join(','), subject, html,
+                relatedDoc: reportId, relatedType: 'order'
+            });
+            if (res && res.ok) {
+                if (btn) btn.innerHTML = `<span>&#9989;</span> Queued!`;
+                this.showToast(`Email queued for ${emailContacts.length} recipient${emailContacts.length > 1 ? 's' : ''}!`, 'success');
             } else {
-                console.warn(`[Email] Failed to send:`, payload?.error || payload);
-                throw new Error(payload?.error || 'No emails were delivered by the server.');
+                throw new Error(res?.error || 'Failed to queue email.');
             }
-
-            setTimeout(() => {
-                if (btn) { btn.disabled = false; btn.innerHTML = originalHtml || `<span style="font-size:18px;">&#128231;</span> Send Email`; }
-            }, 3000);
-
+            setTimeout(() => { if (btn) { btn.disabled = false; btn.innerHTML = originalHtml || `<span style="font-size:18px;">&#128231;</span> Send Email`; } }, 3000);
         } catch (err) {
             console.error('[Email Update Error]', err);
             this.showToast('Email failed: ' + err.message, 'error');

@@ -1,0 +1,34 @@
+{"name":"Engine","category":"Engine"}
+{"name":"Electronic (ECU, Cluster)","category":"Electronic (ECU, Cluster)"}
+{"name":"Tandems","category":"Tandems"}
+{"name":"Wheel Hubs","category":"Wheel Hubs"}
+{"name":"Attachment (Bucket Incl. pins & Bushes)","category":"Attachment (Bucket Incl. pins & Bushes)"}
+{"name":"GET","category":"GET"}
+{"name":"Cab electrics (All interior)","category":"Cab electrics (All interior)"}
+{"name":"Lighting & Electrical Accsessories (Buzzer, Beacon etc)","category":"Lighting & Electrical Accsessories (Buzzer, Beacon etc)"}
+{"name":"Transmission","category":"Transmission"}
+{"name":"General Oil Leaks","category":"General Oil Leaks"}
+{"name":"Hydraulic Component Leaks","category":"Hydraulic Component Leaks"}
+{"name":"Hose Burst","category":"Hose Burst"}
+{"name":"Accident Damage","category":"Accident Damage"}
+{"name":"Cooling System (Radiator, coolant, lines, expansion tank etc)","category":"Cooling System (Radiator, coolant, lines, expansion tank etc)"}
+{"name":"Centre articulation","category":"Centre articulation"}
+{"name":"Hydraulic Malfunction","category":"Hydraulic Malfunction"}
+{"name":"Body & FrameWork incl Pins and Bushes","category":"Body & FrameWork incl Pins and Bushes"}
+{"name":"Air Conditioning","category":"Air Conditioning"}
+{"name":"Other","category":"Other"}
+{"name":"Wheels","category":"Wheels"}
+{"name":"Undercarriage","category":"Undercarriage"}
+{"name":"General Electrics & Instruments (Switches, Solenoid etc)","category":"General Electrics & Instruments (Switches, Solenoid etc)"}
+{"name":"Engine Protection System (Saferider)","category":"Engine Protection System (Saferider)"}
+{"name":"Cylinder Leaks","category":"Cylinder Leaks"}
+{"name":"Other Mechanical Failures (General, Bearings etc)","category":"Other Mechanical Failures (General, Bearings etc)"}
+{"name":"Axle (Diffs etc)","category":"Axle (Diffs etc)"}
+{"name":"Braking system","category":"Braking system"}
+{"name":"Flow Meter","category":"Flow Meter"}
+{"name":"Wipers","category":"Wipers"}
+{"name":"Sensor damage","category":"Sensor damage"}
+{"name":"Compressor","category":"Compressor"}
+{"name":"Battery","category":"Battery"}
+{"name":"Hose leaks","category":"Hose leaks"}
+{"name":"Fuel system","category":"Fuel system"}

@@ -170,8 +170,11 @@ async function loadOrdersList(force = false) {
     try {
         const base = sys.baseUrl.replace(/\/$/, "");
         const method = "powerstar_salestrack.omnis_dashboard.get_weekly_gsm_report";
+        const isUnassigned = company.toLowerCase() === 'unassigned';
+        // ALWAYS fetch All Companies from Frappe to bypass strict backend SQL matching.
+        // We will do all filtering on the frontend so dirty data (like "Sinopower ") is caught!
         const args = {
-            company: (company === 'all' || !company) ? '' : company,
+            company: '',
             from_date: fromDate,
             to_date: toDate
         };
@@ -190,21 +193,73 @@ async function loadOrdersList(force = false) {
         }
 
         if (data && data.current_orders) {
-            olOrdersData = data.current_orders;
-            olOrdersData.forEach(o => o.is_payment_terms = false);
-
-            // Augment with Supabase Payment Terms status
+            let ordersList = data.current_orders;
+            
+            // Augment with Supabase Payment Terms status & Company
+            // Track which orders have a Supabase company override — these are the source of truth
+            const supabaseAssigned = new Set();
             try {
                 let sbRes = await window.electron.invoke('supabase:query', {
-                    table: 'fmb_reports', method: 'select', params:{columns:'frappe_id, is_payment_terms'}
+                    table: 'fmb_reports', method: 'select', params:{columns:'frappe_id, is_payment_terms, company'}
                 });
                 if(sbRes.ok && sbRes.data) {
                     const termsSet = new Set(sbRes.data.filter(d => d.is_payment_terms === true || d.is_payment_terms === 'true').map(d => d.frappe_id));
-                    olOrdersData.forEach(o => {
+                    const compMap = new Map();
+                    sbRes.data.forEach(d => { if (d.company) compMap.set(d.frappe_id, d.company); });
+                    
+                    ordersList.forEach(o => {
                         o.is_payment_terms = termsSet.has(o.report_id);
+                        if (compMap.has(o.report_id)) {
+                            o.company = compMap.get(o.report_id);
+                            supabaseAssigned.add(o.report_id); // Mark as Supabase-sourced
+                        }
                     });
                 }
             } catch(e) { console.error('[OrdersLogic] Failed to augment terms from Supabase', e); }
+
+            const normalizeCompany = (c) => {
+                if (!c) return "Unassigned";
+                const cl = c.toLowerCase();
+                // Check more specific term first to avoid misclassification
+                if (cl.includes("machinery exchange") || cl === "machinery") return "Machinery Exchange";
+                if (cl.includes("sinopower")) return "Sinopower";
+                return "Unassigned";
+            };
+
+            // Only normalize orders NOT already assigned by Supabase (Supabase is source of truth)
+            ordersList.forEach(o => {
+                if (!supabaseAssigned.has(o.report_id)) {
+                    o.company = normalizeCompany(o.company);
+                }
+            });
+
+            if (window.appendMissingCompanyFilters) {
+                const frappeCompanies = [...new Set(data.current_orders.map(o => o.company).filter(Boolean))];
+                window.appendMissingCompanyFilters(frappeCompanies);
+            }
+
+            if (company && company.toLowerCase() !== 'all') {
+                const targetCompany = normalizeCompany(company);
+                ordersList = ordersList.filter(o => o.company === targetCompany);
+            }
+            
+            // DIAGNOSTIC DUMP
+            try {
+                if (window.electron && window.electron.invoke) {
+                    window.electron.invoke('fs:writeFile', {
+                        path: 'C:\\\\Users\\\\Administrator\\\\omnis\\\\scratch\\\\debug_orders.json',
+                        content: JSON.stringify({
+                            isUnassigned: isUnassigned,
+                            args: args,
+                            total_fetched: data.current_orders.length,
+                            filtered_length: ordersList.length,
+                            companies: data.current_orders.map(o => o.company)
+                        }, null, 2)
+                    });
+                }
+            } catch(e) {}
+
+            olOrdersData = ordersList;
 
             window.olOrdersData = olOrdersData; // Expose globally for Aftersales
             if (window.dashManager) window.dashManager.ordersData = olOrdersData;
@@ -231,6 +286,51 @@ async function loadOrdersList(force = false) {
 }
 
 window.loadOrdersList = loadOrdersList; // Expose global
+
+/* =========================================
+   SET ORDER COMPANY (saves to Supabase)
+   ========================================= */
+window.setOrderCompany = async function(reportId, newCompany, selectEl) {
+    const statusEl = document.getElementById('company-status-' + reportId);
+    if (statusEl) statusEl.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+    if (selectEl) selectEl.disabled = true;
+
+    try {
+        // Upsert into fmb_reports: create row if not exists, update company if it does
+        const res = await window.electron.invoke('supabase:query', {
+            table: 'fmb_reports',
+            method: 'upsert',
+            params: { data: { frappe_id: reportId, company: newCompany }, options: { onConflict: 'frappe_id' } }
+        });
+
+        if (res && res.ok !== false) {
+            // Update local in-memory data so filter stays correct
+            const order = olOrdersData.find(o => o.report_id === reportId);
+            if (order) order.company = newCompany;
+
+            // Update dropdown color to match new company
+            const colors = {
+                'Sinopower':          { bg: '#fef3c7', color: '#92400e', border: '#fde68a' },
+                'Machinery Exchange': { bg: '#dbeafe', color: '#1e40af', border: '#bfdbfe' },
+                'Unassigned':         { bg: '#f1f5f9', color: '#64748b', border: '#e2e8f0' },
+            };
+            const cc = colors[newCompany] || colors['Unassigned'];
+            if (selectEl) {
+                selectEl.style.background = cc.bg;
+                selectEl.style.color = cc.color;
+                selectEl.style.borderColor = cc.border;
+            }
+            if (statusEl) { statusEl.innerHTML = '<i class="fas fa-check" style="color:#10b981;"></i>'; setTimeout(() => { statusEl.innerHTML = ''; }, 2000); }
+        } else {
+            throw new Error(res?.error || 'Supabase update failed');
+        }
+    } catch(e) {
+        console.error('[setOrderCompany] Failed:', e);
+        if (statusEl) { statusEl.innerHTML = '<i class="fas fa-times" style="color:#ef4444;"></i> Failed'; setTimeout(() => { statusEl.innerHTML = ''; }, 3000); }
+    } finally {
+        if (selectEl) selectEl.disabled = false;
+    }
+};
 
 function renderOrdersList() {
     console.log("[OrdersLogic] renderOrdersList called");
@@ -440,16 +540,36 @@ function renderOrdersList() {
 
         const statusBadge = `<span style="display:inline-block; padding:4px 10px; border-radius:99px; font-size:10px; font-weight:800; text-transform:uppercase; ${statusStyle}">${r.status || "PENDING"}</span>`;
 
-        // 3. Action Button
+        // 3. Company badge colors
         const escapeJs = (s) => (s || '').replace(/\\/g, "\\\\").replace(/'/g, "\\'").replace(/"/g, "&quot;").replace(/\n/g, "\\n").replace(/\r/g, "");
         const safeReportId = escapeJs(r.report_id);
         const safeMachineId = escapeJs(r.machine_id);
+        const companyColors = {
+            'Sinopower':          { bg: '#fef3c7', color: '#92400e', border: '#fde68a' },
+            'Machinery Exchange': { bg: '#dbeafe', color: '#1e40af', border: '#bfdbfe' },
+            'Unassigned':         { bg: '#f1f5f9', color: '#64748b', border: '#e2e8f0' },
+        };
+        const cc = companyColors[r.company] || companyColors['Unassigned'];
+        const safeCompany = escapeJs(r.company || 'Unassigned');
 
         let btnHtml = '';
         if (r.is_payment_terms === true) {
             btnHtml += `<span style="display:inline-block; white-space:nowrap; color:#10b981; font-weight:800; font-size:10px; margin-right:8px; border:1px solid #10b981; padding:2px 6px; border-radius:6px; background:#ecfdf5;">ON TERMS</span>`;
         }
         btnHtml += `<button class="btn-text-action" onclick="window.dashManager.openOrderModal('${safeReportId}', '${safeMachineId}')">DETAILS</button>`;
+        // Company selector goes in actions cell
+        btnHtml += `
+            <div style="margin-top:6px; display:flex; align-items:center; gap:5px;">
+              <select
+                style="font-size:10px; font-weight:800; padding:2px 6px; border-radius:7px; border:1px solid ${cc.border}; background:${cc.bg}; color:${cc.color}; cursor:pointer; outline:none; width:100%;"
+                onchange="window.setOrderCompany('${safeReportId}', this.value, this)"
+              >
+                <option value="Sinopower"          ${r.company === 'Sinopower'          ? 'selected' : ''}>SPZ</option>
+                <option value="Machinery Exchange" ${r.company === 'Machinery Exchange' ? 'selected' : ''}>MXG</option>
+                <option value="Unassigned"         ${(!r.company || r.company === 'Unassigned') ? 'selected' : ''}>---</option>
+              </select>
+              <span id="company-status-${r.report_id}" style="font-size:10px; color:#94a3b8; white-space:nowrap;"></span>
+            </div>`;
 
         return `
           <div class="ai-order-row ${riskClass} ${(r.status || "").toLowerCase().includes("new sale") ? 'is-new-entry' : ''}" data-id="${r.report_id}">
@@ -460,6 +580,7 @@ function renderOrdersList() {
                 <i class="fas ${riskIcon}"></i> ${riskLabel}
               </div>
             </div>
+
 
             <div class="ai-order-cell" onclick="window.dashManager.openOrderModal('${safeReportId}', '${safeMachineId}')">
               <span class="cell-label">Machine Product</span>

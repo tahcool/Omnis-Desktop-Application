@@ -1,0 +1,9 @@
+{"name":"Approve","workflow_action_name":"Approve"}
+{"name":"Reject","workflow_action_name":"Reject"}
+{"name":"Review","workflow_action_name":"Review"}
+{"name":"Progress to Next Stage","workflow_action_name":"Progress to Next Stage"}
+{"name":"Mark as Lost","workflow_action_name":"Mark as Lost"}
+{"name":"Mark as Complete","workflow_action_name":"Mark as Complete"}
+{"name":"Pull Back","workflow_action_name":"Pull Back"}
+{"name":"Move to Completion Queue","workflow_action_name":"Move to Completion Queue"}
+{"name":"Send for Approval","workflow_action_name":"Send for Approval"}

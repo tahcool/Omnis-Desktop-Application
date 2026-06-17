@@ -1,0 +1,1004 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Omnis — Email Centre</title>
+  <link rel="icon" type="image/png" href="../../assets/images/omnis-icon.png" />
+  <style>
+    :root {
+      --bg: #f4f6fb;
+      --surface: #ffffff;
+      --border: #e6e9f2;
+      --red: #e11c2a;
+      --red-dark: #4a0404;
+      --text: #111827;
+      --muted: #6b7280;
+      --slate: #475569;
+      --radius: 10px;
+      --shadow: 0 4px 20px rgba(17,24,39,0.07);
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      -webkit-app-region: no-drag;
+    }
+
+    /* ── Topbar ─────────────────────────────────────────────── */
+    .topbar {
+      background: var(--red-dark);
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      padding: 0 20px;
+      height: 52px;
+      flex-shrink: 0;
+      -webkit-app-region: drag;
+    }
+    .topbar-logo { height: 26px; opacity: 0.95; pointer-events: none; }
+    .topbar-sep { width: 1px; height: 20px; background: rgba(255,255,255,0.15); }
+    .topbar-title {
+      color: rgba(255,255,255,0.9);
+      font-size: 13px;
+      font-weight: 700;
+      letter-spacing: 0.04em;
+      text-transform: uppercase;
+    }
+    .topbar-spacer { flex: 1; }
+    .topbar-controls { display: flex; gap: 8px; -webkit-app-region: no-drag; }
+    .win-btn {
+      width: 28px; height: 28px;
+      background: rgba(255,255,255,0.08);
+      border: none; color: rgba(255,255,255,0.6);
+      border-radius: 6px; cursor: pointer;
+      font-size: 14px; display: flex; align-items: center; justify-content: center;
+      transition: all 0.15s;
+    }
+    .win-btn:hover { background: rgba(255,255,255,0.18); color: #fff; }
+    .win-btn.close:hover { background: #e11c2a; color: #fff; }
+
+    /* ── Layout ─────────────────────────────────────────────── */
+    .layout { display: flex; flex: 1; overflow: hidden; }
+
+    /* ── Sidebar ─────────────────────────────────────────────── */
+    .sidebar {
+      width: 220px;
+      background: var(--surface);
+      border-right: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      padding: 16px 12px;
+      gap: 4px;
+      flex-shrink: 0;
+    }
+    .sidebar-section-label {
+      font-size: 10px;
+      font-weight: 800;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      padding: 8px 8px 4px;
+    }
+    .sidebar-item {
+      display: flex; align-items: center; gap: 10px;
+      padding: 9px 10px;
+      border-radius: 7px;
+      cursor: pointer;
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--slate);
+      transition: all 0.15s;
+      border: none; background: none; width: 100%; text-align: left;
+    }
+    .sidebar-item:hover { background: var(--bg); color: var(--text); }
+    .sidebar-item.active { background: #fef2f2; color: var(--red); font-weight: 700; }
+    .sidebar-item svg { flex-shrink: 0; opacity: 0.7; }
+    .sidebar-item.active svg { opacity: 1; }
+
+    .compose-btn {
+      display: flex; align-items: center; justify-content: center; gap: 8px;
+      width: 100%; padding: 11px;
+      background: linear-gradient(135deg, var(--red), var(--red-dark));
+      color: #fff; border: none; border-radius: 8px;
+      font-size: 13px; font-weight: 800; cursor: pointer;
+      margin-bottom: 12px;
+      box-shadow: 0 4px 14px rgba(225,28,42,0.3);
+      transition: all 0.15s;
+    }
+    .compose-btn:hover { filter: brightness(1.1); transform: translateY(-1px); }
+
+    /* ── Main content ─────────────────────────────────────────── */
+    .main { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
+
+    .view { flex: 1; overflow-y: auto; padding: 24px; display: none; }
+    .view.active { display: block; }
+
+    /* ── Stats row ─────────────────────────────────────────────── */
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 12px;
+      margin-bottom: 20px;
+    }
+    .stat-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 16px;
+      display: flex; align-items: center; gap: 14px;
+      box-shadow: var(--shadow);
+    }
+    .stat-icon { font-size: 26px; }
+    .stat-count { font-size: 24px; font-weight: 800; line-height: 1; }
+    .stat-label { font-size: 11px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: 0.05em; margin-top: 2px; }
+
+    /* ── Filter tabs ─────────────────────────────────────────── */
+    .filter-tabs { display: flex; gap: 6px; margin-bottom: 16px; }
+    .ftab {
+      padding: 6px 14px; border-radius: 20px; font-size: 12px; font-weight: 700;
+      cursor: pointer; border: 1px solid var(--border); background: var(--surface); color: var(--slate);
+      transition: all 0.15s;
+    }
+    .ftab.active { background: #0f172a; color: #fff; border-color: transparent; }
+
+    /* ── Table ─────────────────────────────────────────────── */
+    .table-wrap {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      overflow: hidden;
+      box-shadow: var(--shadow);
+    }
+    table { width: 100%; border-collapse: collapse; font-size: 13px; }
+    thead tr { background: #f8fafc; border-bottom: 2px solid var(--border); }
+    th {
+      padding: 10px 16px; text-align: left;
+      font-size: 10px; font-weight: 800; color: var(--muted);
+      text-transform: uppercase; letter-spacing: 0.08em;
+    }
+    td { padding: 12px 16px; border-bottom: 1px solid #f1f5f9; vertical-align: middle; }
+    tbody tr:last-child td { border-bottom: none; }
+    tbody tr:hover { background: #fafbfe; }
+
+    .badge {
+      display: inline-flex; align-items: center; gap: 4px;
+      padding: 3px 10px; border-radius: 20px;
+      font-size: 11px; font-weight: 700; white-space: nowrap;
+    }
+    .badge-pending   { background:#fffbeb; color:#92400e; }
+    .badge-sent      { background:#f0fdf4; color:#166534; }
+    .badge-failed    { background:#fef2f2; color:#991b1b; }
+    .badge-cancelled { background:#f8fafc; color:#475569; }
+    .badge-processing{ background:#eff6ff; color:#1d4ed8; }
+
+    .action-btn {
+      padding: 4px 10px; border-radius: 6px; font-size: 11px; font-weight: 700;
+      cursor: pointer; border: none; transition: all 0.15s;
+    }
+    .btn-cancel { background:#fef2f2; color:#dc2626; }
+    .btn-retry  { background:#f0fdf4; color:#16a34a; }
+    .btn-cancel:hover { background:#fee2e2; }
+    .btn-retry:hover  { background:#dcfce7; }
+
+    .empty-state {
+      padding: 60px; text-align: center; color: var(--muted);
+    }
+    .empty-state svg { margin-bottom: 12px; opacity: 0.3; }
+
+    /* ── Settings pane ─────────────────────────────────────── */
+    .settings-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 24px;
+      max-width: 560px;
+      box-shadow: var(--shadow);
+    }
+    .settings-card h3 {
+      font-size: 15px; font-weight: 800; color: var(--text); margin-bottom: 4px;
+    }
+    .settings-card p { font-size: 12px; color: var(--muted); margin-bottom: 20px; }
+
+    .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+    .form-group { display: flex; flex-direction: column; gap: 6px; }
+    .form-group.full { grid-column: 1 / -1; }
+    label.field-label {
+      font-size: 11px; font-weight: 700; color: var(--slate);
+      text-transform: uppercase; letter-spacing: 0.06em;
+    }
+    .field-input {
+      padding: 10px 12px;
+      border: 1.5px solid var(--border);
+      border-radius: 7px;
+      font-size: 13px;
+      outline: none;
+      transition: border-color 0.15s;
+    }
+    .field-input:focus { border-color: var(--red); }
+
+    .settings-actions { display: flex; gap: 10px; margin-top: 20px; }
+    .btn-primary {
+      flex: 2; padding: 11px; background: #0f172a; color: #fff;
+      border: none; border-radius: 7px; font-size: 13px; font-weight: 700;
+      cursor: pointer; transition: all 0.15s;
+    }
+    .btn-primary:hover { background: #1e293b; }
+    .btn-secondary {
+      flex: 1; padding: 11px; background: var(--bg); color: var(--text);
+      border: 1px solid var(--border); border-radius: 7px; font-size: 13px; font-weight: 600;
+      cursor: pointer; transition: all 0.15s;
+    }
+    .btn-secondary:hover { background: var(--border); }
+    #settings-status { margin-top: 12px; font-size: 12px; font-weight: 600; text-align: center; min-height: 18px; }
+
+    /* ── Composer overlay ─────────────────────────────────── */
+    #composer-overlay {
+      display: none; position: fixed; inset: 0; z-index: 9000;
+      background: rgba(0,0,0,0.55); backdrop-filter: blur(6px);
+      align-items: center; justify-content: center; padding: 24px;
+    }
+    .composer-card {
+      background: #fff; border-radius: 16px;
+      width: 100%; max-width: 620px; max-height: 90vh;
+      overflow: hidden; display: flex; flex-direction: column;
+      box-shadow: 0 30px 80px rgba(0,0,0,0.3);
+    }
+    .composer-header {
+      background: linear-gradient(135deg, #0f172a, #1e293b);
+      padding: 18px 22px;
+      display: flex; align-items: center; justify-content: space-between;
+      flex-shrink: 0;
+    }
+    .composer-header h3 { color: #f8fafc; font-size: 15px; font-weight: 800; }
+    .composer-header p { color: #94a3b8; font-size: 11px; margin-top: 2px; }
+    .composer-close {
+      background: rgba(255,255,255,0.1); border: none; color: #94a3b8;
+      width: 30px; height: 30px; border-radius: 7px; cursor: pointer;
+      font-size: 17px; display: flex; align-items: center; justify-content: center;
+    }
+    .composer-body { padding: 22px; overflow-y: auto; flex: 1; }
+    .composer-footer {
+      padding: 14px 22px; border-top: 1px solid #f1f5f9;
+      display: flex; gap: 10px; flex-shrink: 0;
+    }
+    .btn-send {
+      flex: 3; padding: 11px;
+      background: linear-gradient(135deg, #e53935, #b71c1c);
+      color: #fff; border: none; border-radius: 8px; font-size: 13px; font-weight: 800;
+      cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 8px;
+    }
+    .btn-send:disabled { opacity: 0.6; cursor: default; }
+    .btn-cancel-compose {
+      flex: 1; padding: 11px; background: #f1f5f9; color: #0f172a;
+      border: none; border-radius: 8px; font-size: 13px; font-weight: 700; cursor: pointer;
+    }
+    #composer-status { margin-top: 12px; font-size: 12px; font-weight: 600; text-align: center; min-height: 18px; }
+
+    .c-field { margin-bottom: 14px; }
+    .c-field label {
+      font-size: 11px; font-weight: 700; color: var(--slate);
+      text-transform: uppercase; letter-spacing: 0.06em;
+      display: block; margin-bottom: 6px;
+    }
+    .c-field label span { color: var(--muted); font-weight: 400; text-transform: none; }
+    .c-input {
+      width: 100%; padding: 10px 13px;
+      border: 1.5px solid var(--border); border-radius: 8px;
+      font-size: 13px; outline: none; transition: border-color 0.15s;
+    }
+    .c-input:focus { border-color: #e53935; }
+    textarea.c-input { resize: vertical; font-family: inherit; line-height: 1.6; }
+    select.c-input { background: #fff; cursor: pointer; }
+
+    .schedule-box {
+      background: #f8fafc; border: 1px solid var(--border);
+      border-radius: 9px; padding: 14px;
+    }
+    .schedule-box label {
+      font-size: 11px; font-weight: 700; color: var(--slate);
+      text-transform: uppercase; letter-spacing: 0.06em;
+      display: block; margin-bottom: 8px;
+    }
+    .schedule-box p { font-size: 11px; color: var(--muted); margin-top: 8px; }
+
+    /* ── Access denied ─────────────────────────────────────── */
+    #access-denied {
+      display: none; position: fixed; inset: 0;
+      background: linear-gradient(135deg, #1c1c1c, #0f0f10);
+      z-index: 99999;
+      align-items: center; justify-content: center; flex-direction: column;
+      text-align: center; gap: 16px; color: #fff;
+    }
+    #access-denied h2 { font-size: 22px; font-weight: 800; }
+    #access-denied p  { color: #94a3b8; font-size: 14px; }
+    #access-denied button {
+      margin-top: 8px; padding: 12px 28px;
+      background: #e11c2a; color: #fff; border: none;
+      border-radius: 8px; font-size: 13px; font-weight: 700; cursor: pointer;
+    }
+
+    /* ── Scrollbar ─────────────────────────────────────────── */
+    ::-webkit-scrollbar { width: 6px; }
+    ::-webkit-scrollbar-track { background: transparent; }
+    ::-webkit-scrollbar-thumb { background: #d1d5db; border-radius: 3px; }
+  </style>
+</head>
+<body>
+
+<!-- Access Denied Screen -->
+<div id="access-denied" style="display:flex;">
+  <div>
+    <div style="font-size:48px;margin-bottom:12px;">🔒</div>
+    <h2>Admin Access Required</h2>
+    <p>The Email Centre is restricted to administrators only.</p>
+    <button onclick="window.frappeAPI?.close?.()">Close</button>
+  </div>
+</div>
+
+<!-- Email Composer Overlay -->
+<div id="composer-overlay">
+  <div class="composer-card">
+    <div class="composer-header">
+      <div>
+        <h3>📧 Compose Email</h3>
+        <p id="composer-subtitle">New message</p>
+      </div>
+      <button class="composer-close" onclick="closeComposer()">✕</button>
+    </div>
+    <div class="composer-body">
+      <div class="c-field">
+        <label>To <span>*</span></label>
+        <input type="email" id="ec-to" class="c-input" placeholder="recipient@company.com">
+      </div>
+      <div class="c-field">
+        <label>CC <span>(optional)</span></label>
+        <input type="email" id="ec-cc" class="c-input" placeholder="cc@company.com">
+      </div>
+      <div class="c-field">
+        <label>Subject <span>*</span></label>
+        <input type="text" id="ec-subject" class="c-input" placeholder="Enter subject…">
+      </div>
+      <div class="c-field">
+        <label>Template <span>(optional — overwrites body)</span></label>
+        <select id="ec-template" class="c-input" onchange="applyTemplate(this.value)">
+          <option value="">— Write custom message —</option>
+          <option value="service_reminder">🔧 Service Reminder</option>
+          <option value="breakdown_update">⚠️ Breakdown Status Update</option>
+          <option value="quote_followup">💼 Quotation Follow-up</option>
+          <option value="welcome">👋 Customer Welcome</option>
+        </select>
+      </div>
+      <div class="c-field">
+        <label>Message <span>*</span></label>
+        <textarea id="ec-body" class="c-input" rows="7" placeholder="Type your message…&#10;&#10;HTML is supported for formatting."></textarea>
+      </div>
+      <div class="schedule-box">
+        <label>⏰ Schedule <span style="color:var(--muted);font-weight:400;text-transform:none;">(leave blank to send immediately)</span></label>
+        <input type="datetime-local" id="ec-scheduled" class="c-input" style="width:100%;background:#fff;">
+        <p>📌 Scheduled emails are sent by Supabase every 5 minutes, even when Omnis is closed.</p>
+      </div>
+      <div id="composer-status"></div>
+    </div>
+    <div class="composer-footer">
+      <button class="btn-cancel-compose" onclick="closeComposer()">Cancel</button>
+      <button class="btn-send" id="send-btn" onclick="sendEmail()">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg>
+        Send Email
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Main App (hidden until admin check passes) -->
+<div id="app" style="display:none;flex-direction:column;height:100vh;">
+
+  <!-- Topbar -->
+  <div class="topbar">
+    <img src="../../assets/images/omnis-logo-white.png" class="topbar-logo" alt="Omnis">
+    <div class="topbar-sep"></div>
+    <div class="topbar-title">Email Centre</div>
+    <div class="topbar-spacer"></div>
+    <div class="topbar-controls">
+      <button class="win-btn close" onclick="window.frappeAPI?.close?.()">✕</button>
+    </div>
+  </div>
+
+  <div class="layout">
+    <!-- Sidebar -->
+    <aside class="sidebar">
+      <button class="compose-btn" onclick="openComposer()">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg>
+        Compose
+      </button>
+
+      <div class="sidebar-section-label">Queue</div>
+      <button class="sidebar-item active" onclick="switchView('queue')" id="nav-queue">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+        All Emails
+      </button>
+      <button class="sidebar-item" onclick="switchView('queue');setFilter('pending')" id="nav-pending">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+        Pending
+      </button>
+      <button class="sidebar-item" onclick="switchView('queue');setFilter('sent')" id="nav-sent">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><polyline points="20 6 9 17 4 12"/></svg>
+        Sent
+      </button>
+      <button class="sidebar-item" onclick="switchView('queue');setFilter('failed')" id="nav-failed">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>
+        Failed
+      </button>
+
+      <div class="sidebar-section-label" style="margin-top:8px;">Settings</div>
+      <button class="sidebar-item" onclick="switchView('settings')" id="nav-settings">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+        SMTP Settings
+      </button>
+    </aside>
+
+    <!-- Main content -->
+    <main class="main">
+
+      <!-- Queue View -->
+      <div class="view active" id="view-queue">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;">
+          <div>
+            <h2 style="font-size:18px;font-weight:800;">Email Queue</h2>
+            <p style="font-size:12px;color:var(--muted);margin-top:2px;">Monitor all outgoing emails — scheduled, sent, and failed</p>
+          </div>
+          <button onclick="loadQueue()" style="padding:8px 14px;background:var(--surface);border:1px solid var(--border);border-radius:7px;font-size:12px;font-weight:600;cursor:pointer;color:var(--slate);">↻ Refresh</button>
+        </div>
+
+        <div class="stats-grid" id="stats-grid"></div>
+
+        <div class="filter-tabs" id="filter-tabs">
+          <button class="ftab active" onclick="setFilter('all')" data-filter="all">All</button>
+          <button class="ftab" onclick="setFilter('pending')" data-filter="pending">🕐 Pending</button>
+          <button class="ftab" onclick="setFilter('sent')" data-filter="sent">✅ Sent</button>
+          <button class="ftab" onclick="setFilter('failed')" data-filter="failed">❌ Failed</button>
+          <button class="ftab" onclick="setFilter('cancelled')" data-filter="cancelled">🚫 Cancelled</button>
+        </div>
+
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Status</th>
+                <th>To</th>
+                <th>Subject</th>
+                <th>Scheduled / Sent</th>
+                <th>Related</th>
+                <th style="text-align:right;">Actions</th>
+              </tr>
+            </thead>
+            <tbody id="queue-tbody">
+              <tr><td colspan="6" class="empty-state">Loading emails…</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Settings View -->
+      <div class="view" id="view-settings">
+        <div style="margin-bottom:20px;">
+          <h2 style="font-size:18px;font-weight:800;">SMTP Settings</h2>
+          <p style="font-size:12px;color:var(--muted);margin-top:2px;">Configure the outgoing email server. Settings are stored securely in Supabase and used by the Edge Function.</p>
+        </div>
+
+        <div class="settings-card">
+          <h3>📬 Outgoing Mail Server</h3>
+          <p>Your Supabase Edge Function uses these credentials to deliver emails from the queue.</p>
+          <div class="form-grid">
+            <div class="form-group">
+              <label class="field-label">SMTP Host</label>
+              <input type="text" id="set-host" class="field-input" placeholder="smtp.office365.com">
+            </div>
+            <div class="form-group">
+              <label class="field-label">Port</label>
+              <input type="number" id="set-port" class="field-input" placeholder="587">
+            </div>
+            <div class="form-group full">
+              <label class="field-label">Email / Username</label>
+              <input type="email" id="set-user" class="field-input" placeholder="Omnis@industrial-exchange.group">
+            </div>
+            <div class="form-group full">
+              <label class="field-label">Password</label>
+              <input type="password" id="set-pass" class="field-input" placeholder="••••••••">
+            </div>
+            <div class="form-group full">
+              <label class="field-label">From Name <span style="color:var(--muted);font-weight:400;text-transform:none;">(shown to recipients)</span></label>
+              <input type="text" id="set-from-name" class="field-input" placeholder="Omnis" value="Omnis">
+            </div>
+          </div>
+          <div class="settings-actions">
+            <button class="btn-secondary" onclick="testSMTP()">Test Connection</button>
+            <button class="btn-primary" onclick="saveSettings()">Save Settings</button>
+          </div>
+          <div id="settings-status"></div>
+        </div>
+
+        <div class="settings-card" style="margin-top:16px;">
+          <h3>⚙️ How Email Sending Works</h3>
+          <p style="margin-bottom:0;">
+            All emails go through <strong>Supabase</strong> — not the Omnis desktop app.
+            When you compose an email, it is added to the queue in your Supabase database.
+            A <strong>Supabase Edge Function</strong> runs every 5 minutes (via pg_cron) and sends any pending emails via SMTP.
+            This means emails will be delivered <strong>even when Omnis is closed</strong>.
+          </p>
+          <div style="margin-top:16px;padding:12px;background:#f0fdf4;border:1px solid #bbf7d0;border-radius:8px;font-size:12px;color:#166534;">
+            ✅ <strong>Edge Function:</strong> <code>process-email-queue</code><br>
+            ✅ <strong>Supabase Project:</strong> pfqaeewmlwfayxbgmuaq<br>
+            ⏰ <strong>Schedule:</strong> Every 5 minutes via pg_cron
+          </div>
+        </div>
+      </div>
+
+    </main>
+  </div>
+</div>
+
+<script>
+// ─── Config ────────────────────────────────────────────────────────────────
+const SUPABASE_URL = 'https://pfqaeewmlwfayxbgmuaq.supabase.co';
+const SUPER_ADMIN  = 'takunda@industrial-exchange.group';
+
+// ─── Supabase REST helpers ─────────────────────────────────────────────────
+async function sbRequest(method, path, body) {
+  const token = getToken();
+  const res = await fetch(`${SUPABASE_URL}/rest/v1/${path}`, {
+    method,
+    headers: {
+      'apikey':        'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBmcWFlZXdtbHdmYXl4YmdtdWFxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDMxNzM4NzgsImV4cCI6MjA1ODc0OTg3OH0.x3sNqxCbWTyEiOiMKEjm4VxhBp_TLJ_dRQlonexJ2cQ',
+      'Authorization': token ? `Bearer ${token}` : '',
+      'Content-Type':  'application/json',
+      'Prefer':        method === 'POST' ? 'return=representation' : 'return=minimal',
+    },
+    ...(body ? { body: JSON.stringify(body) } : {})
+  });
+  return res;
+}
+
+// Also expose emailAPI calls to Electron IPC if available
+async function ipcCall(channel, data) {
+  if (window.emailAPI) {
+    // Direct access via preload bridge
+    return window.emailAPI[channel]?.(data);
+  }
+  if (window.electron?.invoke) {
+    return window.electron.invoke(`email:${channel}`, data);
+  }
+  throw new Error('IPC bridge not available');
+}
+
+function getToken() {
+  return localStorage.getItem('supabase_access_token') || '';
+}
+
+// ─── Admin Guard ────────────────────────────────────────────────────────────
+function checkAdmin() {
+  const email = localStorage.getItem('ft_user_email') || '';
+  if (email.toLowerCase() === SUPER_ADMIN.toLowerCase()) return true;
+
+  // Check JWT
+  const token = getToken();
+  if (token) {
+    try {
+      const payload = JSON.parse(atob(token.split('.')[1].replace(/-/g,'+').replace(/_/g,'/')));
+      if ((payload.email||'').toLowerCase() === SUPER_ADMIN.toLowerCase()) return true;
+      if (payload.app_metadata?.role === 'admin') return true;
+    } catch(e) {}
+  }
+  return false;
+}
+
+// ─── App Init ───────────────────────────────────────────────────────────────
+document.addEventListener('DOMContentLoaded', function() {
+  if (!checkAdmin()) {
+    document.getElementById('access-denied').style.display = 'flex';
+    return;
+  }
+  document.getElementById('access-denied').style.display  = 'none';
+  document.getElementById('app').style.display = 'flex';
+
+  loadQueue();
+  loadSettings();
+});
+
+// ─── View switching ─────────────────────────────────────────────────────────
+let _activeView = 'queue';
+function switchView(view) {
+  document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+  document.querySelectorAll('.sidebar-item').forEach(b => b.classList.remove('active'));
+  document.getElementById(`view-${view}`).classList.add('active');
+  document.getElementById(`nav-${view}`)?.classList.add('active');
+  _activeView = view;
+  if (view === 'queue') loadQueue();
+  if (view === 'settings') loadSettings();
+}
+
+// ─── Queue ──────────────────────────────────────────────────────────────────
+let _rows = [], _activeFilter = 'all';
+
+async function loadQueue() {
+  const tbody = document.getElementById('queue-tbody');
+  tbody.innerHTML = '<tr><td colspan="6" class="empty-state">Loading…</td></tr>';
+
+  try {
+    // Try IPC first (app is open, has service role)
+    if (window.emailAPI?.getHistory) {
+      const res = await window.emailAPI.getHistory({ limit: 300 });
+      if (res?.ok) {
+        _rows = res.data || [];
+        renderStats(_rows);
+        renderTable();
+        return;
+      }
+    }
+
+    // Fallback: direct Supabase REST (anon key — RLS may block, but try)
+    const res = await sbRequest('GET', 'omnis_email_queue?order=created_at.desc&limit=300');
+    if (res.ok) {
+      _rows = await res.json();
+      renderStats(_rows);
+      renderTable();
+    } else {
+      throw new Error(`HTTP ${res.status}`);
+    }
+  } catch(e) {
+    tbody.innerHTML = `<tr><td colspan="6" class="empty-state">Error loading queue: ${e.message}</td></tr>`;
+  }
+}
+
+function renderStats(rows) {
+  const counts = { pending:0, sent:0, failed:0, cancelled:0 };
+  rows.forEach(r => { if (counts[r.status] !== undefined) counts[r.status]++; });
+  const cards = [
+    { icon:'🕐', count:counts.pending,   label:'Pending',   color:'#f59e0b', bg:'#fffbeb', border:'#fde68a' },
+    { icon:'✅', count:counts.sent,      label:'Sent',      color:'#16a34a', bg:'#f0fdf4', border:'#bbf7d0' },
+    { icon:'❌', count:counts.failed,    label:'Failed',    color:'#dc2626', bg:'#fef2f2', border:'#fecaca' },
+    { icon:'📋', count:rows.length,      label:'Total',     color:'#0f172a', bg:'#f8fafc', border:'#e2e8f0' },
+  ];
+  document.getElementById('stats-grid').innerHTML = cards.map(c => `
+    <div class="stat-card" style="border-color:${c.border};background:${c.bg};">
+      <div class="stat-icon">${c.icon}</div>
+      <div>
+        <div class="stat-count" style="color:${c.color};">${c.count}</div>
+        <div class="stat-label">${c.label}</div>
+      </div>
+    </div>`).join('');
+}
+
+function setFilter(f) {
+  _activeFilter = f;
+  document.querySelectorAll('.ftab').forEach(b => {
+    b.classList.toggle('active', b.dataset.filter === f);
+  });
+  renderTable();
+}
+
+function renderTable() {
+  const tbody = document.getElementById('queue-tbody');
+  const rows  = _activeFilter === 'all' ? _rows : _rows.filter(r => r.status === _activeFilter);
+  if (!rows.length) {
+    tbody.innerHTML = `<tr><td colspan="6"><div class="empty-state">
+      <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+      <p>No emails found</p></div></td></tr>`;
+    return;
+  }
+
+  const badge = s => {
+    const map = {
+      pending:'badge-pending', sent:'badge-sent',
+      failed:'badge-failed', cancelled:'badge-cancelled', processing:'badge-processing'
+    };
+    const icons = { pending:'🕐', sent:'✅', failed:'❌', cancelled:'🚫', processing:'⏳' };
+    return `<span class="badge ${map[s]||''}">${icons[s]||''} ${s}</span>`;
+  };
+
+  const timeAgo = iso => {
+    if (!iso) return '—';
+    const d = (Date.now() - new Date(iso)) / 1000;
+    if (d < 60) return 'just now';
+    if (d < 3600) return `${Math.round(d/60)}m ago`;
+    if (d < 86400) return `${Math.round(d/3600)}h ago`;
+    return new Date(iso).toLocaleDateString();
+  };
+
+  const fmtTime = r => {
+    if (r.status === 'sent' && r.sent_at) return `Sent ${timeAgo(r.sent_at)}`;
+    if (r.scheduled_for) {
+      const dt = new Date(r.scheduled_for);
+      return dt > new Date() ? `⏰ ${dt.toLocaleString()}` : `Due ${timeAgo(r.scheduled_for)}`;
+    }
+    return '—';
+  };
+
+  tbody.innerHTML = rows.map(r => `
+    <tr>
+      <td>${badge(r.status)}</td>
+      <td>
+        <div style="font-weight:600;font-size:12px;color:#0f172a;">${r.to_email||'—'}</div>
+        ${r.to_name ? `<div style="font-size:11px;color:#94a3b8;">${r.to_name}</div>` : ''}
+      </td>
+      <td>
+        <div style="max-width:240px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;">${r.subject||'—'}</div>
+        ${r.error_message && r.status==='failed' ? `<div style="font-size:11px;color:#dc2626;margin-top:2px;">⚠ ${r.error_message}</div>` : ''}
+      </td>
+      <td style="font-size:12px;color:#475569;">${fmtTime(r)}</td>
+      <td>
+        ${r.related_doc
+          ? `<span style="font-size:11px;background:#f1f5f9;padding:3px 8px;border-radius:5px;color:#475569;">${r.related_type||''} · ${r.related_doc}</span>`
+          : '<span style="color:#cbd5e1;">—</span>'}
+      </td>
+      <td style="text-align:right;white-space:nowrap;">
+        ${r.status === 'pending' ? `<button class="action-btn btn-cancel" onclick="cancelEmail('${r.id}')">Cancel</button>` : ''}
+        ${r.status === 'failed'  ? `<button class="action-btn btn-retry"  onclick="retryEmail('${r.id}')">Retry</button>` : ''}
+        ${r.status === 'sent'    ? `<span style="font-size:11px;color:#94a3b8;">✓ Delivered</span>` : ''}
+      </td>
+    </tr>`).join('');
+}
+
+async function cancelEmail(id) {
+  if (!confirm('Cancel this scheduled email?')) return;
+  try {
+    if (window.emailAPI?.cancelScheduled) {
+      const res = await window.emailAPI.cancelScheduled(id);
+      if (!res?.ok) throw new Error(res?.error);
+    } else {
+      const res = await sbRequest('PATCH', `omnis_email_queue?id=eq.${id}`, { status: 'cancelled' });
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    }
+    loadQueue();
+  } catch(e) { alert('Error: ' + e.message); }
+}
+
+async function retryEmail(id) {
+  try {
+    if (window.emailAPI?.retryFailed) {
+      const res = await window.emailAPI.retryFailed(id);
+      if (!res?.ok) throw new Error(res?.error);
+    } else {
+      const res = await sbRequest('PATCH', `omnis_email_queue?id=eq.${id}`, { status: 'pending', retry_count: 0, error_message: null });
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    }
+    loadQueue();
+  } catch(e) { alert('Error: ' + e.message); }
+}
+
+// ─── Settings ───────────────────────────────────────────────────────────────
+async function loadSettings() {
+  if (window.emailAPI?.getConfig) {
+    try {
+      const cfg = await window.emailAPI.getConfig();
+      if (cfg) {
+        const set = id => { const el = document.getElementById(id); return el; };
+        if (set('set-host'))      set('set-host').value       = cfg.smtp_host || '';
+        if (set('set-port'))      set('set-port').value       = cfg.smtp_port || 587;
+        if (set('set-user'))      set('set-user').value       = cfg.smtp_user || '';
+        if (set('set-from-name')) set('set-from-name').value  = cfg.from_name || 'Omnis';
+        if (cfg.smtp_pass && set('set-pass')) set('set-pass').placeholder = '••••••••';
+      }
+    } catch(e) {}
+  }
+}
+
+async function saveSettings() {
+  const host     = document.getElementById('set-host')?.value?.trim();
+  const port     = document.getElementById('set-port')?.value?.trim() || '587';
+  const user     = document.getElementById('set-user')?.value?.trim();
+  const pass     = document.getElementById('set-pass')?.value?.trim();
+  const fromName = document.getElementById('set-from-name')?.value?.trim() || 'Omnis';
+  const statusEl = document.getElementById('settings-status');
+
+  if (!host || !user) {
+    statusEl.textContent = '❌ Host and Email are required.';
+    statusEl.style.color = '#dc2626'; return;
+  }
+
+  statusEl.textContent = 'Saving…'; statusEl.style.color = '#64748b';
+
+  try {
+    if (window.emailAPI?.saveConfig) {
+      const passFinal = (pass && !pass.startsWith('•')) ? pass : undefined;
+      const res = await window.emailAPI.saveConfig({ host, port, user, pass: passFinal, fromName, useTls: true });
+      if (!res?.ok) throw new Error(res?.error || 'Save failed');
+    } else {
+      // Direct Supabase UPSERT
+      const body = { system:'fleetrack', smtp_host:host, smtp_port:parseInt(port), smtp_user:user, from_name:fromName, use_tls:true };
+      if (pass && !pass.startsWith('•')) body.smtp_pass = pass;
+      const res = await sbRequest('POST', 'omnis_email_config', body);
+      if (!res.ok) throw new Error(`HTTP ${res.status}: ${await res.text()}`);
+    }
+    statusEl.textContent = '✅ Settings saved successfully.';
+    statusEl.style.color = '#16a34a';
+    setTimeout(() => { statusEl.textContent = ''; }, 4000);
+  } catch(e) {
+    statusEl.textContent = '❌ ' + e.message;
+    statusEl.style.color = '#dc2626';
+  }
+}
+
+async function testSMTP() {
+  const host = document.getElementById('set-host')?.value?.trim();
+  const port = document.getElementById('set-port')?.value?.trim() || '587';
+  const user = document.getElementById('set-user')?.value?.trim();
+  const pass = document.getElementById('set-pass')?.value?.trim();
+  const statusEl = document.getElementById('settings-status');
+
+  if (!pass || pass.startsWith('•')) {
+    statusEl.textContent = '❌ Enter your actual password to test.';
+    statusEl.style.color = '#dc2626'; return;
+  }
+
+  statusEl.textContent = 'Testing connection…'; statusEl.style.color = '#64748b';
+
+  try {
+    if (window.emailAPI?.test) {
+      const res = await window.emailAPI.test({ smtp_host:host, smtp_port:parseInt(port), smtp_user:user, smtp_pass:pass, use_tls:true });
+      if (!res?.ok) throw new Error(res?.error || 'Connection failed');
+      statusEl.textContent = '✅ Connection successful!';
+      statusEl.style.color = '#16a34a';
+    } else {
+      statusEl.textContent = '⚠️ Test requires the Omnis app to be connected. Save settings and the Edge Function will validate on next send.';
+      statusEl.style.color = '#f59e0b';
+    }
+  } catch(e) {
+    statusEl.textContent = '❌ ' + e.message;
+    statusEl.style.color = '#dc2626';
+  }
+}
+
+// ─── Composer ───────────────────────────────────────────────────────────────
+const TEMPLATES = {
+  service_reminder: {
+    subject: 'Service Reminder',
+    body: `<p>Dear Customer,</p>\n<p>Your machine is due for its scheduled service. Please contact us to arrange a convenient date.</p>\n<br>\n<p>Kind regards,<br><strong>Omnis Fleet Team</strong></p>`
+  },
+  breakdown_update: {
+    subject: 'Breakdown Status Update',
+    body: `<p>Dear Customer,</p>\n<p>We would like to update you on the current breakdown status of your machine.</p>\n<p><strong>Current Status:</strong> [details]<br><strong>ETA:</strong> [date]</p>\n<br>\n<p>Kind regards,<br><strong>Omnis Fleet Team</strong></p>`
+  },
+  quote_followup: {
+    subject: 'Quotation Follow-up',
+    body: `<p>Dear Customer,</p>\n<p>We are following up on our recent quotation. Please let us know if you have any questions or would like to proceed.</p>\n<br>\n<p>Kind regards,<br><strong>Omnis Fleet Team</strong></p>`
+  },
+  welcome: {
+    subject: 'Welcome to the Omnis Customer Portal',
+    body: `<p>Dear Customer,</p>\n<p>Welcome to the <strong>Omnis Customer Portal</strong>! Your account is now active. Please contact us if you need any assistance.</p>\n<br>\n<p>Kind regards,<br><strong>Omnis Fleet Team</strong></p>`
+  }
+};
+
+function openComposer(opts) {
+  ['ec-to','ec-cc','ec-subject','ec-body'].forEach(id => {
+    const el = document.getElementById(id); if (el) el.value = '';
+  });
+  const sched = document.getElementById('ec-scheduled'); if (sched) sched.value = '';
+  const tpl   = document.getElementById('ec-template');  if (tpl)   tpl.value   = '';
+  const status= document.getElementById('composer-status');
+  if (status) { status.textContent=''; status.style.color=''; }
+  const btn = document.getElementById('send-btn');
+  if (btn) { btn.disabled=false; btn.innerHTML='<svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg> Send Email'; }
+
+  if (opts) {
+    if (opts.to)      document.getElementById('ec-to').value      = opts.to;
+    if (opts.subject) document.getElementById('ec-subject').value = opts.subject;
+    if (opts.body)    document.getElementById('ec-body').value    = opts.body;
+    if (opts.template) applyTemplate(opts.template);
+    const sub = document.getElementById('composer-subtitle');
+    if (sub) sub.textContent = opts.context || 'New message';
+    const overlay = document.getElementById('composer-overlay');
+    overlay.dataset.relatedDoc  = opts.relatedDoc  || '';
+    overlay.dataset.relatedType = opts.relatedType || 'manual';
+  } else {
+    const sub = document.getElementById('composer-subtitle');
+    if (sub) sub.textContent = 'New message';
+    const overlay = document.getElementById('composer-overlay');
+    overlay.dataset.relatedDoc = '';
+    overlay.dataset.relatedType = 'manual';
+  }
+
+  const overlay = document.getElementById('composer-overlay');
+  overlay.style.display = 'flex';
+  document.getElementById('ec-to').focus();
+}
+
+function closeComposer() {
+  document.getElementById('composer-overlay').style.display = 'none';
+}
+
+function applyTemplate(id) {
+  if (!id || !TEMPLATES[id]) return;
+  const t = TEMPLATES[id];
+  const sub = document.getElementById('ec-subject');
+  if (sub && !sub.value) sub.value = t.subject;
+  const body = document.getElementById('ec-body');
+  if (body) body.value = t.body;
+}
+
+async function sendEmail() {
+  const to      = (document.getElementById('ec-to')?.value      || '').trim();
+  const cc      = (document.getElementById('ec-cc')?.value      || '').trim();
+  const subject = (document.getElementById('ec-subject')?.value || '').trim();
+  const body    = (document.getElementById('ec-body')?.value    || '').trim();
+  const sched   = (document.getElementById('ec-scheduled')?.value || '').trim();
+
+  const statusEl = document.getElementById('composer-status');
+  const btn      = document.getElementById('send-btn');
+
+  const setStatus = (msg, color) => {
+    statusEl.textContent = msg; statusEl.style.color = color;
+  };
+
+  if (!to)      { setStatus('❌ Recipient is required.',    '#dc2626'); return; }
+  if (!subject) { setStatus('❌ Subject is required.',      '#dc2626'); return; }
+  if (!body)    { setStatus('❌ Message body is required.', '#dc2626'); return; }
+
+  const isScheduled = sched && new Date(sched) > new Date();
+  btn.disabled = true;
+  btn.innerHTML = isScheduled ? '⏰ Scheduling…' : '📤 Sending…';
+  setStatus(isScheduled ? 'Scheduling…' : 'Adding to queue…', '#64748b');
+
+  const overlay = document.getElementById('composer-overlay');
+
+  try {
+    const payload = {
+      to, cc: cc || undefined, subject,
+      html: body.includes('<') ? body : body.replace(/\n/g, '<br>'),
+      scheduledFor: isScheduled ? new Date(sched).toISOString() : undefined,
+      relatedDoc:  overlay.dataset.relatedDoc  || '',
+      relatedType: overlay.dataset.relatedType || 'manual',
+      createdBy:   localStorage.getItem('ft_user_email') || '',
+    };
+
+    if (window.emailAPI?.send) {
+      const res = await window.emailAPI.send(payload);
+      if (!res?.ok) throw new Error(res?.error || 'Failed');
+    } else {
+      // Direct Supabase insert into queue
+      const queueRow = {
+        system: 'omnis',
+        to_email: to,
+        cc_email: cc || null,
+        subject,
+        body_html: payload.html,
+        status: 'pending',
+        scheduled_for: payload.scheduledFor || new Date().toISOString(),
+        related_doc:  payload.relatedDoc  || null,
+        related_type: payload.relatedType || 'manual',
+        created_by:   payload.createdBy   || null,
+      };
+      const res = await sbRequest('POST', 'omnis_email_queue', queueRow);
+      if (!res.ok) throw new Error(`HTTP ${res.status}: ${await res.text()}`);
+    }
+
+    setStatus(isScheduled ? '✅ Email scheduled!' : '✅ Added to queue — sending shortly.', '#16a34a');
+    setTimeout(() => {
+      closeComposer();
+      if (_activeView === 'queue') loadQueue();
+    }, 1800);
+
+  } catch(e) {
+    setStatus('❌ ' + e.message, '#dc2626');
+    btn.disabled = false;
+    btn.innerHTML = '<svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg> Retry';
+  }
+}
+
+// Close composer on overlay click
+document.getElementById('composer-overlay').addEventListener('click', function(e) {
+  if (e.target === this) closeComposer();
+});
+
+// Expose openComposer globally so other Omnis systems can call it
+window.omnisOpenEmailComposer = openComposer;
+</script>
+</body>
+</html>

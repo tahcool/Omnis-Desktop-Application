@@ -1,0 +1,11 @@
+ALTER TABLE public."frappe_quotation" ALTER COLUMN "base_total" TYPE double precision USING "base_total"::double precision;
+ALTER TABLE public."frappe_quotation" ALTER COLUMN "base_net_total" TYPE double precision USING "base_net_total"::double precision;
+ALTER TABLE public."frappe_quotation" ALTER COLUMN "total" TYPE double precision USING "total"::double precision;
+ALTER TABLE public."frappe_quotation" ALTER COLUMN "net_total" TYPE double precision USING "net_total"::double precision;
+ALTER TABLE public."frappe_quotation" ALTER COLUMN "base_grand_total" TYPE double precision USING "base_grand_total"::double precision;
+ALTER TABLE public."frappe_quotation" ALTER COLUMN "grand_total" TYPE double precision USING "grand_total"::double precision;
+ALTER TABLE public."frappe_quotation" ALTER COLUMN "conversion_rate" TYPE double precision USING "conversion_rate"::double precision;
+ALTER TABLE public."frappe_quotation" ALTER COLUMN "base_rounded_total" TYPE double precision USING "base_rounded_total"::double precision;
+ALTER TABLE public."frappe_quotation" ALTER COLUMN "rounded_total" TYPE double precision USING "rounded_total"::double precision;
+ALTER TABLE public."frappe_quotation" ALTER COLUMN "base_rounding_adjustment" TYPE double precision USING "base_rounding_adjustment"::double precision;
+ALTER TABLE public."frappe_quotation" ALTER COLUMN "rounding_adjustment" TYPE double precision USING "rounding_adjustment"::double precision;

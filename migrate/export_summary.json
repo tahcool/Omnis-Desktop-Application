@@ -1,0 +1,30 @@
+{
+  "summary": [
+    {
+      "doctype": "Quotation",
+      "exported": 3123,
+      "status": "ok"
+    },
+    {
+      "doctype": "FMB Report Machine",
+      "exported": 0,
+      "status": "ok"
+    },
+    {
+      "doctype": "Group Sales",
+      "exported": 299,
+      "status": "ok"
+    },
+    {
+      "doctype": "FMB Report",
+      "exported": 270,
+      "status": "ok"
+    },
+    {
+      "doctype": "Opportunity",
+      "exported": 57,
+      "status": "ok"
+    }
+  ],
+  "totalRecords": 3749
+}

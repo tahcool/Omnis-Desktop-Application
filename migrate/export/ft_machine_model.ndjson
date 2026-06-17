@@ -1,0 +1,515 @@
+{"name":"Bobcat-T40180","oem":"Bobcat","si_hours":0,"model_name":"T40180","fuel_consumption":0,"fuel_consumption_class":null}
+{"name":"Shantui-SR26T-3","oem":"Shantui","si_hours":0,"model_name":"SR26T-3","fuel_consumption":0,"fuel_consumption_class":null}
+{"name":"Shantui-SL30W","oem":"Shantui","si_hours":250,"model_name":"SL30W","fuel_consumption":6,"fuel_consumption_class":"Light Duty"}
+{"name":"Cummins-ISX 475","oem":"Cummins","si_hours":0,"model_name":"ISX 475","fuel_consumption":0,"fuel_consumption_class":null}
+{"name":"Shantui-SF30","oem":"Shantui","si_hours":250,"model_name":"SF30","fuel_consumption":0,"fuel_consumption_class":null}
+{"name":"Shantui-SE210-9","oem":"Shantui","si_hours":250,"model_name":"SE210-9","fuel_consumption":0,"fuel_consumption_class":null}
+{"name":"Shantui-SD32","oem":"Shantui","si_hours":250,"model_name":"SD32","fuel_consumption":30,"fuel_consumption_class":"Heavy Duty"}
+{"name":"Shantui-SD22","oem":"Shantui","si_hours":250,"model_name":"SD22","fuel_consumption":20,"fuel_consumption_class":"Moderate"}
+{"name":"Shantui-SE210","oem":"Shantui","si_hours":250,"model_name":"SE210","fuel_consumption":0,"fuel_consumption_class":null}
+{"name":"Shantui-SL50","oem":"Shantui","si_hours":250,"model_name":"SL50","fuel_consumption":14,"fuel_consumption_class":"Light Duty"}
+{"name":"Hamm-3410","oem":"Hamm","si_hours":250,"model_name":"3410","fuel_consumption":0,"fuel_consumption_class":null}
+{"name":"Hamm-HD090V","oem":"Hamm","si_hours":0,"model_name":"HD090V","fuel_consumption":0,"fuel_consumption_class":null}
+{"name":"Hamm-3411","oem":"Hamm","si_hours":0,"model_name":"3410","fuel_consumption":0,"fuel_consumption_class":null}
+{"name":"Hamm-3520","oem":"Hamm","si_hours":250,"model_name":"3520","fuel_consumption":0,"fuel_consumption_class":null}
+{"name":"Shantu-SD22","oem":"Shantu","si_hours":250,"model_name":"SD22","fuel_consumption":20,"fuel_consumption_class":"Heavy Duty"}
+{"name":"Shantui-SL60","oem":"Shantui","si_hours":250,"model_name":"SL60","fuel_consumption":15,"fuel_consumption_class":"Moderate"}
+{"name":"SANY-S-JLS220C","oem":"SANY","si_hours":0,"model_name":"S-JLS220C","fuel_consumption":0,"fuel_consumption_class":null}
+{"name":"Vogele-1603-2","oem":"Vogele","si_hours":0,"model_name":"1603-2","fuel_consumption":0,"fuel_consumption_class":null}
+{"name":"Shantui-SL50-3","oem":"Shantui","si_hours":250,"model_name":"SL50-3","fuel_consumption":14,"fuel_consumption_class":"Moderate"}
+{"name":"Shantui-SG21-3","oem":"Shantui","si_hours":250,"model_name":"SG21-3","fuel_consumption":15,"fuel_consumption_class":"Moderate"}
+{"name":"Shantui-SE220","oem":"Shantui","si_hours":250,"model_name":"SE220","fuel_consumption":12,"fuel_consumption_class":"Moderate"}
+{"name":"Shantui-SD16","oem":"Shantui","si_hours":250,"model_name":"SD16","fuel_consumption":0,"fuel_consumption_class":null}
+{"name":"Shantui-SE330","oem":"Shantui","si_hours":0,"model_name":"SE330","fuel_consumption":0,"fuel_consumption_class":null}
+{"name":"Shantui-SR26","oem":"Shantui","si_hours":0,"model_name":"SR26","fuel_consumption":0,"fuel_consumption_class":null}
+{"name":"Cummins-C550D5E","oem":"Cummins","si_hours":0,"model_name":"C550D5E","fuel_consumption":0,"fuel_consumption_class":null}
+{"name":"Cummins-C66D5L","oem":"Cummins","si_hours":250,"model_name":"C66D5L","fuel_consumption":0,"fuel_consumption_class":null}
+{"name":"Bobcat-S18","oem":"Bobcat","si_hours":100,"model_name":"S18.","fuel_consumption":0,"fuel_consumption_class":null}
+{"name":"Cummins-C17D5S","oem":"Cummins","si_hours":250,"model_name":"C17D5S","fuel_consumption":0,"fuel_consumption_class":null}
+{"name":"Shantui-SR26T","oem":"Shantui","si_hours":0,"model_name":"SR26T","fuel_consumption":0,"fuel_consumption_class":null}
+{"name":"Shantui-SR19P","oem":"Shantui","si_hours":0,"model_name":"SR19P","fuel_consumption":0,"fuel_consumption_class":null}
+{"name":"Shantui-SL50W-3","oem":"Shantui","si_hours":250,"model_name":"SL50W-3","fuel_consumption":14,"fuel_consumption_class":"Moderate"}
+{"name":"Shantui-SL60-3","oem":"Shantui","si_hours":250,"model_name":"SL60-3","fuel_consumption":15,"fuel_consumption_class":"Moderate"}
+{"name":"Shantui-SL60W-2","oem":"Shantui","si_hours":250,"model_name":"SL60W-2","fuel_consumption":15,"fuel_consumption_class":"Moderate"}
+{"name":"Cummins-C150DS","oem":"Cummins","si_hours":0,"model_name":"C150DS","fuel_consumption":0,"fuel_consumption_class":null}
+{"name":"TEREX-TR60","oem":"TEREX","si_hours":0,"model_name":"TR60","fuel_consumption":0,"fuel_consumption_class":null}
+{"name":"TEREX-TR45","oem":"TEREX","si_hours":0,"model_name":"TR45","fuel_consumption":0,"fuel_consumption_class":null}
+{"name":"Hitachi-EX1100-3","oem":"Hitachi","si_hours":0,"model_name":"EX1100-3","fuel_consumption":0,"fuel_consumption_class":null}
+{"name":"Hitachi-EX220","oem":"Hitachi","si_hours":250,"model_name":"EX220","fuel_consumption":12,"fuel_consumption_class":"Light Duty"}
+{"name":"Shacman-X3000","oem":"Shacman","si_hours":5000,"model_name":"X3000","fuel_consumption":0,"fuel_consumption_class":null}
+{"name":"Shantui-SL60W","oem":"Shantui","si_hours":0,"model_name":"SL60W","fuel_consumption":15,"fuel_consumption_class":"Moderate"}
+{"name":"Shantui-SBH388","oem":"Shantui","si_hours":250,"model_name":"SBH388","fuel_consumption":0,"fuel_consumption_class":null}
+{"name":"Cummins-6B5.3","oem":"Cummins","si_hours":0,"model_name":"6B5.3","fuel_consumption":0,"fuel_consumption_class":null}
+{"name":"Hitachi-ZX330LC","oem":"Hitachi","si_hours":0,"model_name":"ZX330LC","fuel_consumption":0,"fuel_consumption_class":null}
+{"name":"Hitachi-ZX330LC-3","oem":"Hitachi","si_hours":0,"model_name":"ZX330LC-3","fuel_consumption":0,"fuel_consumption_class":null}
+{"name":"Shantui-SBH388-II","oem":"Shantui","si_hours":250,"model_name":"SBH388-II","fuel_consumption":0,"fuel_consumption_class":null}
+{"name":"Cummins-C38D5S","oem":"Cummins","si_hours":0,"model_name":"C38D5S","fuel_consumption":0,"fuel_consumption_class":null}
+{"name":"Shantui-SL50WN-6","oem":"Shantui","si_hours":250,"model_name":"SL50WN-6","fuel_consumption":14,"fuel_consumption_class":"Moderate"}
+{"name":"Shantui-SL30","oem":"Shantui","si_hours":250,"model_name":"SL30","fuel_consumption":6,"fuel_consumption_class":"Light Duty"}
+{"name":"Shantui-SRT26H","oem":"Shantui","si_hours":250,"model_name":"SRT26H","fuel_consumption":0,"fuel_consumption_class":null}
+{"name":"Shantui-SR22H-C5","oem":"Shantui","si_hours":250,"model_name":"SR22H-C5","fuel_consumption":33.5,"fuel_consumption_class":"Heavy Duty"}
+{"name":"Bobcat-S130","oem":"Bobcat","si_hours":0,"model_name":"S130","fuel_consumption":0,"fuel_consumption_class":null}
+{"name":"Liugong-CLG6120E","oem":"Liugong","si_hours":0,"model_name":"CLG6120E","fuel_consumption":0,"fuel_consumption_class":null}
+{"name":"Liugong-CLG4215","oem":"Liugong","si_hours":250,"model_name":"CLG4215","fuel_consumption":0,"fuel_consumption_class":null}
+{"name":"Bobcat-B730R","oem":"Bobcat","si_hours":250,"model_name":"B730R","fuel_consumption":5.5,"fuel_consumption_class":null}
+{"name":"Cummins-C90D5","oem":"Cummins","si_hours":250,"model_name":"C90D5","fuel_consumption":0,"fuel_consumption_class":null}
+{"name":"Shantui-SL50WN-3","oem":"Shantui","si_hours":250,"model_name":"SL50WN-3","fuel_consumption":14,"fuel_consumption_class":"Moderate"}
+{"name":"Hitachi-ZX470LCH-5G","oem":"Hitachi","si_hours":0,"model_name":"ZX470LCH-5G","fuel_consumption":35,"fuel_consumption_class":null}
+{"name":"Hitachi-ZX470","oem":"Hitachi","si_hours":250,"model_name":"ZX470","fuel_consumption":0,"fuel_consumption_class":null}
+{"name":"Shantui-SF30AC","oem":"Shantui","si_hours":250,"model_name":"SF30AC","fuel_consumption":0,"fuel_consumption_class":null}
+{"name":"Shantui-SD22W","oem":"Shantui","si_hours":250,"model_name":"SD22W","fuel_consumption":20,"fuel_consumption_class":"Heavy Duty"}
+{"name":"Bobcat-S450","oem":"Bobcat","si_hours":250,"model_name":"S450","fuel_consumption":0,"fuel_consumption_class":null}
+{"name":"Shantui-SL60WN-8","oem":"Shantui","si_hours":250,"model_name":"SL60WN-8","fuel_consumption":15,"fuel_consumption_class":"Moderate"}
+{"name":"Shantui-SR22H-C5P","oem":"Shantui","si_hours":0,"model_name":"SR22H-C5P","fuel_consumption":0,"fuel_consumption_class":null}
+{"name":"1603-2","oem":"Vogele","si_hours":250,"model_name":"1603-2","fuel_consumption":0,"fuel_consumption_class":null}
+{"name":"Case-570T","oem":"Case","si_hours":250,"model_name":"570T","fuel_consumption":0,"fuel_consumption_class":null}
+{"name":"Case-SR200","oem":"Case","si_hours":250,"model_name":"SR200","fuel_consumption":12,"fuel_consumption_class":"Moderate"}
+{"name":"Vogele-1603-3","oem":"Vogele","si_hours":500,"model_name":"1603-2","fuel_consumption":0,"fuel_consumption_class":null}
+{"name":"Shantui-SR22H","oem":"Shantui","si_hours":250,"model_name":"SR22H","fuel_consumption":0,"fuel_consumption_class":null}
+{"name":"Liugong-TBA","oem":"Liugong","si_hours":250,"model_name":"TBA","fuel_consumption":0,"fuel_consumption_class":null}
+{"name":"Shantui-SRT26","oem":"Shantui","si_hours":250,"model_name":"SRT26","fuel_consumption":0,"fuel_consumption_class":null}
+{"name":"Hitachi-ZX200","oem":"Hitachi","si_hours":250,"model_name":"ZX200-5G","fuel_consumption":12,"fuel_consumption_class":null}
+{"name":"Vogele-1803-2","oem":"Vogele","si_hours":500,"model_name":"1803-2","fuel_consumption":0,"fuel_consumption_class":null}
+{"name":"ZX240-5G","oem":"Hitachi","si_hours":250,"model_name":"ZX240-5G","fuel_consumption":0,"fuel_consumption_class":null}
+{"name":"Shantui-SE3054LCW","oem":"Shantui","si_hours":250,"model_name":"SE3054LCW","fuel_consumption":16,"fuel_consumption_class":"Moderate"}
+{"name":"Royal-T35Y","oem":"Royal","si_hours":250,"model_name":"T35Y","fuel_consumption":0,"fuel_consumption_class":null}
+{"name":"Hamm-TBA","oem":"Hamm","si_hours":250,"model_name":"TBA","fuel_consumption":0,"fuel_consumption_class":null}
+{"name":"Shantui-SR12P/5","oem":"Shantui","si_hours":250,"model_name":"SR12P/5","fuel_consumption":0,"fuel_consumption_class":null}
+{"name":"Hamm-GRW18","oem":"Hamm","si_hours":250,"model_name":"GRW18","fuel_consumption":0,"fuel_consumption_class":null}
+{"name":"Kleeman - Cone","oem":"Kleeman","si_hours":500,"model_name":"Cone","fuel_consumption":0,"fuel_consumption_class":null}
+{"name":"Shantui-SG21","oem":"Shantui","si_hours":250,"model_name":"SG21","fuel_consumption":15,"fuel_consumption_class":"Moderate"}
+{"name":"TEREX-TA30","oem":"TEREX","si_hours":250,"model_name":"TA30","fuel_consumption":17,"fuel_consumption_class":"Moderate"}
+{"name":"Hitachi-ZX280","oem":"Hitachi","si_hours":250,"model_name":"ZX280","fuel_consumption":0,"fuel_consumption_class":null}
+{"name":"Perkins-TBA","oem":"Perkins","si_hours":250,"model_name":"TBA","fuel_consumption":0,"fuel_consumption_class":null}
+{"name":"Cummins-TBA","oem":"Cummins","si_hours":250,"model_name":"TBA","fuel_consumption":0,"fuel_consumption_class":null}
+{"name":"Hitachi-ZX200-59","oem":"Hitachi","si_hours":250,"model_name":"ZX200-59","fuel_consumption":0,"fuel_consumption_class":null}
+{"name":"Case-S580T","oem":"Case","si_hours":0,"model_name":"S580T","fuel_consumption":0,"fuel_consumption_class":null}
+{"name":"Bobcat-S570","oem":"Bobcat","si_hours":250,"model_name":"S570","fuel_consumption":0,"fuel_consumption_class":null}
+{"name":"Bobcat-T870","oem":"Bobcat","si_hours":250,"model_name":"T870","fuel_consumption":0,"fuel_consumption_class":null}
+{"name":"Shantui-SL30L39","oem":"Shantui","si_hours":250,"model_name":"SL30L39","fuel_consumption":6,"fuel_consumption_class":"Light Duty"}
+{"name":"Hamm-HD75","oem":"Hamm","si_hours":250,"model_name":"HD75","fuel_consumption":0,"fuel_consumption_class":null}
+{"name":"Shantui-SL60-2","oem":"Shantui","si_hours":250,"model_name":"SL60-2","fuel_consumption":15,"fuel_consumption_class":"Moderate"}
+{"name":"Wirtgen-WR2400","oem":"Wirtgen","si_hours":500,"model_name":"WR2400","fuel_consumption":0,"fuel_consumption_class":null}
+{"name":"Shantui-SE305LCW","oem":"Shantui","si_hours":250,"model_name":"SE305LCW","fuel_consumption":16,"fuel_consumption_class":"Moderate"}
+{"name":"Wirtgen-WR240","oem":"Wirtgen","si_hours":500,"model_name":"WR240","fuel_consumption":0,"fuel_consumption_class":null}
+{"name":"Hamm-HP280","oem":"Hamm","si_hours":250,"model_name":"HP280","fuel_consumption":0,"fuel_consumption_class":null}
+{"name":"Bobcat-S650","oem":"Bobcat","si_hours":250,"model_name":"S650","fuel_consumption":0,"fuel_consumption_class":null}
+{"name":"Hamm-HD10","oem":"Hamm","si_hours":50,"model_name":"HD10","fuel_consumption":0,"fuel_consumption_class":null}
+{"name":"Shantui-SG18-3","oem":"Shantui","si_hours":0,"model_name":"SG18-3","fuel_consumption":0,"fuel_consumption_class":null}
+{"name":"Bobcat-S530","oem":"Bobcat","si_hours":250,"model_name":"S530","fuel_consumption":0,"fuel_consumption_class":null}
+{"name":"Shantui-SBSBH388","oem":"Shantui","si_hours":250,"model_name":"SBSBH388","fuel_consumption":0,"fuel_consumption_class":null}
+{"name":"Bobcat-TBA","oem":"Bobcat","si_hours":250,"model_name":"S450","fuel_consumption":0,"fuel_consumption_class":null}
+{"name":"Cummins-C22D5S","oem":"Cummins","si_hours":250,"model_name":"C22D5S","fuel_consumption":0,"fuel_consumption_class":null}
+{"name":"Case-C22D5S","oem":"Case","si_hours":0,"model_name":"C22D5S","fuel_consumption":0,"fuel_consumption_class":null}
+{"name":"Bobcat-BF4N 1011F","oem":"Bobcat","si_hours":0,"model_name":"BF4N 1011F","fuel_consumption":0,"fuel_consumption_class":null}
+{"name":"Vogele-1800-3","oem":"Vogele","si_hours":250,"model_name":"1803-2","fuel_consumption":0,"fuel_consumption_class":null}
+{"name":"Shantui-ZX470","oem":"Shantui","si_hours":0,"model_name":"ZX470","fuel_consumption":0,"fuel_consumption_class":null}
+{"name":"Hamm-HP180","oem":"Hamm","si_hours":250,"model_name":"HP180","fuel_consumption":0,"fuel_consumption_class":null}
+{"name":"Hamm-GRW19","oem":"Hamm","si_hours":0,"model_name":"GRW19","fuel_consumption":0,"fuel_consumption_class":null}
+{"name":"Hitachi-ZX330","oem":"Hitachi","si_hours":250,"model_name":"ZX330","fuel_consumption":0,"fuel_consumption_class":null}
+{"name":"Hitachi-ZX400LC-5G","oem":"Hitachi","si_hours":250,"model_name":"ZX400LC-5G","fuel_consumption":24,"fuel_consumption_class":null}
+{"name":"Shantui-FDS60","oem":"Shantui","si_hours":0,"model_name":"FDS60","fuel_consumption":0,"fuel_consumption_class":null}
+{"name":"Hitachi-ZA210","oem":"Hitachi","si_hours":0,"model_name":"ZA210","fuel_consumption":0,"fuel_consumption_class":null}
+{"name":"Hitachi-ZX870","oem":"Hitachi","si_hours":0,"model_name":"ZX870","fuel_consumption":0,"fuel_consumption_class":null}
+{"name":"Charles Piers-Dumpy 5m3","oem":"Charles Piers","si_hours":0,"model_name":"Dumpy 5m3","fuel_consumption":0,"fuel_consumption_class":null}
+{"name":"TEREX-120.2-A2","oem":"TEREX","si_hours":0,"model_name":"120.2-A2","fuel_consumption":0,"fuel_consumption_class":null}
+{"name":"Royal Forklift-T35Y-2WD","oem":"Royal Forklift","si_hours":0,"model_name":"T35Y-2WD","fuel_consumption":0,"fuel_consumption_class":null}
+{"name":"Hitachi-ZX870LCR","oem":"Hitachi","si_hours":0,"model_name":"ZX870LCR","fuel_consumption":0,"fuel_consumption_class":null}
+{"name":"Hitachi-ZX870LCR-3","oem":"Hitachi","si_hours":0,"model_name":"ZX870LCR-3","fuel_consumption":0,"fuel_consumption_class":null}
+{"name":"Hitachi-EX200","oem":"Hitachi","si_hours":0,"model_name":"EX200","fuel_consumption":0,"fuel_consumption_class":null}
+{"name":"Cummins-C38D55","oem":"Cummins","si_hours":0,"model_name":"C38D55","fuel_consumption":0,"fuel_consumption_class":null}
+{"name":"Shantui-SR20MP","oem":"Shantui","si_hours":250,"model_name":"SR20MP","fuel_consumption":12,"fuel_consumption_class":"Moderate"}
+{"name":"XCMG-GR165","oem":"XCMG","si_hours":0,"model_name":"GR165","fuel_consumption":0,"fuel_consumption_class":null}
+{"name":"Foton-FT5","oem":"Foton","si_hours":0,"model_name":"FT5","fuel_consumption":0,"fuel_consumption_class":null}
+{"name":"Bobcat-B730","oem":"Bobcat","si_hours":250,"model_name":"B730","fuel_consumption":5.5,"fuel_consumption_class":null}
+{"name":"Bobcat-LT313","oem":"Bobcat","si_hours":0,"model_name":"LT313","fuel_consumption":0,"fuel_consumption_class":null}
+{"name":"Hitachi-EX1200-7","oem":"Hitachi","si_hours":250,"model_name":"EX1200-7","fuel_consumption":0,"fuel_consumption_class":null}
+{"name":"Shantui-SL30WN","oem":"Shantui","si_hours":250,"model_name":"SL30WN","fuel_consumption":6,"fuel_consumption_class":"Light Duty"}
+{"name":"Hamm-HP240","oem":"Hamm","si_hours":250,"model_name":"HP240","fuel_consumption":0,"fuel_consumption_class":null}
+{"name":"Hitachi-ZX280-5G","oem":"Hitachi","si_hours":0,"model_name":"ZX280-5G","fuel_consumption":0,"fuel_consumption_class":null}
+{"name":"TEREX-TA300","oem":"TEREX","si_hours":250,"model_name":"TA300","fuel_consumption":20,"fuel_consumption_class":"Moderate"}
+{"name":"Hitachi-ZX870R-3","oem":"Hitachi","si_hours":0,"model_name":"ZX870R-3","fuel_consumption":0,"fuel_consumption_class":null}
+{"name":"Hitachi-ZX450H","oem":"Hitachi","si_hours":0,"model_name":"ZX450H","fuel_consumption":0,"fuel_consumption_class":null}
+{"name":"Hitachi-ZX850H","oem":"Hitachi","si_hours":0,"model_name":"ZX850H","fuel_consumption":0,"fuel_consumption_class":null}
+{"name":"Hitachi-ZX650H","oem":"Hitachi","si_hours":0,"model_name":"ZX650H","fuel_consumption":0,"fuel_consumption_class":null}
+{"name":"Cummins-C550D5S","oem":"Cummins","si_hours":250,"model_name":"C550D5S","fuel_consumption":0,"fuel_consumption_class":null}
+{"name":"Cummins-C150D5S","oem":"Cummins","si_hours":250,"model_name":"C150D5S","fuel_consumption":0,"fuel_consumption_class":null}
+{"name":"Cummins-C55D5S","oem":"Cummins","si_hours":0,"model_name":"C55D5S","fuel_consumption":0,"fuel_consumption_class":null}
+{"name":"Cummins-C8D5S","oem":"Cummins","si_hours":0,"model_name":"C8D5S","fuel_consumption":0,"fuel_consumption_class":null}
+{"name":"Shantui-SE240","oem":"Shantui","si_hours":0,"model_name":"SE240","fuel_consumption":0,"fuel_consumption_class":null}
+{"name":"Shantui-SE240LC-9","oem":"Shantui","si_hours":0,"model_name":"SE240LC-9","fuel_consumption":0,"fuel_consumption_class":null}
+{"name":"Shantui-SE480","oem":"Shantui","si_hours":250,"model_name":"SE480","fuel_consumption":30,"fuel_consumption_class":"Heavy Duty"}
+{"name":"Shantui-SL30-3","oem":"Shantui","si_hours":0,"model_name":"SL30-3","fuel_consumption":6,"fuel_consumption_class":"Light Duty"}
+{"name":"Shantui-SL60-6","oem":"Shantui","si_hours":0,"model_name":"SL60-6","fuel_consumption":0,"fuel_consumption_class":null}
+{"name":"Cummins-WP4","oem":"Cummins","si_hours":0,"model_name":"WP4","fuel_consumption":0,"fuel_consumption_class":null}
+{"name":"Cummins-C66D5S","oem":"Cummins","si_hours":250,"model_name":"C66D5S","fuel_consumption":0,"fuel_consumption_class":null}
+{"name":"Shantui-SD23","oem":"Shantui","si_hours":0,"model_name":"SD23","fuel_consumption":0,"fuel_consumption_class":null}
+{"name":"Cummins-C110D55","oem":"Cummins","si_hours":0,"model_name":"C110D55","fuel_consumption":0,"fuel_consumption_class":null}
+{"name":"CHAMPION-730","oem":"CHAMPION","si_hours":0,"model_name":"730","fuel_consumption":0,"fuel_consumption_class":null}
+{"name":"HYUNDAI-300LC-95","oem":"HYUNDAI","si_hours":0,"model_name":"300LC-95","fuel_consumption":0,"fuel_consumption_class":null}
+{"name":"Shantui-MT3900","oem":"Shantui","si_hours":250,"model_name":"MT3900","fuel_consumption":0,"fuel_consumption_class":null}
+{"name":"Shantui-SL60WN-2","oem":"Shantui","si_hours":0,"model_name":"SL60WN-2","fuel_consumption":15,"fuel_consumption_class":"Moderate"}
+{"name":"Hitachi-ZX200-3","oem":"Hitachi","si_hours":0,"model_name":"ZX200-3","fuel_consumption":0,"fuel_consumption_class":null}
+{"name":"Komatsu-D85EX-15","oem":"Komatsu","si_hours":0,"model_name":"D85EX-15","fuel_consumption":0,"fuel_consumption_class":null}
+{"name":"Cummins-ISX 11","oem":"Cummins","si_hours":0,"model_name":"ISX 11","fuel_consumption":0,"fuel_consumption_class":null}
+{"name":"HYUNDAI-R215L","oem":"HYUNDAI","si_hours":0,"model_name":"R215L","fuel_consumption":0,"fuel_consumption_class":null}
+{"name":"TEREX-860SX","oem":"TEREX","si_hours":0,"model_name":"860SX","fuel_consumption":0,"fuel_consumption_class":null}
+{"name":"Hamm-HD12VV","oem":"Hamm","si_hours":0,"model_name":"HD12VV","fuel_consumption":0,"fuel_consumption_class":null}
+{"name":"Shantui-SF70","oem":"Shantui","si_hours":250,"model_name":"SF70","fuel_consumption":0,"fuel_consumption_class":null}
+{"name":"Shantui-SE370","oem":"Shantui","si_hours":250,"model_name":"SE370","fuel_consumption":0,"fuel_consumption_class":null}
+{"name":"Bobcat-T190","oem":"Bobcat","si_hours":0,"model_name":"T190","fuel_consumption":0,"fuel_consumption_class":null}
+{"name":"Shantui-SF20S","oem":"Shantui","si_hours":0,"model_name":"SF20S","fuel_consumption":0,"fuel_consumption_class":null}
+{"name":"Shantui-SE220LC","oem":"Shantui","si_hours":250,"model_name":"SE220LC","fuel_consumption":12,"fuel_consumption_class":"Heavy Duty"}
+{"name":"Wirtgen-WR2000","oem":"Wirtgen","si_hours":0,"model_name":"WR2000","fuel_consumption":0,"fuel_consumption_class":null}
+{"name":"Shantui-ER20-121","oem":"Shantui","si_hours":0,"model_name":"ER20-121","fuel_consumption":0,"fuel_consumption_class":null}
+{"name":"Shantui-SFE25","oem":"Shantui","si_hours":1000,"model_name":"SFE25","fuel_consumption":0,"fuel_consumption_class":null}
+{"name":"Hitachi-ZX470R-3","oem":"Hitachi","si_hours":0,"model_name":"ZX470R-3","fuel_consumption":0,"fuel_consumption_class":null}
+{"name":"Shantui-SE470","oem":"Shantui","si_hours":250,"model_name":"SE470","fuel_consumption":0,"fuel_consumption_class":null}
+{"name":"Shantui-SD16W","oem":"Shantui","si_hours":0,"model_name":"SD16W","fuel_consumption":0,"fuel_consumption_class":null}
+{"name":"Shantui-SD32W","oem":"Shantui","si_hours":0,"model_name":"SD32W","fuel_consumption":0,"fuel_consumption_class":null}
+{"name":"Shantui-SL20","oem":"Shantui","si_hours":250,"model_name":"SL20","fuel_consumption":0,"fuel_consumption_class":null}
+{"name":"Shantui-SL20W","oem":"Shantui","si_hours":0,"model_name":"SL20W","fuel_consumption":0,"fuel_consumption_class":null}
+{"name":"Hitachi-ZX200-5g","oem":"Hitachi","si_hours":250,"model_name":"ZX200-5g","fuel_consumption":0,"fuel_consumption_class":null}
+{"name":"Weichai-WD10","oem":"Weichai","si_hours":0,"model_name":"WD10","fuel_consumption":0,"fuel_consumption_class":null}
+{"name":"Shangchai-SC11","oem":"Shangchai","si_hours":0,"model_name":"SC11","fuel_consumption":0,"fuel_consumption_class":null}
+{"name":"Shantui-SL30L39-B3","oem":"Shantui","si_hours":0,"model_name":"SL30L39-B3","fuel_consumption":6,"fuel_consumption_class":"Light Duty"}
+{"name":"Shantui-SG18","oem":"Shantui","si_hours":250,"model_name":"SG18","fuel_consumption":0,"fuel_consumption_class":null}
+{"name":"Liugong-ZL50CN","oem":"Liugong","si_hours":250,"model_name":"ZL50CN","fuel_consumption":0,"fuel_consumption_class":null}
+{"name":"XCMG-ZL50","oem":"XCMG","si_hours":250,"model_name":"ZL50","fuel_consumption":0,"fuel_consumption_class":null}
+{"name":"Shantui-Shantui ER20-121","oem":"Shantui","si_hours":1000,"model_name":"ER20-121","fuel_consumption":0,"fuel_consumption_class":null}
+{"name":"Hyster-TBA","oem":"Hyster","si_hours":250,"model_name":"TBA","fuel_consumption":0,"fuel_consumption_class":null}
+{"name":"Linkbelt-TBA","oem":"Linkbelt","si_hours":250,"model_name":"TBA","fuel_consumption":0,"fuel_consumption_class":null}
+{"name":"TEREX-844s","oem":"TEREX","si_hours":250,"model_name":"844s","fuel_consumption":0,"fuel_consumption_class":null}
+{"name":"Toyota-TBA","oem":"Toyota","si_hours":250,"model_name":"TBA","fuel_consumption":0,"fuel_consumption_class":null}
+{"name":"CAT-928H","oem":"CAT","si_hours":250,"model_name":"928H","fuel_consumption":0,"fuel_consumption_class":null}
+{"name":"Caterpillar-140G","oem":"Caterpillar","si_hours":0,"model_name":"140H","fuel_consumption":0,"fuel_consumption_class":null}
+{"name":"Vogele-TBA","oem":"Vogele","si_hours":500,"model_name":"TBA","fuel_consumption":0,"fuel_consumption_class":null}
+{"name":"TBA-Paver","oem":"Vogele","si_hours":500,"model_name":"Paver","fuel_consumption":0,"fuel_consumption_class":null}
+{"name":"Bobcat-863","oem":"Bobcat","si_hours":250,"model_name":"863","fuel_consumption":0,"fuel_consumption_class":null}
+{"name":"Sufu-FDS60","oem":"Sufu","si_hours":300,"model_name":"FDS60","fuel_consumption":0,"fuel_consumption_class":null}
+{"name":"Shantui-SE305","oem":"Shantui","si_hours":250,"model_name":"SE305","fuel_consumption":16,"fuel_consumption_class":"Moderate"}
+{"name":"Shantui-SE370LC","oem":"Shantui","si_hours":250,"model_name":"SE370LC","fuel_consumption":0,"fuel_consumption_class":null}
+{"name":"Shantui-SE470LC","oem":"Shantui","si_hours":250,"model_name":"SE470LC","fuel_consumption":0,"fuel_consumption_class":null}
+{"name":"Shantui-SL50WN","oem":"Shantui","si_hours":250,"model_name":"SL50WN","fuel_consumption":14,"fuel_consumption_class":"Moderate"}
+{"name":"Shantui-SL60W2","oem":"Shantui","si_hours":250,"model_name":"SL60W2","fuel_consumption":15,"fuel_consumption_class":"Moderate"}
+{"name":"Shantui-SL60-8","oem":"Shantui","si_hours":250,"model_name":"SL60-8","fuel_consumption":0,"fuel_consumption_class":null}
+{"name":"Bobcat-S350","oem":"Bobcat","si_hours":250,"model_name":"S350","fuel_consumption":0,"fuel_consumption_class":null}
+{"name":"Bobcat-S450B","oem":"Bobcat","si_hours":250,"model_name":"S450B","fuel_consumption":4.5,"fuel_consumption_class":null}
+{"name":"Shantui-TBA","oem":"Shantui","si_hours":250,"model_name":"TBA","fuel_consumption":0,"fuel_consumption_class":null}
+{"name":"Case-580T","oem":"Case","si_hours":250,"model_name":"580T","fuel_consumption":0,"fuel_consumption_class":null}
+{"name":"Hamm-3520P","oem":"Hamm","si_hours":250,"model_name":"3520","fuel_consumption":0,"fuel_consumption_class":null}
+{"name":"Shantui-MT3886","oem":"Shantui","si_hours":250,"model_name":"MT3886","fuel_consumption":0,"fuel_consumption_class":null}
+{"name":"Hamm-HD12","oem":"Hamm","si_hours":250,"model_name":"HD12","fuel_consumption":0,"fuel_consumption_class":null}
+{"name":"Bobcat-863S","oem":"Bobcat","si_hours":250,"model_name":"863S","fuel_consumption":0,"fuel_consumption_class":null}
+{"name":"Shantui-SR12","oem":"Shantui","si_hours":0,"model_name":"SR12","fuel_consumption":0,"fuel_consumption_class":null}
+{"name":"Cummins-C28D5","oem":"Cummins","si_hours":250,"model_name":"C28D5","fuel_consumption":0,"fuel_consumption_class":null}
+{"name":"Sunny-TBA","oem":"Sunny","si_hours":250,"model_name":"TBA","fuel_consumption":0,"fuel_consumption_class":null}
+{"name":"TEREX-TLB844S","oem":"TEREX","si_hours":250,"model_name":"TLB844S","fuel_consumption":0,"fuel_consumption_class":null}
+{"name":"Wirtgen-WR200","oem":"Wirtgen","si_hours":250,"model_name":"WR200","fuel_consumption":0,"fuel_consumption_class":null}
+{"name":"Grove-TBA","oem":"Grove","si_hours":250,"model_name":"TBA","fuel_consumption":0,"fuel_consumption_class":null}
+{"name":"CAT-216B","oem":"CAT","si_hours":250,"model_name":"216B","fuel_consumption":0,"fuel_consumption_class":null}
+{"name":"Noble-LT1714","oem":"Noble","si_hours":250,"model_name":"LT1714","fuel_consumption":0,"fuel_consumption_class":null}
+{"name":"CAT-226B","oem":"CAT","si_hours":250,"model_name":"226B","fuel_consumption":0,"fuel_consumption_class":null}
+{"name":"Hyster-P3.0","oem":"Hyster","si_hours":250,"model_name":"P3.0","fuel_consumption":0,"fuel_consumption_class":null}
+{"name":"XCMG-TBA","oem":"XCMG","si_hours":250,"model_name":"TBA","fuel_consumption":0,"fuel_consumption_class":null}
+{"name":"CAT-650F","oem":"CAT","si_hours":250,"model_name":"650F","fuel_consumption":0,"fuel_consumption_class":null}
+{"name":"Shantui-SE360","oem":"Shantui","si_hours":250,"model_name":"SE360","fuel_consumption":28,"fuel_consumption_class":"Heavy Duty"}
+{"name":"Kleeman-Jaw","oem":"Kleeman","si_hours":500,"model_name":"Jaw ","fuel_consumption":0,"fuel_consumption_class":null}
+{"name":"CAT-936E","oem":"CAT","si_hours":250,"model_name":"936E","fuel_consumption":0,"fuel_consumption_class":null}
+{"name":"TEREX-TR40","oem":"TEREX","si_hours":250,"model_name":"TR40","fuel_consumption":0,"fuel_consumption_class":null}
+{"name":"Shacman-Shacman","oem":"Shacman","si_hours":250,"model_name":"Shacman","fuel_consumption":0,"fuel_consumption_class":null}
+{"name":"XCMG-Cummins Engine","oem":"XCMG","si_hours":250,"model_name":"Cummins Engine","fuel_consumption":0,"fuel_consumption_class":null}
+{"name":"Shantui-SR26H-C5P","oem":"Shantui","si_hours":250,"model_name":"SR22H-C5","fuel_consumption":0,"fuel_consumption_class":null}
+{"name":"Mercedes Benz-AXOR262BB/33CKD2","oem":"Mercedes Benz","si_hours":250,"model_name":"AXOR262BB/33CKD2","fuel_consumption":0,"fuel_consumption_class":null}
+{"name":"Heli-CCCD50","oem":"Heli","si_hours":250,"model_name":"CCCD50","fuel_consumption":0,"fuel_consumption_class":null}
+{"name":"Zhongtong- ISL9 Bus","oem":"Zhongtong","si_hours":250,"model_name":" ISL9 Bus","fuel_consumption":0,"fuel_consumption_class":null}
+{"name":"Powerstar-2628VX","oem":"Powerstar","si_hours":250,"model_name":"2628VX","fuel_consumption":0,"fuel_consumption_class":null}
+{"name":"Cummins-6CT","oem":"Cummins","si_hours":250,"model_name":"6CT","fuel_consumption":0,"fuel_consumption_class":null}
+{"name":"Cummins-6BT","oem":"Cummins","si_hours":250,"model_name":"6BT","fuel_consumption":0,"fuel_consumption_class":null}
+{"name":"CAT-33606#1","oem":"CAT","si_hours":250,"model_name":"3306","fuel_consumption":0,"fuel_consumption_class":null}
+{"name":"Ammann-Ammann - Paver","oem":"Ammann","si_hours":250,"model_name":"Ammann - Paver","fuel_consumption":0,"fuel_consumption_class":null}
+{"name":"CAT-320","oem":"CAT","si_hours":250,"model_name":"320","fuel_consumption":0,"fuel_consumption_class":null}
+{"name":"Case-580 Super","oem":"Case","si_hours":250,"model_name":"580 Super","fuel_consumption":0,"fuel_consumption_class":null}
+{"name":"CAT-120H","oem":"CAT","si_hours":250,"model_name":"120H","fuel_consumption":0,"fuel_consumption_class":null}
+{"name":"SANNY-SANNY - GRADER","oem":"SANY","si_hours":250,"model_name":"SANNY - GRADER","fuel_consumption":0,"fuel_consumption_class":null}
+{"name":"Powerstar-PO","oem":"Powerstar","si_hours":250,"model_name":"PO","fuel_consumption":0,"fuel_consumption_class":null}
+{"name":"Powerstar-Powestar 2642","oem":"Powerstar","si_hours":250,"model_name":"Powestar 2642","fuel_consumption":0,"fuel_consumption_class":null}
+{"name":"Powerstar-4035","oem":"Powerstar","si_hours":250,"model_name":"4035","fuel_consumption":0,"fuel_consumption_class":null}
+{"name":"Perkins-1300","oem":"Perkins","si_hours":250,"model_name":"1300","fuel_consumption":0,"fuel_consumption_class":null}
+{"name":"JAC-JAC","oem":"JAC","si_hours":250,"model_name":"JAC","fuel_consumption":0,"fuel_consumption_class":null}
+{"name":"JAC-HeC25","oem":"JAC","si_hours":250,"model_name":"HeC25","fuel_consumption":0,"fuel_consumption_class":null}
+{"name":"Foton-LBV","oem":"Foton","si_hours":10000,"model_name":"LBV","fuel_consumption":0,"fuel_consumption_class":null}
+{"name":"CAT-CAT323D","oem":"CAT","si_hours":250,"model_name":"CAT323D","fuel_consumption":0,"fuel_consumption_class":null}
+{"name":"Foton-FT10","oem":"Foton","si_hours":10000,"model_name":"FT10","fuel_consumption":0,"fuel_consumption_class":null}
+{"name":"XCMG-XE500DK","oem":"XCMG","si_hours":250,"model_name":"XE500DK","fuel_consumption":0,"fuel_consumption_class":null}
+{"name":"Cummins-66KVA","oem":"Cummins","si_hours":250,"model_name":"C66D5S","fuel_consumption":0,"fuel_consumption_class":null}
+{"name":"Hitachi-ZX470LCR-5G","oem":"Hitachi","si_hours":250,"model_name":"ZX470LCR-5G","fuel_consumption":0,"fuel_consumption_class":null}
+{"name":"Cummins-53.8-G6","oem":"Cummins","si_hours":250,"model_name":"53.8-G6","fuel_consumption":0,"fuel_consumption_class":null}
+{"name":"Shantui-SE17","oem":"Shantui","si_hours":250,"model_name":"SE17","fuel_consumption":0,"fuel_consumption_class":null}
+{"name":"CAT-Catapiller","oem":"CAT","si_hours":500,"model_name":"Catapiller","fuel_consumption":0,"fuel_consumption_class":null}
+{"name":"Powermec-PWMEC","oem":"Powermec","si_hours":250,"model_name":"PWMEC","fuel_consumption":0,"fuel_consumption_class":null}
+{"name":"Baudouin-6M21G550/5","oem":"Baudouin","si_hours":250,"model_name":"6M21G550/5","fuel_consumption":0,"fuel_consumption_class":null}
+{"name":"Kubota-KJ-T1880V","oem":"Kubota","si_hours":250,"model_name":"KJ-T1880V","fuel_consumption":0,"fuel_consumption_class":null}
+{"name":"Baudouin-6M26G550/5","oem":"Baudouin","si_hours":250,"model_name":"6M26G550/5","fuel_consumption":0,"fuel_consumption_class":null}
+{"name":"Wirtgen-SW16MC","oem":"Wirtgen","si_hours":250,"model_name":"SW16MC","fuel_consumption":0,"fuel_consumption_class":null}
+{"name":"Shantui-SE17SR","oem":"Shantui","si_hours":50,"model_name":"SE17SR","fuel_consumption":0,"fuel_consumption_class":null}
+{"name":"Wirtgen-HD10VV","oem":"Wirtgen","si_hours":500,"model_name":"HD10VV","fuel_consumption":0,"fuel_consumption_class":null}
+{"name":"Wirtgen-W2200 SM","oem":"Wirtgen","si_hours":500,"model_name":"W2200 SM","fuel_consumption":0,"fuel_consumption_class":null}
+{"name":"JAC-CPD25","oem":"JAC","si_hours":600,"model_name":"CPD25","fuel_consumption":0,"fuel_consumption_class":null}
+{"name":"Cummins-Cummins QSL8.9","oem":"Cummins","si_hours":250,"model_name":"Cummins QSL9 ","fuel_consumption":0,"fuel_consumption_class":null}
+{"name":"LAUNTOP-LDG6000S","oem":"LAUNTOP","si_hours":250,"model_name":"LDG6000S","fuel_consumption":0,"fuel_consumption_class":null}
+{"name":"Cummins-QSX15-G8","oem":"Cummins","si_hours":250,"model_name":"QSX15-G8","fuel_consumption":0,"fuel_consumption_class":null}
+{"name":"Cummins-6BTAA59-G6","oem":"Cummins","si_hours":250,"model_name":"6BTAA59-G6","fuel_consumption":0,"fuel_consumption_class":null}
+{"name":"Shantui-SFD30","oem":"Shantui","si_hours":250,"model_name":"SFD30","fuel_consumption":3.5,"fuel_consumption_class":null}
+{"name":"Cummins-QSB6.8","oem":"Cummins","si_hours":250,"model_name":"QSB6.8","fuel_consumption":0,"fuel_consumption_class":null}
+{"name":"John Deere-5725","oem":"John Deere","si_hours":250,"model_name":"5725","fuel_consumption":0,"fuel_consumption_class":null}
+{"name":"Wirtgen-3520E","oem":"Hamm","si_hours":250,"model_name":"3520","fuel_consumption":0,"fuel_consumption_class":null}
+{"name":"John Deere-tba, John Deere","oem":"John Deere","si_hours":250,"model_name":"tba, John Deere","fuel_consumption":0,"fuel_consumption_class":null}
+{"name":"Cummins-TBA Cummins","oem":"Cummins","si_hours":250,"model_name":"TBA Cummins","fuel_consumption":0,"fuel_consumption_class":null}
+{"name":"ACGO-49DTAG","oem":"ACGO","si_hours":250,"model_name":"49DTAG","fuel_consumption":0,"fuel_consumption_class":null}
+{"name":"Shantui-L39-B3","oem":"Shantui","si_hours":250,"model_name":"L39-B3","fuel_consumption":6,"fuel_consumption_class":"Heavy Duty"}
+{"name":"Bobcat-A300","oem":"Bobcat","si_hours":250,"model_name":"A300","fuel_consumption":0,"fuel_consumption_class":null}
+{"name":"Wirtgen-MS953","oem":"Kleeman","si_hours":500,"model_name":"MS953","fuel_consumption":0,"fuel_consumption_class":null}
+{"name":"Bobcat-LDR","oem":"Bobcat","si_hours":0,"model_name":"LDR_Backhoe_GEN2","fuel_consumption":0,"fuel_consumption_class":null}
+{"name":"Hitachi-ZX470LCR-3","oem":"Hitachi","si_hours":250,"model_name":"ZX470LCR-3","fuel_consumption":0,"fuel_consumption_class":null}
+{"name":"Cummins-QSX15","oem":"Cummins","si_hours":250,"model_name":"QSX15","fuel_consumption":0,"fuel_consumption_class":null}
+{"name":"Cummins-6BT-G75E24","oem":"Cummins","si_hours":250,"model_name":"6BT-G75E24","fuel_consumption":0,"fuel_consumption_class":null}
+{"name":"XCMG-NXG5650DT","oem":"XCMG","si_hours":250,"model_name":"NXG5650DT","fuel_consumption":0,"fuel_consumption_class":null}
+{"name":"Service Exchange-SEC - SE210","oem":"Service Exchange","si_hours":250,"model_name":"SEC - SE210","fuel_consumption":0,"fuel_consumption_class":null}
+{"name":"Service Exchange-SEC - SE210 Bucket Cylinder","oem":"Service Exchange","si_hours":250,"model_name":"SEC - SE210 Bucket Cylinder","fuel_consumption":0,"fuel_consumption_class":null}
+{"name":"Ammann-SEC - SBH388 Jumbo Leg Cyl.","oem":"Service Exchange","si_hours":250,"model_name":"SEC - SBH388 Jumbo Leg Cyl.","fuel_consumption":0,"fuel_consumption_class":null}
+{"name":"Service Exchange-SEC Bucket CYL SBH388","oem":"Service Exchange","si_hours":250,"model_name":"SEC Bucket CYL SBH388","fuel_consumption":0,"fuel_consumption_class":null}
+{"name":"Service Exchange-SEC - Stick,swing and leg cylinder Ex-Gardini","oem":"Service Exchange","si_hours":250,"model_name":"SEC - Stick,swing and leg cylinder Ex-Gardini","fuel_consumption":0,"fuel_consumption_class":null}
+{"name":"Service Exchange-SEC-SD22 Torque conv & Trans","oem":"Service Exchange","si_hours":250,"model_name":"SEC-SD22 Torque conv & Trans","fuel_consumption":0,"fuel_consumption_class":null}
+{"name":"Service Exchange-SEC-SD22 Torque converter and transmission","oem":"Service Exchange","si_hours":250,"model_name":"SEC-SD22 Torque converter and transmission","fuel_consumption":0,"fuel_consumption_class":null}
+{"name":"Service Exchange-SL60  Trabsmission","oem":"Service Exchange","si_hours":250,"model_name":"SL60  Trabsmission","fuel_consumption":0,"fuel_consumption_class":null}
+{"name":"Service Exchange-SEC-TA30 Transmission","oem":"Service Exchange","si_hours":250,"model_name":"SEC-TA30 Transmission","fuel_consumption":0,"fuel_consumption_class":null}
+{"name":"Service Exchange-Front P/shaft and centre bearing","oem":"Service Exchange","si_hours":250,"model_name":"Front P/shaft and centre bearing","fuel_consumption":0,"fuel_consumption_class":null}
+{"name":"Cummins-KC1100","oem":"Cummins","si_hours":250,"model_name":"KC1100","fuel_consumption":0,"fuel_consumption_class":null}
+{"name":"Cummins-6BT5.9-G2","oem":"Cummins","si_hours":250,"model_name":"6BT5.9-G2","fuel_consumption":0,"fuel_consumption_class":null}
+{"name":"140G","oem":"Caterpillar","si_hours":250,"model_name":"140G","fuel_consumption":0,"fuel_consumption_class":null}
+{"name":"Cummins-KD110","oem":"Cummins","si_hours":250,"model_name":"KD110","fuel_consumption":0,"fuel_consumption_class":null}
+{"name":"Genset-Genset","oem":"Caterpillar","si_hours":250,"model_name":"CAT Genset","fuel_consumption":0,"fuel_consumption_class":null}
+{"name":"Bell-770D","oem":"Bell","si_hours":250,"model_name":"770D","fuel_consumption":0,"fuel_consumption_class":null}
+{"name":"CAT-730","oem":"CAT","si_hours":250,"model_name":"730","fuel_consumption":0,"fuel_consumption_class":null}
+{"name":"Cummins-Cummins Eng","oem":"Cummins","si_hours":250,"model_name":"Cummins Eng","fuel_consumption":0,"fuel_consumption_class":null}
+{"name":"Service Exchange-Weichai starter SL60","oem":"Service Exchange","si_hours":250,"model_name":"Weichai starter SL60","fuel_consumption":0,"fuel_consumption_class":null}
+{"name":"Service Exchange-LHD Starter Ex-Epiroc","oem":"Service Exchange","si_hours":250,"model_name":"LHD Starter Ex-Epiroc","fuel_consumption":0,"fuel_consumption_class":null}
+{"name":"Service Exchange-SF30 Starter Motor","oem":"Service Exchange","si_hours":250,"model_name":"SF30 Starter Motor","fuel_consumption":0,"fuel_consumption_class":null}
+{"name":"Service Exchange-B450 Starter Motor","oem":"Service Exchange","si_hours":250,"model_name":"B450 Starter Motor","fuel_consumption":0,"fuel_consumption_class":null}
+{"name":"Service Exchange-Alternator Ex-WL03","oem":"Service Exchange","si_hours":250,"model_name":"Alternator Ex-WL03","fuel_consumption":0,"fuel_consumption_class":null}
+{"name":"Service Exchange-Alternator SL50#1","oem":"Service Exchange","si_hours":250,"model_name":"Alternator SL50#1","fuel_consumption":0,"fuel_consumption_class":null}
+{"name":"Service Exchange-Alternator SL50#2","oem":"Service Exchange","si_hours":250,"model_name":"Alternator SL50#2","fuel_consumption":0,"fuel_consumption_class":null}
+{"name":"Service Exchange-Alternator SL50#3 Weichai","oem":"Service Exchange","si_hours":250,"model_name":"Alternator SL50#3 Weichai","fuel_consumption":0,"fuel_consumption_class":null}
+{"name":"Service Exchange-Alternator TA300 Ex-DT11","oem":"Service Exchange","si_hours":250,"model_name":"Alternator TA300 Ex-DT11","fuel_consumption":0,"fuel_consumption_class":null}
+{"name":"Service Exchange-Alternator ExPaver","oem":"Service Exchange","si_hours":250,"model_name":"Alternator ExPaver","fuel_consumption":0,"fuel_consumption_class":null}
+{"name":"Service Exchange-SF30 Starter Motor #2","oem":"Service Exchange","si_hours":250,"model_name":"SF30 Starter Motor #2","fuel_consumption":0,"fuel_consumption_class":null}
+{"name":"Service Exchange-Air Compressor #1 SRD","oem":"Service Exchange","si_hours":250,"model_name":"Air Compressor #1 SRD","fuel_consumption":0,"fuel_consumption_class":null}
+{"name":"Service Exchange-Air Compressor #2SRD","oem":"Service Exchange","si_hours":250,"model_name":"Air Compressor #2SRD","fuel_consumption":0,"fuel_consumption_class":null}
+{"name":"Service Exchange-Starter Motor Hilux Ex-ME04","oem":"Service Exchange","si_hours":250,"model_name":"Starter Motor Hilux Ex-ME04","fuel_consumption":0,"fuel_consumption_class":null}
+{"name":"Service Exchange-ADT Hub #1 Ex Masimba","oem":"Service Exchange","si_hours":250,"model_name":"ADT Hub #1 Ex Masimba","fuel_consumption":0,"fuel_consumption_class":null}
+{"name":"Service Exchange-ADT Hub #2 Ex Masimba Stripped","oem":"Service Exchange","si_hours":250,"model_name":"ADT Hub #2 Ex Masimba Stripped","fuel_consumption":0,"fuel_consumption_class":null}
+{"name":"Service Exchange-ADT Hub Masimba #1","oem":"Service Exchange","si_hours":250,"model_name":"ADT Hub Masimba #1","fuel_consumption":0,"fuel_consumption_class":null}
+{"name":"Service Exchange-ADT Hub DT05","oem":"Service Exchange","si_hours":250,"model_name":"ADT Hub DT05","fuel_consumption":0,"fuel_consumption_class":null}
+{"name":"Service Exchange-ADT Transmission Ex DT05","oem":"Service Exchange","si_hours":250,"model_name":"ADT Transmission Ex DT05","fuel_consumption":0,"fuel_consumption_class":null}
+{"name":"Service Exchange-TLB Transmission SBH388","oem":"Service Exchange","si_hours":250,"model_name":"TLB Transmission SBH388","fuel_consumption":0,"fuel_consumption_class":null}
+{"name":"Service Exchange-HCCL Transmission + TC","oem":"Service Exchange","si_hours":250,"model_name":"HCCL Transmission + TC","fuel_consumption":0,"fuel_consumption_class":null}
+{"name":"Service Exchange-Torque Converter Ex HCCL","oem":"Service Exchange","si_hours":250,"model_name":"Torque Converter Ex HCCL","fuel_consumption":0,"fuel_consumption_class":null}
+{"name":"Service Exchange-Torque Converter Ex R.Davis","oem":"Service Exchange","si_hours":250,"model_name":"Torque Converter Ex R.Davis","fuel_consumption":0,"fuel_consumption_class":null}
+{"name":"Service Exchange-Steering Cyl SL60#1","oem":"Service Exchange","si_hours":250,"model_name":"Steering Cyl SL60#1","fuel_consumption":0,"fuel_consumption_class":null}
+{"name":"Service Exchange-Steering Cyl SL60#2","oem":"Service Exchange","si_hours":250,"model_name":"Steering Cyl SL60#2","fuel_consumption":0,"fuel_consumption_class":null}
+{"name":"Service Exchange-Engine 4BT Ex- Jays","oem":"Service Exchange","si_hours":250,"model_name":"Engine 4BT Ex- Jays","fuel_consumption":0,"fuel_consumption_class":null}
+{"name":"Service Exchange-2 x MT3900 Gear Boxes","oem":"Shantui","si_hours":250,"model_name":"MT3900","fuel_consumption":0,"fuel_consumption_class":null}
+{"name":"Shantui-L76-C5","oem":"Shantui","si_hours":250,"model_name":"L76-C5","fuel_consumption":15,"fuel_consumption_class":null}
+{"name":"Cummins-4BTAA3.3-G13","oem":"Cummins","si_hours":250,"model_name":"4BTAA3.3-G13","fuel_consumption":0,"fuel_consumption_class":null}
+{"name":"Cummins-QSC8.3","oem":"Cummins","si_hours":250,"model_name":"QSC8.3","fuel_consumption":0,"fuel_consumption_class":null}
+{"name":"Cummins-S3.8-G7","oem":"Cummins","si_hours":250,"model_name":"S3.8-G7","fuel_consumption":0,"fuel_consumption_class":null}
+{"name":"TBA-TBA","oem":"TBA","si_hours":250,"model_name":"TBA","fuel_consumption":0,"fuel_consumption_class":null}
+{"name":"Wirtgen-RCT350","oem":"BROCE","si_hours":250,"model_name":"RCT350","fuel_consumption":0,"fuel_consumption_class":null}
+{"name":"SLDG-SLDG","oem":"SLDG","si_hours":250,"model_name":"SLDG","fuel_consumption":0,"fuel_consumption_class":null}
+{"name":"Toyota-ME04","oem":"Toyota","si_hours":250,"model_name":"ME04","fuel_consumption":0,"fuel_consumption_class":null}
+{"name":"general air compressor-Air Compressor","oem":"general air compressor","si_hours":250,"model_name":"Air Compressor","fuel_consumption":0,"fuel_consumption_class":null}
+{"name":"CAT-D8","oem":"CAT","si_hours":250,"model_name":"D8","fuel_consumption":0,"fuel_consumption_class":null}
+{"name":"Liugong-CLG836","oem":"Liugong","si_hours":250,"model_name":"CLG836","fuel_consumption":0,"fuel_consumption_class":null}
+{"name":"CAT-140K","oem":"CAT","si_hours":250,"model_name":"140K","fuel_consumption":0,"fuel_consumption_class":null}
+{"name":"SANY-SY335-C","oem":"SANY","si_hours":250,"model_name":"SY335-C","fuel_consumption":0,"fuel_consumption_class":null}
+{"name":"Shantui-SRT26H-C6","oem":"Shantui","si_hours":250,"model_name":"SRT26H-C6","fuel_consumption":10,"fuel_consumption_class":null}
+{"name":"Shantui-LA-58","oem":"Shantui","si_hours":250,"model_name":"LA-58","fuel_consumption":0,"fuel_consumption_class":null}
+{"name":"Hitachi-ZX350","oem":"Hitachi","si_hours":250,"model_name":"ZX350","fuel_consumption":20,"fuel_consumption_class":null}
+{"name":"Nissan-FJ01","oem":"Nissan","si_hours":250,"model_name":"FJ01","fuel_consumption":0,"fuel_consumption_class":null}
+{"name":"Cummins-WPG165","oem":"Cummins","si_hours":250,"model_name":"WPG165","fuel_consumption":0,"fuel_consumption_class":null}
+{"name":"Shantui-SR12P-5","oem":"Shantui","si_hours":250,"model_name":"SR12P-5","fuel_consumption":0,"fuel_consumption_class":null}
+{"name":"Weichai-WPG165L9","oem":"Weichai","si_hours":250,"model_name":"WPG165L9","fuel_consumption":0,"fuel_consumption_class":null}
+{"name":"Hitachi-ZX870L0R-5G","oem":"Hitachi","si_hours":250,"model_name":"ZX870L0R-5G","fuel_consumption":0,"fuel_consumption_class":null}
+{"name":"Hitachi-ZX330LC-5G","oem":"Hitachi","si_hours":250,"model_name":"ZX330LC-5G","fuel_consumption":13,"fuel_consumption_class":null}
+{"name":"Shantui-SK90A-C6","oem":"Shantui","si_hours":250,"model_name":"SK90A-C6","fuel_consumption":14,"fuel_consumption_class":null}
+{"name":"CAT-2T-6486","oem":"CAT","si_hours":250,"model_name":"2T-6486","fuel_consumption":0,"fuel_consumption_class":null}
+{"name":"Cummins-QSM11","oem":"Cummins","si_hours":250,"model_name":"QSM11","fuel_consumption":0,"fuel_consumption_class":null}
+{"name":"Guangxi Yuchai-YC16VTD2510-30","oem":"Guangxi Yuchai","si_hours":250,"model_name":"YC16VTD2510-30","fuel_consumption":0,"fuel_consumption_class":null}
+{"name":"Hamm-HC 208D","oem":"Hamm","si_hours":250,"model_name":"HC 208D","fuel_consumption":0,"fuel_consumption_class":null}
+{"name":"Hitachi-ZX350LCH-5G","oem":"Hitachi","si_hours":250,"model_name":"ZX350LCH-5G","fuel_consumption":20,"fuel_consumption_class":null}
+{"name":"Hitachi-ZX200-5G.","oem":"Hitachi","si_hours":250,"model_name":"ZX200-5G.","fuel_consumption":8.5,"fuel_consumption_class":null}
+{"name":"Wirtgen-Hamm-HC208D","oem":"Wirtgen","si_hours":500,"model_name":"Hamm-HC208D","fuel_consumption":0,"fuel_consumption_class":null}
+{"name":"CAT-D6R2","oem":"CAT","si_hours":250,"model_name":"D6R2","fuel_consumption":0,"fuel_consumption_class":null}
+{"name":"Shantui-SE750LC","oem":"Shantui","si_hours":250,"model_name":"SE750LC ","fuel_consumption":0,"fuel_consumption_class":null}
+{"name":"Weichai-Weichai 275kVA","oem":"Weichai","si_hours":250,"model_name":"Weichai 275kVA","fuel_consumption":0,"fuel_consumption_class":null}
+{"name":"Weichai-WPG275L8","oem":"Weichai","si_hours":250,"model_name":"WPG275L8","fuel_consumption":40,"fuel_consumption_class":null}
+{"name":"Shantui-SL60W-3","oem":"Shantui","si_hours":250,"model_name":"SL60W-3","fuel_consumption":15,"fuel_consumption_class":"Moderate"}
+{"name":"Hitachi-ZX870LCR-5G","oem":"Hitachi","si_hours":250,"model_name":"ZX870LCR-5G","fuel_consumption":0,"fuel_consumption_class":null}
+{"name":"Weichai-WPG16L1-1","oem":"Weichai","si_hours":250,"model_name":"WPG16L1-1","fuel_consumption":0,"fuel_consumption_class":null}
+{"name":"Shantui-SFD15","oem":"Shantui","si_hours":250,"model_name":"SFD15","fuel_consumption":0,"fuel_consumption_class":null}
+{"name":"Shantui-SG21-B6","oem":"Shantui","si_hours":250,"model_name":"SG21-B6","fuel_consumption":16,"fuel_consumption_class":"Moderate"}
+{"name":"XGMA-XG951H","oem":"XGMA","si_hours":250,"model_name":"XG951H","fuel_consumption":0,"fuel_consumption_class":null}
+{"name":"CIBER-INOVA 2000","oem":"CIBER","si_hours":250,"model_name":"INOVA 2000","fuel_consumption":0,"fuel_consumption_class":null}
+{"name":"Bobcat-E17z","oem":"Bobcat","si_hours":100,"model_name":"E17z","fuel_consumption":5,"fuel_consumption_class":"Light Duty"}
+{"name":"Bobcat-753","oem":"Bobcat","si_hours":250,"model_name":"753","fuel_consumption":0,"fuel_consumption_class":null}
+{"name":"DEZZI-H160GT","oem":"DEZZI","si_hours":250,"model_name":"H160GT","fuel_consumption":0,"fuel_consumption_class":null}
+{"name":"CAT-140H","oem":"CAT","si_hours":250,"model_name":"140H","fuel_consumption":0,"fuel_consumption_class":null}
+{"name":"Shantui-L20","oem":"Shantui","si_hours":250,"model_name":"L20","fuel_consumption":16,"fuel_consumption_class":null}
+{"name":"CAT-920","oem":"CAT","si_hours":250,"model_name":"920","fuel_consumption":0,"fuel_consumption_class":null}
+{"name":"Hamm-HC208P","oem":"Hamm","si_hours":500,"model_name":"HC208P","fuel_consumption":5.7,"fuel_consumption_class":null}
+{"name":"Burquip-1D42S","oem":"Burquip","si_hours":0,"model_name":"1D42S","fuel_consumption":0,"fuel_consumption_class":null}
+{"name":"Burquip-AF45A","oem":"Burquip","si_hours":0,"model_name":"AF45A","fuel_consumption":0,"fuel_consumption_class":null}
+{"name":"CAT-740B","oem":"CAT","si_hours":250,"model_name":"740B","fuel_consumption":0,"fuel_consumption_class":null}
+{"name":"XGMA-XG4221L","oem":"XGMA","si_hours":250,"model_name":"XG4221L","fuel_consumption":0,"fuel_consumption_class":null}
+{"name":"XGMA-XG955H","oem":"XGMA","si_hours":250,"model_name":"XG955H","fuel_consumption":0,"fuel_consumption_class":null}
+{"name":"XCMG-XG3220C","oem":"XCMG","si_hours":250,"model_name":"XG3220C","fuel_consumption":0,"fuel_consumption_class":null}
+{"name":"XCMG-XG6201P","oem":"XCMG","si_hours":250,"model_name":"XG6201P","fuel_consumption":0,"fuel_consumption_class":null}
+{"name":"XCMG-XG6141","oem":"XCMG","si_hours":250,"model_name":"XG6141","fuel_consumption":0,"fuel_consumption_class":null}
+{"name":"Burquip-AF450A","oem":"Burquip","si_hours":250,"model_name":"AF450A","fuel_consumption":0,"fuel_consumption_class":null}
+{"name":"Hitachi-ZW220-5A","oem":"Hitachi","si_hours":250,"model_name":"ZW220-5A","fuel_consumption":0,"fuel_consumption_class":null}
+{"name":"DOOSAN-D35C-7","oem":"DOOSAN","si_hours":250,"model_name":"D35C-7","fuel_consumption":0,"fuel_consumption_class":null}
+{"name":"Shantui-L55-B5","oem":"Shantui","si_hours":250,"model_name":"L55-B5","fuel_consumption":13,"fuel_consumption_class":null}
+{"name":"Shantui-SE16-102","oem":"Shantui","si_hours":100,"model_name":"SE16-102","fuel_consumption":0,"fuel_consumption_class":null}
+{"name":"Weichai-WPG220L8","oem":"Weichai","si_hours":250,"model_name":"WPG220L8","fuel_consumption":0,"fuel_consumption_class":""}
+{"name":"Liutech-TY900","oem":"Liutech","si_hours":250,"model_name":"TY900","fuel_consumption":0,"fuel_consumption_class":"Heavy Duty"}
+{"name":"Shantui-SR20MPA","oem":"Shantui","si_hours":250,"model_name":"SR20MPA","fuel_consumption":12,"fuel_consumption_class":"Moderate"}
+{"name":"C150D5S","oem":"Cummins","si_hours":250,"model_name":"C150D5S","fuel_consumption":0,"fuel_consumption_class":""}
+{"name":"Shantui-SFE30","oem":"Shantui","si_hours":1000,"model_name":"SFE30","fuel_consumption":0,"fuel_consumption_class":""}
+{"name":"Shantui-SG21-B6 DS","oem":"Shantui","si_hours":250,"model_name":"SG21-B6 DS","fuel_consumption":15,"fuel_consumption_class":"Moderate"}
+{"name":"BTX-D35","oem":"BTX","si_hours":250,"model_name":"D35","fuel_consumption":0,"fuel_consumption_class":""}
+{"name":"Toyota-Totyota","oem":"Toyota","si_hours":250,"model_name":"Totyota","fuel_consumption":0,"fuel_consumption_class":""}
+{"name":"Perkins-1103A-33","oem":"Perkins","si_hours":250,"model_name":"1103A-33","fuel_consumption":0,"fuel_consumption_class":""}
+{"name":"Guangxi Yuchai-Yuchai Engine","oem":"Guangxi Yuchai","si_hours":250,"model_name":"Yuchai Engine","fuel_consumption":0,"fuel_consumption_class":""}
+{"name":"Olympian-GEF50-7","oem":"Olympian","si_hours":520,"model_name":"GEF50-7","fuel_consumption":0,"fuel_consumption_class":""}
+{"name":"Perkins-GEF50-7","oem":"Perkins","si_hours":0,"model_name":"GEF50-7","fuel_consumption":0,"fuel_consumption_class":""}
+{"name":"Rovaro-FD50D","oem":"Rovaro","si_hours":250,"model_name":"FD50D","fuel_consumption":0,"fuel_consumption_class":""}
+{"name":"Hamm-HC119","oem":"Hamm","si_hours":250,"model_name":"HC119","fuel_consumption":0,"fuel_consumption_class":""}
+{"name":"NEXAS-NX20SS3","oem":"NEXUS","si_hours":250,"model_name":"NX20SS3","fuel_consumption":0,"fuel_consumption_class":""}
+{"name":"SANY-SY245-H","oem":"SANY","si_hours":250,"model_name":"SY245-H","fuel_consumption":0,"fuel_consumption_class":""}
+{"name":"HYUNDAI-HL760-95","oem":"HYUNDAI","si_hours":250,"model_name":"HL760-95","fuel_consumption":0,"fuel_consumption_class":""}
+{"name":"Hitachi-EX100","oem":"Hitachi","si_hours":250,"model_name":"EX100","fuel_consumption":0,"fuel_consumption_class":""}
+{"name":"Vermeer-RTX550","oem":"Vermeer","si_hours":250,"model_name":"RTX550","fuel_consumption":0,"fuel_consumption_class":""}
+{"name":"Weichai-WPG550L7","oem":"Weichai","si_hours":250,"model_name":"WPG550L7","fuel_consumption":0,"fuel_consumption_class":""}
+{"name":"Cummins-BF-C220","oem":"Cummins","si_hours":250,"model_name":"BF-C220","fuel_consumption":0,"fuel_consumption_class":""}
+{"name":"TBA-S00122A","oem":"TBA","si_hours":250,"model_name":"S00122A","fuel_consumption":0,"fuel_consumption_class":""}
+{"name":"XCMG-LW300FN","oem":"XCMG","si_hours":250,"model_name":"LW300FN","fuel_consumption":0,"fuel_consumption_class":""}
+{"name":"Cummins-6CTAA8-J-G2","oem":"Cummins","si_hours":250,"model_name":"6CTAA8-J-G2","fuel_consumption":0,"fuel_consumption_class":""}
+{"name":"Toyota-SAS25","oem":"Toyota","si_hours":250,"model_name":"SAS25","fuel_consumption":0,"fuel_consumption_class":""}
+{"name":"Kubota-Kubota","oem":"Kubota","si_hours":250,"model_name":"Kubota","fuel_consumption":0,"fuel_consumption_class":""}
+{"name":"Cummins-QSC8.3 CM2880 C102","oem":"Cummins","si_hours":250,"model_name":"QSC8.3 CM2880 C102","fuel_consumption":0,"fuel_consumption_class":""}
+{"name":"Vogele-MT3000-3","oem":"Vogele","si_hours":250,"model_name":"MT3000-3","fuel_consumption":0,"fuel_consumption_class":""}
+{"name":"XCMG-XT760","oem":"XCMG","si_hours":250,"model_name":"XT760","fuel_consumption":0,"fuel_consumption_class":""}
+{"name":"Volvo-Volvo Penta","oem":"Volvo","si_hours":250,"model_name":"Volvo Penta","fuel_consumption":0,"fuel_consumption_class":""}
+{"name":"Bell-315SK","oem":"Bell","si_hours":250,"model_name":"315SK","fuel_consumption":0,"fuel_consumption_class":""}
+{"name":"Cummins-QL9B28","oem":"Cummins","si_hours":250,"model_name":"QL9B28","fuel_consumption":0,"fuel_consumption_class":""}
+{"name":"Wirtgen-1803-2.","oem":"Wirtgen","si_hours":250,"model_name":"1803-2.","fuel_consumption":0,"fuel_consumption_class":""}
+{"name":"Shantui-SR20MA","oem":"Shantui","si_hours":250,"model_name":"SR20MA","fuel_consumption":8,"fuel_consumption_class":"Moderate"}
+{"name":"Vogele-SUPER 1603","oem":"Vogele","si_hours":500,"model_name":"SUPER 1603","fuel_consumption":0,"fuel_consumption_class":""}
+{"name":"Shantui-L58K-B5","oem":"Shantui","si_hours":250,"model_name":"L58K-B5","fuel_consumption":13,"fuel_consumption_class":""}
+{"name":"HYUNDAI-HL630L","oem":"HYUNDAI","si_hours":250,"model_name":"HL630L","fuel_consumption":0,"fuel_consumption_class":""}
+{"name":"Sawafuji-SHT25D-R","oem":"Sawafuji","si_hours":250,"model_name":"SHT25D-R","fuel_consumption":0,"fuel_consumption_class":""}
+{"name":"Wirtgen-SUPER 1603.","oem":"Wirtgen","si_hours":500,"model_name":"SUPER 1603.","fuel_consumption":0,"fuel_consumption_class":""}
+{"name":"Wirtgen-HD10VV.","oem":"Wirtgen","si_hours":500,"model_name":"HD10VV.","fuel_consumption":0,"fuel_consumption_class":""}
+{"name":"Heli-CPCD30","oem":"Heli","si_hours":250,"model_name":"CPCD30","fuel_consumption":0,"fuel_consumption_class":""}
+{"name":"CAT-CAT DSG","oem":"CAT","si_hours":250,"model_name":"CAT DSG","fuel_consumption":0,"fuel_consumption_class":""}
+{"name":"Shantui-SFD100","oem":"Shantui","si_hours":250,"model_name":"SFD100","fuel_consumption":4.5,"fuel_consumption_class":""}
+{"name":"Shantui-SR12-B6","oem":"Shantui","si_hours":250,"model_name":"SR12-B6","fuel_consumption":6,"fuel_consumption_class":""}
+{"name":"Hitachi-ZX130","oem":"Hitachi","si_hours":250,"model_name":"ZX130-5G","fuel_consumption":0,"fuel_consumption_class":""}
+{"name":"Shantui-L68K-B5","oem":"Shantui","si_hours":250,"model_name":"L68K-B5","fuel_consumption":15,"fuel_consumption_class":""}
+{"name":"Shantui-SR22H-C6","oem":"Shantui","si_hours":250,"model_name":"SR22H-C6","fuel_consumption":6.75,"fuel_consumption_class":""}
+{"name":"Shantui-SR26H-C6","oem":"Shantui","si_hours":250,"model_name":"SR26H-C6","fuel_consumption":0,"fuel_consumption_class":""}
+{"name":"Bobcat-WR65","oem":"Bobcat","si_hours":250,"model_name":"WR65","fuel_consumption":0.42,"fuel_consumption_class":"Light Duty"}
+{"name":"CAT-3406","oem":"CAT","si_hours":250,"model_name":"3406","fuel_consumption":0,"fuel_consumption_class":""}
+{"name":"Cummins-C550D5S.","oem":"Cummins","si_hours":250,"model_name":"C550D5S.","fuel_consumption":0,"fuel_consumption_class":""}
+{"name":"Cummins-6LTAA8.9-G2","oem":"Cummins","si_hours":250,"model_name":"6LTAA8.9-G2","fuel_consumption":0,"fuel_consumption_class":""}
+{"name":"Bendi-B318","oem":"Landoll","si_hours":250,"model_name":"B318","fuel_consumption":0,"fuel_consumption_class":""}
+{"name":"Wirtgen-W200F","oem":"Wirtgen","si_hours":250,"model_name":"W200F","fuel_consumption":106,"fuel_consumption_class":"Heavy Duty"}
+{"name":"Cummins-6BTA5.9-G5","oem":"Cummins","si_hours":250,"model_name":"6BTA5.9-G5","fuel_consumption":0,"fuel_consumption_class":""}
+{"name":"Scooptram-ST10300LP","oem":"Scooptram","si_hours":250,"model_name":"ST10300LP","fuel_consumption":0,"fuel_consumption_class":""}
+{"name":"Epiroc-436LP","oem":"Epiroc","si_hours":250,"model_name":"436LP","fuel_consumption":0,"fuel_consumption_class":""}
+{"name":"Bobcat-M","oem":"Bobcat","si_hours":250,"model_name":"M","fuel_consumption":0,"fuel_consumption_class":""}
+{"name":"Bobcat-B730M","oem":"Bobcat","si_hours":250,"model_name":"B730M","fuel_consumption":5.5,"fuel_consumption_class":"Light Duty"}
+{"name":"Toyota-027FD25","oem":"Toyota","si_hours":250,"model_name":"027FD25","fuel_consumption":0,"fuel_consumption_class":""}
+{"name":"Kleeman-MC110","oem":"Kleeman","si_hours":250,"model_name":"MC110 EVO 2","fuel_consumption":68.73,"fuel_consumption_class":"Heavy Duty"}
+{"name":"Wirtgen-K074","oem":"Wirtgen","si_hours":250,"model_name":"K074","fuel_consumption":0,"fuel_consumption_class":""}
+{"name":"Kleeman-MSC703EVO","oem":"Kleeman","si_hours":250,"model_name":"MSC703EVO","fuel_consumption":0,"fuel_consumption_class":""}
+{"name":"Wirtgen-k116","oem":"Wirtgen","si_hours":250,"model_name":"k116","fuel_consumption":0,"fuel_consumption_class":""}
+{"name":"Kleeman-MC09S EVO","oem":"Kleeman","si_hours":500,"model_name":"MC09S EVO","fuel_consumption":68.73,"fuel_consumption_class":"Heavy Duty"}
+{"name":"Hitachi-ZX670LCR-5G","oem":"Hitachi","si_hours":250,"model_name":"ZX670LCR-5G","fuel_consumption":25,"fuel_consumption_class":"Heavy Duty"}
+{"name":"Hitachi-ZX690LCR-7G","oem":"Hitachi","si_hours":250,"model_name":"ZX690LCR-7G","fuel_consumption":22,"fuel_consumption_class":"Heavy Duty"}
+{"name":"Epiroc-ST1030","oem":"Epiroc","si_hours":250,"model_name":"ST1030","fuel_consumption":0,"fuel_consumption_class":""}
+{"name":"TURNER MORRIS-S-TMCA500DLOM","oem":"TURNER MORRIS","si_hours":250,"model_name":"S-TMCA500DLOM","fuel_consumption":0,"fuel_consumption_class":""}
+{"name":"Landoll-B420","oem":"Landoll","si_hours":500,"model_name":"B420","fuel_consumption":0,"fuel_consumption_class":""}
+{"name":"Shantui-SE215W","oem":"Shantui","si_hours":250,"model_name":"SE215W","fuel_consumption":11,"fuel_consumption_class":""}
+{"name":"DOOSAN-D4OS-5","oem":"DOOSAN","si_hours":250,"model_name":"D4OS-5","fuel_consumption":0,"fuel_consumption_class":""}
+{"name":"Cummins-QSL8.9-C325-30","oem":"Cummins","si_hours":250,"model_name":"QSL8.9-C325-30","fuel_consumption":0,"fuel_consumption_class":""}
+{"name":"Vogele-Supper 1300-3","oem":"Vogele","si_hours":500,"model_name":"Supper 1300-3","fuel_consumption":0,"fuel_consumption_class":""}
+{"name":"Weichai-6M269550/5","oem":"Weichai","si_hours":250,"model_name":"6M269550/5","fuel_consumption":0,"fuel_consumption_class":""}
+{"name":"HYUNDAI-HL780-9S","oem":"HYUNDAI","si_hours":250,"model_name":"HL780-9S","fuel_consumption":0,"fuel_consumption_class":""}
+{"name":"Wirtgen-WR240.","oem":"Wirtgen","si_hours":250,"model_name":"WR240.","fuel_consumption":0,"fuel_consumption_class":""}
+{"name":"Weichai-WP13D490E310","oem":"Weichai","si_hours":250,"model_name":"WP13D490E310","fuel_consumption":0,"fuel_consumption_class":""}
+{"name":"Weichai-62.7","oem":"Weichai","si_hours":250,"model_name":"62.7","fuel_consumption":0,"fuel_consumption_class":""}
+{"name":"Weichai-WPG440L8","oem":"Weichai","si_hours":250,"model_name":"WPG440L8","fuel_consumption":62.7,"fuel_consumption_class":""}
+{"name":"Cummins-NTA-855-C","oem":"Cummins","si_hours":250,"model_name":"NTA-855-C","fuel_consumption":0,"fuel_consumption_class":""}
+{"name":"Bobcat-S18.","oem":"Bobcat","si_hours":250,"model_name":"S18.","fuel_consumption":0,"fuel_consumption_class":""}
+{"name":"Shantui-WG200","oem":"Shantui","si_hours":250,"model_name":"WG200","fuel_consumption":0,"fuel_consumption_class":""}
+{"name":"Shantui-SRD04","oem":"Shantui","si_hours":250,"model_name":"SRD04","fuel_consumption":5,"fuel_consumption_class":""}
+{"name":"Vogele-S800","oem":"Vogele","si_hours":500,"model_name":"S800","fuel_consumption":0,"fuel_consumption_class":""}
+{"name":"Wirtgen-S1403","oem":"Wirtgen","si_hours":250,"model_name":"S1403","fuel_consumption":0,"fuel_consumption_class":""}
+{"name":"Penpower-6M33G6D0/S","oem":"Penpower","si_hours":250,"model_name":"6M33G6D0/S","fuel_consumption":0,"fuel_consumption_class":""}
+{"name":"FORI-BF08H","oem":"FIORI","si_hours":250,"model_name":"BF08H","fuel_consumption":5,"fuel_consumption_class":""}
+{"name":"Shantui-L58K-B5.","oem":"Shantui","si_hours":125,"model_name":"L58K-B5.","fuel_consumption":0,"fuel_consumption_class":""}
+{"name":"Shantui-L6800/L68K-G","oem":"Shantui","si_hours":250,"model_name":"L6800/L68K-G","fuel_consumption":0,"fuel_consumption_class":""}
+{"name":"Shantui-TEM450","oem":"Shantui","si_hours":250,"model_name":"TEM450","fuel_consumption":0,"fuel_consumption_class":""}
+{"name":"Cummins-ISF2.8s3","oem":"Cummins","si_hours":250,"model_name":"ISF2.8s3","fuel_consumption":0,"fuel_consumption_class":""}
+{"name":"Toyota-7FD45","oem":"Toyota","si_hours":250,"model_name":"7FD45","fuel_consumption":0,"fuel_consumption_class":""}
+{"name":"Cummins-QSZ13-G10","oem":"Cummins","si_hours":250,"model_name":"QSZ13-G10","fuel_consumption":0,"fuel_consumption_class":""}
+{"name":"Bobcat-T40-180 100 IIIA","oem":"Bobcat","si_hours":250,"model_name":"T40-180 100 IIIA","fuel_consumption":0,"fuel_consumption_class":""}
+{"name":"Shantui-SD34C3 RS","oem":"Shantui","si_hours":250,"model_name":"SD34-C3 RS","fuel_consumption":50,"fuel_consumption_class":""}
+{"name":"ZX400LCH-5G","oem":"Hitachi","si_hours":250,"model_name":"ZX400LCH-5G","fuel_consumption":0,"fuel_consumption_class":""}
+{"name":"Weichai-WPG825L7","oem":"Weichai","si_hours":250,"model_name":"WPG825L7","fuel_consumption":0,"fuel_consumption_class":""}
+{"name":"BROCE-RCT350","oem":"BROCE","si_hours":250,"model_name":"RCT350.","fuel_consumption":0,"fuel_consumption_class":""}
+{"name":"CAT-950GC","oem":"CAT","si_hours":250,"model_name":"950GC","fuel_consumption":0,"fuel_consumption_class":""}
+{"name":"Shantui-L12","oem":"Shantui","si_hours":250,"model_name":"L12","fuel_consumption":8.5,"fuel_consumption_class":""}
+{"name":"FIORI-BF08H.","oem":"FIORI","si_hours":250,"model_name":"BF08H.","fuel_consumption":0,"fuel_consumption_class":""}
+{"name":"Cummins-C-series","oem":"Cummins","si_hours":250,"model_name":"C-series","fuel_consumption":0,"fuel_consumption_class":""}
+{"name":"FAW-CA6.130FL","oem":"FAW","si_hours":10000,"model_name":"CA6.130FL","fuel_consumption":0,"fuel_consumption_class":""}
+{"name":"Vogele-1603-3i","oem":"Vogele","si_hours":500,"model_name":"1603-3i","fuel_consumption":0,"fuel_consumption_class":""}
+{"name":"Shantui-WT90","oem":"Shantui","si_hours":250,"model_name":"WT90","fuel_consumption":14,"fuel_consumption_class":""}
+{"name":"CAT-974","oem":"CAT","si_hours":250,"model_name":"974","fuel_consumption":0,"fuel_consumption_class":""}
+{"name":"Landoll-A318","oem":"Landoll","si_hours":500,"model_name":"A318","fuel_consumption":0,"fuel_consumption_class":""}
+{"name":"Synchronous-KDA455503","oem":"Bundu Power","si_hours":250,"model_name":"KDA455503","fuel_consumption":0,"fuel_consumption_class":""}
+{"name":"Cummins-B3.3","oem":"Cummins","si_hours":250,"model_name":"B3.3","fuel_consumption":0,"fuel_consumption_class":""}
+{"name":"CAT-426F2","oem":"CAT","si_hours":250,"model_name":"426F2","fuel_consumption":0,"fuel_consumption_class":""}
+{"name":"Genie-SX-125XC","oem":"Genie","si_hours":250,"model_name":"SX-125XC","fuel_consumption":0,"fuel_consumption_class":""}
+{"name":"Case-570SV","oem":"Case","si_hours":250,"model_name":"570SV","fuel_consumption":0,"fuel_consumption_class":""}
+{"name":"Toyota-62-8FD25","oem":"Toyota","si_hours":250,"model_name":"62-8FD25","fuel_consumption":0,"fuel_consumption_class":""}
+{"name":"Hitachi-ZX6SUSB-5A","oem":"Hitachi","si_hours":50,"model_name":"ZX6SUSB-5A","fuel_consumption":0,"fuel_consumption_class":""}
+{"name":"Shantui-SD16F","oem":"Shantui","si_hours":250,"model_name":"SD16F","fuel_consumption":0,"fuel_consumption_class":""}
+{"name":"Shantui-SG27-C6 MN","oem":"Shantui","si_hours":250,"model_name":"SG27-C6 MN","fuel_consumption":0,"fuel_consumption_class":""}
+{"name":"Bulmor-DQr 50","oem":"Bulmor","si_hours":300,"model_name":"DQr 50","fuel_consumption":0,"fuel_consumption_class":""}
+{"name":"Komatsu-D85A","oem":"Komatsu","si_hours":0,"model_name":"D85A","fuel_consumption":0,"fuel_consumption_class":""}
+{"name":"Shantui-SFG","oem":"Shantui","si_hours":250,"model_name":"SFG30","fuel_consumption":0,"fuel_consumption_class":""}
+{"name":"Bobcat-D35","oem":"Bobcat","si_hours":250,"model_name":"D35","fuel_consumption":0,"fuel_consumption_class":""}
+{"name":"KB Breakers-HK220(S)","oem":"KB Breakers","si_hours":25,"model_name":"HK220(S)","fuel_consumption":0,"fuel_consumption_class":""}
+{"name":"Cummins-ST7LD","oem":"Cummins","si_hours":250,"model_name":"ST7LD","fuel_consumption":0,"fuel_consumption_class":""}
+{"name":"Shantui-SFD50S","oem":"Shantui","si_hours":250,"model_name":"SFD50S","fuel_consumption":0,"fuel_consumption_class":""}
+{"name":"Mitsubishi-RW55B","oem":"Mitsubishi","si_hours":250,"model_name":"RW55B","fuel_consumption":0,"fuel_consumption_class":""}
+{"name":"Weichai-WPG350L8","oem":"Weichai","si_hours":250,"model_name":"WPG350L8","fuel_consumption":0,"fuel_consumption_class":""}
+{"name":"Hyster-RS45-31CH","oem":"Hyster","si_hours":250,"model_name":"RS45-31CH","fuel_consumption":0,"fuel_consumption_class":""}
+{"name":"Toyota-02-3FD30","oem":"Toyota","si_hours":250,"model_name":"02-3FD30","fuel_consumption":0,"fuel_consumption_class":""}
+{"name":"Ensign-YX655","oem":"Ensign","si_hours":250,"model_name":"YX655","fuel_consumption":0,"fuel_consumption_class":""}
+{"name":"Desmond Equipment-D2500","oem":"Desmond Equipment","si_hours":250,"model_name":"D2500","fuel_consumption":0,"fuel_consumption_class":""}
+{"name":"XGMA-XGMA","oem":"XGMA","si_hours":250,"model_name":"XGMA","fuel_consumption":0,"fuel_consumption_class":""}
+{"name":"Shantui-SRD14-C6","oem":"Shantui","si_hours":250,"model_name":"SRD14-C6","fuel_consumption":0,"fuel_consumption_class":""}
