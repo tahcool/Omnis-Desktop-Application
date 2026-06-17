@@ -5,3 +5,6 @@
 \n## 2026-06-10
 - `3ee7f12` 2026-06-10 [supabase-migration] feat: Add Training tab, Orders Almost Due widget, Delivery Calendar to dashboard
   Files: systems/salestrack/dashboard_logic.js,systems/salestrack/index.html,systems/salestrack/training_logic.js,
+\n## 2026-06-17
+- `2aa4631` 2026-06-17 [supabase-migration] Restore point: Added company manual selection in orders list, fixed email update preview modal UI colors and logos
+  Files: .mcp/create_contacts_table.mjs,.mcp/knowledge/_shared/commit_log.md,.mcp/query_openapi.mjs,.mcp/query_openapi2.mjs,.mcp/query_openapi_specific.mjs,.mcp/query_orders.mjs,.mcp/query_orders2.mjs,.mcp/query_orders_sql.mjs,.mcp/rls_contacts.sql,.mcp/setup_company_contacts.mjs,add_company_fmb.sql,create_service_log.js,fix_companies.py,fix_init_email.js,fleetrack-web-deploy.zip,import_technicians.js,lib/email-manager.js,main.js,migrate/.frappe_creds.json,migrate/1_discover.js,

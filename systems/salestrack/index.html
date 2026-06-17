@@ -6703,7 +6703,7 @@
         <!-- SETTINGS VIEW (Optimized Grid Layout) -->
                 <div id="view-settings" class="view-page hidden" style="padding: 0; width:100%; min-height:100%; background:#f8fafc; overflow-y:auto;">
                   
-                  <div style="padding: 40px; width: 100%;">
+                  <div style="padding: 80px 40px 40px 40px; width: 100%; box-sizing: border-box;">
                     
                     <div style="display:flex; justify-content:space-between; align-items:flex-end; margin-bottom: 30px; border-bottom: 1px solid #e2e8f0; padding-bottom: 20px;">
                       <div>
@@ -7050,7 +7050,7 @@
         
                       <!-- TAB: EMAIL RECIPIENTS -->
                       <div id="settings-tab-email-recipients" class="settings-tab-content hidden">
-                          <div class="gs-card" style="background:#fff; padding:30px; border-radius:16px; border:1px solid #e2e8f0; box-shadow:0 4px 6px -1px rgba(0,0,0,0.05); max-width:820px; margin:0 auto;">
+                          <div class="gs-card" style="background:#fff; padding:30px; border-radius:16px; border:1px solid #e2e8f0; box-shadow:0 4px 6px -1px rgba(0,0,0,0.05);">
                               <div style="margin-bottom:20px;">
                                   <h2 style="font-size:18px; font-weight:700; color:#1e293b; margin:0; display:flex; align-items:center; gap:10px;">
                                       <i class="fas fa-envelope" style="color:#1d4ed8;"></i> Order Tracking Email Recipients
@@ -7063,9 +7063,30 @@
                                   <div style="border:1px solid #e2e8f0; border-radius:12px; padding:20px; background:#fafbfc;">
                                       <div style="display:flex; align-items:center; gap:14px; margin-bottom:14px;">
                                           <img src="https://pfqaeewmlwfayxbgmuaq.supabase.co/storage/v1/object/public/public-assets/logos/mxg-logo.png" alt="MXG" style="height:28px; width:auto;">
-                                          <h3 style="margin:0; font-size:14px; color:#1e293b; font-weight:700;">Machinery Exchange &mdash; CC Recipients</h3>
+                                          <h3 style="margin:0; font-size:14px; color:#1e293b; font-weight:700;">Machinery Exchange &mdash; Email Settings</h3>
                                       </div>
-                                      <textarea id="email-recipients-mxg" rows="8" style="width:100%; box-sizing:border-box; border:1px solid #cbd5e1; border-radius:8px; padding:12px; font-size:12.5px; font-family:monospace; resize:vertical; color:#0f172a;" placeholder="one@email.com&#10;another@email.com"></textarea>
+                                      
+                                      <div style="display:grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap:12px; margin-bottom:16px;">
+                                          <div>
+                                              <label style="display:block; font-size:12px; font-weight:700; color:#475569; margin-bottom:6px;">Contact Person Name</label>
+                                              <input type="text" id="email-contact-name-mxg" style="width:100%; box-sizing:border-box; border:1px solid #cbd5e1; border-radius:8px; padding:10px; font-size:13px; color:#0f172a;" placeholder="e.g. Chetan Samji">
+                                          </div>
+                                          <div>
+                                              <label style="display:block; font-size:12px; font-weight:700; color:#475569; margin-bottom:6px;">Job Title</label>
+                                              <input type="text" id="email-contact-title-mxg" style="width:100%; box-sizing:border-box; border:1px solid #cbd5e1; border-radius:8px; padding:10px; font-size:13px; color:#0f172a;" placeholder="e.g. Commercial Manager">
+                                          </div>
+                                          <div>
+                                              <label style="display:block; font-size:12px; font-weight:700; color:#475569; margin-bottom:6px;">Email Address</label>
+                                              <input type="email" id="email-contact-email-mxg" style="width:100%; box-sizing:border-box; border:1px solid #cbd5e1; border-radius:8px; padding:10px; font-size:13px; color:#0f172a;" placeholder="e.g. chetan@example.com">
+                                          </div>
+                                          <div>
+                                              <label style="display:block; font-size:12px; font-weight:700; color:#475569; margin-bottom:6px;">WhatsApp Number</label>
+                                              <input type="text" id="email-contact-phone-mxg" style="width:100%; box-sizing:border-box; border:1px solid #cbd5e1; border-radius:8px; padding:10px; font-size:13px; color:#0f172a;" placeholder="e.g. +263772949515">
+                                          </div>
+                                      </div>
+
+                                      <label style="display:block; font-size:12px; font-weight:700; color:#475569; margin-bottom:6px;">CC Recipients (One per line)</label>
+                                      <textarea id="email-recipients-mxg" rows="4" style="width:100%; box-sizing:border-box; border:1px solid #cbd5e1; border-radius:8px; padding:12px; font-size:12.5px; font-family:monospace; resize:vertical; color:#0f172a;" placeholder="one@email.com&#10;another@email.com"></textarea>
                                   </div>
         
                                   <!-- Sinopower -->
@@ -7074,9 +7095,30 @@
                                           <div style="background:#7b1515; padding:6px 10px; border-radius:7px; display:inline-flex; align-items:center;">
                                               <img src="https://pfqaeewmlwfayxbgmuaq.supabase.co/storage/v1/object/public/public-assets/logos/spz-logo.png" alt="SPZ" style="height:22px; width:auto;">
                                           </div>
-                                          <h3 style="margin:0; font-size:14px; color:#1e293b; font-weight:700;">Sinopower &mdash; CC Recipients</h3>
+                                          <h3 style="margin:0; font-size:14px; color:#1e293b; font-weight:700;">Sinopower &mdash; Email Settings</h3>
                                       </div>
-                                      <textarea id="email-recipients-spz" rows="8" style="width:100%; box-sizing:border-box; border:1px solid #cbd5e1; border-radius:8px; padding:12px; font-size:12.5px; font-family:monospace; resize:vertical; color:#0f172a;" placeholder="one@email.com&#10;another@email.com"></textarea>
+                                      
+                                      <div style="display:grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap:12px; margin-bottom:16px;">
+                                          <div>
+                                              <label style="display:block; font-size:12px; font-weight:700; color:#475569; margin-bottom:6px;">Contact Person Name</label>
+                                              <input type="text" id="email-contact-name-spz" style="width:100%; box-sizing:border-box; border:1px solid #cbd5e1; border-radius:8px; padding:10px; font-size:13px; color:#0f172a;" placeholder="e.g. Brett Berry">
+                                          </div>
+                                          <div>
+                                              <label style="display:block; font-size:12px; font-weight:700; color:#475569; margin-bottom:6px;">Job Title</label>
+                                              <input type="text" id="email-contact-title-spz" style="width:100%; box-sizing:border-box; border:1px solid #cbd5e1; border-radius:8px; padding:10px; font-size:13px; color:#0f172a;" placeholder="e.g. Commercial Manager">
+                                          </div>
+                                          <div>
+                                              <label style="display:block; font-size:12px; font-weight:700; color:#475569; margin-bottom:6px;">Email Address</label>
+                                              <input type="email" id="email-contact-email-spz" style="width:100%; box-sizing:border-box; border:1px solid #cbd5e1; border-radius:8px; padding:10px; font-size:13px; color:#0f172a;" placeholder="e.g. brett@sinopower.co.zw">
+                                          </div>
+                                          <div>
+                                              <label style="display:block; font-size:12px; font-weight:700; color:#475569; margin-bottom:6px;">WhatsApp Number</label>
+                                              <input type="text" id="email-contact-phone-spz" style="width:100%; box-sizing:border-box; border:1px solid #cbd5e1; border-radius:8px; padding:10px; font-size:13px; color:#0f172a;" placeholder="e.g. +263775553862">
+                                          </div>
+                                      </div>
+
+                                      <label style="display:block; font-size:12px; font-weight:700; color:#475569; margin-bottom:6px;">CC Recipients (One per line)</label>
+                                      <textarea id="email-recipients-spz" rows="4" style="width:100%; box-sizing:border-box; border:1px solid #cbd5e1; border-radius:8px; padding:12px; font-size:12.5px; font-family:monospace; resize:vertical; color:#0f172a;" placeholder="one@email.com&#10;another@email.com"></textarea>
                                   </div>
                               </div>
         
@@ -7104,7 +7146,7 @@
         </div><!-- /view-dashboard -->
 
         <!-- TENDERS & PROJECTS HUB VIEW -->
-        <div id="view-tenders" class="view-content hidden" style="padding: 40px; flex: 1; display: flex; flex-direction: column; overflow-y: auto; background: #f8fafc;">
+        <div id="view-tenders" class="view-content hidden" style="padding: 80px 40px 40px 40px; flex: 1; display: flex; flex-direction: column; overflow-y: auto; background: #f8fafc;">
           <div style="width: 100%;">
             <div style="display:flex; justify-content:space-between; align-items:flex-end; margin-bottom:40px; padding-bottom:20px; border-bottom:1px solid #e2e8f0;">
               <div>
@@ -17265,7 +17307,7 @@
   </div>
 
   <!-- External Logic Modules -->
-  <script src="dashboard_logic.js?v=15"></script>
+  <script src="dashboard_logic.js?v=20"></script>
   <script src="orders_logic.js?v=10"></script>
     <script src="training_logic.js"></script>
   <script src="cyber_fx.js"></script>

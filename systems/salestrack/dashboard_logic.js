@@ -5947,14 +5947,13 @@ window.OmnisDashboardV6 = class OmnisDashboardV6 {
             const isSinopower = company.includes("sinopower") || owner.includes("sinopower");
             const isIEG = company.includes("industrial equipment") || owner.includes("industrial equipment");
 
-            let contactPerson = "Chetan Samji";
-            let contactPhone = "+263772949515";
+            const config = this._getRecipients(company);
+            let contactPerson = config.contactName || "Chetan Samji";
+            let contactPhone = config.contactPhone || "+263772949515";
             let companyName = "Machinery Exchange";
             let signOff = `*The ${companyName} Team*`;
 
             if (isSinopower) {
-                contactPerson = "Brett Berry";
-                contactPhone = "+263775553862";
                 companyName = "Sinopower";
                 signOff = `*Sinopower*`;
             } else if (isIEG) {
@@ -6230,21 +6229,31 @@ window.OmnisDashboardV6 = class OmnisDashboardV6 {
     // ── EMAIL RECIPIENTS SETTINGS ──────────────────────────────
     _defaultEmailRecipients() {
         return {
-            mxg: [
-                'takunda@industrial-exchange.group', 'antony@industrial-exchange.group',
-                'sales.humphrey@machinery-exchange.com', 'chetan.samji@machinery-exchange.com',
-                'equipment@machinery-exchange.com', 'sales@machinery-exchange.com',
-                'robin.hunter@machinery-exchange.com', 'rutendo@industrial-exchange.group',
-                'mathew@industrial-exchange.group', 'barry@industrial-exchange.group',
-                'brendan@industrial-exchange.group'
-            ],
-            spz: [
-                'takunda@industrial-exchange.group', 'antony@industrial-exchange.group',
-                'logistics@sinopower.co.zw', 'brett@sinopower.co.zw', 'trucks@sinopower.co.zw',
-                'rutendo@industrial-exchange.group', 'louis@industrial-exchange.group',
-                'mathew@industrial-exchange.group', 'barry@industrial-exchange.group',
-                'brendan@industrial-exchange.group'
-            ]
+            mxg: {
+                cc: [
+                    'takunda@industrial-exchange.group', 'antony@industrial-exchange.group',
+                    'isaac@machinery-exchange.com', 'mathew@industrial-exchange.group',
+                    'barry@industrial-exchange.group', 'nolan@industrial-exchange.group',
+                    'brendan@industrial-exchange.group'
+                ],
+                contactName: 'Chetan Samji',
+                contactTitle: 'Commercial Manager',
+                contactEmail: 'chetan.samji@machinery-exchange.com',
+                contactPhone: '+263772949515'
+            },
+            spz: {
+                cc: [
+                    'takunda@industrial-exchange.group', 'antony@industrial-exchange.group',
+                    'logistics@sinopower.co.zw', 'brett@sinopower.co.zw', 'trucks@sinopower.co.zw',
+                    'rutendo@industrial-exchange.group', 'louis@industrial-exchange.group',
+                    'mathew@industrial-exchange.group', 'barry@industrial-exchange.group',
+                    'brendan@industrial-exchange.group'
+                ],
+                contactName: 'Brett Berry',
+                contactTitle: 'Commercial Manager',
+                contactEmail: 'brett@sinopower.co.zw',
+                contactPhone: '+263775553862'
+            }
         };
     }
 
@@ -6252,10 +6261,24 @@ window.OmnisDashboardV6 = class OmnisDashboardV6 {
         try {
             const saved = JSON.parse(localStorage.getItem('omnis_email_recipients') || '{}');
             const defs  = this._defaultEmailRecipients();
+            
+            const mxgData = Array.isArray(saved.mxg) ? { cc: saved.mxg, contactName: defs.mxg.contactName, contactTitle: defs.mxg.contactTitle, contactEmail: defs.mxg.contactEmail, contactPhone: defs.mxg.contactPhone } : (saved.mxg || defs.mxg);
+            const spzData = Array.isArray(saved.spz) ? { cc: saved.spz, contactName: defs.spz.contactName, contactTitle: defs.spz.contactTitle, contactEmail: defs.spz.contactEmail, contactPhone: defs.spz.contactPhone } : (saved.spz || defs.spz);
+
             const mxgEl = document.getElementById('email-recipients-mxg');
             const spzEl = document.getElementById('email-recipients-spz');
-            if (mxgEl) mxgEl.value = (saved.mxg || defs.mxg).join('\n');
-            if (spzEl) spzEl.value = (saved.spz || defs.spz).join('\n');
+            if (mxgEl) mxgEl.value = mxgData.cc.join('\n');
+            if (spzEl) spzEl.value = spzData.cc.join('\n');
+            
+            if (document.getElementById('email-contact-name-mxg')) document.getElementById('email-contact-name-mxg').value = mxgData.contactName || '';
+            if (document.getElementById('email-contact-title-mxg')) document.getElementById('email-contact-title-mxg').value = mxgData.contactTitle || '';
+            if (document.getElementById('email-contact-email-mxg')) document.getElementById('email-contact-email-mxg').value = mxgData.contactEmail || '';
+            if (document.getElementById('email-contact-phone-mxg')) document.getElementById('email-contact-phone-mxg').value = mxgData.contactPhone || '';
+            
+            if (document.getElementById('email-contact-name-spz')) document.getElementById('email-contact-name-spz').value = spzData.contactName || '';
+            if (document.getElementById('email-contact-title-spz')) document.getElementById('email-contact-title-spz').value = spzData.contactTitle || '';
+            if (document.getElementById('email-contact-email-spz')) document.getElementById('email-contact-email-spz').value = spzData.contactEmail || '';
+            if (document.getElementById('email-contact-phone-spz')) document.getElementById('email-contact-phone-spz').value = spzData.contactPhone || '';
         } catch(e) { console.error('loadEmailRecipients', e); }
     }
 
@@ -6263,8 +6286,23 @@ window.OmnisDashboardV6 = class OmnisDashboardV6 {
         try {
             const mxgEl = document.getElementById('email-recipients-mxg');
             const spzEl = document.getElementById('email-recipients-spz');
-            const mxg = mxgEl ? mxgEl.value.split('\n').map(e => e.trim()).filter(Boolean) : [];
-            const spz = spzEl ? spzEl.value.split('\n').map(e => e.trim()).filter(Boolean) : [];
+            
+            const mxg = {
+                cc: mxgEl ? mxgEl.value.split('\n').map(e => e.trim()).filter(Boolean) : [],
+                contactName: document.getElementById('email-contact-name-mxg') ? document.getElementById('email-contact-name-mxg').value.trim() : '',
+                contactTitle: document.getElementById('email-contact-title-mxg') ? document.getElementById('email-contact-title-mxg').value.trim() : '',
+                contactEmail: document.getElementById('email-contact-email-mxg') ? document.getElementById('email-contact-email-mxg').value.trim() : '',
+                contactPhone: document.getElementById('email-contact-phone-mxg') ? document.getElementById('email-contact-phone-mxg').value.trim() : ''
+            };
+            
+            const spz = {
+                cc: spzEl ? spzEl.value.split('\n').map(e => e.trim()).filter(Boolean) : [],
+                contactName: document.getElementById('email-contact-name-spz') ? document.getElementById('email-contact-name-spz').value.trim() : '',
+                contactTitle: document.getElementById('email-contact-title-spz') ? document.getElementById('email-contact-title-spz').value.trim() : '',
+                contactEmail: document.getElementById('email-contact-email-spz') ? document.getElementById('email-contact-email-spz').value.trim() : '',
+                contactPhone: document.getElementById('email-contact-phone-spz') ? document.getElementById('email-contact-phone-spz').value.trim() : ''
+            };
+            
             localStorage.setItem('omnis_email_recipients', JSON.stringify({ mxg, spz }));
             this.showToast('Email recipients saved', 'success');
         } catch(e) { this.showToast('Failed to save recipients', 'error'); }
@@ -6274,8 +6312,19 @@ window.OmnisDashboardV6 = class OmnisDashboardV6 {
         const defs  = this._defaultEmailRecipients();
         const mxgEl = document.getElementById('email-recipients-mxg');
         const spzEl = document.getElementById('email-recipients-spz');
-        if (mxgEl) mxgEl.value = defs.mxg.join('\n');
-        if (spzEl) spzEl.value = defs.spz.join('\n');
+        if (mxgEl) mxgEl.value = defs.mxg.cc.join('\n');
+        if (spzEl) spzEl.value = defs.spz.cc.join('\n');
+        
+        if (document.getElementById('email-contact-name-mxg')) document.getElementById('email-contact-name-mxg').value = defs.mxg.contactName;
+        if (document.getElementById('email-contact-title-mxg')) document.getElementById('email-contact-title-mxg').value = defs.mxg.contactTitle;
+        if (document.getElementById('email-contact-email-mxg')) document.getElementById('email-contact-email-mxg').value = defs.mxg.contactEmail;
+        if (document.getElementById('email-contact-phone-mxg')) document.getElementById('email-contact-phone-mxg').value = defs.mxg.contactPhone;
+        
+        if (document.getElementById('email-contact-name-spz')) document.getElementById('email-contact-name-spz').value = defs.spz.contactName;
+        if (document.getElementById('email-contact-title-spz')) document.getElementById('email-contact-title-spz').value = defs.spz.contactTitle;
+        if (document.getElementById('email-contact-email-spz')) document.getElementById('email-contact-email-spz').value = defs.spz.contactEmail;
+        if (document.getElementById('email-contact-phone-spz')) document.getElementById('email-contact-phone-spz').value = defs.spz.contactPhone;
+        
         this.saveEmailRecipients();
     }
 
@@ -6283,16 +6332,21 @@ window.OmnisDashboardV6 = class OmnisDashboardV6 {
         let saved = {};
         try { saved = JSON.parse(localStorage.getItem('omnis_email_recipients') || '{}'); } catch(e) {}
         const defs = this._defaultEmailRecipients();
+        
+        const mxgData = Array.isArray(saved.mxg) ? { cc: saved.mxg, contactName: defs.mxg.contactName, contactTitle: defs.mxg.contactTitle, contactEmail: defs.mxg.contactEmail, contactPhone: defs.mxg.contactPhone } : (saved.mxg || defs.mxg);
+        const spzData = Array.isArray(saved.spz) ? { cc: saved.spz, contactName: defs.spz.contactName, contactTitle: defs.spz.contactTitle, contactEmail: defs.spz.contactEmail, contactPhone: defs.spz.contactPhone } : (saved.spz || defs.spz);
+
         if (company && company.includes('Sinopower'))
-            return { label: 'Sinopower',          emails: saved.spz || defs.spz };
-        return     { label: 'Machinery Exchange', emails: saved.mxg || defs.mxg };
+            return { label: 'Sinopower',          emails: spzData.cc, contactName: spzData.contactName, contactTitle: spzData.contactTitle, contactEmail: spzData.contactEmail, contactPhone: spzData.contactPhone };
+        return     { label: 'Machinery Exchange', emails: mxgData.cc, contactName: mxgData.contactName, contactTitle: mxgData.contactTitle, contactEmail: mxgData.contactEmail, contactPhone: mxgData.contactPhone };
     }
 
     _buildEmailHTML(customerName, greetingName, company, machines, doc) {
         const isUnassigned = !company || company.toLowerCase() === 'unassigned';
         const isSino       = !isUnassigned && company.includes('Sinopower');
         
-        let brand, colour, logo, contactEmail, contactName;
+        let brand, colour, logo, contactEmail, contactName, contactTitle;
+        const config = this._getRecipients(company);
         
         if (isUnassigned) {
             brand        = 'Unassigned Order';
@@ -6300,18 +6354,21 @@ window.OmnisDashboardV6 = class OmnisDashboardV6 {
             logo         = null;
             contactEmail = '';
             contactName  = 'our Support Team';
+            contactTitle = '';
         } else if (isSino) {
             brand        = 'Sinopower';
             colour       = '#7b1515';
             logo         = 'https://pfqaeewmlwfayxbgmuaq.supabase.co/storage/v1/object/public/public-assets/logos/spz-logo.png';
-            contactEmail = 'brett@sinopower.co.zw';
-            contactName  = 'Brett Berry';
+            contactEmail = config.contactEmail;
+            contactName  = config.contactName;
+            contactTitle = config.contactTitle;
         } else {
             brand        = 'Machinery Exchange';
             colour       = '#c92222';
             logo         = 'https://pfqaeewmlwfayxbgmuaq.supabase.co/storage/v1/object/public/public-assets/logos/mxg-logo.png';
-            contactEmail = 'chetan.samji@machinery-exchange.com';
-            contactName  = 'Chetan Samji';
+            contactEmail = config.contactEmail;
+            contactName  = config.contactName;
+            contactTitle = config.contactTitle;
         }
 
         const fmt = d => {
@@ -6320,7 +6377,7 @@ window.OmnisDashboardV6 = class OmnisDashboardV6 {
             catch(e) { return d; }
         };
         const TH = (t, al='left', nw=false) =>
-            `<th style="padding:16px 20px;text-align:${al};color:white;font-size:12px;font-weight:800;text-transform:uppercase;letter-spacing:.05em;white-space:${nw?'nowrap':'normal'};border-bottom:2px solid rgba(0,0,0,0.1);">${t}</th>`;
+            `<th style="padding:16px 20px;text-align:${al};color:white;font-size:14px;font-weight:800;text-transform:uppercase;letter-spacing:.05em;white-space:${nw?'nowrap':'normal'};border-bottom:2px solid rgba(0,0,0,0.1);">${t}</th>`;
         const TD = (v, al='left', nw=false) =>
             `<td style="padding:16px 20px;text-align:${al};font-size:15px;color:#334155;vertical-align:top;white-space:${nw?'nowrap':'normal'};border-bottom:1px solid #e2e8f0;">${v||''}</td>`;
 
@@ -6355,29 +6412,29 @@ window.OmnisDashboardV6 = class OmnisDashboardV6 {
             const sn = m.serial ? `<div style="color:#64748b;font-size:12px;margin-top:3px;">SN: ${m.serial}</div>` : '';
             // Image thumbnail inline if present - increased size and made clickable
             const imgHtml = m.imageUrl ? `<div style="margin-top:12px;"><a href="${m.imageUrl}" target="_blank" style="display:inline-block;"><img src="${m.imageUrl}" alt="Click to enlarge" style="height:160px;width:auto;border-radius:8px;border:2px solid #cbd5e1;box-shadow:0 3px 10px rgba(0,0,0,0.08);transition:opacity 0.2s;"></a></div>` : '';
-            let row = `<td style="padding:20px 24px;font-size:15px;color:#0f172a;font-weight:600;border-bottom:1px solid #cbd5e1;"><strong>${m.name}</strong>${sn}${imgHtml}</td>`;
-            if (showQty)   row += `<td style="padding:20px 24px;text-align:center;font-size:15px;color:#334155;vertical-align:top;border-bottom:1px solid #cbd5e1;">${m.qty||doc.quantity||''}</td>`;
-            if (showStat)  row += `<td style="padding:20px 24px;font-size:15px;color:#334155;vertical-align:top;border-bottom:1px solid #cbd5e1;">${m.status||doc.status_issue||''}</td>`;
-            if (showProd)  row += `<td style="padding:20px 24px;text-align:center;font-size:15px;color:#334155;vertical-align:top;white-space:nowrap;border-bottom:1px solid #cbd5e1;">${fmt(doc.production_completion_date)||'—'}</td>`;
-            if (showEtd)   row += `<td style="padding:20px 24px;text-align:center;font-size:15px;color:#334155;vertical-align:top;white-space:nowrap;border-bottom:1px solid #cbd5e1;">${fmt(doc.estimated_time_of_departure)||'—'}</td>`;
-            if (showEtaB)  row += `<td style="padding:20px 24px;text-align:center;font-size:15px;color:#334155;vertical-align:top;white-space:nowrap;border-bottom:1px solid #cbd5e1;">${fmt(doc.estimated_time_of_arrival_beira)||'—'}</td>`;
-            if (showEtaH)  row += `<td style="padding:20px 24px;text-align:center;font-size:15px;color:#334155;vertical-align:top;white-space:nowrap;border-bottom:1px solid #cbd5e1;">${fmt(doc.estimated_time_of_arrival_harare)||'—'}</td>`;
+            let row = `<td style="padding:20px 24px;font-size:15px;color:#0f172a;font-weight:600;border-bottom:1px solid #cbd5e1;vertical-align:middle;"><strong>${m.name}</strong>${sn}${imgHtml}</td>`;
+            if (showQty)   row += `<td style="padding:20px 24px;text-align:center;font-size:15px;color:#334155;vertical-align:middle;border-bottom:1px solid #cbd5e1;">${m.qty||doc.quantity||''}</td>`;
+            if (showStat)  row += `<td style="padding:20px 24px;font-size:15px;color:#334155;vertical-align:middle;border-bottom:1px solid #cbd5e1;">${m.status||doc.status_issue||''}</td>`;
+            if (showProd)  row += `<td style="padding:20px 24px;text-align:center;font-size:15px;color:#334155;vertical-align:middle;white-space:nowrap;border-bottom:1px solid #cbd5e1;">${fmt(doc.production_completion_date)||'—'}</td>`;
+            if (showEtd)   row += `<td style="padding:20px 24px;text-align:center;font-size:15px;color:#334155;vertical-align:middle;white-space:nowrap;border-bottom:1px solid #cbd5e1;">${fmt(doc.estimated_time_of_departure)||'—'}</td>`;
+            if (showEtaB)  row += `<td style="padding:20px 24px;text-align:center;font-size:15px;color:#334155;vertical-align:middle;white-space:nowrap;border-bottom:1px solid #cbd5e1;">${fmt(doc.estimated_time_of_arrival_beira)||'—'}</td>`;
+            if (showEtaH)  row += `<td style="padding:20px 24px;text-align:center;font-size:15px;color:#334155;vertical-align:middle;white-space:nowrap;border-bottom:1px solid #cbd5e1;">${fmt(doc.estimated_time_of_arrival_harare)||'—'}</td>`;
             // Target handover: if revised exists, show revised in red with badge; else show target
             if (showThd || showRthd) {
                 const tDate  = fmt(m.target||doc.target_handover_date);
                 const rDate  = fmt(m.revised||doc.revised_target_handover_date);
                 if (rDate) {
-                    row += `<td style="padding:20px 24px;text-align:center;font-size:15px;color:#334155;vertical-align:top;white-space:nowrap;border-bottom:1px solid #cbd5e1;">`
+                    row += `<td style="padding:20px 24px;text-align:center;font-size:15px;color:#334155;vertical-align:middle;white-space:nowrap;border-bottom:1px solid #cbd5e1;">`
                         + `<div style="color:#dc2626;font-weight:700;">${rDate}</div>`
                         + `<div style="display:inline-block;background:#fee2e2;color:#dc2626;font-size:10px;font-weight:800;padding:3px 8px;border-radius:12px;margin-top:5px;text-transform:uppercase;letter-spacing:.05em;">REVISED</div>`
                         + (tDate ? `<div style="color:#94a3b8;font-size:12px;margin-top:6px;text-decoration:line-through;">${tDate}</div>` : '')
                         + `</td>`;
                 } else {
-                    row += `<td style="padding:20px 24px;text-align:center;font-size:15px;color:#334155;vertical-align:top;white-space:nowrap;border-bottom:1px solid #cbd5e1;">${tDate||'—'}</td>`;
+                    row += `<td style="padding:20px 24px;text-align:center;font-size:15px;color:#334155;vertical-align:middle;white-space:nowrap;border-bottom:1px solid #cbd5e1;">${tDate||'—'}</td>`;
                 }
             }
-            if (showAhd)   row += `<td style="padding:20px 24px;text-align:center;font-size:15px;color:#334155;vertical-align:top;white-space:nowrap;border-bottom:1px solid #cbd5e1;">${fmt(m.actual||doc.actual_handover_date)||'—'}</td>`;
-            if (showNotes) row += `<td style="padding:20px 24px;font-size:14px;color:#334155;vertical-align:top;border-bottom:1px solid #cbd5e1;"><em>${m.notes||doc.comment||''}</em></td>`;
+            if (showAhd)   row += `<td style="padding:20px 24px;text-align:center;font-size:15px;color:#334155;vertical-align:middle;white-space:nowrap;border-bottom:1px solid #cbd5e1;">${fmt(m.actual||doc.actual_handover_date)||'—'}</td>`;
+            if (showNotes) row += `<td style="padding:20px 24px;font-size:14px;color:#334155;vertical-align:middle;border-bottom:1px solid #cbd5e1;"><em>${m.notes||doc.comment||''}</em></td>`;
             return `<tr style="background:${bg};">${row}</tr>`;
         }).join('');
 
@@ -6402,7 +6459,7 @@ window.OmnisDashboardV6 = class OmnisDashboardV6 {
     <p style="margin:0;font-size:16px;color:#0f172a;line-height:1.7;">
       Dear <strong>${greetingName}</strong>,<br><br>
       We hope this email finds you well. Thank you for choosing ${brand === 'Unassigned Order' ? 'us' : brand} as your equipment partner. Please find the latest status update for ${customerName ? customerName + "'s" : "your"} equipment order${doc.name ? ` (Ref: <strong>${doc.name}</strong>)` : ''} detailed below.<br><br>
-      We appreciate your continued business and trust in our team. Should you have any questions or require further assistance, please do not hesitate to contact ${contactEmail ? `our Commercial Manager, <a href="mailto:${contactEmail}" style="color:${colour};font-weight:700;text-decoration:none;">${contactName}</a>` : 'our Support Team'}.
+      We appreciate your continued business and trust in our team. Should you have any questions or require further assistance, please do not hesitate to contact our ${contactTitle ? contactTitle + ', ' : ''}<a href="mailto:${contactEmail}" style="color:${colour};font-weight:700;text-decoration:none;">${contactName}</a>.
     </p>
   </div>
   <div style="padding:16px 32px 36px;overflow-x:auto;">
