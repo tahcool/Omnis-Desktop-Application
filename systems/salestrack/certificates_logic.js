@@ -260,6 +260,48 @@ class CertificatesLogic {
         }
     }
 
+    reprintCertificate(id) {
+        const c = this.allCerts.find(cert => String(cert.id) === String(id));
+        if (!c) return;
+        
+        const date = c.completion_date || '';
+        let displayDateText = '';
+        let printDateStr = '';
+        if (date) {
+            const dObj = new Date(date);
+            const day = dObj.getDate();
+            const month = dObj.toLocaleString('en-GB', { month: 'long' });
+            const year = dObj.getFullYear();
+            const suffix = (day === 1 || day === 21 || day === 31) ? 'st' : 
+                           (day === 2 || day === 22) ? 'nd' : 
+                           (day === 3 || day === 23) ? 'rd' : 'th';
+            displayDateText = `${day}${suffix} of ${month} ${year}`;
+            printDateStr = `${day.toString().padStart(2, '0')}/${(dObj.getMonth()+1).toString().padStart(2,'0')}/${year}`;
+        }
+
+        const payload = JSON.stringify({
+            r: c.cert_ref_number,
+            n: c.operator_name,
+            id: c.id_number,
+            m: c.machine_type,
+            d: printDateStr
+        });
+        const encodedPayload = btoa(payload);
+        const verifyUrl = `https://machinery-exchange.com/verify.html?data=${encodedPayload}`;
+
+        this.printCertificate({
+            name: c.operator_name,
+            idNum: c.id_number,
+            machine: c.machine_type,
+            duration: c.training_duration || 'Unknown',
+            displayDateText: displayDateText,
+            printDateStr: printDateStr,
+            specialMention: c.special_mention || '',
+            ref: c.cert_ref_number,
+            verifyUrl: verifyUrl
+        });
+    }
+
     renderDirectory(certs) {
         const tbody = document.getElementById('cert-directory-tbody');
         if (!tbody) return;
@@ -273,13 +315,18 @@ class CertificatesLogic {
         certs.forEach(c => {
             const cDate = c.completion_date ? c.completion_date.substring(0,10) : '';
             html += `
-                <tr style="border-bottom:1px solid #f1f5f9; transition:background 0.2s;" onmouseover="this.style.background='#f8fafc'" onmouseout="this.style.background='transparent'">
-                    <td style="padding:12px 16px; font-weight:600; color:#0f172a;">${c.operator_name || ''}</td>
-                    <td style="padding:12px 16px; color:#334155;">${c.id_number || ''}</td>
-                    <td style="padding:12px 16px; color:#334155;">${c.machine_type || ''}</td>
-                    <td style="padding:12px 16px; color:#64748b;">${cDate}</td>
-                    <td style="padding:12px 16px; font-family:monospace; color:#0ea5e9; font-weight:600;">${c.cert_ref_number || ''}</td>
-                </tr>
+                
+                  <tr style="border-bottom:1px solid #f1f5f9; transition:background 0.2s;" onmouseover="this.style.background='#f8fafc'" onmouseout="this.style.background='transparent'">
+                      <td style="padding:12px 16px; font-weight:600; color:#0f172a;">${c.operator_name || ''}</td>
+                      <td style="padding:12px 16px; color:#334155;">${c.id_number || ''}</td>
+                      <td style="padding:12px 16px; color:#334155;">${c.machine_type || ''}</td>
+                      <td style="padding:12px 16px; color:#64748b;">${cDate}</td>
+                      <td style="padding:12px 16px; font-family:monospace; color:#0ea5e9; font-weight:600;">${c.cert_ref_number || ''}</td>
+                      <td style="padding:12px 16px; text-align:right;">
+                          <button onclick="window.certLogic.reprintCertificate('${c.id}')" style="background:#f8fafc; border:1px solid #cbd5e1; padding:6px 12px; border-radius:6px; cursor:pointer; color:#0f172a; font-size:12px; font-weight:600; transition:all 0.2s;" onmouseover="this.style.background='#f1f5f9'" onmouseout="this.style.background='#f8fafc'"><i class="fas fa-print" style="color:#0891b2; margin-right:4px;"></i> Reprint</button>
+                      </td>
+                  </tr>
+
             `;
         });
         tbody.innerHTML = html;
@@ -478,7 +525,7 @@ class CertificatesLogic {
                             </div>
                             
                             <!-- QR Code verification -->
-                            <div id="qrcode-wrapper" style="position: absolute; bottom: 80px; left: 50%; transform: translateX(-50%); text-align: center;">
+                            <div id="qrcode-wrapper" style="position: absolute; bottom: 160px; left: 50%; transform: translateX(-50%); text-align: center;">
                                 <div style="font-size: 10px; font-weight: 600; margin-bottom: 5px;">Please scan to verify</div>
                                 <div id="qrcode-container" style="display: inline-block;"></div>
                                 <div style="font-size: 10px; font-weight: 600; margin-top: 5px;">Certificate Ref: ${data.ref}</div>
