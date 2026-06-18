@@ -509,9 +509,7 @@ class CertificatesLogic {
                         
                         <div class="border-inner">
                             <img src="${logoUrl}" class="logo" alt="Machinery Exchange Logo" />
-                            
-                            <h1 class="title"><span class="title-italic">CERTIFICATE</span> OF<br>COMPETENCE</h1>
-                            
+                            <h1 class="title"><span class="title-italic">CERTIFICATE</span><br><span style="font-size: 0.8em; font-style: italic; color: #555;">OF</span><br>COMPETENCE</h1>
                             <h2 class="subtitle">OPERATOR</h2>
                             
                             <div class="certify-text">THIS IS TO CERTIFY THAT</div>
@@ -524,8 +522,7 @@ class CertificatesLogic {
                                 Has successfully completed a ${data.duration} training course complete on the ${data.displayDateText} and has been certified to operate ${data.machine}.
                             </div>
                             
-                            <!-- QR Code verification -->
-                            <div id="qrcode-wrapper" style="position: absolute; bottom: 160px; left: 50%; transform: translateX(-50%); text-align: center;">
+                            <div id="qrcode-wrapper" style="position: absolute; bottom: 90px; left: 50%; transform: translateX(-50%); text-align: center;">
                                 <div style="font-size: 10px; font-weight: 600; margin-bottom: 5px;">Please scan to verify</div>
                                 <div id="qrcode-container" style="display: inline-block;"></div>
                                 <div style="font-size: 10px; font-weight: 600; margin-top: 5px;">Certificate Ref: ${data.ref}</div>

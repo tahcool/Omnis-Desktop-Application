@@ -16,3 +16,14 @@
   Files: .mcp/knowledge/_shared/commit_log.md,package-lock.json,package.json,scripts/check_email_queue.js,scripts/create_ft_operator_training_table.sql,scripts/extract_js.js,scripts/extracted_js.js,scripts/finalize_inject.js,scripts/fix_aftersales_cc.js,scripts/fix_handover_btn.js,scripts/fix_handover_btn3.js,scripts/fix_handover_btn_final.js,scripts/fix_html_logic.js,scripts/fix_index_syntax.js,scripts/fix_open_new_logic.js,scripts/fix_print_syntax.js,scripts/fix_refactor_syntax.js,scripts/inject_open_new.js,scripts/patch10.js,scripts/patch2.js,
 - `696ab49` 2026-06-17 [supabase-migration] feat: add Supabase edge function for automated daily quotation follow-up reminders
   Files: .mcp/knowledge/_shared/commit_log.md,scripts/dump_tables.js,scripts/flush_email_queue.js,scripts/test_edge_function.js,supabase/.temp/cli-latest,supabase/functions/daily-quote-reminders/index.ts,
+\n## 2026-06-18
+- `d3b17e7` 2026-06-18 [supabase-migration] Restore point: Implemented deep linking for Quotations and restored Order Tracking action buttons
+  Files: .mcp/knowledge/_shared/commit_log.md,main.js,scripts/append_deep_link.js,scripts/fix_injection.js,scripts/patch2.js,scripts/patch3.js,supabase/functions/daily-quote-reminders/index.ts,systems/salestrack/index.html,
+- `0ddda5c` 2026-06-18 [supabase-migration] Add Certificates view with inner tabs, QR generation and directory saving
+  Files: scripts/create_operator_certificates_table.sql,scripts/patch_certificates_html.js,systems/salestrack/certificates_logic.js,systems/salestrack/index.html,
+- `a25be6c` 2026-06-18 [supabase-migration] Add Certificates view with inner tabs, QR generation and directory saving
+  Files: scripts/create_operator_certificates_table.sql,scripts/patch_certificates_html.js,systems/salestrack/certificates_logic.js,systems/salestrack/index.html,
+- `e2b4c8e` 2026-06-18 [supabase-migration] Add Certificates view with inner tabs, QR generation and directory saving
+  Files: scripts/create_operator_certificates_table.sql,scripts/patch_certificates_html.js,systems/salestrack/certificates_logic.js,systems/salestrack/index.html,
+- `258958c` 2026-06-18 [supabase-migration] Fix certificates_logic.js syntax error and add Reprint functionality
+  Files: systems/salestrack/certificates_logic.js,systems/salestrack/index.html,
