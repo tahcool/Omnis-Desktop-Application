@@ -29,3 +29,5 @@
   Files: systems/salestrack/certificates_logic.js,systems/salestrack/index.html,
 - `ab16057` 2026-06-18 [supabase-migration] Adjust QR code and signature positioning for print layout
   Files: .mcp/knowledge/_shared/commit_log.md,fix.js,systems/salestrack/certificates_logic.js,
+- `2bb6405` 2026-06-18 [supabase-migration] Restore Point: Finalized Certificate Print Layout and Reprint Functionality
+  Files: .mcp/knowledge/_shared/commit_log.md,systems/salestrack/certificates_logic.js,

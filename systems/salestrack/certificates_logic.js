@@ -42,19 +42,18 @@ class CertificatesLogic {
                 }
             });
 
-            if (res.ok && res.data) {
+                        if (res.ok && res.data) {
                 this.trainings = res.data;
                 const select = document.getElementById('cert-link-training');
-                if (!select) return;
+                const bulkSelect = document.getElementById('cert-bulk-link-training');
                 
-                select.innerHTML = '<option value="">-- Type manually below --</option>';
-                this.trainings.forEach(t => {
-                    const opt = document.createElement('option');
-                    opt.value = t.id;
+                const optionsHtml = '<option value="">-- Type manually below --</option>' + this.trainings.map(t => {
                     const cDate = t.training_date ? t.training_date.substring(0,10) : 'No Date';
-                    opt.textContent = `${t.customer || 'Unknown'} - ${t.machine || 'Unknown'} (${cDate})`;
-                    select.appendChild(opt);
-                });
+                    return `<option value="${t.id}">${t.customer || 'Unknown'} - ${t.machine || 'Unknown'} (${cDate})</option>`;
+                }).join('');
+                
+                if (select) select.innerHTML = optionsHtml;
+                if (bulkSelect) bulkSelect.innerHTML = optionsHtml;
             }
         } catch (e) {
             console.error("Failed to load trainings for certificates:", e);
@@ -65,18 +64,28 @@ class CertificatesLogic {
     switchTab(tabId) {
         const genTab = document.getElementById('cert-tab-generate');
         const dirTab = document.getElementById('cert-tab-directory');
+        const bulkTab = document.getElementById('cert-tab-bulk');
         const btnGen = document.getElementById('tab-btn-generate');
         const btnDir = document.getElementById('tab-btn-directory');
+        const btnBulk = document.getElementById('tab-btn-bulk');
+        
+        if (genTab) genTab.style.display = 'none';
+        if (dirTab) dirTab.style.display = 'none';
+        if (bulkTab) bulkTab.style.display = 'none';
+        
+        if (btnGen) { btnGen.style.color = '#64748b'; btnGen.style.borderBottomColor = 'transparent'; }
+        if (btnDir) { btnDir.style.color = '#64748b'; btnDir.style.borderBottomColor = 'transparent'; }
+        if (btnBulk) { btnBulk.style.color = '#64748b'; btnBulk.style.borderBottomColor = 'transparent'; }
+
         if (tabId === 'generate') {
-            genTab.style.display = 'block';
-            dirTab.style.display = 'none';
-            btnGen.style.color = '#0891b2'; btnGen.style.borderBottomColor = '#0891b2';
-            btnDir.style.color = '#64748b'; btnDir.style.borderBottomColor = 'transparent';
+            if (genTab) genTab.style.display = 'block';
+            if (btnGen) { btnGen.style.color = '#0891b2'; btnGen.style.borderBottomColor = '#0891b2'; }
+        } else if (tabId === 'bulk') {
+            if (bulkTab) bulkTab.style.display = 'block';
+            if (btnBulk) { btnBulk.style.color = '#0891b2'; btnBulk.style.borderBottomColor = '#0891b2'; }
         } else {
-            genTab.style.display = 'none';
-            dirTab.style.display = 'block';
-            btnDir.style.color = '#0891b2'; btnDir.style.borderBottomColor = '#0891b2';
-            btnGen.style.color = '#64748b'; btnGen.style.borderBottomColor = 'transparent';
+            if (dirTab) dirTab.style.display = 'block';
+            if (btnDir) { btnDir.style.color = '#0891b2'; btnDir.style.borderBottomColor = '#0891b2'; }
         }
     }
 
@@ -146,6 +155,345 @@ class CertificatesLogic {
             return `${parts[2]}/${parts[1]}/${parts[0]}/${rnd}`;
         }
         return `CERT-${Date.now().toString().substring(7)}`;
+    }
+
+    
+    populateBulkCertificateFromTraining(trainingId) {
+        if (!trainingId) {
+            document.getElementById('cert-bulk-machine').value = '';
+            document.getElementById('cert-bulk-date').value = '';
+            return;
+        }
+
+        const t = this.trainings.find(x => x.id === trainingId);
+        if (t) {
+            document.getElementById('cert-bulk-machine').value = t.machine || '';
+            if (t.training_date) {
+                document.getElementById('cert-bulk-date').value = t.training_date.substring(0, 10);
+            }
+        }
+    }
+
+    async processBulkCertificates() {
+        const machine = document.getElementById('cert-bulk-machine').value.trim();
+        const duration = document.getElementById('cert-bulk-duration').value.trim();
+        const date = document.getElementById('cert-bulk-date').value;
+        const mention = document.getElementById('cert-bulk-mention').value.trim();
+        const trainingId = document.getElementById('cert-bulk-link-training').value;
+        const operatorsRaw = document.getElementById('cert-bulk-operators').value.trim();
+
+        if (!machine || !date || !operatorsRaw) {
+            alert("Machine Type, Completion Date, and Operators list are required!");
+            return;
+        }
+
+        const lines = operatorsRaw.split('\n');
+        const parsedOperators = [];
+        for (let i = 0; i < lines.length; i++) {
+            const line = lines[i].trim();
+            if (!line) continue;
+            // Split by tab or comma
+            const parts = line.split(/[\t,]/);
+            if (parts.length >= 2) {
+                parsedOperators.push({
+                    name: parts[0].trim(),
+                    idNum: parts[1].trim()
+                });
+            } else {
+                alert(`Line ${i+1} is invalid. Please format as: Name [Tab or Comma] ID Number`);
+                return;
+            }
+        }
+
+        if (parsedOperators.length === 0) {
+            alert("No valid operators found.");
+            return;
+        }
+
+        const btn = document.getElementById('btn-process-bulk');
+        if (btn) { btn.disabled = true; btn.textContent = "Processing..."; }
+
+        try {
+            const certsToGenerate = [];
+            
+            // Format dates
+            const dObj = new Date(date);
+            const day = dObj.getDate();
+            const month = dObj.toLocaleString('en-GB', { month: 'long' });
+            const year = dObj.getFullYear();
+            
+            const suffix = (day === 1 || day === 21 || day === 31) ? 'st' : 
+                           (day === 2 || day === 22) ? 'nd' : 
+                           (day === 3 || day === 23) ? 'rd' : 'th';
+                           
+            const displayDateText = `${day}${suffix} of ${month} ${year}`;
+            const printDateStr = `${day.toString().padStart(2, '0')}/${(dObj.getMonth()+1).toString().padStart(2,'0')}/${year}`;
+
+            // Prepare records for DB
+            const dbRecords = [];
+            
+            parsedOperators.forEach((op, index) => {
+                // Generate a slightly different reference for each based on index and random
+                const parts = date.split('-');
+                let ref = `CERT-${Date.now().toString().substring(7)}-${index}`;
+                if (parts.length === 3) {
+                    const rnd = Math.floor(Math.random() * 9000) + 1000;
+                    ref = `${parts[2]}/${parts[1]}/${parts[0]}/${rnd}`;
+                }
+
+                // Payload for QR Code
+                const payload = JSON.stringify({
+                    r: ref,
+                    n: op.name,
+                    id: op.idNum,
+                    m: machine,
+                    d: printDateStr
+                });
+                const encodedPayload = btoa(payload);
+                const verifyUrl = `https://machinery-exchange.com/verify.html?data=${encodedPayload}`;
+
+                certsToGenerate.push({
+                    name: op.name,
+                    idNum: op.idNum,
+                    machine,
+                    duration,
+                    displayDateText,
+                    mention,
+                    ref,
+                    printDateStr,
+                    verifyUrl
+                });
+
+                dbRecords.push({
+                    operator_name: op.name,
+                    id_number: op.idNum,
+                    machine_type: machine,
+                    training_duration: duration,
+                    completion_date: date,
+                    special_mention: mention,
+                    cert_ref_number: ref,
+                    linked_training_id: trainingId || null
+                });
+            });
+
+            // Insert into DB in bulk
+            if (window.electron) {
+                // Since the standard supabase invoke 'insert' expects data to be an object or array of objects, we can pass the array
+                const res = await window.electron.invoke('supabase:query', {
+                    table: 'ft_operator_certificates',
+                    method: 'insert',
+                    params: {
+                        data: dbRecords
+                    }
+                });
+                console.log('Bulk Insert Result:', res);
+                if (!res.ok) {
+                    alert('Failed to save certificates to database: ' + res.error);
+                    return;
+                }
+            }
+
+            // Reload lists
+            this.loadRecentCertificates();
+            this.loadAllCertificates();
+
+            // Clear text area
+            document.getElementById('cert-bulk-operators').value = '';
+
+            // Print all
+            this.printBulkCertificates(certsToGenerate);
+
+        } catch (e) {
+            console.error(e);
+            alert("Error generating bulk certificates.");
+        } finally {
+            if (btn) { btn.disabled = false; btn.innerHTML = '<i class="fas fa-file-pdf" style="margin-right:8px;"></i> Process & Print All'; }
+        }
+    }
+
+    printBulkCertificates(certDataArray) {
+        let logoUrl = new URL('../../assets/images/MXG%20Logo.png', window.location.href).href;
+        let printWindow = window.open('', '_blank');
+        
+        let htmlPages = '';
+        certDataArray.forEach((data, index) => {
+            const pageBreak = index < certDataArray.length - 1 ? 'page-break-after: always;' : '';
+            htmlPages += `
+                <div class="cert-page" style="${pageBreak}">
+                    <div class="cert-container">
+                        <div class="border-outer">
+                            <div class="top-left corner-deco"></div>
+                            <div class="top-right corner-deco"></div>
+                            <div class="bottom-left corner-deco"></div>
+                            <div class="bottom-right corner-deco"></div>
+                            
+                            <div class="border-inner">
+                                <img src="${logoUrl}" class="logo" alt="Machinery Exchange Logo" />
+                                <h1 class="title"><span class="title-italic">CERTIFICATE</span><br><span style="font-size: 0.8em; font-style: italic; color: #555;">OF</span><br>COMPETENCE</h1>
+                                <h2 class="subtitle">OPERATOR</h2>
+                                
+                                <div class="certify-text">THIS IS TO CERTIFY THAT</div>
+                                <div class="mention">${data.mention || ''}</div>
+                                
+                                <div class="name-line">${data.name}</div>
+                                <div class="id-line">ID Number : ${data.idNum}</div>
+                                
+                                <div class="description">
+                                    Has successfully completed a ${data.duration} training course complete on the ${data.displayDateText} and has been certified to operate ${data.machine}.
+                                </div>
+                                
+                                <div id="qrcode-wrapper-${index}" style="position: absolute; bottom: 105px; left: 50%; transform: translateX(-50%); text-align: center;">
+                                    <div style="font-size: 10px; font-weight: 600; margin-bottom: 5px;">Please scan to verify</div>
+                                    <div id="qrcode-container-${index}" style="display: inline-block;"></div>
+                                    <div style="font-size: 10px; font-weight: 600; margin-top: 5px;">Certificate Ref: ${data.ref}</div>
+                                </div>
+                                
+                                <div class="footer-grid">
+                                    <div class="sig-block">
+                                        <div class="sig-line"></div>
+                                        <div class="sig-name">Antony Dube (SRD) Signature</div>
+                                    </div>
+                                    <div class="date-block" style="padding: 0 20px;">
+                                        <div class="date-line">${data.printDateStr}</div>
+                                        <div class="date-label">Date</div>
+                                    </div>
+                                    <div class="sig-block">
+                                        <div class="sig-line"></div>
+                                        <div class="sig-name">Chetan Samji (SRD) Signature</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+        });
+
+        let qrScripts = '';
+        certDataArray.forEach((data, index) => {
+            qrScripts += `
+                new QRCode(document.getElementById("qrcode-container-${index}"), {
+                    text: "${data.verifyUrl}",
+                    width: 100,
+                    height: 100,
+                    colorDark : "#000000",
+                    colorLight : "#ffffff",
+                    correctLevel : QRCode.CorrectLevel.M
+                });
+            `;
+        });
+
+        printWindow.document.write(`
+            <!DOCTYPE html>
+            <html>
+            <head>
+                <title>Bulk Certificates</title>
+                <style>
+                    @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Inter:wght@400;600;700&display=swap');
+                    
+                    @page { margin: 0; size: A4 portrait; }
+                    body {
+                        margin: 0; padding: 0;
+                        background: white;
+                        font-family: 'Inter', sans-serif;
+                    }
+                    .cert-page {
+                        display: flex; justify-content: center; align-items: center;
+                        height: 100vh;
+                        width: 100%;
+                    }
+                    .cert-container {
+                        width: 210mm;
+                        height: 297mm;
+                        box-sizing: border-box;
+                        padding: 20mm;
+                        position: relative;
+                        background: white;
+                    }
+                    .border-outer {
+                        border: 8px solid #000;
+                        width: 100%; height: 100%;
+                        padding: 4px;
+                        box-sizing: border-box;
+                        position: relative;
+                    }
+                    .border-inner {
+                        border: 2px solid #000;
+                        width: 100%; height: 100%;
+                        box-sizing: border-box;
+                        padding: 40px;
+                        text-align: center;
+                        position: relative;
+                    }
+                    .corner-deco {
+                        position: absolute;
+                        width: 0; height: 0;
+                        border-style: solid;
+                    }
+                    .top-left { top: 0; left: 0; border-width: 40px 40px 0 0; border-color: #000 transparent transparent transparent; }
+                    .top-right { top: 0; right: 0; border-width: 0 40px 40px 0; border-color: transparent #000 transparent transparent; }
+                    .bottom-left { bottom: 0; left: 0; border-width: 40px 0 0 40px; border-color: transparent transparent transparent #000; }
+                    .bottom-right { bottom: 0; right: 0; border-width: 0 0 40px 40px; border-color: transparent transparent #000 transparent; }
+                    
+                    .logo { height: 100px; margin-bottom: 20px; }
+                    
+                    .title {
+                        font-family: 'Playfair Display', serif;
+                        font-size: 42px;
+                        margin: 0;
+                        line-height: 1.2;
+                    }
+                    .title-italic { font-style: italic; }
+                    
+                    .subtitle {
+                        font-family: 'Inter', sans-serif;
+                        font-size: 52px;
+                        color: #fde047;
+                        text-shadow: -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000, 1px 1px 0 #000;
+                        margin: 20px 0 30px;
+                        letter-spacing: 2px;
+                    }
+                    
+                    .certify-text { font-size: 20px; font-weight: 600; margin-bottom: 5px; }
+                    .mention { font-family: 'Playfair Display', serif; font-style: italic; font-size: 24px; margin-bottom: 20px; min-height: 20px; }
+                    
+                    .name-line { font-size: 38px; font-weight: 400; border-bottom: 2px solid #000; width: 70%; margin: 0 auto 10px; padding-bottom: 5px; }
+                    .id-line { font-size: 20px; font-weight: 600; margin-bottom: 30px; }
+                    
+                    .description { font-size: 18px; line-height: 1.5; font-weight: 600; margin: 0 auto 40px; width: 85%; }
+                    
+                    .footer-grid {
+                        display: grid; grid-template-columns: 1fr 1fr 1fr; align-items: end;
+                        position: absolute; bottom: 10px; left: 40px; right: 40px;
+                    }
+                    
+                    .sig-block { text-align: center; }
+                    .sig-line { border-bottom: 2px solid #000; margin-bottom: 5px; height: 40px; }
+                    .sig-name { font-style: italic; font-size: 14px; }
+                    
+                    .date-block { text-align: center; }
+                    .date-line { border-bottom: 2px solid #000; font-size: 22px; margin-bottom: 5px; padding-bottom: 2px; }
+                    .date-label { font-style: italic; font-size: 16px; }
+                </style>
+            </head>
+            <body>
+                ${htmlPages}
+                
+                <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+                <script>
+                    setTimeout(() => {
+                        ${qrScripts}
+                        
+                        setTimeout(() => {
+                            window.print();
+                            window.close();
+                        }, 500);
+                    }, 500);
+                </script>
+            </body>
+            </html>
+        `);
+        printWindow.document.close();
     }
 
     async generateCertificate() {
