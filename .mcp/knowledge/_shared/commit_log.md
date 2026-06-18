@@ -27,3 +27,5 @@
   Files: scripts/create_operator_certificates_table.sql,scripts/patch_certificates_html.js,systems/salestrack/certificates_logic.js,systems/salestrack/index.html,
 - `258958c` 2026-06-18 [supabase-migration] Fix certificates_logic.js syntax error and add Reprint functionality
   Files: systems/salestrack/certificates_logic.js,systems/salestrack/index.html,
+- `ab16057` 2026-06-18 [supabase-migration] Adjust QR code and signature positioning for print layout
+  Files: .mcp/knowledge/_shared/commit_log.md,fix.js,systems/salestrack/certificates_logic.js,

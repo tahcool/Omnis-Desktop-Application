@@ -522,7 +522,7 @@ class CertificatesLogic {
                                 Has successfully completed a ${data.duration} training course complete on the ${data.displayDateText} and has been certified to operate ${data.machine}.
                             </div>
                             
-                            <div id="qrcode-wrapper" style="position: absolute; bottom: 90px; left: 50%; transform: translateX(-50%); text-align: center;">
+                            <div id="qrcode-wrapper" style="position: absolute; bottom: 105px; left: 50%; transform: translateX(-50%); text-align: center;">
                                 <div style="font-size: 10px; font-weight: 600; margin-bottom: 5px;">Please scan to verify</div>
                                 <div id="qrcode-container" style="display: inline-block;"></div>
                                 <div style="font-size: 10px; font-weight: 600; margin-top: 5px;">Certificate Ref: ${data.ref}</div>
