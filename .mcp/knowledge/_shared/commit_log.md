@@ -33,3 +33,5 @@
   Files: .mcp/knowledge/_shared/commit_log.md,systems/salestrack/certificates_logic.js,
 - `9858a38` 2026-06-18 [supabase-migration] Fix syntax error in switchTab caused by previous regex replace
   Files: .mcp/knowledge/_shared/commit_log.md,systems/salestrack/certificates_logic.js,systems/salestrack/index.html,
+- `5cb66ed` 2026-06-18 [supabase-migration] Restore Point: Bulk Generation Feature completed and working
+  Files: .mcp/knowledge/_shared/commit_log.md,
