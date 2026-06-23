@@ -43,3 +43,5 @@
 \n## 2026-06-23
 - `f4939cc` 2026-06-23 [supabase-migration] Restore point
   Files: .mcp/knowledge/_shared/commit_log.md,Customer.csv,Item (1).csv,add_filters.js,add_hot_lead_col.sql,add_quotation_cols.sql,b64.js,check.js,check2.js,check3.js,check_all_tables.js,check_count.js,check_cron.js,check_cust.js,check_customers.js,check_email_queue.js,check_exec_sql.js,check_gen_id.js,check_guesses.js,check_items.js,
+- `4935ad4` 2026-06-23 [supabase-migration] Restore point before stock updates
+  Files: .mcp/knowledge/_shared/commit_log.md,check_fmb.js,fix_tracking_table.js,fix_tracking_table2.js,old_orders.js,scripts/alter_tracking_orders_table.sql,scripts/create_tracking_orders_table.sql,systems/salestrack/dashboard_logic.js,systems/salestrack/index.html,systems/salestrack/old_orders.js,systems/salestrack/orders_logic.js,

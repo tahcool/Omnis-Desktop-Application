@@ -2616,11 +2616,11 @@
       display: grid;
       grid-template-columns: 200px 130px 50px 110px 2.5fr 1.2fr 120px 120px 120px 80px 80px;
       gap: 12px;
-      padding: 16px 20px;
+      padding: 10px 14px;
       background: var(--accent-maroon);
       border-radius: 8px;
       font-weight: 700;
-      font-size: 13px;
+      font-size: 11px;
       color: #ffffff;
       text-transform: uppercase;
       letter-spacing: 0.08em;
@@ -2659,8 +2659,8 @@
     .ai-order-row {
       display: grid;
       grid-template-columns: 200px 130px 50px 110px 2.5fr 1.2fr 120px 120px 120px 80px 80px;
-      gap: 12px;
-      padding: 20px;
+      gap: 8px;
+      padding: 8px 12px;
       background: #fff;
       border-radius: 12px;
       border: 1px solid #cbd5e1;
@@ -2723,7 +2723,7 @@
 
     .ai-stock-grid {
       display: grid;
-      grid-template-columns: 1.5fr 1.5fr 60px 80px 100px 100px 100px 100px 100px 100px;
+      grid-template-columns: 1.5fr 1.5fr 1.5fr 60px 80px 100px 100px 100px 100px 100px 100px;
       gap: 8px;
       align-items: center;
     }
@@ -6789,9 +6789,17 @@
                           style="padding:8px 20px; border:none; border-radius:8px; font-size:12px; font-weight:700; cursor:pointer; transition:all 0.3s; background:transparent; color:#64748b; display:flex; align-items:center; gap:8px;">
                           <i class="fas fa-envelope"></i> Email Recipients
                         </button>
+                        <button onclick="salestrack.setSettingsTab('brand-mappings')" class="settings-tab-btn" data-tab="brand-mappings"
+                          style="padding:8px 20px; border:none; border-radius:8px; font-size:12px; font-weight:700; cursor:pointer; transition:all 0.3s; background:transparent; color:#64748b; display:flex; align-items:center; gap:8px;">
+                          <i class="fas fa-tags"></i> Brand Mappings
+                        </button>
                         <button onclick="salestrack.setSettingsTab('team')" class="settings-tab-btn" data-tab="team"
                           style="padding:8px 20px; border:none; border-radius:8px; font-size:12px; font-weight:700; cursor:pointer; transition:all 0.3s; background:transparent; color:#64748b; display:flex; align-items:center; gap:8px;">
                           <i class="fas fa-users"></i> Team
+                        </button>
+                        <button onclick="salestrack.setSettingsTab('brand-mappings')" class="settings-tab-btn" data-tab="brand-mappings"
+                          style="padding:8px 20px; border:none; border-radius:8px; font-size:12px; font-weight:700; cursor:pointer; transition:all 0.3s; background:transparent; color:#64748b; display:flex; align-items:center; gap:8px;">
+                          <i class="fas fa-tags"></i> Brand Mappings
                         </button>
                       </div>
                     </div>
@@ -7213,6 +7221,59 @@
                               <div style="margin-top:24px; display:flex; justify-content:flex-end; gap:10px; border-top:1px solid #f1f5f9; padding-top:20px;">
                                   <button onclick="salestrack.resetEmailRecipients()" style="padding:10px 22px; border:1px solid #cbd5e1; border-radius:8px; background:white; color:#475569; font-size:13px; font-weight:600; cursor:pointer;">Reset to Defaults</button>
                                   <button onclick="salestrack.saveEmailRecipients()" style="padding:10px 22px; border:none; border-radius:8px; background:#1d4ed8; color:white; font-size:13px; font-weight:600; cursor:pointer;">&#10003; Save Recipients</button>
+                              </div>
+                          </div>
+                      </div>
+        
+                      <!-- TAB: BRAND MAPPINGS -->
+                      <div id="settings-tab-brand-mappings" class="settings-tab-content hidden">
+                          <div class="dash-card" style="background:#fff; padding:30px; border-radius:16px; border:1px solid #e2e8f0; box-shadow:0 4px 6px -1px rgba(0,0,0,0.05);">
+                              <div style="margin-bottom:20px;">
+                                  <h2 style="font-size:18px; font-weight:700; color:#1e293b; margin:0; display:flex; align-items:center; gap:10px;">
+                                      <i class="fas fa-tags" style="color:#10b981;"></i> OEM & Brand Mappings
+                                  </h2>
+                                  <p style="color:#64748b; font-size:13px; margin-top:6px;">Assign Brands/OEMs to specific companies. This controls how the stock inventory is filtered by company.</p>
+                              </div>
+
+                              <!-- Add New Mapping -->
+                              <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:12px; padding:20px; margin-bottom:24px;">
+                                  <h3 style="margin:0 0 16px 0; font-size:14px; font-weight:700; color:#0f172a;">Add New Mapping</h3>
+                                  <div style="display:flex; gap:16px; align-items:flex-end;">
+                                      <div style="flex:1;">
+                                          <label style="display:block; font-size:12px; font-weight:700; color:#475569; margin-bottom:6px;">Brand / OEM Name <span style="color:#ef4444">*</span></label>
+                                          <input type="text" id="new-stock-brand" style="width:100%; box-sizing:border-box; border:1px solid #cbd5e1; border-radius:8px; padding:10px; font-size:13px; outline:none;" placeholder="e.g. Caterpillar">
+                                      </div>
+                                      <div style="flex:1;">
+                                          <label style="display:block; font-size:12px; font-weight:700; color:#475569; margin-bottom:6px;">Assign Company <span style="color:#ef4444">*</span></label>
+                                          <select id="new-stock-company" style="width:100%; box-sizing:border-box; border:1px solid #cbd5e1; border-radius:8px; padding:10px; font-size:13px; outline:none; background:white;">
+                                              <option value="Machinery Exchange">Machinery Exchange</option>
+                                              <option value="Sinopower">Sinopower</option>
+                                          </select>
+                                      </div>
+                                      <div>
+                                          <button onclick="salestrack.addStockMapping()" style="padding:10px 24px; background:#10b981; color:white; border:none; border-radius:8px; font-size:13px; font-weight:700; cursor:pointer; box-shadow:0 4px 6px -1px rgba(16, 185, 129, 0.2);"><i class="fas fa-plus"></i> Add Mapping</button>
+                                      </div>
+                                  </div>
+                              </div>
+
+                              <!-- Mappings List -->
+                              <div>
+                                  <h3 style="margin:0 0 16px 0; font-size:14px; font-weight:700; color:#0f172a;">Current Mappings</h3>
+                                  <div style="border:1px solid #e2e8f0; border-radius:12px; overflow:hidden;">
+                                      <table style="width:100%; border-collapse:collapse; text-align:left;">
+                                          <thead style="background:#f1f5f9; border-bottom:1px solid #e2e8f0;">
+                                              <tr>
+                                                  <th style="padding:12px 20px; font-size:12px; font-weight:800; color:#475569; text-transform:uppercase;">Brand / OEM</th>
+                                                  <th style="padding:12px 20px; font-size:12px; font-weight:800; color:#475569; text-transform:uppercase;">Assigned Company</th>
+                                                  <th style="padding:12px 20px; font-size:12px; font-weight:800; color:#475569; text-transform:uppercase; text-align:right;">Actions</th>
+                                              </tr>
+                                          </thead>
+                                          <tbody id="stock-mappings-tbody">
+                                              <!-- Mappings populated dynamically -->
+                                              <tr><td colspan="3" style="text-align:center; padding:30px; color:#94a3b8; font-style:italic; font-size:13px;">Loading mappings...</td></tr>
+                                          </tbody>
+                                      </table>
+                                  </div>
                               </div>
                           </div>
                       </div>
@@ -8184,7 +8245,12 @@
         </div>
 
         <div style="display:flex; align-items:center; gap:12px;">
-          <select id="stock-status-dropdown" class="btn-stock-filter" style="padding: 0 16px; height: 42px; border-radius: 10px; border: 1px solid #e2e8f0; background: white; color: #0f172a; font-weight: 800; font-size: 12px; text-transform:uppercase; letter-spacing:0.02em; cursor: pointer; outline: none; width: 200px; transition: all 0.2s;" onchange="filterStock(window._activeStockOem, this.value, null)">
+          <select id="stock-company-dropdown" class="btn-stock-filter" style="padding: 0 16px; height: 42px; border-radius: 10px; border: 1px solid #e2e8f0; background: white; color: #0f172a; font-weight: 800; font-size: 12px; text-transform:uppercase; letter-spacing:0.02em; cursor: pointer; outline: none; width: 200px; transition: all 0.2s;" onchange="filterStock(window._activeStockOem, window._activeStockStatus, null, this.value)">
+              <option value="All">ALL COMPANIES</option>
+              <option value="Machinery Exchange">Machinery Exchange</option>
+              <option value="Sinopower">Sinopower</option>
+          </select>
+          <select id="stock-status-dropdown" class="btn-stock-filter" style="padding: 0 16px; height: 42px; border-radius: 10px; border: 1px solid #e2e8f0; background: white; color: #0f172a; font-weight: 800; font-size: 12px; text-transform:uppercase; letter-spacing:0.02em; cursor: pointer; outline: none; width: 200px; transition: all 0.2s;" onchange="filterStock(window._activeStockOem, this.value, null, window._activeStockCompany)">
               <option value="All">ALL STATUSES</option>
               <option value="STOCK ON HAND">STOCK ON HAND</option>
               <option value="EN ROUTE FROM BEIRA">EN ROUTE (BEIRA)</option>
@@ -15968,6 +16034,10 @@
       window.renderStockTab = async function () {
         console.log("[Stock] renderStockTab triggered");
         
+        if (!window._stockCompanyMappings && window.omnisFetchStockCompanyMappings) {
+            await window.omnisFetchStockCompanyMappings();
+        }
+        
         // DIAGNOSTIC: Check schema on the fly
         try {
            const dbgBase = (window.CURRENT_SYSTEM && window.CURRENT_SYSTEM.baseUrl) || "https://salestrack.powerstar.co.zw";
@@ -15989,6 +16059,7 @@
               <div class="ai-order-row ai-stock-grid skeleton-pulse" style="margin-bottom:8px; opacity:0.6;">
                 <div style="height:20px; background:#f1f5f9; border-radius:4px; width:60%;"></div>
                 <div style="height:20px; background:#f1f5f9; border-radius:4px; width:70%;"></div>
+                <div style="height:20px; background:#f1f5f9; border-radius:4px; width:70%;"></div>
                 <div style="height:30px; background:#f1f5f9; border-radius:4px; width:40%; margin:0 auto;"></div>
                 <div style="height:24px; background:#f1f5f9; border-radius:4px; width:40%; margin:0 auto;"></div>
                 <div style="height:18px; background:#f1f5f9; border-radius:4px; width:70%; margin:0 auto;"></div>
@@ -16004,7 +16075,7 @@
             <div style="padding:0 8px;">
               <div style="height:30px; background:#f1f5f9; border-radius:6px; width:200px; margin-bottom:12px;" class="skeleton-pulse"></div>
               <div class="ai-order-header ai-stock-grid" style="border-radius:12px 12px 0 0; margin-bottom:8px; opacity:0.3;">
-                <div>...</div><div>...</div><div>...</div><div>...</div><div>...</div><div>...</div><div>...</div><div>...</div><div>...</div><div>...</div>
+                <div>...</div><div>...</div><div>...</div><div>...</div><div>...</div><div>...</div><div>...</div><div>...</div><div>...</div><div>...</div><div>...</div>
               </div>
               <div style="display:flex; flex-direction:column; gap:8px;">
                 ${skeletons}
@@ -16071,7 +16142,7 @@
 
           Object.keys(groups).sort().forEach(brand => {
             const secRecords = groups[brand];
-            let rowsHtml = "";
+            const phaseGroups = {};
             secRecords.forEach(r => {
               const safeData = JSON.stringify(r).replace(/'/g, "&#39;").replace(/`/g, "\\`").replace(/"/g, "&quot;");
               const safeName = (r.name || '').replace(/\\/g, "\\\\").replace(/'/g, "\\'").replace(/"/g, "&quot;").replace(/\n/g, "\\n").replace(/\r/g, "");
@@ -16081,9 +16152,9 @@
               const isOverEarmarked = earmarkedCount > (r.quantity || 0);
               
               // Pipeline Status Logic
-              let statusText = "";
-              let statusColor = "";
-              let statusIcon = "";
+              let statusText = "OTHER";
+              let statusColor = "#64748b";
+              let statusIcon = "fa-circle-info";
               
               try {
                   const today = new Date();
@@ -16127,79 +16198,129 @@
                       statusIcon = "fa-hammer";
                   }
               } catch(e) {}
-
-              let rowStyle = "";
-              let earmarkBadge = "";
-              let customerNamesHtml = "";
               
-              if (isOverEarmarked) {
-                rowStyle = 'border-left: 4px solid #f59e0b; background: #fffbeb; animation: risk-pulse 2s infinite;';
-                earmarkBadge = `<div style="margin-top:4px; display:inline-flex; align-items:center; gap:4px; background:#f59e0b; color:white; padding:2px 8px; border-radius:4px; font-size:10px; font-weight:800; text-transform:uppercase;">CONFLICT: ${earmarkedCount} CUST</div>`;
-              } else if (hasEarmark) {
-                earmarkBadge = `<div style="margin-top:4px; display:inline-flex; align-items:center; gap:4px; background:#e0f2fe; color:#0369a1; padding:2px 8px; border-radius:4px; font-size:10px; font-weight:800; text-transform:uppercase;">EARMARKED: ${earmarkedCount}</div>`;
-              }
+              if (!phaseGroups[statusText]) phaseGroups[statusText] = [];
+              phaseGroups[statusText].push({ r, safeName, hasEarmark, isOverEarmarked, earmarkedCount, statusText, statusColor, statusIcon });
+            });
 
-              if (hasEarmark) {
-                 const names = (r.potential_customers || []).map(c => typeof c === 'string' ? c : (c.customer_name || c.customer || c.name || '')).filter(Boolean).join(', ');
-                 if (names) {
-                    customerNamesHtml = `<div style="margin-top:4px; font-size:10.5px; color:#475569; font-weight:600; white-space: normal; line-height: 1.2;"><i class="fas fa-users" style="margin-right:4px; color:#94a3b8;"></i>${names}</div>`;
-                 }
-              }
+            let brandBodyHtml = "";
+            const phaseOrder = [
+                "STOCK ON HAND",
+                "EN ROUTE FROM BEIRA",
+                "EN ROUTE FROM DURBAN",
+                "IN TRANSIT (SHIPPED)",
+                "ARRANGING SHIPPING",
+                "IN PRODUCTION",
+                "OTHER"
+            ];
+            
+            const sortedPhases = Object.keys(phaseGroups).sort((a, b) => {
+                const idxA = phaseOrder.indexOf(a);
+                const idxB = phaseOrder.indexOf(b);
+                if (idxA !== -1 && idxB !== -1) return idxA - idxB;
+                if (idxA !== -1) return -1;
+                if (idxB !== -1) return 1;
+                return a.localeCompare(b);
+            });
 
-              // Status Badge
-              let handBadge = "";
-              if (statusText) {
-                 handBadge = `
-                  <div style="display:flex; align-items:center; gap:6px; font-size:10.5px; font-weight:800; color:${statusColor}; margin-top:4px; letter-spacing:0.3px;">
-                    <i class="fas ${statusIcon}"></i> ${statusText}
-                  </div>`;
-              }
+            sortedPhases.forEach(phase => {
+                const phaseItems = phaseGroups[phase];
+                
+                let rowsHtml = "";
+                phaseItems.forEach(item => {
+                    const { r, safeName, hasEarmark, isOverEarmarked, earmarkedCount, statusText, statusColor, statusIcon } = item;
+                    
+                    let rowStyle = "";
+                    let earmarkBadge = "";
+                    let customerNamesHtml = "";
+                    
+                    if (isOverEarmarked) {
+                      rowStyle = 'border-left: 4px solid #f59e0b; background: #fffbeb; animation: risk-pulse 2s infinite;';
+                      earmarkBadge = `<div style="margin-top:4px; display:inline-flex; align-items:center; gap:4px; background:#f59e0b; color:white; padding:2px 8px; border-radius:4px; font-size:9px; font-weight:800; text-transform:uppercase;">CONFLICT: ${earmarkedCount} CUST</div>`;
+                    } else if (hasEarmark) {
+                      earmarkBadge = `<div style="margin-top:4px; display:inline-flex; align-items:center; gap:4px; background:#e0f2fe; color:#0369a1; padding:2px 8px; border-radius:4px; font-size:9px; font-weight:800; text-transform:uppercase;">EARMARKED: ${earmarkedCount}</div>`;
+                    }
 
-              rowsHtml += `
-                <div class="ai-order-row ai-stock-grid stock-row-item" data-status="${statusText || ''}" style="${rowStyle}">
-                  <div class="ai-order-cell">
-                    <span class="cell-label">Model</span>
-                    <div style="font-weight:700; font-size:14px; color:#1e293b;">${r.model || '-'}</div>
-                    ${earmarkBadge}
-                    ${handBadge}
+                    if (hasEarmark) {
+                       const names = (r.potential_customers || []).map(c => typeof c === 'string' ? c : (c.customer_name || c.customer || c.name || '')).filter(Boolean).join(', ');
+                       if (names) {
+                          customerNamesHtml = `<div style="margin-top:4px; font-size:9.5px; color:#475569; font-weight:600; white-space: normal; line-height: 1.2;"><i class="fas fa-users" style="margin-right:4px; color:#94a3b8;"></i>${names}</div>`;
+                       }
+                    }
+
+                    let handBadge = "";
+                    if (statusText) {
+                       handBadge = `
+                        <div style="display:flex; align-items:center; gap:6px; font-size:9.5px; font-weight:800; color:${statusColor}; margin-top:4px; letter-spacing:0.3px;">
+                          <i class="fas ${statusIcon}"></i> ${statusText}
+                        </div>`;
+                    }
+
+                    rowsHtml += `
+                      <div class="ai-order-row ai-stock-grid stock-row-item" data-status="${statusText || ''}" style="${rowStyle}">
+                        <div class="ai-order-cell">
+                          <span class="cell-label">Model</span>
+                          <div style="font-weight:700; font-size:12px; color:#1e293b;">${r.model || '-'}</div>
+                          ${earmarkBadge}
+                          ${handBadge}
+                        </div>
+                        <div class="ai-order-cell">
+                          <span class="cell-label">Contract</span>
+                          <div style="font-weight:600; font-size:11.5px; color:#475569;">${r.contract || r.contract_number || '-'}</div>
+                        </div>
+                        <div class="ai-order-cell">
+                          <span class="cell-label">Potential Customers</span>
+                          ${customerNamesHtml}
+                        </div>
+                        <div class="ai-order-cell" style="text-align:center;">
+                          <span class="cell-label">Qty</span>
+                          <div style="font-weight:900; font-size:13px; color:#1e293b;">${r.quantity || 0}</div>
+                        </div>
+                        <div class="ai-order-cell" style="text-align:center;">
+                          <span class="cell-label">Proposed</span>
+                          <div style="font-weight:600; font-size:11.5px; color:#64748b;">${r.proposed_order || r.proposed_order_quantity || 0}</div>
+                        </div>
+                        <div class="ai-order-cell" style="text-align:center;">
+                          <span class="cell-label">Prod</span>
+                          <div style="font-size:11px; color:#64748b;">${r.production_completion || '-'}</div>
+                        </div>
+                        <div class="ai-order-cell" style="text-align:center;">
+                          <span class="cell-label">Ship</span>
+                          <div style="font-size:11px; color:#64748b;">${r.shipping_date || '-'}</div>
+                        </div>
+                        <div class="ai-order-cell" style="text-align:center;">
+                          <span class="cell-label">Durban</span>
+                          <div style="font-size:11px; font-weight:700; color:#0369a1;">${r.eta_durban || '-'}</div>
+                        </div>
+                        <div class="ai-order-cell" style="text-align:center;">
+                          <span class="cell-label">Beira</span>
+                          <div style="font-size:11px; font-weight:700; color:#0369a1;">${r.ted || r.eta_beira || '-'}</div>
+                        </div>
+                        <div class="ai-order-cell" style="text-align:center;">
+                          <span class="cell-label">Harare</span>
+                          <div style="font-size:11px; font-weight:800; color:#15803d;">${r.eta_harare || '-'}</div>
+                        </div>
+                        <div class="ai-order-row-actions" style="text-align:right; display:flex; gap:8px; justify-content:flex-end;">
+                          <button class="btn-text-action" onclick="showStockPipelineForm('${safeName}')" style="color:#3b82f6;"><i class="fas fa-pencil-alt"></i></button>
+                          <button class="btn-text-action" onclick="deleteStockPipelineRecord('${safeName}')" style="color:#ef4444;"><i class="fas fa-trash-alt"></i></button>
+                        </div>
+                      </div>`;
+                });
+                
+                const phaseId = `phase_${brand.replace(/[^a-zA-Z0-9]/g, '')}_${phase.replace(/[^a-zA-Z0-9]/g, '')}`;
+                brandBodyHtml += `
+                  <!-- Phase Group Header -->
+                  <div onclick="const e = document.getElementById('${phaseId}'); const i = this.querySelector('.fa-chevron-down, .fa-chevron-right'); if(e.style.display==='none'){e.style.display='block'; i.classList.replace('fa-chevron-right','fa-chevron-down');}else{e.style.display='none'; i.classList.replace('fa-chevron-down','fa-chevron-right');}" style="cursor: pointer; padding: 10px 14px; margin-top: 16px; margin-bottom: 8px; background: rgba(0,0,0,0.03); border-left: 4px solid ${phaseItems[0].statusColor}; border-radius: 0 4px 4px 0; font-size: 13px; font-weight: 800; color: #1e293b; text-transform: uppercase; letter-spacing: 0.05em; display: flex; justify-content: space-between; align-items: center; transition: background 0.2s;" onmouseover="this.style.background='rgba(0,0,0,0.06)'" onmouseout="this.style.background='rgba(0,0,0,0.03)'">
+                      <div style="display:flex; align-items:center; gap:8px;">
+                          <i class="fas fa-chevron-right" style="color:#94a3b8; font-size:11px; width:12px; text-align:center;"></i>
+                          <span><i class="fas ${phaseItems[0].statusIcon}" style="margin-right: 6px; color: ${phaseItems[0].statusColor};"></i> ${phase}</span>
+                      </div>
+                      <span style="font-size: 11px; font-weight: 700; color: #64748b; background: #fff; padding: 2px 8px; border-radius: 12px; border: 1px solid rgba(0,0,0,0.05);">${phaseItems.length} UNIT(S)</span>
                   </div>
-                  <div class="ai-order-cell">
-                    <span class="cell-label">Potential Customers</span>
-                    ${customerNamesHtml}
+                  <div id="${phaseId}" style="display: none;">
+                      ${rowsHtml}
                   </div>
-                  <div class="ai-order-cell" style="text-align:center;">
-                    <span class="cell-label">Qty</span>
-                    <div style="font-weight:900; font-size:15px; color:#1e293b;">${r.quantity || 0}</div>
-                  </div>
-                  <div class="ai-order-cell" style="text-align:center;">
-                    <span class="cell-label">Proposed</span>
-                    <div style="font-weight:600; font-size:13px; color:#64748b;">${r.proposed_order || r.proposed_order_quantity || 0}</div>
-                  </div>
-                  <div class="ai-order-cell" style="text-align:center;">
-                    <span class="cell-label">Prod</span>
-                    <div style="font-size:12px; color:#64748b;">${r.production_completion || '-'}</div>
-                  </div>
-                  <div class="ai-order-cell" style="text-align:center;">
-                    <span class="cell-label">Ship</span>
-                    <div style="font-size:12px; color:#64748b;">${r.shipping_date || '-'}</div>
-                  </div>
-                  <div class="ai-order-cell" style="text-align:center;">
-                    <span class="cell-label">Durban</span>
-                    <div style="font-size:12px; font-weight:700; color:#0369a1;">${r.eta_durban || '-'}</div>
-                  </div>
-                  <div class="ai-order-cell" style="text-align:center;">
-                    <span class="cell-label">Beira</span>
-                    <div style="font-size:12px; font-weight:700; color:#0369a1;">${r.ted || r.eta_beira || '-'}</div>
-                  </div>
-                  <div class="ai-order-cell" style="text-align:center;">
-                    <span class="cell-label">Harare</span>
-                    <div style="font-size:12px; font-weight:800; color:#15803d;">${r.eta_harare || '-'}</div>
-                  </div>
-                  <div class="ai-order-row-actions" style="text-align:right; display:flex; gap:8px; justify-content:flex-end;">
-                    <button class="btn-text-action" onclick="showStockPipelineForm('${safeName}')" style="color:#3b82f6;"><i class="fas fa-pencil-alt"></i></button>
-                    <button class="btn-text-action" onclick="deleteStockPipelineRecord('${safeName}')" style="color:#ef4444;"><i class="fas fa-trash-alt"></i></button>
-                  </div>
-                </div>`;
+                `;
             });
 
             html += `
@@ -16214,6 +16335,7 @@
                 <!-- Stock Grid Header -->
                 <div class="ai-order-header ai-stock-grid" style="border-radius:12px 12px 0 0; margin-bottom:8px;">
                   <div>Model</div>
+                  <div>Contract</div>
                   <div>Potential Customers</div>
                   <div style="text-align:center;">Qty</div>
                   <div style="text-align:center;">Proposed</div>
@@ -16226,8 +16348,8 @@
                 </div>
 
                 <!-- Stock Grid Body -->
-                <div class="ai-order-body" style="display:flex; flex-direction:column; gap:8px;">
-                  ${rowsHtml}
+                <div class="ai-order-body" style="display:flex; flex-direction:column; gap:4px;">
+                  ${brandBodyHtml}
                 </div>
               </div>`;
           });
@@ -16268,9 +16390,10 @@
         finally { window._syncingStock = false; performRender(records); }
       };
 
-      window.filterStock = function (oem, status, btn) {
+      window.filterStock = function (oem, status, btn, company) {
         window._activeStockOem = oem || window._activeStockOem || 'All';
         window._activeStockStatus = status || window._activeStockStatus || 'All';
+        window._activeStockCompany = company || window._activeStockCompany || 'All';
         
         if (btn) {
             window.updateStockBtn(btn);
@@ -16279,8 +16402,10 @@
             document.querySelectorAll('.btn-stock-filter').forEach(b => {
                 b.classList.toggle('active', b.innerText.trim().toLowerCase() === window._activeStockOem.toLowerCase() || (window._activeStockOem === 'All' && b.innerText.includes('All Stock')));
             });
-            const dropdown = document.getElementById('stock-status-dropdown');
-            if (dropdown) dropdown.value = window._activeStockStatus;
+            const statusDropdown = document.getElementById('stock-status-dropdown');
+            if (statusDropdown) statusDropdown.value = window._activeStockStatus;
+            const companyDropdown = document.getElementById('stock-company-dropdown');
+            if (companyDropdown) companyDropdown.value = window._activeStockCompany;
         }
 
         // CRITICAL: If we are in calendar mode, we need to switch back to table mode and re-render
@@ -16295,9 +16420,22 @@
 
         const targetOem = window._activeStockOem.toLowerCase();
         const targetStatus = window._activeStockStatus;
+        const targetCompany = window._activeStockCompany;
+        const mappings = window._stockCompanyMappings || [];
 
         sections.forEach(sec => {
           const secOem = (sec.dataset.oem || '').toLowerCase();
+          
+          // Determine company match
+          let companyMatch = true;
+          if (targetCompany !== 'All') {
+              const mappedCompanyObj = mappings.find(m => m.brand && m.brand.toLowerCase() === secOem);
+              const mappedCompany = mappedCompanyObj ? mappedCompanyObj.company : null;
+              if (mappedCompany !== targetCompany) {
+                  companyMatch = false;
+              }
+          }
+          
           let sectionHasVisibleRows = false;
           
           const rows = sec.querySelectorAll('.stock-row-item');
@@ -16312,9 +16450,9 @@
             }
           });
 
-          // Only show the OEM section if it matches the brand AND has visible rows after status filtering
+          // Only show the OEM section if it matches the brand AND has visible rows after status filtering AND matches company
           const oemMatch = targetOem === 'all' || secOem === targetOem;
-          sec.style.display = (oemMatch && sectionHasVisibleRows) ? 'block' : 'none';
+          sec.style.display = (oemMatch && companyMatch && sectionHasVisibleRows) ? 'block' : 'none';
         });
       };
 

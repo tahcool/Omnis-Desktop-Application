@@ -1480,7 +1480,10 @@ window.OmnisDashboardV6 = class OmnisDashboardV6 {
                                 </tr>
                             </thead>
                             <tbody>
-                                ${rows.map(r => `
+                                ${rows.map(r => {
+                                    const commentKey = 'eff_comm_' + btoa(encodeURIComponent((r.customer || '') + (r.machine || '') + (r.actual_date || ''))).substring(0, 30);
+                                    const savedComment = localStorage.getItem(commentKey) || '';
+                                    return `
                                     <tr style="border-bottom:1px solid #f1f5f9; transition:background 0.2s;" onmouseover="this.style.background='#f8fafc'" onmouseout="this.style.background='transparent'">
                                         <td style="padding:14px 20px; font-weight:700; color:#0f172a;">${(r.customer || '').replace(/"/g, '')}</td>
                                         <td style="padding:14px 20px; color:#475569;">${r.machine}</td>
@@ -1499,10 +1502,11 @@ window.OmnisDashboardV6 = class OmnisDashboardV6 {
                                         </td>
                                         <td style="padding:14px 20px; text-align:center; font-weight:700; color:#0f172a;">${r.qty}</td>
                                         <td style="padding:14px 20px;">
-                                            <input type="text" placeholder="Add comment..." style="width:100%; min-width:140px; border:1px solid transparent; background:transparent; border-bottom:1px dashed #cbd5e1; padding:4px 0; font-family:inherit; font-size:12px; color:#334155; outline:none; transition: border-color 0.2s;" onfocus="this.style.borderBottom='1px solid #3b82f6'" onblur="this.style.borderBottom='1px dashed #cbd5e1'">
+                                            <input type="text" placeholder="Add comment..." value="${savedComment.replace(/"/g, '&quot;')}" data-eff-key="${commentKey}" onblur="localStorage.setItem(this.getAttribute('data-eff-key'), this.value); this.style.borderBottom='1px dashed #cbd5e1'" style="width:100%; min-width:140px; border:1px solid transparent; background:transparent; border-bottom:1px dashed #cbd5e1; padding:4px 0; font-family:inherit; font-size:12px; color:#334155; outline:none; transition: border-color 0.2s;" onfocus="this.style.borderBottom='1px solid #3b82f6'">
                                         </td>
                                     </tr>
-                                `).join('')}
+                                    `;
+                                }).join('')}
                                 ${rows.length === 0 ? '<tr><td colspan="8" style="padding:40px; text-align:center; color:#94a3b8; font-style:italic;">No handover data found for this period.</td></tr>' : ''}
                             </tbody>
                         </table>
@@ -7930,6 +7934,13 @@ window.OmnisDashboardV6 = class OmnisDashboardV6 {
         });
 
         if (window.omnisLog) window.omnisLog(`[Settings] Switched to tab: ${tabId.toUpperCase()}`);
+
+        // 3. Side-effects per tab
+        if (tabId === 'brand-mappings') {
+            if (window.salestrack && typeof window.salestrack.loadStockMappings === 'function') {
+                window.salestrack.loadStockMappings();
+            }
+        }
     }
 
     /* ---------- SECURITY & INACTIVITY LOGIC ---------- */
@@ -8675,7 +8686,7 @@ window.OmnisDashboardV6.prototype.submitOperatorTraining = async function() {
             table: 'ft_operator_training',
             method: 'insert',
             params: {
-                record: {
+                data: {
                     order_id: orderId,
                     customer: customer,
                     machine: machine,
@@ -8701,4 +8712,156 @@ window.OmnisDashboardV6.prototype.submitOperatorTraining = async function() {
         if (btn) { btn.disabled = false; btn.textContent = "Save Training"; }
     }
 };
+
+// --- STOCK MAPPING METHODS ---
+
+window.omnisFetchStockCompanyMappings = async function() {
+    try {
+        if (!window.electron) return [];
+        const res = await window.electron.invoke('supabase:query', {
+            table: 'stock_company_mappings',
+            method: 'select',
+            params: {}
+        });
+        if (res && res.data) {
+            window._stockCompanyMappings = res.data;
+            return res.data;
+        }
+        return [];
+    } catch(e) {
+        console.error('Failed to fetch stock company mappings', e);
+        return [];
+    }
+};
+
+window.OmnisDashboardV6.prototype.loadStockMappings = async function() {
+    const tbody = document.getElementById('stock-mappings-tbody');
+    if (!tbody) return;
+
+    tbody.innerHTML = `<tr><td colspan="3" style="text-align:center; padding:30px; color:#94a3b8; font-style:italic; font-size:13px;"><i class="fas fa-spinner fa-spin" style="margin-right:8px;"></i> Loading mappings...</td></tr>`;
+
+    try {
+        const mappings = await window.omnisFetchStockCompanyMappings();
+        
+        if (!mappings || mappings.length === 0) {
+            tbody.innerHTML = `<tr><td colspan="3" style="text-align:center; padding:30px; color:#94a3b8; font-style:italic; font-size:13px;">No mappings found. Add one below.</td></tr>`;
+            return;
+        }
+
+        let html = '';
+        mappings.forEach(m => {
+            const isMxg = m.company === 'Machinery Exchange';
+            const companyColor = isMxg ? '#2563eb' : '#b91c1c';
+            const companyBg = isMxg ? '#eff6ff' : '#fef2f2';
+            
+            html += `
+                <tr style="border-bottom:1px solid #f1f5f9;">
+                    <td style="padding:16px 20px; font-size:14px; font-weight:800; color:#0f172a;">${m.brand}</td>
+                    <td style="padding:16px 20px;">
+                        <span style="background:${companyBg}; color:${companyColor}; padding:4px 10px; border-radius:6px; font-size:11px; font-weight:800; border:1px solid ${companyColor}33;">
+                            ${m.company}
+                        </span>
+                    </td>
+                    <td style="padding:16px 20px; text-align:right;">
+                        <button onclick="window.salestrack.deleteStockMapping('${m.brand.replace(/'/g, "\\'")}')" style="padding:6px 12px; background:white; border:1px solid #e2e8f0; border-radius:6px; color:#ef4444; font-size:12px; font-weight:700; cursor:pointer; transition:all 0.2s;" onmouseover="this.style.background='#fef2f2'; this.style.borderColor='#fecaca';" onmouseout="this.style.background='white'; this.style.borderColor='#e2e8f0';">
+                            <i class="fas fa-trash-alt"></i> Delete
+                        </button>
+                    </td>
+                </tr>
+            `;
+        });
+        
+        tbody.innerHTML = html;
+    } catch(e) {
+        console.error("Error loading stock mappings", e);
+        tbody.innerHTML = `<tr><td colspan="3" style="text-align:center; padding:30px; color:#ef4444; font-size:13px;">Failed to load mappings. Check logs.</td></tr>`;
+    }
+};
+
+window.OmnisDashboardV6.prototype.addStockMapping = async function() {
+    const brandInput = document.getElementById('new-stock-brand');
+    const companySelect = document.getElementById('new-stock-company');
+    
+    if (!brandInput || !companySelect) return;
+    
+    const brandName = brandInput.value.trim();
+    const company = companySelect.value;
+    
+    if (!brandName) {
+        this.showToast ? this.showToast('Please enter a brand name.', 'error') : alert('Please enter a brand name.');
+        return;
+    }
+    
+    try {
+        const res = await window.electron.invoke('supabase:query', {
+            table: 'stock_company_mappings',
+            method: 'upsert',
+            params: {
+                data: {
+                    brand: brandName,
+                    company: company
+                }
+            }
+        });
+        
+        if (!res.ok) {
+            throw new Error(res.error || 'Failed to insert mapping');
+        }
+        
+        brandInput.value = ''; // clear input
+        this.showToast ? this.showToast('Mapping added successfully.', 'success') : alert('Mapping added successfully.');
+        
+        // Reload list and update global cache
+        await this.loadStockMappings();
+        await window.omnisFetchStockCompanyMappings();
+        
+        // Invalidate stock data cache so distribution is re-evaluated
+        if (window.CURRENT_SYSTEM && window.CURRENT_SYSTEM.id) {
+            localStorage.removeItem("mxg_stock_data_" + window.CURRENT_SYSTEM.id);
+        }
+        localStorage.removeItem("mxg_stock_pipeline_cache");
+        
+    } catch(e) {
+        console.error("Add mapping error:", e);
+        this.showToast ? this.showToast('Error: ' + e.message, 'error') : alert('Error adding mapping: ' + e.message);
+    }
+};
+
+window.OmnisDashboardV6.prototype.deleteStockMapping = async function(brand) {
+    if (!brand) return;
+    
+    const confirmDelete = await this.confirm ? await this.confirm('Delete Mapping', 'Are you sure you want to delete this brand mapping?') : confirm('Are you sure you want to delete this mapping?');
+    
+    if (!confirmDelete) return;
+    
+    try {
+        const res = await window.electron.invoke('supabase:query', {
+            table: 'stock_company_mappings',
+            method: 'delete',
+            params: {
+                match: { brand: brand }
+            }
+        });
+        
+        if (!res.ok) {
+            throw new Error(res.error || 'Failed to delete mapping');
+        }
+        
+        this.showToast ? this.showToast('Mapping deleted.', 'info') : alert('Mapping deleted.');
+        
+        // Reload list and update global cache
+        await this.loadStockMappings();
+        await window.omnisFetchStockCompanyMappings();
+        
+        // Invalidate stock data cache so distribution is re-evaluated
+        if (window.CURRENT_SYSTEM && window.CURRENT_SYSTEM.id) {
+            localStorage.removeItem("mxg_stock_data_" + window.CURRENT_SYSTEM.id);
+        }
+        
+    } catch(e) {
+        console.error("Delete mapping error:", e);
+        this.showToast ? this.showToast('Error deleting mapping.', 'error') : alert('Error deleting mapping.');
+    }
+};
+
 
