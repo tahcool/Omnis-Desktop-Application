@@ -16471,6 +16471,29 @@
         const targetContract = window._activeStockContract;
         const mappings = window._stockCompanyMappings || [];
 
+        // NEW LOGIC: Filter brand pills based on company
+        const subnavContainer = document.getElementById('stock-subnav');
+        if (subnavContainer) {
+            subnavContainer.querySelectorAll('.btn-stock-filter').forEach(btn => {
+                const btnText = btn.innerText.trim();
+                // Skip non-brand buttons
+                if (btnText === 'All Stock' || btnText.includes('Monthly') || btnText.includes('Add New')) {
+                    btn.style.display = ''; 
+                    return;
+                }
+                
+                let pillCompanyMatch = true;
+                if (targetCompany !== 'All') {
+                    const mappedCompanyObj = mappings.find(m => m.brand && m.brand.toLowerCase() === btnText.toLowerCase());
+                    const mappedCompany = mappedCompanyObj ? mappedCompanyObj.company : null;
+                    if (mappedCompany !== targetCompany) {
+                        pillCompanyMatch = false;
+                    }
+                }
+                btn.style.display = pillCompanyMatch ? '' : 'none';
+            });
+        }
+
         sections.forEach(sec => {
           const secOem = (sec.dataset.oem || '').toLowerCase();
           

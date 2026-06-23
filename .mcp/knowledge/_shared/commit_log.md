@@ -47,3 +47,5 @@
   Files: .mcp/knowledge/_shared/commit_log.md,check_fmb.js,fix_tracking_table.js,fix_tracking_table2.js,old_orders.js,scripts/alter_tracking_orders_table.sql,scripts/create_tracking_orders_table.sql,systems/salestrack/dashboard_logic.js,systems/salestrack/index.html,systems/salestrack/old_orders.js,systems/salestrack/orders_logic.js,
 - `ac299c6` 2026-06-23 [supabase-migration] feat(salestrack): implement stock company mapping and filtering
   Files: .mcp/knowledge/_shared/commit_log.md,scripts/create_stock_company_mappings.sql,stock_mappings.sql,systems/salestrack/dashboard_logic.js,systems/salestrack/find.js,systems/salestrack/index.html,
+- `c15f6f2` 2026-06-23 [supabase-migration] Restore point before fixing stock brand pills and Hitachi
+  Files: .mcp/knowledge/_shared/commit_log.md,scripts/create_stock_contracts_table.sql,systems/salestrack/index.html,
