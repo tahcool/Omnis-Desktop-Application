@@ -1283,7 +1283,121 @@ window.OmnisDashboardV6 = class OmnisDashboardV6 {
             const payload = res.message || res;
             if (!payload.ok) throw new Error(payload.error || "Failed to fetch efficiency data");
 
-            const { summary, rows, label } = payload;
+            let { summary, rows, label } = payload;
+
+            // ----------------------------------------------------
+            // SUPABASE TRACKING ORDERS INJECTION
+            // ----------------------------------------------------
+            try {
+                if (window.electron) {
+                    const sbRes = await window.electron.invoke('supabase:query', {
+                        table: 'omnis_tracking_orders',
+                        method: 'select'
+                    });
+                    
+                    if (sbRes.ok && sbRes.data) {
+                        const now = new Date();
+                        const currentMonth = now.getMonth();
+                        const currentYear = now.getFullYear();
+                        let addedRows = false;
+                        
+                        sbRes.data.forEach(t => {
+                            if (companyText !== 'All' && t.company !== companyText) return;
+                            if (!t.actual_handover) return;
+                            
+                            const actualDate = new Date(t.actual_handover);
+                            const targetDateStr = t.revised_handover || t.target_handover;
+                            if (!targetDateStr) return;
+                            const targetDate = new Date(targetDateStr);
+                            
+                            let include = false;
+                            if (periodText === 'All Time') {
+                                include = true;
+                            } else if (periodText === 'This Year') {
+                                if (actualDate.getFullYear() === currentYear) include = true;
+                            } else if (periodText === 'This Month') {
+                                if (actualDate.getFullYear() === currentYear && actualDate.getMonth() === currentMonth) include = true;
+                            } else if (periodText === 'Last Month') {
+                                let lastM = currentMonth - 1;
+                                let lastY = currentYear;
+                                if (lastM < 0) { lastM = 11; lastY--; }
+                                if (actualDate.getFullYear() === lastY && actualDate.getMonth() === lastM) include = true;
+                            }
+                            
+                            if (include) {
+                                const aD = new Date(actualDate.getFullYear(), actualDate.getMonth(), actualDate.getDate());
+                                const tD = new Date(targetDate.getFullYear(), targetDate.getMonth(), targetDate.getDate());
+                                const rawDelay = Math.ceil((aD - tD) / (1000 * 60 * 60 * 24));
+                                
+                                let displayDelay = rawDelay;
+                                if (rawDelay > 0 && rawDelay <= 3) displayDelay = 0;
+                                else if (rawDelay > 3) displayDelay = rawDelay - 3;
+                                
+                                let status = '';
+                                if (rawDelay < 0) status = 'Early';
+                                else if (rawDelay === 0) status = 'On Time';
+                                else if (rawDelay <= 3) status = 'Within Buffer';
+                                else status = 'Late';
+                                
+                                rows.push({
+                                    customer: t.customer,
+                                    machine: t.machine || `${t.brand || ''} ${t.model || ''}`.trim(),
+                                    target_date: targetDateStr,
+                                    actual_date: t.actual_handover,
+                                    delay: displayDelay,
+                                    status: status,
+                                    qty: t.qty || 1
+                                });
+                                addedRows = true;
+                            }
+                        });
+                        
+                        if (addedRows) {
+                            let totalM = 0;
+                            let totalS = 0;
+                            let totalD = 0;
+                            let onTime = 0;
+                            
+                            rows.forEach(r => {
+                                const q = parseInt(r.qty) || 1;
+                                const d = parseInt(r.delay) || 0;
+                                totalM += q;
+                                if (d > 0) {
+                                    totalD += (d * q);
+                                    totalS += (Math.max(0, 100 - (d * 1.5)) * q);
+                                } else {
+                                    onTime += q;
+                                    totalS += (100 * q);
+                                }
+                            });
+                            
+                            summary.total_machines = totalM;
+                            summary.on_time_or_early = onTime;
+                            summary.efficiency_pct = totalM > 0 ? (totalS / totalM).toFixed(1) : "0.0";
+                            summary.avg_delay = totalM > 0 ? (totalD / totalM).toFixed(1) : "0.0";
+                            
+                            rows.sort((a, b) => parseInt(b.delay) - parseInt(a.delay));
+                        }
+                    }
+                }
+            } catch(err) {
+                console.error("[EFF V5] Error merging Supabase tracking orders:", err);
+            }
+            // ----------------------------------------------------
+            
+            // Flatten rows to ungroup items with qty > 1
+            let flattenedRows = [];
+            rows.forEach(r => {
+                const q = parseInt(r.qty) || 1;
+                if (q > 1) {
+                    for (let i = 0; i < q; i++) {
+                        flattenedRows.push({ ...r, qty: 1 });
+                    }
+                } else {
+                    flattenedRows.push(r);
+                }
+            });
+            rows = flattenedRows;
 
             const effColor = summary.efficiency_pct >= 80 ? '#22c55e' : (summary.efficiency_pct >= 50 ? '#f59e0b' : '#ef4444');
 
@@ -1292,7 +1406,7 @@ window.OmnisDashboardV6 = class OmnisDashboardV6 {
                     <style>
                         @media print {
                             @page { margin: 10mm; size: auto; }
-                            body > *:not(#dash-generic-modal) { display: none !important; }
+                            body > *:not(#dash-generic-modal), #main-view-container, #view-orders-list, .view-page, .ai-order-row { display: none !important; }
                             #dash-generic-modal { display: block !important; position: absolute !important; top: 0 !important; left: 0 !important; width: 100% !important; background: white !important; backdrop-filter: none !important; height: auto !important; }
                             #dash-modal-inner { width: 100% !important; max-width: none !important; max-height: none !important; border-radius: 0 !important; box-shadow: none !important; margin: 0 !important; border: none !important; }
                             #dash-modal-inner > div:first-child { display: none !important; }
@@ -1362,12 +1476,13 @@ window.OmnisDashboardV6 = class OmnisDashboardV6 {
                                     <th style="padding:16px 20px; font-weight:800; color:#475569; text-transform:uppercase; letter-spacing:0.05em; text-align:center;">Delay (Days)</th>
                                     <th style="padding:16px 20px; font-weight:800; color:#475569; text-transform:uppercase; letter-spacing:0.05em;">Status</th>
                                     <th style="padding:16px 20px; font-weight:800; color:#475569; text-transform:uppercase; letter-spacing:0.05em; text-align:center;">Qty</th>
+                                    <th style="padding:16px 20px; font-weight:800; color:#475569; text-transform:uppercase; letter-spacing:0.05em;">Comments</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 ${rows.map(r => `
                                     <tr style="border-bottom:1px solid #f1f5f9; transition:background 0.2s;" onmouseover="this.style.background='#f8fafc'" onmouseout="this.style.background='transparent'">
-                                        <td style="padding:14px 20px; font-weight:700; color:#0f172a;">${r.customer}</td>
+                                        <td style="padding:14px 20px; font-weight:700; color:#0f172a;">${(r.customer || '').replace(/"/g, '')}</td>
                                         <td style="padding:14px 20px; color:#475569;">${r.machine}</td>
                                         <td style="padding:14px 20px; color:#64748b;">${r.target_date}</td>
                                         <td style="padding:14px 20px; color:#0f172a; font-weight:600;">${r.actual_date}</td>
@@ -1383,9 +1498,12 @@ window.OmnisDashboardV6 = class OmnisDashboardV6 {
                                             </span>
                                         </td>
                                         <td style="padding:14px 20px; text-align:center; font-weight:700; color:#0f172a;">${r.qty}</td>
+                                        <td style="padding:14px 20px;">
+                                            <input type="text" placeholder="Add comment..." style="width:100%; min-width:140px; border:1px solid transparent; background:transparent; border-bottom:1px dashed #cbd5e1; padding:4px 0; font-family:inherit; font-size:12px; color:#334155; outline:none; transition: border-color 0.2s;" onfocus="this.style.borderBottom='1px solid #3b82f6'" onblur="this.style.borderBottom='1px dashed #cbd5e1'">
+                                        </td>
                                     </tr>
                                 `).join('')}
-                                ${rows.length === 0 ? '<tr><td colspan="7" style="padding:40px; text-align:center; color:#94a3b8; font-style:italic;">No handover data found for this period.</td></tr>' : ''}
+                                ${rows.length === 0 ? '<tr><td colspan="8" style="padding:40px; text-align:center; color:#94a3b8; font-style:italic;">No handover data found for this period.</td></tr>' : ''}
                             </tbody>
                         </table>
                     </div>
@@ -1993,7 +2111,7 @@ window.OmnisDashboardV6 = class OmnisDashboardV6 {
                         
                         @media print {
                             * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
-                            body > *:not(#dash-generic-modal) { display: none !important; }
+                            body > *:not(#dash-generic-modal), #main-view-container, #view-orders-list, .view-page, .ai-order-row { display: none !important; }
                             #dash-generic-modal { display: block !important; position: absolute !important; top: 0 !important; left: 0 !important; width: 100% !important; background: white !important; backdrop-filter: none !important; height: auto !important; }
                             #dash-modal-inner { width: 100% !important; max-width: none !important; max-height: none !important; border-radius: 0 !important; box-shadow: none !important; margin: 0 !important; border: none !important; }
                             #dash-modal-inner > div:first-child { display: none !important; }
@@ -3905,7 +4023,7 @@ window.OmnisDashboardV6 = class OmnisDashboardV6 {
                     @media print {
                         @page { size: landscape; margin: 0; }
                         /* Using display: none is safer for PDF engine stability than visibility: hidden */
-                        body > *:not(#dash-generic-modal) { display: none !important; }
+                        body > *:not(#dash-generic-modal), #main-view-container, #view-orders-list, .view-page, .ai-order-row { display: none !important; }
                         #dash-generic-modal { 
                             position: absolute !important; 
                             top: 0 !important; left: 0 !important; 
@@ -5650,15 +5768,17 @@ window.OmnisDashboardV6 = class OmnisDashboardV6 {
         let fullDoc = null;
 
         try {
-            // 1. Fetch Full Doc via Custom Backend (Admin Perms)
-            const res = await window.callFrappeSequenced(sys.baseUrl, "powerstar_salestrack.omnis_dashboard.get_order_details", {
-                report_id: reportId
-            });
-            const payload = res.message || res;
-            if (payload.ok) {
-                fullDoc = payload.data;
-            } else {
-                console.error("Fetch Error:", payload.error);
+            if (!reportId.startsWith('TRACK-')) {
+                // 1. Fetch Full Doc via Custom Backend (Admin Perms)
+                const res = await window.callFrappeSequenced(sys.baseUrl, "powerstar_salestrack.omnis_dashboard.get_order_details", {
+                    report_id: reportId
+                });
+                const payload = res.message || res;
+                if (payload.ok) {
+                    fullDoc = payload.data;
+                } else {
+                    console.error("Fetch Error:", payload.error);
+                }
             }
         } catch (e) {
             console.error("Failed to fetch full doc", e);
@@ -5714,6 +5834,7 @@ window.OmnisDashboardV6 = class OmnisDashboardV6 {
                 qty: order.qty,
                 target_handover_date: order.target_handover,
                 revised_handover_date: order.revised_handover,
+                actual_handover_date: order.actual_handover,
                 notes: order.notes
             }];
         }
@@ -5882,7 +6003,7 @@ window.OmnisDashboardV6 = class OmnisDashboardV6 {
 
                 <div style="display:flex; justify-content:space-between; align-items:center; margin-top:12px; border-top:1px solid #e2e8f0; padding-top:24px;">
                      <!-- Left: Delete with Safety -->
-                     <div style="position:relative;">
+                     <div style="position:relative; display:flex; gap:8px; align-items:center;">
                         <button id="btn-init-delete" onclick="salestrack.toggleDeleteConfirm(true)" style="color:#ef4444; background:white; border:1px solid #e2e8f0; font-size:13px; font-weight:600; cursor:pointer; padding:10px 16px; border-radius:8px; transition:all 0.2s;">
                             Delete Order
                         </button>
@@ -5895,6 +6016,12 @@ window.OmnisDashboardV6 = class OmnisDashboardV6 {
                                  <button id="btn-confirm-delete-order" style="flex:1; padding:8px; background:#ef4444; color:white; border:none; border-radius:6px; font-size:12px; font-weight:600; cursor:pointer;">Delete</button>
                              </div>
                         </div>
+
+                        ${(reportId || '').startsWith('TRACK-') ? `
+                        <button onclick="window.promoteTrackingOrder('${(reportId || '').replace(/'/g, "\\'")}')" style="color:#0f172a; background:#f8fafc; border:1px solid #cbd5e1; font-size:13px; font-weight:700; cursor:pointer; padding:10px 16px; border-radius:8px; transition:all 0.2s; display:flex; align-items:center; gap:6px;">
+                            <i class="fas fa-arrow-up"></i> Promote to Actual Order
+                        </button>
+                        ` : ''}
                      </div>
 
                      <!-- Right: Standard Actions -->
@@ -6110,6 +6237,41 @@ window.OmnisDashboardV6 = class OmnisDashboardV6 {
                 deleted_machines: this._tempDeletedMachines || []
             };
 
+            if (reportId && reportId.startsWith('TRACK-')) {
+                const dbId = reportId.replace('TRACK-', '');
+                const mainMachine = params.machines && params.machines.length > 0 ? params.machines[0] : null;
+                
+                if (mainMachine) {
+                    const updateData = {
+                        status: params.status,
+                        target_handover: mainMachine.target_handover_date || null,
+                        revised_handover: mainMachine.revised_handover_date || null,
+                        actual_handover: mainMachine.actual_handover_date || null,
+                        notes: mainMachine.notes || null,
+                        qty: mainMachine.qty || 1
+                    };
+                    
+                    if (window.electron) {
+                        const updateRes = await window.electron.invoke('supabase:query', {
+                            table: 'omnis_tracking_orders',
+                            method: 'update',
+                            params: { data: updateData, id: dbId }
+                        });
+                        
+                        if (!updateRes.ok) throw new Error("Supabase Update Failed: " + (updateRes.error || "Unknown"));
+                    }
+                }
+                
+                this.showToast("Tracking Order Saved", "success");
+                this.closeListModal();
+                const refreshBtn = document.getElementById('ol-refresh-btn');
+                if (refreshBtn) refreshBtn.click();
+                else if (window.loadOrdersList) window.loadOrdersList(true);
+                
+                if (btn) { btn.textContent = "Save Changes"; btn.disabled = false; }
+                return;
+            }
+
             const res = await window.callFrappeSequenced(sys.baseUrl || "https://salestrack.powerstar.co.zw", "powerstar_salestrack.omnis_dashboard.update_order_details_v2", params);
             const payload = res.message || res;
             if (payload && payload.ok) {
@@ -6316,11 +6478,30 @@ window.OmnisDashboardV6 = class OmnisDashboardV6 {
     }
 
     async confirmDeleteOrder(reportId) {
-        if (!confirm("Are you absolutely sure via Browser Check?")) return; // Extra safety layer (optional, but good for "Red Button")
-
         this.showToast("Deleting Order...", "error"); // Orange/Red toast
 
         try {
+            if (reportId.startsWith('TRACK-')) {
+                const actualId = reportId.replace('TRACK-', '');
+                if (window.electron) {
+                    const res = await window.electron.invoke('supabase:query', {
+                        table: 'omnis_tracking_orders',
+                        method: 'delete',
+                        params: { id: actualId }
+                    });
+                    if (res && res.ok !== false) {
+                        this.showToast("Tracking Order Deleted", "success");
+                        this.closeListModal();
+                        const refreshBtn = document.getElementById('ol-refresh-btn');
+                        if (refreshBtn) refreshBtn.click();
+                        else if (window.loadOrdersList) window.loadOrdersList(true);
+                        return;
+                    } else {
+                        throw new Error(res?.error || "Failed to delete tracking order");
+                    }
+                }
+            }
+
             const sys = window.getCurrentSystem ? window.getCurrentSystem() : { baseUrl: "https://salestrack.powerstar.co.zw" };
 
             const res = await window.callFrappeSequenced(sys.baseUrl, "powerstar_salestrack.omnis_dashboard.delete_order", {
@@ -6424,6 +6605,39 @@ window.OmnisDashboardV6 = class OmnisDashboardV6 {
             else if (field === 'notes') params.notes = newValue;
             else if (field === 'target_handover') params.target_handover = newValue;
             else if (field === 'revised_handover') params.revised_handover = newValue;
+
+            if (reportId && reportId.startsWith('TRACK-')) {
+                const dbId = reportId.replace('TRACK-', '');
+                const updateData = {};
+                
+                if (field === 'status') updateData.status = newValue;
+                else if (field === 'notes') updateData.notes = newValue;
+                else if (field === 'target_handover') updateData.target_handover = newValue || null;
+                else if (field === 'revised_handover') updateData.revised_handover = newValue || null;
+                else if (field === 'actual_handover') updateData.actual_handover = newValue || null;
+
+                if (window.electron) {
+                    const updateRes = await window.electron.invoke('supabase:query', {
+                        table: 'omnis_tracking_orders',
+                        method: 'update',
+                        params: { data: updateData, id: dbId }
+                    });
+                    
+                    if (!updateRes.ok) throw new Error("Supabase Update Failed: " + (updateRes.error || "Unknown"));
+                }
+                
+                cell.textContent = newValue || '-';
+                this.showToast("Saved", "success");
+
+                if (field === 'target_handover' || field === 'revised_handover' || field === 'status') {
+                    setTimeout(() => {
+                        const refreshBtn = document.getElementById('ol-refresh-btn');
+                        if (refreshBtn) refreshBtn.click();
+                        else if (window.loadOrdersList) window.loadOrdersList(true);
+                    }, 500);
+                }
+                return;
+            }
 
             const res = await window.callFrappeSequenced(sys.baseUrl, 'powerstar_salestrack.omnis_dashboard.update_order_details_v2', params);
 

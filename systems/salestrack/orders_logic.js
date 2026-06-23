@@ -171,30 +171,61 @@ async function loadOrdersList(force = false) {
     try {
         const base = sys.baseUrl.replace(/\/$/, "");
         const method = "powerstar_salestrack.omnis_dashboard.get_weekly_gsm_report";
-        const isUnassigned = company.toLowerCase() === 'unassigned';
-        // ALWAYS fetch All Companies from Frappe to bypass strict backend SQL matching.
-        // We will do all filtering on the frontend so dirty data (like "Sinopower ") is caught!
         const args = {
             company: '',
             from_date: fromDate,
             to_date: toDate
         };
 
-        console.log("[OrdersLogic] Fetching orders with filters:", args);
-
         const res = await window.callFrappeSequenced(base, method, args);
-        console.log("[OrdersLogic] Received response:", res);
         const data = res.message || res;
         
-        if (data && data.meta) {
-            console.log("[OrdersLogic] Diagnostic DB Counts:", {
-                total_fmb: data.meta.debug_fmb_count,
-                total_fmb_machine: data.meta.debug_fmb_machine_count
-            });
-        }
+        let ordersList = (data && data.current_orders) ? data.current_orders : [];
+        
+        // Fetch Tracking Orders from Supabase (Now the Source of Truth for new sales)
+        try {
+            if (window.electron) {
+                let trackRes = await window.electron.invoke('supabase:query', {
+                    table: 'omnis_tracking_orders', method: 'select'
+                });
+                if (trackRes.ok && trackRes.data) {
+                    trackRes.data.forEach(t => {
+                        let days_left = 0;
+                        let targetDateStr = t.revised_handover || t.target_handover;
+                        if (targetDateStr) {
+                            const target = new Date(targetDateStr);
+                            target.setHours(0,0,0,0);
+                            const now = new Date();
+                            now.setHours(0,0,0,0);
+                            days_left = Math.ceil((target - now) / (1000 * 60 * 60 * 24));
+                        } else {
+                            days_left = "-";
+                        }
+                        
+                        ordersList.push({
+                            report_id: 'TRACK-' + t.id,
+                            machine_id: 'TRACK-M-' + t.id,
+                            customer: t.customer,
+                            machine: t.machine || `${t.brand || ''} ${t.model || ''}`.trim(),
+                            qty: t.qty,
+                            status: t.status,
+                            notes: t.notes,
+                            internal_notes: t.internal_notes,
+                            target_handover: t.target_handover,
+                            revised_handover: t.revised_handover,
+                            actual_handover: t.actual_handover,
+                            order_date: t.order_date,
+                            committed_lead_time: t.committed_lead_time,
+                            company: t.company,
+                            is_tracking_only: false, // It is the main tracking now
+                            days_left: days_left
+                        });
+                    });
+                }
+            }
+        } catch (e) { console.error('[OrdersLogic] Failed to fetch tracking orders', e); }
 
-        if (data && data.current_orders) {
-            let ordersList = data.current_orders;
+        if (ordersList.length > 0) {
             
             // Augment with Supabase Payment Terms status & Company
             // Track which orders have a Supabase company override — these are the source of truth
@@ -288,7 +319,7 @@ async function loadOrdersList(force = false) {
             });
 
             if (window.appendMissingCompanyFilters) {
-                const frappeCompanies = [...new Set(data.current_orders.map(o => o.company).filter(Boolean))];
+                const frappeCompanies = [...new Set(ordersList.map(o => o.company).filter(Boolean))];
                 window.appendMissingCompanyFilters(frappeCompanies);
             }
 
@@ -327,6 +358,220 @@ async function loadOrdersList(force = false) {
 
 window.loadOrdersList = loadOrdersList; // Expose global
 
+window.syncMissingSales = async function() {
+    try {
+        const sys = window.CURRENT_SYSTEM;
+        if (!sys || !sys.baseUrl) {
+            if (window.showToast) window.showToast("System context missing. Please re-login.", "error");
+            return;
+        }
+
+        if (window.showToast) window.showToast("Fetching Group Sales from Frappe...", "info");
+
+        // 1. Fetch Group Sales
+        const base = sys.baseUrl.replace(/\/$/, "");
+        const salesRes = await window.callFrappeSequenced(base, "powerstar_salestrack.omnis_dashboard.get_group_sales_list", { start: 0, page_length: 5000 });
+        const salesData = salesRes.message ? (salesRes.message.data || salesRes.message) : (salesRes.data || salesRes);
+        const sales = (Array.isArray(salesData) ? salesData : []).filter(s => s.docstatus < 2);
+
+        // 2. Fetch Old FMB Reports (Legacy Tracking)
+        if (window.showToast) window.showToast("Fetching Legacy Tracking from Frappe...", "info");
+        const fmbRes = await window.callFrappeSequenced(base, "powerstar_salestrack.omnis_dashboard.get_weekly_gsm_report", { company: "all", start: 0, page_length: 5000 });
+        const oldOrders = (fmbRes.message ? fmbRes.message.current_orders : fmbRes.current_orders) || [];
+
+        // 3. Fetch existing synced records from Supabase
+        const trackRes = await window.electron.invoke('supabase:query', {
+            table: 'omnis_tracking_orders', method: 'select', params: { columns: 'linked_sale_name' }
+        });
+        if (!trackRes.ok) throw new Error(trackRes.error || "Failed to fetch existing tracking orders");
+        
+        const existingLinks = new Set((trackRes.data || []).map(t => t.linked_sale_name).filter(Boolean));
+
+        // 4. Process Missing Items
+        const missingSales = sales.filter(s => !existingLinks.has(s.name));
+        const missingOldOrders = oldOrders.filter(o => !existingLinks.has('FMB-' + o.machine_id));
+
+        if (missingSales.length === 0 && missingOldOrders.length === 0) {
+            if (window.showToast) window.showToast("No missing sales found. Up to date!", "success");
+            return;
+        }
+
+        // Prepare data for UI
+        window.pendingSyncItems = [];
+
+        // Add missing sales
+        for (const sale of missingSales) {
+            let targetHandover = null;
+            if (sale.committed_lead_time) {
+                const match = sale.committed_lead_time.match(/(\d+)/);
+                if (match && match[1]) {
+                    const weeks = parseInt(match[1]);
+                    const orderDate = new Date(sale.order_date || Date.now());
+                    orderDate.setDate(orderDate.getDate() + (weeks * 7));
+                    targetHandover = orderDate.toISOString().split('T')[0];
+                }
+            }
+
+            window.pendingSyncItems.push({
+                type: 'Group Sale',
+                displayType: '<span style="background:#dbeafe; color:#1e40af; padding:4px 8px; border-radius:6px; font-weight:700;">Group Sale</span>',
+                data: {
+                    linked_sale_name: sale.name,
+                    customer: sale.customer || "Unknown",
+                    brand: sale.oem || "",
+                    model: sale.model || "",
+                    machine: `${sale.oem || ''} ${sale.model || ''}`.trim() || "Unknown Machine",
+                    qty: sale.qty || 1,
+                    status: "New Sale",
+                    order_date: sale.order_date,
+                    target_handover: targetHandover,
+                    committed_lead_time: sale.committed_lead_time || "",
+                    company: sale.company || "Unassigned"
+                }
+            });
+        }
+
+        // Add missing old FMB reports
+        for (const o of missingOldOrders) {
+            let oldSbRes = await window.electron.invoke('supabase:query', {
+                table: 'fmb_reports', method: 'select', params: { filters: { frappe_id: o.report_id } }
+            });
+            let oldSbData = (oldSbRes.data && oldSbRes.data.length > 0) ? oldSbRes.data[0] : {};
+
+            window.pendingSyncItems.push({
+                type: 'Legacy Order',
+                displayType: '<span style="background:#fef3c7; color:#b45309; padding:4px 8px; border-radius:6px; font-weight:700;">Legacy Order</span>',
+                data: {
+                    linked_sale_name: 'FMB-' + o.machine_id,
+                    customer: o.customer || "Unknown",
+                    brand: o.brand || "",
+                    model: "",
+                    machine: o.machine || "Unknown Machine",
+                    qty: o.qty || 1,
+                    status: oldSbData.status || o.status || "In Progress",
+                    order_date: o.order_date,
+                    target_handover: o.target_handover || null,
+                    revised_handover: o.revised_handover || null,
+                    committed_lead_time: o.committed_lead_time || "",
+                    company: oldSbData.company || o.company || "Unassigned",
+                    notes: oldSbData.notes || o.notes || "",
+                    internal_notes: oldSbData.internal_notes || o.internal_notes || ""
+                }
+            });
+        }
+
+        // Render to UI
+        const tbody = document.getElementById('sync-sales-tbody');
+        if (!tbody) return;
+
+        let html = '';
+        window.pendingSyncItems.forEach((item, index) => {
+            html += `
+                <tr style="border-bottom: 1px solid #e2e8f0; hover: background: #f8fafc;">
+                    <td style="padding: 12px; text-align: left;">
+                        <input type="checkbox" class="sync-sale-cb" data-idx="${index}" checked style="width: 16px; height: 16px; cursor: pointer;">
+                    </td>
+                    <td style="padding: 12px; font-size: 11px;">${item.displayType}</td>
+                    <td style="padding: 12px; font-size: 13px; font-weight: 600; color: #334155;">${item.data.customer}</td>
+                    <td style="padding: 12px; font-size: 13px; font-weight: 600; color: #334155;">${item.data.machine}</td>
+                    <td style="padding: 12px; font-size: 13px; font-weight: 700; color: #0f172a; text-align: center;">${item.data.qty}</td>
+                </tr>
+            `;
+        });
+        tbody.innerHTML = html;
+        
+        // Update count initially
+        updateSyncSalesCount();
+
+        // Add event listeners to checkboxes
+        document.querySelectorAll('.sync-sale-cb').forEach(cb => {
+            cb.addEventListener('change', updateSyncSalesCount);
+        });
+
+        // Open modal
+        const modal = document.getElementById('sync-sales-modal');
+        if (modal) modal.style.display = 'flex';
+
+    } catch (e) {
+        console.error("Sync Sales Error:", e);
+        if (window.showToast) window.showToast("Sync Error: " + e.message, "error");
+    }
+};
+
+window.updateSyncSalesCount = function() {
+    const checked = document.querySelectorAll('.sync-sale-cb:checked').length;
+    const countEl = document.getElementById('sync-sales-count');
+    if (countEl) countEl.innerText = checked;
+};
+
+window.toggleAllSyncSales = function(check) {
+    document.querySelectorAll('#sync-sales-tbody tr').forEach(row => {
+        if (row.style.display !== 'none') {
+            const cb = row.querySelector('.sync-sale-cb');
+            if (cb) cb.checked = check;
+        }
+    });
+    updateSyncSalesCount();
+};
+
+window.closeSyncSalesModal = function() {
+    const modal = document.getElementById('sync-sales-modal');
+    if (modal) modal.style.display = 'none';
+};
+
+window.filterSyncSales = function(query) {
+    query = (query || "").toLowerCase();
+    const rows = document.querySelectorAll('#sync-sales-tbody tr');
+    rows.forEach(row => {
+        const text = row.textContent.toLowerCase();
+        if (text.includes(query)) {
+            row.style.display = '';
+        } else {
+            row.style.display = 'none';
+            const cb = row.querySelector('.sync-sale-cb');
+            if(cb && cb.checked) cb.checked = false;
+        }
+    });
+    updateSyncSalesCount();
+};
+
+window.confirmSyncSales = async function() {
+    try {
+        const checkboxes = document.querySelectorAll('.sync-sale-cb:checked');
+        if (checkboxes.length === 0) {
+            if (window.showToast) window.showToast("No items selected to sync.", "warning");
+            return;
+        }
+
+        const indices = Array.from(checkboxes).map(cb => parseInt(cb.getAttribute('data-idx')));
+        const itemsToSync = indices.map(idx => window.pendingSyncItems[idx]);
+
+        const btn = event.currentTarget;
+        const originalText = btn.innerHTML;
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Syncing...';
+        btn.disabled = true;
+
+        let insertedCount = 0;
+        for (const item of itemsToSync) {
+            let insRes = await window.electron.invoke('supabase:query', {
+                table: 'omnis_tracking_orders', method: 'insert', params: { data: item.data }
+            });
+            if (insRes.ok) insertedCount++;
+        }
+
+        btn.innerHTML = originalText;
+        btn.disabled = false;
+        closeSyncSalesModal();
+
+        if (window.showToast) window.showToast(`Successfully synced ${insertedCount} selected records.`, "success");
+        loadOrdersList(true); // Refresh Order Tracking
+
+    } catch (e) {
+        console.error("Confirm Sync Error:", e);
+        if (window.showToast) window.showToast("Error syncing selected items: " + e.message, "error");
+    }
+};
+
 /* =========================================
    SET ORDER COMPANY (saves to Supabase)
    ========================================= */
@@ -336,12 +581,23 @@ window.setOrderCompany = async function(reportId, newCompany, selectEl) {
     if (selectEl) selectEl.disabled = true;
 
     try {
-        // Upsert into fmb_reports: create row if not exists, update company if it does
-        const res = await window.electron.invoke('supabase:query', {
-            table: 'fmb_reports',
-            method: 'upsert',
-            params: { data: { frappe_id: reportId, company: newCompany }, options: { onConflict: 'frappe_id' } }
-        });
+        let res;
+        if (reportId.startsWith('TRACK-')) {
+            // Update omnis_tracking_orders
+            let dbId = reportId.split('-')[1];
+            res = await window.electron.invoke('supabase:query', {
+                table: 'omnis_tracking_orders',
+                method: 'update',
+                params: { data: { company: newCompany }, id: dbId }
+            });
+        } else {
+            // Update old fmb_reports
+            res = await window.electron.invoke('supabase:query', {
+                table: 'fmb_reports',
+                method: 'upsert',
+                params: { data: { frappe_id: reportId, company: newCompany }, options: { onConflict: 'frappe_id' } }
+            });
+        }
 
         if (res && res.ok !== false) {
             // Update local in-memory data so filter stays correct
@@ -388,11 +644,23 @@ window.setOrderStatusInline = async function(reportId, machineId, newStatus, sel
             }
         }
 
-        const res = await window.electron.invoke('supabase:query', {
-            table: 'fmb_reports',
-            method: 'upsert',
-            params: { data: { frappe_id: reportId, status: newStatus }, options: { onConflict: 'frappe_id' } }
-        });
+        let res;
+        if (reportId.startsWith('TRACK-')) {
+            // Update omnis_tracking_orders
+            let dbId = reportId.split('-')[1];
+            res = await window.electron.invoke('supabase:query', {
+                table: 'omnis_tracking_orders',
+                method: 'update',
+                params: { data: { status: newStatus }, id: dbId }
+            });
+        } else {
+            // Update old fmb_reports
+            res = await window.electron.invoke('supabase:query', {
+                table: 'fmb_reports',
+                method: 'upsert',
+                params: { data: { frappe_id: reportId, status: newStatus }, options: { onConflict: 'frappe_id' } }
+            });
+        }
 
         if (res && res.ok !== false) {
             // Update local memory
@@ -702,6 +970,7 @@ function renderOrdersList() {
               <div style="flex:1;" onclick="window.dashManager.openOrderModal('${safeReportId}', '${safeMachineId}')">
                 <span class="cell-label">Customer / Risk</span>
                 <div style="font-weight:700; font-size:15px; color:#000000; margin-bottom:4px; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden;" title="${(r.customer || '').replace(/\"/g, '')}">${(r.customer || "-").replace(/\"/g, '')}</div>
+                ${r.is_tracking_only ? `<div style="margin-bottom:6px;"><span style="background:#f59e0b; color:#fff; font-size:10px; font-weight:800; padding:2px 6px; border-radius:4px; letter-spacing:0.02em;">INTERNAL TRACKING</span></div>` : ''}
                 <div style="display:flex; align-items:center; gap:6px; font-size:11px; font-weight:800; color:${riskColor}">
                   <i class="fas ${riskIcon}"></i> ${riskLabel}
                   <div style="margin-left:auto; display:flex; gap:6px;">
@@ -1201,4 +1470,136 @@ window.printMainOrdersReport = function() {
         </body></html>
     `);
     win.document.close();
+};
+
+/* =========================================
+   ADD TRACKING ORDER LOGIC
+   ========================================= */
+window.openAddTrackingModal = function() {
+    const modal = document.getElementById('tracking-order-modal');
+    if (modal) {
+        // Reset fields
+        document.getElementById('track-customer').value = '';
+        document.getElementById('track-machine').value = '';
+        document.getElementById('track-qty').value = '1';
+        document.getElementById('track-target').value = '';
+        document.getElementById('track-company').value = 'Unassigned';
+        document.getElementById('track-notes').value = '';
+        modal.style.display = 'flex';
+    } else {
+        console.error("Modal element 'tracking-order-modal' not found.");
+    }
+};
+
+window.closeAddTrackingModal = function() {
+    const modal = document.getElementById('tracking-order-modal');
+    if (modal) modal.style.display = 'none';
+};
+
+window.saveTrackingOrder = async function() {
+    const customer = document.getElementById('track-customer').value.trim();
+    const machine = document.getElementById('track-machine').value.trim();
+    const qty = parseInt(document.getElementById('track-qty').value) || 1;
+    const target = document.getElementById('track-target').value;
+    const company = document.getElementById('track-company').value;
+    const notes = document.getElementById('track-notes').value.trim();
+
+    if (!customer || !machine) {
+        alert("Please enter Customer Name and Machine/Product.");
+        return;
+    }
+
+    try {
+        const payload = {
+            customer: customer,
+            machine: machine,
+            qty: qty,
+            target_handover: target || null,
+            company: company,
+            notes: notes,
+            status: 'Internal Tracking',
+            internal_notes: 'Tracking Only'
+        };
+
+        const res = await window.electron.invoke('supabase:query', {
+            table: 'omnis_tracking_orders',
+            method: 'insert',
+            params: { data: payload }
+        });
+
+        if (res && res.ok !== false) {
+            window.closeAddTrackingModal();
+            if (window.showToast) window.showToast("Tracking Order Added", "success");
+            // Reload the list to fetch the new record
+            if (window.loadOrdersList) window.loadOrdersList(true);
+        } else {
+            throw new Error(res?.error || "Failed to insert tracking order");
+        }
+    } catch (e) {
+        console.error("Save Tracking Order Error:", e);
+        alert("Error saving tracking order: " + (e.message || e));
+    }
+};
+
+window.promoteTrackingOrder = function(reportId) {
+    if (!reportId || !reportId.startsWith('TRACK-')) return;
+    
+    // Close the current detail modal
+    if (window.salestrack && window.salestrack.closeListModal) {
+        window.salestrack.closeListModal();
+    }
+    
+    // Find the tracking order data
+    let order = (window.olOrdersData || []).find(o => o.report_id === reportId);
+    if (!order) {
+        if (window.showToast) window.showToast("Could not find order data locally", "error");
+        return;
+    }
+    
+    // Extract the UUID for linking later
+    const uuid = reportId.replace('TRACK-', '');
+    window._promotingTrackId = uuid;
+    
+    // Call the showGroupSalesForm to open the modal
+    if (typeof window.showGroupSalesForm === 'function') {
+        window.showGroupSalesForm(); // Opens as a new record
+    } else {
+        if (window.showToast) window.showToast("Group Sales Form not available", "error");
+        return;
+    }
+    
+    // Pre-fill the form fields
+    setTimeout(() => {
+        const customerEl = document.getElementById('gs-customer');
+        const orderDateEl = document.getElementById('gs-order_date');
+        const leadTimeEl = document.getElementById('gs-lead-time');
+        const qtyEl = document.getElementById('gs-qty');
+        const companyEl = document.getElementById('gs-company');
+        const commentsEl = document.getElementById('gs-comments');
+        const oemEl = document.getElementById('gs-oem');
+        const modelEl = document.getElementById('gs-model');
+        
+        if (customerEl) customerEl.value = order.customer || '';
+        if (orderDateEl && order.order_date) orderDateEl.value = order.order_date;
+        if (leadTimeEl && order.committed_lead_time) leadTimeEl.value = order.committed_lead_time;
+        if (qtyEl) qtyEl.value = order.qty || 1;
+        if (companyEl && order.company) companyEl.value = order.company;
+        if (commentsEl && order.notes) commentsEl.value = order.notes;
+        
+        // Handle Brand/Model if available, else try to split 'machine'
+        if (order.brand && oemEl) oemEl.value = order.brand;
+        if (order.model && modelEl) modelEl.value = order.model;
+        
+        if (!order.brand && !order.model && order.machine && oemEl && modelEl) {
+            const parts = order.machine.split(' ');
+            if (parts.length > 1) {
+                oemEl.value = parts[0];
+                modelEl.value = parts.slice(1).join(' ');
+            } else {
+                modelEl.value = order.machine;
+            }
+        }
+        
+        if (window.showToast) window.showToast("Please complete the remaining details to promote this order.", "info");
+    }, 300);
 };

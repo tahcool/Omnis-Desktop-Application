@@ -40,3 +40,6 @@
 \n## 2026-06-22
 - `b0db3c6` 2026-06-22 [supabase-migration] Fix Team tab visibility and Command Center z-index bug
   Files: systems/salestrack/index.html,
+\n## 2026-06-23
+- `f4939cc` 2026-06-23 [supabase-migration] Restore point
+  Files: .mcp/knowledge/_shared/commit_log.md,Customer.csv,Item (1).csv,add_filters.js,add_hot_lead_col.sql,add_quotation_cols.sql,b64.js,check.js,check2.js,check3.js,check_all_tables.js,check_count.js,check_cron.js,check_cust.js,check_customers.js,check_email_queue.js,check_exec_sql.js,check_gen_id.js,check_guesses.js,check_items.js,
