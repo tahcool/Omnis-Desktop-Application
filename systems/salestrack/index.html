@@ -8245,12 +8245,15 @@
         </div>
 
         <div style="display:flex; align-items:center; gap:12px;">
-          <select id="stock-company-dropdown" class="btn-stock-filter" style="padding: 0 16px; height: 42px; border-radius: 10px; border: 1px solid #e2e8f0; background: white; color: #0f172a; font-weight: 800; font-size: 12px; text-transform:uppercase; letter-spacing:0.02em; cursor: pointer; outline: none; width: 200px; transition: all 0.2s;" onchange="filterStock(window._activeStockOem, window._activeStockStatus, null, this.value)">
+          <select id="stock-contract-dropdown" class="btn-stock-filter" style="padding: 0 16px; height: 42px; border-radius: 10px; border: 1px solid #e2e8f0; background: white; color: #0f172a; font-weight: 800; font-size: 12px; text-transform:uppercase; letter-spacing:0.02em; cursor: pointer; outline: none; width: 200px; transition: all 0.2s;" onchange="filterStock(window._activeStockOem, window._activeStockStatus, null, window._activeStockCompany, this.value)">
+              <option value="All">ALL CONTRACTS</option>
+          </select>
+          <select id="stock-company-dropdown" class="btn-stock-filter" style="padding: 0 16px; height: 42px; border-radius: 10px; border: 1px solid #e2e8f0; background: white; color: #0f172a; font-weight: 800; font-size: 12px; text-transform:uppercase; letter-spacing:0.02em; cursor: pointer; outline: none; width: 200px; transition: all 0.2s;" onchange="filterStock(window._activeStockOem, window._activeStockStatus, null, this.value, window._activeStockContract)">
               <option value="All">ALL COMPANIES</option>
               <option value="Machinery Exchange">Machinery Exchange</option>
               <option value="Sinopower">Sinopower</option>
           </select>
-          <select id="stock-status-dropdown" class="btn-stock-filter" style="padding: 0 16px; height: 42px; border-radius: 10px; border: 1px solid #e2e8f0; background: white; color: #0f172a; font-weight: 800; font-size: 12px; text-transform:uppercase; letter-spacing:0.02em; cursor: pointer; outline: none; width: 200px; transition: all 0.2s;" onchange="filterStock(window._activeStockOem, this.value, null, window._activeStockCompany)">
+          <select id="stock-status-dropdown" class="btn-stock-filter" style="padding: 0 16px; height: 42px; border-radius: 10px; border: 1px solid #e2e8f0; background: white; color: #0f172a; font-weight: 800; font-size: 12px; text-transform:uppercase; letter-spacing:0.02em; cursor: pointer; outline: none; width: 200px; transition: all 0.2s;" onchange="filterStock(window._activeStockOem, this.value, null, window._activeStockCompany, window._activeStockContract)">
               <option value="All">ALL STATUSES</option>
               <option value="STOCK ON HAND">STOCK ON HAND</option>
               <option value="EN ROUTE FROM BEIRA">EN ROUTE (BEIRA)</option>
@@ -15655,6 +15658,7 @@
         // Fill fields
         document.getElementById('sp-oem').value = data ? (data.oem || "") : "";
         document.getElementById('sp-model-input').value = data ? (data.model || "") : "";
+        document.getElementById('sp-contract').value = data ? (data.contract || data.contract_number || "") : "";
         document.getElementById('sp-proposed-order').value = data ? (data.proposed_order || "0") : "0";
         document.getElementById('sp-quantity').value = data ? (data.quantity || "0") : "0";
         document.getElementById('sp-prod-compl').value = data ? (data.production_completion || "") : "";
@@ -15717,6 +15721,7 @@
         report_id: window._editingStockId || "", // Redundant for extract_params robustness
         oem: document.getElementById('sp-oem').value,
         model: document.getElementById('sp-model-input').value,
+        contract_name: document.getElementById('sp-contract').value,
         proposed_order: document.getElementById('sp-proposed-order').value,
         quantity: document.getElementById('sp-quantity').value,
         production_completion: document.getElementById('sp-prod-compl').value,
@@ -15765,6 +15770,7 @@
                     company: companyTag,
                     brand: payload.oem,
                     model: payload.model,
+                    contract_name: payload.contract_name || null,
                     proposed_qty: parseInt(payload.proposed_order) || 0,
                     actual_qty: parseInt(payload.quantity) || 0,
                     prod_date: payload.production_completion || null,
@@ -16118,11 +16124,11 @@
               <div style="display:flex; flex-direction:column; gap:10px; width:100%;">
                  <div style="display:flex; gap:10px; align-items:center; flex-wrap:wrap;">
                     <span style="font-size:11px; font-weight:800; color:#94a3b8; text-transform:uppercase; letter-spacing:0.05em; width: 60px;">Brand:</span>
-                    <button class="btn-stock-filter ${activeOem === 'All' ? 'active' : ''}" onclick="filterStock('All', window._activeStockStatus, this)">All Stock</button>
+                    <button class="btn-stock-filter ${activeOem === 'All' ? 'active' : ''}" onclick="filterStock('All', window._activeStockStatus, this, window._activeStockCompany, window._activeStockContract)">All Stock</button>
             `;
             
             sortedOems.forEach(oem => {
-                navHtml += `<button class="btn-stock-filter ${activeOem === oem ? 'active' : ''}" onclick="filterStock('${oem}', window._activeStockStatus, this)">${oem}</button>`;
+                navHtml += `<button class="btn-stock-filter ${activeOem === oem ? 'active' : ''}" onclick="filterStock('${oem}', window._activeStockStatus, this, window._activeStockCompany, window._activeStockContract)">${oem}</button>`;
             });
 
             navHtml += `
@@ -16266,7 +16272,7 @@
                         </div>
                         <div class="ai-order-cell">
                           <span class="cell-label">Contract</span>
-                          <div style="font-weight:600; font-size:11.5px; color:#475569;">${r.contract || r.contract_number || '-'}</div>
+                          <div style="font-weight:600; font-size:11.5px; color:#475569;" class="stock-row-contract-val">${r.contract || r.contract_number || '-'}</div>
                         </div>
                         <div class="ai-order-cell">
                           <span class="cell-label">Potential Customers</span>
@@ -16353,8 +16359,32 @@
                 </div>
               </div>`;
           });
+          // 1.5 Populate Contract Dropdown options based on available data
+          const contractDropdown = document.getElementById('stock-contract-dropdown');
+          if (contractDropdown) {
+              const contractList = new Set();
+              data_records.forEach(r => {
+                  const c = (r.contract || r.contract_number || '').trim();
+                  if (c && c !== '-') contractList.add(c);
+              });
+              
+              let currentVal = contractDropdown.value;
+              let optsHtml = '<option value="All">ALL CONTRACTS</option>';
+              Array.from(contractList).sort().forEach(c => {
+                  optsHtml += `<option value="${c}">${c}</option>`;
+              });
+              contractDropdown.innerHTML = optsHtml;
+              
+              // Restore value if it still exists
+              if (contractList.has(currentVal) || currentVal === 'All') {
+                  contractDropdown.value = currentVal;
+              } else {
+                  contractDropdown.value = 'All';
+              }
+          }
+
           container.innerHTML = html;
-          window.filterStock(window._activeStockOem || 'All');
+          window.filterStock(window._activeStockOem || 'All', window._activeStockStatus || 'All', null, window._activeStockCompany || 'All', window._activeStockContract || 'All');
         };
 
         // Initialize UI instantly with skeletons if no data
@@ -16373,27 +16403,42 @@
           performRender(records);
         }
 
-        // Background Sync (does not block UI)
-
+        // Background Sync (Supabase Only)
         if (window._syncingStock) return;
         try {
           window._syncingStock = true;
-          omnisLog("[Stock] Syncing Pipeline Data...", "sync");
-          const baseUrl = (window.CURRENT_SYSTEM && window.CURRENT_SYSTEM.baseUrl) || "https://salestrack.powerstar.co.zw";
-          const res = await window.callFrappeSequenced(baseUrl, "powerstar_salestrack.omnis_dashboard.get_stock_pipeline", {});
-          const data = (res && res.data) || (res && res.message ? res.message.data : null);
-          if (data && Array.isArray(data)) {
-            records = data;
-            localStorage.setItem(cacheKey, JSON.stringify({ timestamp: Date.now(), data: records }));
+          if (window.salestrack && window.salestrack.supabase) {
+             const sp = window.salestrack.supabase;
+             const { data: sData, error: sErr } = await sp.from('stock_inventory').select('*, stock_potential_customers(customer_name)');
+             if (!sErr && sData) {
+                 records = sData.map(r => ({
+                     name: r.frappe_id || r.id, // Primary key reference for editing
+                     id: r.id,
+                     oem: r.brand,
+                     model: r.model,
+                     proposed_order: r.proposed_qty,
+                     quantity: r.actual_qty,
+                     production_completion: r.prod_date,
+                     shipping_date: r.ship_date,
+                     eta_durban: r.eta_durban,
+                     eta_beira: r.eta_beira,
+                     ted: r.eta_beira,
+                     eta_harare: r.eta_harare,
+                     contract: r.contract_name,
+                     potential_customers: r.stock_potential_customers || []
+                 }));
+                 localStorage.setItem(cacheKey, JSON.stringify({ timestamp: Date.now(), data: records }));
+             }
           }
         } catch (err) { console.error("Stock sync failed", err); }
         finally { window._syncingStock = false; performRender(records); }
       };
 
-      window.filterStock = function (oem, status, btn, company) {
+      window.filterStock = function (oem, status, btn, company, contract) {
         window._activeStockOem = oem || window._activeStockOem || 'All';
         window._activeStockStatus = status || window._activeStockStatus || 'All';
         window._activeStockCompany = company || window._activeStockCompany || 'All';
+        window._activeStockContract = contract || window._activeStockContract || 'All';
         
         if (btn) {
             window.updateStockBtn(btn);
@@ -16406,6 +16451,8 @@
             if (statusDropdown) statusDropdown.value = window._activeStockStatus;
             const companyDropdown = document.getElementById('stock-company-dropdown');
             if (companyDropdown) companyDropdown.value = window._activeStockCompany;
+            const contractDropdown = document.getElementById('stock-contract-dropdown');
+            if (contractDropdown) contractDropdown.value = window._activeStockContract;
         }
 
         // CRITICAL: If we are in calendar mode, we need to switch back to table mode and re-render
@@ -16421,6 +16468,7 @@
         const targetOem = window._activeStockOem.toLowerCase();
         const targetStatus = window._activeStockStatus;
         const targetCompany = window._activeStockCompany;
+        const targetContract = window._activeStockContract;
         const mappings = window._stockCompanyMappings || [];
 
         sections.forEach(sec => {
@@ -16438,19 +16486,43 @@
           
           let sectionHasVisibleRows = false;
           
-          const rows = sec.querySelectorAll('.stock-row-item');
-          rows.forEach(row => {
-            const rowStatus = row.getAttribute('data-status') || '';
-            const statusMatch = targetStatus === 'All' || rowStatus === targetStatus;
-            if (statusMatch) {
-              row.style.display = ''; // Restore default display
-              sectionHasVisibleRows = true;
-            } else {
-              row.style.display = 'none';
-            }
-          });
+              // Process each phase group to hide/show its header based on row visibility
+              const phaseGroups = sec.querySelectorAll('div[id^="phase_"]');
+              phaseGroups.forEach(group => {
+                  let groupHasVisibleRows = false;
+                  const rows = group.querySelectorAll('.stock-row-item');
+                  rows.forEach(row => {
+                    const rowStatus = row.getAttribute('data-status') || '';
+                    const contractVal = (row.querySelector('.stock-row-contract-val')?.textContent || '').trim();
+                    const statusMatch = targetStatus === 'All' || rowStatus === targetStatus;
+                    const contractMatch = targetContract === 'All' || contractVal === targetContract;
+                    
+                    if (statusMatch && contractMatch) {
+                      row.style.display = ''; // Restore default display
+                      groupHasVisibleRows = true;
+                      sectionHasVisibleRows = true;
+                    } else {
+                      row.style.display = 'none';
+                    }
+                  });
 
-          // Only show the OEM section if it matches the brand AND has visible rows after status filtering AND matches company
+                  // The header is the previous element sibling
+                  const header = group.previousElementSibling;
+                  if (header) {
+                      header.style.display = groupHasVisibleRows ? 'flex' : 'none';
+                      if (targetStatus !== 'All' && groupHasVisibleRows) {
+                          group.style.display = 'block';
+                          const icon = header.querySelector('.fa-chevron-right, .fa-chevron-down');
+                          if (icon) icon.classList.replace('fa-chevron-right', 'fa-chevron-down');
+                      } else if (targetStatus === 'All') {
+                          group.style.display = 'none';
+                          const icon = header.querySelector('.fa-chevron-right, .fa-chevron-down');
+                          if (icon) icon.classList.replace('fa-chevron-down', 'fa-chevron-right');
+                      }
+                  }
+              });
+
+              // Only show the OEM section if it matches the brand AND has visible rows after status filtering AND matches company
           const oemMatch = targetOem === 'all' || secOem === targetOem;
           sec.style.display = (oemMatch && companyMatch && sectionHasVisibleRows) ? 'block' : 'none';
         });
@@ -19926,6 +19998,10 @@
               <label class="gs-label">Model</label>
               <input type="text" id="sp-model-input" class="gs-input" placeholder="e.g. ZX890">
               <div id="sp-model-suggest" class="suggest-list hidden"></div>
+            </div>
+            <div class="gs-field">
+              <label class="gs-label">Contract</label>
+              <input type="text" id="sp-contract" class="gs-input" placeholder="e.g. Tender 2024">
             </div>
             <div class="gs-field">
               <label class="gs-label">Proposed Order Qty (Int)</label>
