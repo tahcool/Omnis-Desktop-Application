@@ -1216,7 +1216,7 @@
       submitBtn.disabled = false;
     }
 
-    (function autoLoginIfRemembered() {
+    function autoLoginIfRemembered() {
       const remembered = localStorage.getItem(LS_REMEMBER) === "1";
       if (!remembered) return;
 
@@ -1230,7 +1230,31 @@
 
       submitBtn.disabled = true;
       tryLoginSequentially(savedUser.trim(), savedPwd.trim(), true);
-    })();
+    }
+
+    let updateCheckCompleted = false;
+    
+    // We listen to update events to delay auto-login
+    if (window.electron && window.electron.on) {
+      window.electron.on('update-message', (event, data) => {
+        if (data.type === 'uptodate' || data.type === 'error') {
+          if (!updateCheckCompleted) {
+            updateCheckCompleted = true;
+            autoLoginIfRemembered();
+          }
+        } else if (data.type === 'available') {
+          updateCheckCompleted = true; // Stop waiting to login, let it download
+        }
+      });
+    }
+
+    // Fallback: If no update event fires within 3.5 seconds, just try login
+    setTimeout(() => {
+      if (!updateCheckCompleted) {
+        updateCheckCompleted = true;
+        autoLoginIfRemembered();
+      }
+    }, 3500);
   </script>
 </body>
 

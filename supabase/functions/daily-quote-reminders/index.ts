@@ -24,11 +24,7 @@ import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
 const SUPABASE_URL = Deno.env.get("SUPABASE_URL")!;
 const SERVICE_KEY  = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
 
-// MAPPINGS
-const SALES_MAPPING: Record<string, string> = {
-  "Antony Dube": "antony@industrial-exchange.group",
-  "Louis Munyama": "louis@industrial-exchange.group"
-};
+// MAPPINGS (Dynamically fetched from omnis_sales_persons)
 
 const MANAGEMENT_CC = [
   "takunda@industrial-exchange.group",
@@ -65,44 +61,61 @@ Deno.serve(async (req) => {
   const sb = createClient(SUPABASE_URL, SERVICE_KEY, { auth: { persistSession: false } });
 
   try {
-    // 1. Fetch quotes that need follow up today or earlier
+    // 1. Fetch sales persons
+    const { data: salesPersons, error: spErr } = await sb
+      .from("omnis_sales_persons")
+      .select("*")
+      .eq("is_active", true);
+
+    if (spErr) throw new Error(spErr.message);
+
+    // 2. Fetch quotes from lifecycle table
     const today = new Date().toISOString().split('T')[0];
     
-    // We fetch quotes where custom_next_follow_up_date <= today and status is not 'Lost' or 'Cancelled' maybe?
-    // Let's just fetch all where custom_next_follow_up_date <= today and docstatus = 0 (Draft) or 1 (Submitted)
-    const { data: quotes, error: qErr } = await sb
-      .from("frappe_quotation")
-      .select("name, title, customer_name, transaction_date, custom_sales_person, status, company, custom_next_follow_up_date")
-      .lte("custom_next_follow_up_date", today)
-      .neq("status", "Lost")
-      .neq("status", "Cancelled")
-      .order("custom_next_follow_up_date", { ascending: true });
+    const { data: allLifecycles, error: qErr } = await sb
+      .from("omnis_quote_lifecycle")
+      .select("*, frappe_quotation(name, title, customer_name, transaction_date, custom_sales_person, status, company)")
+      .eq("is_closed", false);
 
     if (qErr) throw new Error(qErr.message);
 
-    if (!quotes || quotes.length === 0) {
+    if (!allLifecycles || allLifecycles.length === 0) {
+      return new Response(JSON.stringify({ message: "No quotes need follow up today." }), { status: 200 });
+    }
+
+    // Filter to those that are strictly due today or earlier
+    const dueLifecycles = allLifecycles.filter((ql: any) => {
+      let due = ql.current_stage === 1 ? ql.stage_1_due : (ql.current_stage === 2 ? ql.stage_2_due : ql.stage_3_due);
+      return due <= today;
+    });
+
+    if (dueLifecycles.length === 0) {
       return new Response(JSON.stringify({ message: "No quotes need follow up today." }), { status: 200 });
     }
 
     // 2. Group by Sales Person and Company
     const groups: Record<string, Record<string, any[]>> = {};
 
-    for (const q of quotes) {
+    for (const ql of dueLifecycles) {
+      const q = ql.frappe_quotation || {};
+      if (!q.name) continue;
+      
       const sp = q.custom_sales_person || "Unassigned";
       const comp = q.company || "Machinery Exchange";
       
       if (!groups[sp]) groups[sp] = {};
       if (!groups[sp][comp]) groups[sp][comp] = [];
       
-      groups[sp][comp].push(q);
+      groups[sp][comp].push(ql);
     }
 
-    // 3. Generate HTML and Queue Emails
+    // 4. Generate HTML and Queue Emails
     let emailsQueued = 0;
     const currentDateStr = new Date().toLocaleDateString('en-GB', {day:'2-digit',month:'long',year:'numeric'});
 
     for (const [spName, companies] of Object.entries(groups)) {
-      const spEmail = SALES_MAPPING[spName];
+      const spObj = salesPersons?.find(p => p.name === spName);
+      const spEmail = spObj?.email;
       if (!spEmail) {
         console.warn(`No email mapping found for sales person: ${spName}`);
         continue;
@@ -112,20 +125,22 @@ Deno.serve(async (req) => {
         const brand = getBranding(companyName);
         
         let tableRows = "";
-        for (const q of companyQuotes) {
+        for (const ql of companyQuotes) {
+          const q = ql.frappe_quotation;
           const dt = q.transaction_date ? new Date(q.transaction_date).toLocaleDateString('en-GB') : '-';
-          const fup = q.custom_next_follow_up_date ? new Date(q.custom_next_follow_up_date).toLocaleDateString('en-GB') : '-';
+          const due = ql.current_stage === 1 ? ql.stage_1_due : (ql.current_stage === 2 ? ql.stage_2_due : ql.stage_3_due);
+          const fup = due ? new Date(due).toLocaleDateString('en-GB') : '-';
           
           tableRows += `
             <tr>
               <td style="padding:12px;border-bottom:1px solid #e2e8f0;font-size:13px;font-weight:600;">
-                <a href="omnis://quote/${q.name}" style="color:#2563eb;text-decoration:none;">${q.name}</a>
+                <a href="https://pfqaeewmlwfayxbgmuaq.supabase.co/functions/v1/omnis-link?quote=${q.name}" style="color:#2563eb;text-decoration:none;">${q.name}</a>
               </td>
               <td style="padding:12px;border-bottom:1px solid #e2e8f0;font-size:13px;color:#334155;">${q.title || '-'}</td>
               <td style="padding:12px;border-bottom:1px solid #e2e8f0;font-size:13px;color:#334155;">${q.customer_name || '-'}</td>
               <td style="padding:12px;border-bottom:1px solid #e2e8f0;font-size:13px;color:#334155;">${dt}</td>
               <td style="padding:12px;border-bottom:1px solid #e2e8f0;font-size:13px;color:#334155;">
-                <span style="display:inline-block;padding:2px 8px;background:#f1f5f9;border-radius:12px;font-size:11px;font-weight:600;">${q.status}</span>
+                <span style="display:inline-block;padding:2px 8px;background:#f1f5f9;border-radius:12px;font-size:11px;font-weight:600;">Stage ${ql.current_stage}</span>
               </td>
               <td style="padding:12px;border-bottom:1px solid #e2e8f0;font-size:13px;font-weight:700;color:#ef4444;">${fup}</td>
             </tr>
@@ -195,7 +210,7 @@ Deno.serve(async (req) => {
 
     return new Response(JSON.stringify({ 
       success: true, 
-      quotes_found: quotes.length,
+      quotes_found: dueLifecycles.length,
       emails_queued: emailsQueued 
     }), { status: 200, headers: { "Content-Type": "application/json" } });
 

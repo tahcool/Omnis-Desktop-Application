@@ -9,6 +9,7 @@ let olOrdersSort = { col: "days_left", asc: true };
 let olOrdersFilter = {};
 let olPage = 1;
 let olRowsPerPage = 20;
+window.olSelectedOrders = new Map(); // track selected report_ids -> {reportId, machineId}
 
 // Initialize Defaults
 function initOrdersLogic() {
@@ -200,18 +201,25 @@ async function loadOrdersList(force = false) {
             const supabaseAssigned = new Set();
             try {
                 let sbRes = await window.electron.invoke('supabase:query', {
-                    table: 'fmb_reports', method: 'select', params:{columns:'frappe_id, is_payment_terms, company'}
+                    table: 'fmb_reports', method: 'select', params:{columns:'frappe_id, is_payment_terms, company, status'}
                 });
                 if(sbRes.ok && sbRes.data) {
                     const termsSet = new Set(sbRes.data.filter(d => d.is_payment_terms === true || d.is_payment_terms === 'true').map(d => d.frappe_id));
                     const compMap = new Map();
-                    sbRes.data.forEach(d => { if (d.company) compMap.set(d.frappe_id, d.company); });
+                    const statusMap = new Map();
+                    sbRes.data.forEach(d => { 
+                        if (d.company) compMap.set(d.frappe_id, d.company); 
+                        if (d.status) statusMap.set(d.frappe_id, d.status);
+                    });
                     
                     ordersList.forEach(o => {
                         o.is_payment_terms = termsSet.has(o.report_id);
                         if (compMap.has(o.report_id)) {
                             o.company = compMap.get(o.report_id);
                             supabaseAssigned.add(o.report_id); // Mark as Supabase-sourced
+                        }
+                        if (statusMap.has(o.report_id)) {
+                            o.status = statusMap.get(o.report_id); // Override Frappe status
                         }
                     });
                 }
@@ -288,6 +296,8 @@ async function loadOrdersList(force = false) {
                 const targetCompany = normalizeCompany(company);
                 ordersList = ordersList.filter(o => o.company === targetCompany);
             }
+            // Filter out deleted orders locally
+            ordersList = ordersList.filter(o => o.status !== 'Deleted' && !localStorage.getItem('deleted_order_' + o.report_id));
             
             olOrdersData = ordersList;
 
@@ -357,6 +367,72 @@ window.setOrderCompany = async function(reportId, newCompany, selectEl) {
     } catch(e) {
         console.error('[setOrderCompany] Failed:', e);
         if (statusEl) { statusEl.innerHTML = '<i class="fas fa-times" style="color:#ef4444;"></i> Failed'; setTimeout(() => { statusEl.innerHTML = ''; }, 3000); }
+    } finally {
+        if (selectEl) selectEl.disabled = false;
+    }
+};
+
+window.setOrderStatusInline = async function(reportId, machineId, newStatus, selectEl) {
+    if (selectEl) selectEl.disabled = true;
+    const originalBorder = selectEl.style.border;
+    selectEl.style.border = '2px solid #3b82f6'; // indicate saving
+
+    try {
+        let revised = null;
+        let notes = null;
+        if (window.olOrdersData) {
+            const order = window.olOrdersData.find(o => o.machine_id === machineId);
+            if (order) {
+                revised = order.revised_handover;
+                notes = order.notes;
+            }
+        }
+
+        const res = await window.electron.invoke('supabase:query', {
+            table: 'fmb_reports',
+            method: 'upsert',
+            params: { data: { frappe_id: reportId, status: newStatus }, options: { onConflict: 'frappe_id' } }
+        });
+
+        if (res && res.ok !== false) {
+            // Update local memory
+            if (window.olOrdersData) {
+                const order = window.olOrdersData.find(o => o.machine_id === machineId);
+                if (order) order.status = newStatus;
+            }
+            selectEl.style.border = '2px solid #10b981';
+            
+            // Recalculate background and color dynamically based on new status
+            let statusStyle = "background:#f1f5f9; color:#64748b;";
+            const s = newStatus.toLowerCase();
+            if (s.includes("handover") || s.includes("ready") || s.includes("delivered")) statusStyle = "background:#dcfce7; color:#166534;";
+            else if (s.includes("delay") || s.includes("issue") || s.includes("on hold")) statusStyle = "background:#fff7ed; color:#9a3412;";
+            else if (s.includes("customer to collect")) statusStyle = "background:#f0fdf4; color:#166534;";
+            else if (s.includes("awaiting customer")) statusStyle = "background:#fffbeb; color:#92400e;";
+            else if (s.includes("in progress") || s.includes("transit") || s.includes("active")) statusStyle = "background:#e0f2fe; color:#075985;";
+            else if (s.includes("new sale")) statusStyle = "background:#faf5ff; color:#6b21a8; font-weight:900; box-shadow: 0 0 12px rgba(168, 85, 247, 0.25);";
+            
+            selectEl.setAttribute('style', `appearance:none; padding:4px 10px; border-radius:99px; font-size:10px; font-weight:800; text-transform:uppercase; cursor:pointer; outline:none; text-align:center; transition:0.2s; border:2px solid #10b981; ${statusStyle}`);
+            
+            // Remove 'is-new-entry' class from the parent row if it's no longer a new sale
+            const rowEls = document.querySelectorAll(`.ai-order-row[data-id="${reportId}"]`);
+            rowEls.forEach(rowEl => {
+                if (s.includes("new sale")) {
+                    rowEl.classList.add("is-new-entry");
+                } else {
+                    rowEl.classList.remove("is-new-entry");
+                }
+            });
+
+            if (window.showToast) window.showToast("Status updated", "success");
+            setTimeout(() => { selectEl.style.border = '1px solid transparent'; }, 2000);
+        } else {
+            throw new Error(res?.error || "Failed to update status");
+        }
+    } catch (e) {
+        console.error("Status update error:", e);
+        if (window.showToast) window.showToast("Update failed: " + e.message, "error");
+        selectEl.style.border = '2px solid #ef4444';
     } finally {
         if (selectEl) selectEl.disabled = false;
     }
@@ -571,12 +647,26 @@ function renderOrdersList() {
         else if (s.includes("in progress") || s.includes("transit") || s.includes("active")) statusStyle = "background:#e0f2fe; color:#075985; border:1px solid #bae6fd;";
         else if (s.includes("new sale")) statusStyle = "background:#faf5ff; color:#6b21a8; border:1px solid #e9d5ff; font-weight:900; box-shadow: 0 0 12px rgba(168, 85, 247, 0.25);";
 
-        const statusBadge = `<span style="display:inline-block; padding:4px 10px; border-radius:99px; font-size:10px; font-weight:800; text-transform:uppercase; ${statusStyle}">${r.status || "PENDING"}</span>`;
-
-        // 3. Company badge colors
         const escapeJs = (s) => (s || '').replace(/\\/g, "\\\\").replace(/'/g, "\\'").replace(/"/g, "&quot;").replace(/\n/g, "\\n").replace(/\r/g, "");
         const safeReportId = escapeJs(r.report_id);
         const safeMachineId = escapeJs(r.machine_id);
+
+        const optStyle = `background:#ffffff; color:#334155; font-weight:600; font-size:12px;`;
+        const statusBadge = `<select 
+            style="appearance:none; padding:4px 10px; border-radius:99px; font-size:10px; font-weight:800; text-transform:uppercase; cursor:pointer; outline:none; text-align:center; transition:0.2s; border:1px solid transparent; max-width:100%; overflow:hidden; text-overflow:ellipsis; ${statusStyle}"
+            onchange="window.setOrderStatusInline('${safeReportId}', '${safeMachineId}', this.value, this)"
+            onclick="event.stopPropagation();"
+            title="Click to change Phase/Status"
+        >
+            <option style="${optStyle}" value="New Sale" ${r.status === 'New Sale' ? 'selected' : ''}>New Sale</option>
+            <option style="${optStyle}" value="In Progress" ${r.status === 'In Progress' ? 'selected' : ''}>In Progress</option>
+            <option style="${optStyle}" value="Awaiting Customer" ${r.status === 'Awaiting Customer' ? 'selected' : ''}>Awaiting Customer</option>
+            <option style="${optStyle}" value="On Hold" ${r.status === 'On Hold' ? 'selected' : ''}>On Hold</option>
+            <option style="${optStyle}" value="Customer to Collect" ${r.status === 'Customer to Collect' ? 'selected' : ''}>Customer to Collect</option>
+            <option style="${optStyle}" value="Handed Over" ${r.status === 'Handed Over' ? 'selected' : ''}>Handed Over</option>
+            <option style="${optStyle}" value="Delivered" ${r.status === 'Delivered' ? 'selected' : ''}>Delivered</option>
+            <option style="${optStyle}" value="Final Inspection" ${r.status === 'Final Inspection' ? 'selected' : ''}>Final Inspection</option>
+        </select>`;
         const companyColors = {
             'Sinopower':          { bg: '#fef3c7', color: '#92400e', border: '#fde68a' },
             'Machinery Exchange': { bg: '#dbeafe', color: '#1e40af', border: '#bfdbfe' },
@@ -604,13 +694,21 @@ function renderOrdersList() {
               <span id="company-status-${r.report_id}" style="font-size:10px; color:#94a3b8; white-space:nowrap;"></span>
             </div>`;
 
+        const isChecked = window.olSelectedOrders && window.olSelectedOrders.has(r.report_id) ? 'checked' : '';
         return `
           <div class="ai-order-row ${riskClass} ${(r.status || "").toLowerCase().includes("new sale") ? 'is-new-entry' : ''}" data-id="${r.report_id}">
-            <div class="ai-order-cell" onclick="window.dashManager.openOrderModal('${safeReportId}', '${safeMachineId}')">
-              <span class="cell-label">Customer / Risk</span>
-              <div style="font-weight:700; font-size:15px; color:#000000; margin-bottom:4px; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden;" title="${(r.customer || '').replace(/\"/g, '')}">${(r.customer || "-").replace(/\"/g, '')}</div>
-              <div style="display:flex; align-items:center; gap:6px; font-size:11px; font-weight:800; color:${riskColor}">
-                <i class="fas ${riskIcon}"></i> ${riskLabel}
+            <div class="ai-order-cell" style="flex-direction:row; display:flex; gap:10px; align-items:flex-start;">
+              <input type="checkbox" class="order-select-cb" value="${safeReportId}" data-machine="${safeMachineId}" style="margin-top:4px; transform:scale(1.2); cursor:pointer;" onclick="event.stopPropagation(); window.toggleOrderSelection(this)" ${isChecked}>
+              <div style="flex:1;" onclick="window.dashManager.openOrderModal('${safeReportId}', '${safeMachineId}')">
+                <span class="cell-label">Customer / Risk</span>
+                <div style="font-weight:700; font-size:15px; color:#000000; margin-bottom:4px; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden;" title="${(r.customer || '').replace(/\"/g, '')}">${(r.customer || "-").replace(/\"/g, '')}</div>
+                <div style="display:flex; align-items:center; gap:6px; font-size:11px; font-weight:800; color:${riskColor}">
+                  <i class="fas ${riskIcon}"></i> ${riskLabel}
+                  <div style="margin-left:auto; display:flex; gap:6px;">
+                     <i id="notified_wa_icon_${r.report_id}" class="fab fa-whatsapp" style="color:#25d366; font-size:13px; display:${localStorage.getItem('notified_wa_'+r.report_id) ? 'inline-block' : 'none'};" title="WhatsApp Update Sent"></i>
+                     <i id="notified_email_icon_${r.report_id}" class="fas fa-envelope" style="color:#0284c7; font-size:13px; display:${localStorage.getItem('notified_email_'+r.report_id) ? 'inline-block' : 'none'};" title="Email Update Sent"></i>
+                  </div>
+                </div>
               </div>
             </div>
 
@@ -680,6 +778,56 @@ function renderOrdersList() {
             container.innerHTML = `<div style="padding:40px; text-align:center; color:#ef4444; font-weight:600;">Display Engine Failure<br><span style="font-size:11px; font-weight:400; opacity:0.8;">${err.message}</span></div>`;
         }
     }
+}
+
+/* =========================================
+   BULK SELECTION LOGIC
+   ========================================= */
+window.toggleOrderSelection = function(cb) {
+    if (!window.olSelectedOrders) window.olSelectedOrders = new Map();
+    const reportId = cb.value;
+    const machineId = cb.dataset.machine;
+    if (cb.checked) {
+        window.olSelectedOrders.set(reportId, { reportId, machineId });
+    } else {
+        window.olSelectedOrders.delete(reportId);
+    }
+    window.updateBulkActionBar();
+}
+
+window.updateBulkActionBar = function() {
+    let bar = document.getElementById('ol-bulk-action-bar');
+    if (!bar) {
+        const headGrid = document.getElementById('ol-orders-head-grid');
+        if (headGrid && headGrid.parentNode) {
+            bar = document.createElement('div');
+            bar.id = 'ol-bulk-action-bar';
+            bar.style.cssText = 'background:#1e293b; color:white; padding:12px 20px; border-radius:12px; margin-bottom:16px; display:none; align-items:center; justify-content:space-between; box-shadow:0 10px 15px -3px rgba(0,0,0,0.1);';
+            headGrid.parentNode.insertBefore(bar, headGrid);
+        }
+    }
+    if (!bar) return;
+
+    const count = window.olSelectedOrders ? window.olSelectedOrders.size : 0;
+    if (count > 0) {
+        bar.style.display = 'flex';
+        bar.innerHTML = `
+            <div style="font-weight:700; font-size:14px;"><i class="fas fa-check-square" style="color:#10b981; margin-right:8px;"></i> ${count} Order${count > 1 ? 's' : ''} Selected</div>
+            <div style="display:flex; gap:10px;">
+                <button onclick="window.dashManager.showBulkUpdateModal('email')" style="background:#0284c7; color:white; border:none; padding:8px 16px; border-radius:8px; font-weight:700; font-size:13px; cursor:pointer; box-shadow:0 4px 6px rgba(0,0,0,0.1);"><i class="fas fa-envelope"></i> Bulk Email</button>
+                <button onclick="window.dashManager.showBulkUpdateModal('whatsapp')" style="background:#25d366; color:white; border:none; padding:8px 16px; border-radius:8px; font-weight:700; font-size:13px; cursor:pointer; box-shadow:0 4px 6px rgba(0,0,0,0.1);"><i class="fas fa-comment"></i> Bulk WhatsApp</button>
+                <button onclick="window.clearOrderSelection()" style="background:rgba(255,255,255,0.1); color:white; border:none; padding:8px 16px; border-radius:8px; font-weight:600; font-size:13px; cursor:pointer;">Cancel</button>
+            </div>
+        `;
+    } else {
+        bar.style.display = 'none';
+    }
+}
+
+window.clearOrderSelection = function() {
+    if (window.olSelectedOrders) window.olSelectedOrders.clear();
+    document.querySelectorAll('.order-select-cb').forEach(cb => cb.checked = false);
+    window.updateBulkActionBar();
 }
 
 /* =========================================

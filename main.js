@@ -408,6 +408,15 @@ ipcMain.handle("window:maximize", () => {
   if (win) win.maximize();
 });
 
+ipcMain.handle("window:restoreLoginSize", () => {
+  const win = BrowserWindow.getFocusedWindow();
+  if (win) {
+    if (win.isMaximized()) win.unmaximize();
+    win.setSize(650, 950);
+    win.center();
+  }
+});
+
 ipcMain.handle("app:getVersion", () => {
   try {
     const fs = require('fs');
@@ -742,8 +751,20 @@ ipcMain.handle('sync:setOnline', async (event, online) => {
 });
 
 // ✅ Supabase Proxy API - Allows renderer to query Supabase safely
+ipcMain.handle('supabase:edgeFunction', async (event, { name, data }) => {
+  try {
+    const { data: result, error } = await supabase.functions.invoke(name, { body: data });
+    if (error) throw error;
+    return { data: result };
+  } catch (err) {
+    console.error('Supabase Edge Function Error:', err);
+    throw err;
+  }
+});
+
 ipcMain.handle('supabase:query', async (event, { table, method, params, data }) =>{
   try {
+    params = params || {};
     let query = supabase.from(table);
 
     if (method === 'select') {
@@ -1510,6 +1531,16 @@ function createWindow() {
   win.once("ready-to-show", () => {
     // We stay at 1100x620 for login
     win.show();
+    
+    // Check initial deep link on Windows
+    if (process.platform === 'win32') {
+      const url = process.argv.find(arg => arg.startsWith('omnis://'));
+      if (url) {
+        setTimeout(() => {
+          if (!win.isDestroyed()) win.webContents.send('deep-link', url);
+        }, 3000); // Wait for renderer to be ready and logged in (or handle it in dashboard)
+      }
+    }
   });
 
   return win;

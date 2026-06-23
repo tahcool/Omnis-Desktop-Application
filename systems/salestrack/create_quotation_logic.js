@@ -333,8 +333,11 @@
             const data = resData.message || resData;
             if (!data.ok) throw new Error(data.error || "Failed to fetch quotation details");
 
+            const templateSelect = document.getElementById("qtn-opts-template");
+            const template = templateSelect ? templateSelect.value : 'machinery_exchange';
+
             // 2. Render HTML Locally
-            const html = renderQuotationHTML(data);
+            const html = renderQuotationHTML(data, template);
 
             // 3. Send HTML to backend for PDF conversion
             const base = CURRENT_SYSTEM.baseUrl.replace(/\/$/, "");
@@ -377,7 +380,7 @@
         }
     };
 
-    function renderQuotationHTML(data) {
+    function renderQuotationHTML(data, template = 'machinery_exchange') {
         const qtn = data.quotation;
         const customer = data.customer || {};
         const items = data.items || [];
@@ -409,6 +412,59 @@
             </tr>`;
         });
 
+        let headerHtml = "";
+        let footerHtml = "";
+
+        if (template === 'sinopower') {
+            headerHtml = `
+            <div class="header">
+                <div class="logo-section">
+                    <div style="font-size: 28px; font-weight: 900; color: #1e3a8a; line-height: 0.9;">SINOPOWER<br>PUMP & GENERATOR</div>
+                    <div style="font-size: 10px; font-weight: bold; color: #000; margin-top: 5px;">Power Generation Specialists</div>
+                    <div style="height: 4px; background: linear-gradient(to right, #60a5fa, #1e3a8a); margin-top: 5px; width: 100%;"></div>
+                </div>
+                <div class="company-details">
+                    <strong>Sinopower (Pvt) Ltd</strong><br>
+                    Harare, Zimbabwe<br>
+                    Email: sales@sinopower.co.zw • Website: www.sinopower.co.zw<br>
+                </div>
+                <div class="clear"></div>
+            </div>`;
+            footerHtml = `
+            <div style="margin-top: 30px;">
+                <p>Yours truly,<br>For and on behalf of Sinopower (Pvt) Ltd</p>
+                <p style="margin-top: 40px;"><strong>${qtn.sales_person || 'Sales Department'}</strong><br>Sinopower</p>
+            </div>
+            <div class="footer-logos">
+                <div class="footer-logos-text" style="color: #1e3a8a;">SINOPOWER | GENERATORS | PUMPS</div>
+            </div>`;
+        } else {
+            headerHtml = `
+            <div class="header">
+                <div class="logo-section">
+                    <div style="font-size: 28px; font-weight: 900; color: #cc0000; line-height: 0.9;">MACHINERY<br>EXCHANGE</div>
+                    <div style="font-size: 10px; font-weight: bold; color: #000; margin-top: 5px;">Earthmoving Equipment Specialists</div>
+                    <div style="height: 4px; background: linear-gradient(to right, #ffcc00, #cc0000); margin-top: 5px; width: 100%;"></div>
+                </div>
+                <div class="company-details">
+                    <strong>Machinery Exchange (Pvt) Ltd</strong><br>
+                    5 Martin Drive, Msasa, Harare • Tel: +263 (024) 2447180-2 / 0782 191 490<br>
+                    Cnr 16th Avenue, Fife Street Ext, Belmont, Bulawayo • Tel: (0)292 263191<br>
+                    Email: info@machinery-exchange.com • Website: www.machinery-exchange.com<br>
+                    Reg No: 584/1954 • VAT No: 220119780 • TIN No: 2001663680
+                </div>
+                <div class="clear"></div>
+            </div>`;
+            footerHtml = `
+            <div style="margin-top: 30px;">
+                <p>Yours truly,<br>For and on behalf of Machinery Exchange (Pvt) Ltd</p>
+                <p style="margin-top: 40px;"><strong>${qtn.sales_person || 'Sales Department'}</strong><br>Machinery Exchange</p>
+            </div>
+            <div class="footer-logos">
+                <div class="footer-logos-text">SHANTUI | Bobcat | HITACHI | WIRTGEN | ROKBAK</div>
+            </div>`;
+        }
+
         return `
         <html>
         <head>
@@ -432,21 +488,7 @@
             </style>
         </head>
         <body>
-            <div class="header">
-                <div class="logo-section">
-                    <div style="font-size: 28px; font-weight: 900; color: #cc0000; line-height: 0.9;">MACHINERY<br>EXCHANGE</div>
-                    <div style="font-size: 10px; font-weight: bold; color: #000; margin-top: 5px;">Earthmoving Equipment Specialists</div>
-                    <div style="height: 4px; background: linear-gradient(to right, #ffcc00, #cc0000); margin-top: 5px; width: 100%;"></div>
-                </div>
-                <div class="company-details">
-                    <strong>Machinery Exchange (Pvt) Ltd</strong><br>
-                    5 Martin Drive, Msasa, Harare • Tel: +263 (024) 2447180-2 / 0782 191 490<br>
-                    Cnr 16th Avenue, Fife Street Ext, Belmont, Bulawayo • Tel: (0)292 263191<br>
-                    Email: info@machinery-exchange.com • Website: www.machinery-exchange.com<br>
-                    Reg No: 584/1954 • VAT No: 220119780 • TIN No: 2001663680
-                </div>
-                <div class="clear"></div>
-            </div>
+            ${headerHtml}
 
             <div class="title">QUOTATION</div>
 
@@ -517,14 +559,7 @@
                 </ul>
             </div>
 
-            <div style="margin-top: 30px;">
-                <p>Yours truly,<br>For and on behalf of Machinery Exchange (Pvt) Ltd</p>
-                <p style="margin-top: 40px;"><strong>${qtn.sales_person || 'Sales Department'}</strong><br>Machinery Exchange</p>
-            </div>
-
-            <div class="footer-logos">
-                <div class="footer-logos-text">SHANTUI | Bobcat | HITACHI | WIRTGEN | ROKBAK</div>
-            </div>
+            ${footerHtml}
         </body>
         </html>`;
     }

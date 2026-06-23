@@ -2707,6 +2707,20 @@
       align-items: center;
     }
 
+    .ai-quotations-grid {
+      display: grid;
+      grid-template-columns: 1.5fr 2fr 2fr 100px 1.5fr 100px 120px 80px;
+      gap: 12px;
+      align-items: center;
+    }
+
+    .ai-leaderboard-grid {
+      display: grid;
+      grid-template-columns: 2fr 1fr 1fr 1fr 1fr;
+      gap: 12px;
+      align-items: center;
+    }
+
     .ai-stock-grid {
       display: grid;
       grid-template-columns: 1.5fr 1.5fr 60px 80px 100px 100px 100px 100px 100px 100px;
@@ -5817,18 +5831,28 @@
     <div class="top-nav-group"
       style="margin-left: 6px; padding-left: 6px; border-left: 1px solid rgba(255,255,255,0.1);">
 
-      
       <div class="top-nav-item" data-view="view-certificates">
         <span class="icon"><i class="fas fa-certificate"></i></span> <span>Certificates</span>
       </div>
-      <div class="top-nav-item" data-view="view-quotations-list">
-        <span class="icon"><i class="fas fa-file-alt"></i></span> <span>Quotations</span>
-      </div>
-      <div class="top-nav-item" data-view="view-ce-list">
-        <span class="icon"><i class="fas fa-inbox"></i></span> <span>Enquiries</span>
-      </div>
-      <div class="top-nav-item" data-view="view-command-center">
-        <span class="icon"><i class="fas fa-terminal"></i></span> <span>Command</span>
+
+      <!-- Sales Dropdown -->
+      <div class="top-nav-dropdown">
+        <div class="top-nav-item top-nav-dropdown-trigger" id="dd-sales-trigger">
+          <span class="icon"><i class="fas fa-chart-line"></i></span>
+          <span>Sales</span>
+          <i class="fas fa-chevron-down" style="font-size:8px; margin-left:2px; opacity:0.6;"></i>
+        </div>
+        <div class="top-nav-dropdown-menu" id="dd-sales-menu">
+          <div class="top-nav-dropdown-item" data-view="view-quotations-list">
+            <i class="fas fa-file-alt"></i> Quotations
+          </div>
+          <div class="top-nav-dropdown-item" data-view="view-ce-list">
+            <i class="fas fa-inbox"></i> Enquiries
+          </div>
+          <div class="top-nav-dropdown-item" data-view="view-command-center">
+            <i class="fas fa-terminal"></i> QLA
+          </div>
+        </div>
       </div>
     </div>
 
@@ -5853,13 +5877,17 @@
     </div>
 
     <div class="top-nav-group" style="gap:8px;">
-      <div class="top-nav-item nav-item" data-view="view-settings"
-        style="padding:8px; border-radius:50%; background:rgba(255,255,255,0.05);">
-        <span class="icon" style="margin:0; font-size:13px; width:auto;"><i class="fas fa-cog"></i></span>
+      <div class="top-nav-action-btn" onclick="switchToView('view-settings', 'System Settings')"
+        style="padding:8px 14px; border-radius:8px; background:rgba(255,255,255,0.05); display:flex; align-items:center; gap:6px; transition: background 0.2s; cursor:pointer;"
+        onmouseover="this.style.background='rgba(255,255,255,0.1)'" onmouseout="this.style.background='rgba(255,255,255,0.05)'">
+        <span class="icon" style="margin:0; font-size:12px; width:auto; color:rgba(255,255,255,0.7);"><i class="fas fa-cog"></i></span>
+        <span style="font-size:12px; font-weight:700; color:rgba(255,255,255,0.9);">Settings</span>
       </div>
-      <div class="top-nav-item" onclick="logout()"
-        style="color: #f87171; padding:8px; border-radius:50%; background:rgba(248,113,113,0.1);">
-        <span class="icon" style="margin:0; font-size:13px; width:auto;"><i class="fas fa-sign-out-alt"></i></span>
+      <div class="top-nav-action-btn" onclick="logout()"
+        style="padding:8px 14px; border-radius:8px; background:rgba(248,113,113,0.1); display:flex; align-items:center; gap:6px; transition: background 0.2s; cursor:pointer;"
+        onmouseover="this.style.background='rgba(248,113,113,0.2)'" onmouseout="this.style.background='rgba(248,113,113,0.1)'">
+        <span class="icon" style="margin:0; font-size:12px; width:auto; color:#f87171;"><i class="fas fa-sign-out-alt"></i></span>
+        <span style="font-size:12px; font-weight:700; color:#f87171;">Logout</span>
       </div>
     </div>
   </nav>
@@ -5935,7 +5963,7 @@
         </div>
         <div class="nav-item" data-view="view-command-center">
           <span class="icon"><i class="fas fa-terminal"></i></span>
-          <span>Command Center</span>
+          <span>QLA (Quotations Lifecycle Analytics)</span>
         </div>
 
         <div class="nav-item" data-view="view-products-list">
@@ -5987,7 +6015,7 @@
 
       <!-- TAB NAVIGATION CONTAINER (shown only for GSM Report) -->
       <div id="gsm-tab-container" class="gsm-tab-container hidden"
-        style="display:none; background: #ffffff; border-bottom:1px solid #e2e8f0; padding: 24px; margin-top: 80px;">
+        style="display:none; background: #ffffff; border-bottom:1px solid #e2e8f0; padding: 24px; margin-top: var(--nav-height, 80px);">
         <div style="display: flex; align-items: center; justify-content: space-between; gap: 40px;">
           <div class="mxg-page-toggle" style="margin-bottom: 0; display: flex; gap: 8px;">
             <style>
@@ -6173,6 +6201,26 @@
           // Clear any previously applied zoom on load
           applyOmnisAutoScaling();
           document.addEventListener('DOMContentLoaded', applyOmnisAutoScaling);
+
+          // Responsive Navigation Bar height tracking
+          document.addEventListener('DOMContentLoaded', () => {
+            const nav = document.querySelector('.omnis-top-nav');
+            if (nav && window.ResizeObserver) {
+              new ResizeObserver(entries => {
+                const h = entries[0].target.offsetHeight;
+                document.documentElement.style.setProperty('--nav-height', `${h}px`);
+                
+                // Also update any currently visible views that use the inset property
+                const allViews = document.querySelectorAll('.view-page, .view-content');
+                allViews.forEach(v => {
+                  if (v.id !== 'view-settings' && !v.classList.contains('hidden') && v.style.position === 'absolute') {
+                    v.style.setProperty("inset", `var(--nav-height, ${h}px) 0 0 0`, "important");
+                    v.style.setProperty("height", `calc(100% - var(--nav-height, ${h}px))`, "important");
+                  }
+                });
+              }).observe(nav);
+            }
+          });
         </script>
         <script>
           // Simple sync time updater
@@ -8581,23 +8629,20 @@
           </div>
         </div>
 
-        <div class="table-wrapper">
-          <table class="mxg-table">
-            <thead>
-              <tr>
-                <th>ID</th>
-                <th>Title</th>
-                <th>Customer</th>
-                <th>Date</th>
-                <th>Sales Person</th>
-                <th>Status</th>
-                <th>Next Follow Up</th>
-                <th class="text-center">Action</th>
-              </tr>
-            </thead>
-            <tbody id="qlist-body"></tbody>
-          </table>
+        <!-- Grid Header -->
+        <div class="ai-order-header ai-quotations-grid" id="qlist-head-grid" style="border-radius: 12px 12px 0 0; margin-bottom: 8px;">
+          <div><span>ID</span> <i class="fas fa-sort sort-icon"></i></div>
+          <div><span>Title</span> <i class="fas fa-sort sort-icon"></i></div>
+          <div><span>Customer</span> <i class="fas fa-sort sort-icon"></i></div>
+          <div style="text-align:center;"><span>Date</span> <i class="fas fa-sort sort-icon"></i></div>
+          <div><span>Sales Person</span> <i class="fas fa-sort sort-icon"></i></div>
+          <div><span>Status</span> <i class="fas fa-sort sort-icon"></i></div>
+          <div style="text-align:center;"><span>Next Follow Up</span> <i class="fas fa-sort sort-icon"></i></div>
+          <div style="text-align:right;">Action</div>
         </div>
+
+        <!-- Grid Body -->
+        <div class="ol-orders-grid-container" id="qlist-body" style="display:flex; flex-direction:column; gap:8px;"></div>
 
         <!-- Pagination Bar -->
         <div style="display:flex; align-items:center; justify-content:space-between; padding:14px 0 4px 0; border-top:1px solid #f1f5f9; margin-top:8px;">
@@ -11773,9 +11818,9 @@
           view.style.setProperty("z-index", "10", "important");
         } else {
           view.style.setProperty("position", "absolute", "important");
-          view.style.setProperty("inset", "80px 0 0 0", "important");
+          view.style.setProperty("inset", "var(--nav-height, 80px) 0 0 0", "important");
           view.style.setProperty("width", "100%", "important");
-          view.style.setProperty("height", "calc(100% - 80px)", "important");
+          view.style.setProperty("height", "calc(100% - var(--nav-height, 80px))", "important");
         }
         // view-rental-defects, view-rental-fleet, view-fleet-manager, view-customer-profiles are siblings of main-view-container
         if (["view-rental-defects","view-rental-fleet","view-fleet-manager","view-customer-profiles","view-psv","view-cdv","view-marketing","view-ft-defect-queue","view-certificates","view-command-center"].includes(view.id)) {
@@ -12540,7 +12585,7 @@
         ceOffset = 0;
         loadCeList(false);
       } else if (viewId === "view-command-center") {
-        if (mainTitle) mainTitle.textContent = "Quotation Command Center";
+        if (mainTitle) mainTitle.textContent = "QLA (Quotations Lifecycle Analytics)";
         if (mainSubtitle) mainSubtitle.textContent = "Proactive follow-up and engagement engine.";
         if (typeof salestrack !== 'undefined' && salestrack.openCommandCenter) salestrack.openCommandCenter(true);
       } else if (viewId === "view-chat") {
@@ -12769,33 +12814,57 @@
       if (!qListBody) return;
       qListBody.innerHTML = "";
       if (!data || !data.length) {
-        qListBody.innerHTML = `<tr><td colspan="8" style="color:#6b7280; padding:20px; text-align:center;">No quotations found.</td></tr>`;
+        qListBody.innerHTML = `<div style="padding:40px; text-align:center; color:#94a3b8; background:white; border-radius:12px; border:1px dashed #e2e8f0;">No quotations found.</div>`;
         return;
       }
       const base = CURRENT_SYSTEM ? CURRENT_SYSTEM.baseUrl.replace(/\/$/, "") : "";
       data.forEach(row => {
-        const tr = document.createElement("tr");
-        tr.onclick = () => window.open(`${base}/app/quotation/${row.name}`, "_blank");
-        tr.style.cursor = "pointer";
+        const item = document.createElement("div");
+        item.className = "ai-order-row ai-quotations-grid";
+        item.style.borderRadius = "12px";
+        item.style.borderLeft = "4px solid var(--accent-maroon)";
+        item.onclick = () => window.open(`${base}/app/quotation/${row.name}`, "_blank");
+        item.style.cursor = "pointer";
 
-        tr.innerHTML = `
-            <td><span class="q-id-pill">${row.name}</span></td>
-            <td style="font-weight:600;">${row.title || '-'}</td>
-            <td>${row.customer_name || '-'}</td>
-            <td>${formatDate(row.transaction_date)}</td>
-            <td>${row.custom_sales_person || '-'}</td>
-            <td><span class="status-pill ${getStatusColor(row.status)}">${row.status || 'Draft'}</span></td>
-            <td style="font-size:11px; color:#64748b;">${formatDate(row.custom_next_follow_up_date)}</td>
-            <td class="text-center">
-              <button class="btn-icon-only" onclick="event.stopPropagation(); window.showQuotationOptions('${row.name}', false)" title="Print/Share">
-                🖨️
-              </button>
-              <button class="btn-icon-only" onclick="event.stopPropagation(); window.previewWhatsAppReminder('${row.name}')" title="Test WhatsApp Reminder" style="margin-left:5px;">
-                💬
-              </button>
-            </td>
-          `;
-        qListBody.appendChild(tr);
+        item.innerHTML = `
+          <div class="ai-order-cell">
+            <span class="cell-label">ID</span>
+            <div style="font-weight:700; color:#1e293b; font-size:13px; word-break:break-all;"><span class="q-id-pill" style="display:inline-block; max-width:100%; overflow:hidden; text-overflow:ellipsis;">${escapeHtml(row.name)}</span></div>
+          </div>
+          <div class="ai-order-cell">
+            <span class="cell-label">Title</span>
+            <div style="font-weight:600; color:#0f172a; font-size:13px; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden;">${escapeHtml(row.title || '-')}</div>
+          </div>
+          <div class="ai-order-cell">
+            <span class="cell-label">Customer</span>
+            <div style="font-weight:600; color:#475569; font-size:13px;">${escapeHtml(row.customer_name || '-')}</div>
+          </div>
+          <div class="ai-order-cell" style="text-align:center;">
+            <span class="cell-label">Date</span>
+            <div style="font-weight:600; font-size:12px; color:#64748b;">${formatDate(row.transaction_date)}</div>
+          </div>
+          <div class="ai-order-cell">
+            <span class="cell-label">Sales Person</span>
+            <div style="font-weight:600; color:#334155; font-size:12px;">${escapeHtml(row.custom_sales_person || '-')}</div>
+          </div>
+          <div class="ai-order-cell">
+            <span class="cell-label">Status</span>
+            <div><span class="status-pill ${getStatusColor(row.status)}">${escapeHtml(row.status || 'Draft')}</span></div>
+          </div>
+          <div class="ai-order-cell" style="text-align:center;">
+            <span class="cell-label">Next Follow Up</span>
+            <div style="font-weight:700; font-size:12px; color:#10b981;">${formatDate(row.custom_next_follow_up_date)}</div>
+          </div>
+          <div class="ai-order-row-actions" style="text-align:right; display:flex; gap:6px; justify-content:flex-end;">
+            <button class="btn-icon-only" onclick="event.stopPropagation(); window.showQuotationOptions('${row.name}', false)" title="Print/Share" style="border:1px solid #e2e8f0; background:white; color:#334155; height:28px; width:28px; border-radius:6px; font-size:12px;">
+              <i class="fas fa-print"></i>
+            </button>
+            <button class="btn-icon-only" onclick="event.stopPropagation(); window.previewWhatsAppReminder('${row.name}')" title="Test WhatsApp Reminder" style="border:1px solid #bbf7d0; background:#f0fdf4; color:#16a34a; height:28px; width:28px; border-radius:6px; font-size:12px;">
+              <i class="fab fa-whatsapp"></i>
+            </button>
+          </div>
+        `;
+        qListBody.appendChild(item);
       });
     }
 
@@ -17934,16 +18003,37 @@
       top: 0 !important;
       left: 0 !important;
       width: 100vw !important;
-      height: 80px !important;
+      min-height: 80px;
+      height: auto !important;
       background: #000000 !important;
       display: flex;
       align-items: center;
-      padding: 0 20px;
-      gap: 24px;
+      flex-wrap: wrap;
+      padding: 10px 20px;
+      gap: 12px 24px;
       z-index: 8000 !important;
       border-bottom: 2px solid #ef4444 !important;
       box-shadow: none !important;
       flex-shrink: 0;
+    }
+
+    @media (max-width: 1400px) {
+      .omnis-top-nav { gap: 12px 16px; padding: 10px 15px; }
+      .top-nav-item { padding: 4px 6px; font-size: 11px; }
+    }
+    @media (max-width: 1200px) {
+      .top-nav-group { gap: 0px; }
+      .omnis-top-nav { gap: 8px 12px; padding: 8px 12px; }
+      .top-nav-item { padding: 4px 6px; font-size: 10px; gap: 4px; }
+      .top-nav-item .icon { font-size: 11px; width: 14px; }
+      .top-nav-logo img { height: 32px !important; }
+      .top-nav-logo span { font-size: 10px !important; margin-right: 8px !important; }
+    }
+    @media (max-width: 900px) {
+      .top-nav-item span:not(.icon) { display: none !important; }
+      .top-nav-dropdown-trigger::after { display: none !important; }
+      .top-nav-dropdown-trigger i.fa-chevron-down { display: none !important; }
+      .top-nav-action-btn span:not(.icon) { display: none !important; }
     }
 
     .top-nav-logo {
@@ -25358,7 +25448,7 @@ Commercial Team`);
       const whatsapp_number = document.getElementById('sp-phone').value.trim();
       const is_active = document.getElementById('sp-active').checked;
 
-      if (!name) { omnisAlert('Name is required'); return; }
+      if (!name) { alert('Name is required'); return; }
 
       const payload = { name, email, whatsapp_number, is_active };
       if (id) payload.id = parseInt(id);
@@ -25370,12 +25460,12 @@ Commercial Team`);
           data: payload
         });
         if (error) throw error;
-        omnisAlert('Sales Person saved successfully');
+        alert('Sales Person saved successfully');
         closeSalesPersonModal();
         fetchSalesPersons();
       } catch (err) {
         console.error("Failed to save sales person", err);
-        omnisAlert('Failed to save: ' + err.message);
+        alert('Failed to save: ' + (err.message || err));
       }
     }
 

@@ -35,3 +35,8 @@
   Files: .mcp/knowledge/_shared/commit_log.md,systems/salestrack/certificates_logic.js,systems/salestrack/index.html,
 - `5cb66ed` 2026-06-18 [supabase-migration] Restore Point: Bulk Generation Feature completed and working
   Files: .mcp/knowledge/_shared/commit_log.md,
+- `2fe81af` 2026-06-18 [supabase-migration] chore(release): version 4.0.0 - Bulk Genesis
+  Files: .mcp/knowledge/_shared/commit_log.md,app.json,package.json,
+\n## 2026-06-22
+- `b0db3c6` 2026-06-22 [supabase-migration] Fix Team tab visibility and Command Center z-index bug
+  Files: systems/salestrack/index.html,

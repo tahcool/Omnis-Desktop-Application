@@ -1102,11 +1102,11 @@ window.OmnisDashboardV6 = class OmnisDashboardV6 {
         if (!quotes.length) return '<div style="padding:40px; text-align:center; color:#94a3b8;">No active quotes.</div>';
         return `
             <div style="padding:10px;">
-                <table style="width:100%; border-collapse:collapse;">
+                <table style="width:100%; border-collapse:separate; border-spacing:0;">
                     <thead style="background:#f8fafc; font-size:10px; text-transform:uppercase; color:#64748b; font-weight:800;">
                         <tr style="border-bottom:1px solid #e2e8f0;">
-                            <th style="padding:12px 16px; text-align:left;">Customer</th>
-                            <th style="padding:12px 16px; text-align:right;">Amount</th>
+                            <th style="padding:12px 16px; color:white; text-align:left;">Customer</th>
+                            <th style="padding:12px 16px; color:white; text-align:right;">Amount</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -1352,7 +1352,7 @@ window.OmnisDashboardV6 = class OmnisDashboardV6 {
 
                     <!-- Detailed Table -->
                     <div style="background:white; border:1px solid #e2e8f0; border-radius:12px; overflow:hidden; box-shadow:0 4px 20px rgba(0,0,0,0.03);">
-                        <table class="eff-table" style="width:100%; border-collapse:collapse; font-size:13px; text-align:left;">
+                        <table class="eff-table" style="width:100%; border-collapse:separate; border-spacing:0; font-size:13px; text-align:left;">
                             <thead>
                                 <tr style="background:#f8fafc; border-bottom:2px solid #e2e8f0;">
                                     <th style="padding:16px 20px; font-weight:800; color:#475569; text-transform:uppercase; letter-spacing:0.05em;">Customer</th>
@@ -2085,7 +2085,7 @@ window.OmnisDashboardV6 = class OmnisDashboardV6 {
                             <div>
                                 <div style="background:#fff1f2; border:1px solid #fda4af; border-radius:12px; padding:20px;">
                                     <div style="font-weight:900; font-size:12px; color:#991b1b; text-transform:uppercase; margin-bottom:15px;">Customer Analysis</div>
-                                    <table style="width:100%; border-collapse:collapse; font-size:13px;">
+                                    <table style="width:100%; border-collapse:separate; border-spacing:0; font-size:13px;">
                                         <tr style="border-bottom:1px solid #fecdd3;">
                                             <td style="padding:8px 0; color:#475569;">Internal</td>
                                             <td style="text-align:right; font-weight:800;">${customer_analysis.Internal || 0}</td>
@@ -2144,7 +2144,7 @@ window.OmnisDashboardV6 = class OmnisDashboardV6 {
                                         </tr>
                                     </tbody>
                                 </table>
-                                <table style="width:100%; border-collapse:collapse; margin-top:10px;">
+                                <table style="width:100%; border-collapse:separate; border-spacing:0; margin-top:10px;">
                                     <tbody>
                                         <tr>
                                             <td style="padding:8px; background:#f1f5f9; font-weight:700; text-align:left; font-size:13px; color:#0f172a; border-radius:4px;">Lost Sales</td>
@@ -2274,145 +2274,1084 @@ window.OmnisDashboardV6 = class OmnisDashboardV6 {
 
     // --- COMMAND CENTER: FOLLOW-UP REMINDERS ---
 
+    
+
+    
+    async forceEmailDispatch() {
+        if (!confirm("Are you sure you want to manually trigger the daily dispatch? This will immediately email all salespeople with their pending follow-ups.")) return;
+        try {
+            this.showToast("Triggering email dispatch...", "info");
+            const res = await window.electron.invoke('supabase:edgeFunction', { name: 'daily-quote-reminders', data: {} });
+            if (res && res.data) {
+                this.showToast(`Successfully queued ${res.data.emails_queued || 0} emails.`, "success");
+            } else {
+                this.showToast("Dispatch triggered successfully.", "success");
+            }
+            setTimeout(() => this.openCommandCenter(true), 2000);
+        } catch (e) {
+            console.error(e);
+            this.showToast("Failed to trigger dispatch: " + e.message, "error");
+        }
+    }
+
+    async openQuoteLifecycleModal(quoteName) {
+        window.salestrack.openListModal("Quote Lifecycle", `<div style="padding:40px; text-align:center;"><i class="fas fa-spinner fa-spin" style="font-size:24px; color:#4f46e5;"></i></div>`, "800px");
+        
+        try {
+            const res = await window.electron.invoke('supabase:query', {
+                method: 'select',
+                table: 'omnis_quote_lifecycle',
+                params: {
+                    columns: '*, frappe_quotation(name, customer_name, custom_sales_person)',
+                    filters: { quote_name: quoteName }
+                }
+            });
+            
+            if (!res.data || res.data.length === 0) {
+                this.openListModal("Quote Lifecycle", `<div style="padding:40px; color:#ef4444;">Quote lifecycle record not found. Please refresh the dashboard.</div>`, "600px");
+                return;
+            }
+            
+            const q = res.data[0];
+            const fq = q.frappe_quotation;
+            
+            // Fetch quotation items
+            const itemsRes = await window.electron.invoke('supabase:query', {
+                method: 'select',
+                table: 'quotation_items',
+                params: {
+                    columns: 'item_code, item_name, qty',
+                    filters: { parent: quoteName }
+                }
+            });
+            const items = itemsRes.data || [];
+            
+            let itemsHtml = '';
+            if (items.length > 0) {
+                itemsHtml = `
+                <div style="margin-top:16px; background:#f8fafc; border:1px solid #e2e8f0; border-radius:8px; padding:12px;">
+                    <div style="font-size:11px; font-weight:800; color:#64748b; text-transform:uppercase; margin-bottom:8px;"><i class="fas fa-box-open" style="margin-right:4px;"></i> Items Quoted (${items.length})</div>
+                    <ul style="margin:0; padding-left:20px; font-size:12px; color:#334155;">
+                        ${items.map(i => `<li style="margin-bottom:4px;"><strong>${i.qty}x</strong> ${i.item_code} ${i.item_name ? ` - ${i.item_name}` : ''}</li>`).join('')}
+                    </ul>
+                </div>
+                `;
+            } else {
+                itemsHtml = `<div style="margin-top:16px; font-size:12px; color:#94a3b8; font-style:italic;">No items found for this quotation.</div>`;
+            }
+            
+            const renderStage = (stageNum, due, loggedAt, notes, lateReason) => {
+                const isCurrent = q.current_stage === stageNum && !q.is_closed;
+                const isPast = q.current_stage > stageNum || (stageNum === q.current_stage && q.is_closed && loggedAt);
+                const isFuture = q.current_stage < stageNum && !q.is_closed;
+                
+                let statusColor = '#94a3b8';
+                let icon = '<i class="fas fa-circle"></i>';
+                let contentHtml = '';
+                
+                if (isPast) {
+                    statusColor = '#10b981'; // green
+                    icon = '<i class="fas fa-check-circle"></i>';
+                    contentHtml = `
+                        <div style="font-size:12px; color:#64748b; margin-top:4px;">Logged on ${new Date(loggedAt).toLocaleDateString()}</div>
+                        <div style="font-size:13px; color:#334155; background:#f8fafc; padding:8px; border-radius:6px; margin-top:8px; border:1px solid #e2e8f0;">${notes || 'No notes provided.'}</div>
+                        ${lateReason ? `<div style="font-size:12px; color:#ef4444; margin-top:4px;"><strong>Late Reason:</strong> ${lateReason}</div>` : ''}
+                    `;
+                } else if (isCurrent) {
+                    statusColor = '#3b82f6'; // blue
+                    icon = '<i class="fas fa-dot-circle"></i>';
+                    
+                    const today = new Date().toISOString().split('T')[0];
+                    const isLate = today > due;
+                    
+                    contentHtml = `
+                        <div style="margin-top:12px; background:#f0f9ff; border:1px solid #bae6fd; padding:16px; border-radius:8px;">
+                            <textarea id="lifecycle_notes_${stageNum}" placeholder="Enter follow-up notes..." style="width:100%; min-height:80px; padding:10px; border:1px solid #cbd5e1; border-radius:6px; font-family:inherit; font-size:13px; resize:vertical; margin-bottom:10px;"></textarea>
+                            
+                            ${isLate ? `
+                                <div style="background:#fef2f2; border:1px solid #fecaca; padding:10px; border-radius:6px; margin-bottom:10px;">
+                                    <div style="color:#ef4444; font-size:12px; font-weight:700; margin-bottom:4px;"><i class="fas fa-exclamation-triangle"></i> This follow-up is late. A reason is required.</div>
+                                    <input type="text" id="lifecycle_late_reason_${stageNum}" placeholder="Reason for late entry..." style="width:100%; padding:8px; border:1px solid #fca5a5; border-radius:4px; font-size:13px;">
+                                </div>
+                            ` : ''}
+                            
+                            <div style="display:flex; gap:10px;">
+                                <button onclick="window.salestrack.submitLifecycleStage('${quoteName}', ${stageNum}, ${isLate})" style="background:#2563eb; color:white; border:none; padding:8px 16px; border-radius:6px; font-weight:600; cursor:pointer; font-size:13px;">Complete Stage ${stageNum}</button>
+                            </div>
+                        </div>
+                    `;
+                } else if (q.is_closed && stageNum === q.current_stage && !loggedAt) {
+                    statusColor = '#ef4444'; // red
+                    icon = '<i class="fas fa-times-circle"></i>';
+                    contentHtml = `<div style="font-size:12px; color:#ef4444; margin-top:4px;">Quote closed before this stage.</div>`;
+                }
+                
+                return `
+                <div style="display:flex; gap:16px; margin-bottom:24px;">
+                    <div style="display:flex; flex-direction:column; align-items:center;">
+                        <div style="color:${statusColor}; font-size:24px;">${icon}</div>
+                        ${stageNum < 3 ? `<div style="width:2px; height:100%; background:#e2e8f0; margin-top:4px; min-height:40px;"></div>` : ''}
+                    </div>
+                    <div style="flex:1;">
+                        <div style="font-size:15px; font-weight:700; color:#0f172a;">Stage ${stageNum} Follow-Up <span style="font-size:12px; font-weight:600; color:#64748b; margin-left:8px; background:#f1f5f9; padding:2px 8px; border-radius:12px;">Due: ${due}</span></div>
+                        ${contentHtml}
+                    </div>
+                </div>
+                `;
+            };
+            
+            let closingHtml = '';
+            if (!q.is_closed) {
+                closingHtml = `
+                    <div style="border-top:1px solid #e2e8f0; margin-top:30px; padding-top:20px;">
+                        <h4 style="margin:0 0 10px 0; font-size:14px; color:#0f172a;">Close Quotation</h4>
+                        <div style="display:flex; gap:10px; align-items:center;">
+                            <select id="lifecycle_close_reason" style="padding:8px; border:1px solid #cbd5e1; border-radius:6px; font-size:13px; width:200px;">
+                                <option value="">Select Closing Reason...</option>
+                                <option value="Tire Kicker">Tire Kicker</option>
+                                <option value="No Funding">No Funding</option>
+                                <option value="Lost Sale">Lost Sale (Bought Elsewhere)</option>
+                            </select>
+                            <input type="text" id="lifecycle_close_notes" placeholder="Additional Notes..." style="flex:1; padding:8px; border:1px solid #cbd5e1; border-radius:6px; font-size:13px;">
+                            <button onclick="window.salestrack.markQuoteClosed('${quoteName}')" style="background:#ef4444; color:white; border:none; padding:8px 16px; border-radius:6px; font-weight:600; cursor:pointer; font-size:13px;">Mark as Closed</button>
+                        </div>
+                    </div>
+                `;
+            } else {
+                let badgeColor = q.manager_signoff_status === 'approved' ? '#10b981' : (q.manager_signoff_status === 'rejected' ? '#ef4444' : '#f59e0b');
+                closingHtml = `
+                    <div style="background:#fef2f2; border:1px solid #fecaca; border-radius:8px; padding:16px; margin-top:20px;">
+                        <h4 style="margin:0 0 8px 0; color:#991b1b; font-size:14px;"><i class="fas fa-lock"></i> Quotation Closed</h4>
+                        <div style="font-size:13px; color:#7f1d1d; margin-bottom:4px;"><strong>Reason:</strong> ${q.closing_reason}</div>
+                        <div style="font-size:13px; color:#7f1d1d; margin-bottom:12px;"><strong>Manager Status:</strong> <span style="background:${badgeColor}20; color:${badgeColor}; padding:2px 8px; border-radius:12px; font-size:11px; font-weight:700; text-transform:uppercase;">${q.manager_signoff_status}</span></div>
+                        ${q.manager_notes ? `<div style="font-size:13px; color:#7f1d1d; background:#fff; padding:8px; border-radius:4px;"><strong>Manager Notes:</strong> ${q.manager_notes}</div>` : ''}
+                    </div>
+                `;
+            }
+
+            const html = `
+                <div style="padding:20px; font-family:'Inter', sans-serif;">
+                    <div style="margin-bottom:24px; border-bottom:1px solid #e2e8f0; padding-bottom:16px;">
+                        <div style="display:flex; justify-content:space-between; align-items:flex-start;">
+                            <div>
+                                <div style="font-size:20px; font-weight:800; color:#0f172a;">${quoteName}</div>
+                                <div style="font-size:14px; color:#64748b; margin-top:4px;">Customer: <strong>${fq ? fq.customer_name : 'Unknown'}</strong> | Rep: <strong>${fq ? fq.custom_sales_person : 'Unknown'}</strong></div>
+                            </div>
+                            <div style="display:flex; align-items:center; gap:16px;">
+                                <button onclick="window.salestrack.sendQuoteWhatsAppReminder('${quoteName}', '${fq ? fq.custom_sales_person : ''}')" style="background:#25d366; color:white; border:none; padding:6px 12px; border-radius:6px; font-weight:700; cursor:pointer; font-size:12px; display:flex; align-items:center; gap:6px; box-shadow:0 2px 4px rgba(37,211,102,0.2);">
+                                    <i class="fab fa-whatsapp" style="font-size:14px;"></i> Send Reminder
+                                </button>
+                                <div style="display:flex; align-items:center; gap:8px;">
+                                    <label style="font-size:12px; font-weight:700; color:#ef4444; text-transform:uppercase;">
+                                        <i class="fas fa-fire" style="margin-right:4px;"></i> Hot Lead
+                                    </label>
+                                    <label class="switch">
+                                        <input type="checkbox" ${q.is_hot_lead ? 'checked' : ''} onchange="window.salestrack.toggleQuoteHotLead('${quoteName}', this.checked)">
+                                        <span class="slider round"></span>
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+                        ${itemsHtml}
+                    </div>
+                    
+                    <div style="padding:10px;">
+                        ${renderStage(1, q.stage_1_due, q.stage_1_logged_at, q.stage_1_notes, q.stage_1_late_reason)}
+                        ${renderStage(2, q.stage_2_due, q.stage_2_logged_at, q.stage_2_notes, q.stage_2_late_reason)}
+                        ${renderStage(3, q.stage_3_due, q.stage_3_logged_at, q.stage_3_notes, q.stage_3_late_reason)}
+                    </div>
+                    
+                    ${closingHtml}
+                </div>
+            `;
+            
+            this.openListModal(`Lifecycle: ${quoteName}`, html, "700px");
+        } catch (e) {
+            console.error(e);
+            this.openListModal("Error", "Failed to load lifecycle: " + e.message, "500px");
+        }
+    }
+
+    async sendQuoteWhatsAppReminder(quoteName, salespersonName) {
+        if (!salespersonName) {
+            this.showToast("No salesperson assigned to this quote.", "error");
+            return;
+        }
+        
+        try {
+            // 1. Fetch salesperson WA number
+            const spRes = await window.electron.invoke('supabase:query', {
+                method: 'select',
+                table: 'omnis_sales_persons',
+                params: {
+                    columns: 'whatsapp_number',
+                    filters: { name: salespersonName },
+                    limit: 1
+                }
+            });
+            
+            const spData = spRes.data && spRes.data[0];
+            if (!spData || !spData.whatsapp_number) {
+                this.showToast(`No WhatsApp number found for ${salespersonName}`, "error");
+                return;
+            }
+            
+            const waNumber = spData.whatsapp_number;
+            const msgBody = `*Omnis Reminder*\n\nHi ${salespersonName},\nPlease follow up on quotation *${quoteName}* as it is currently due for review in the SalesTrack system.`;
+            
+            // 2. Send via local client
+            this.showToast("Sending WhatsApp reminder...", "info");
+            const res = await window.electron.invoke('whatsapp:send-msg', { to: waNumber, body: msgBody });
+            
+            let status = 'failed';
+            if (res && res.ok) {
+                status = 'sent';
+                this.showToast("WhatsApp reminder sent successfully!", "success");
+            } else {
+                this.showToast("Failed to send WhatsApp message: " + (res.error || "Unknown error"), "error");
+            }
+            
+            // 3. Log to DB
+            await window.electron.invoke('supabase:query', {
+                table: 'omnis_whatsapp_logs',
+                method: 'insert',
+                params: {
+                    data: {
+                        quote_name: quoteName,
+                        sales_person: salespersonName,
+                        to_number: waNumber,
+                        message: msgBody,
+                        status: status
+                    }
+                }
+            });
+            
+            // refresh data
+            this.openCommandCenter(true);
+            
+        } catch(e) {
+            console.error("WA Reminder Error:", e);
+            this.showToast("Error sending WA reminder: " + e.message, "error");
+        }
+    }
+
+    async toggleQuoteHotLead(quoteName, isHot) {
+        try {
+            await window.electron.invoke('supabase:query', {
+                method: 'update',
+                table: 'omnis_quote_lifecycle',
+                params: {
+                    values: { is_hot_lead: isHot },
+                    filters: { quote_name: quoteName }
+                }
+            });
+            this.showToast("Hot Lead status updated successfully.", "success");
+            // refresh data in background
+            this.openCommandCenter(true);
+        } catch(e) {
+            console.error("Failed to update Hot Lead", e);
+            this.showToast("Failed to update Hot Lead: " + e.message, "error");
+            // revert toggle visually
+            const input = document.querySelector(`input[onchange*="${quoteName}"]`);
+            if (input) input.checked = !isHot;
+        }
+    }
+
+    async submitLifecycleStage(quoteName, stageNum, requiresLateReason) {
+        const notes = document.getElementById(`lifecycle_notes_${stageNum}`).value;
+        if (!notes.trim()) {
+            this.showToast("Follow-up notes are required.", "error");
+            return;
+        }
+        
+        let lateReason = null;
+        if (requiresLateReason) {
+            lateReason = document.getElementById(`lifecycle_late_reason_${stageNum}`).value;
+            if (!lateReason.trim()) {
+                this.showToast("This entry is late. A late reason is required.", "error");
+                return;
+            }
+        }
+        
+        const now = new Date().toISOString();
+        const updateData = { current_stage: stageNum < 3 ? stageNum + 1 : 3 };
+        updateData[`stage_${stageNum}_logged_at`] = now;
+        updateData[`stage_${stageNum}_notes`] = notes;
+        if (lateReason) updateData[`stage_${stageNum}_late_reason`] = lateReason;
+        
+        try {
+            await window.electron.invoke('supabase:query', {
+                method: 'update',
+                table: 'omnis_quote_lifecycle',
+                data: updateData,
+                match: { quote_name: quoteName }
+            });
+            this.showToast(`Stage ${stageNum} completed successfully!`, "success");
+            this.openQuoteLifecycleModal(quoteName); // refresh
+        } catch (e) {
+            console.error(e);
+            this.showToast("Failed to save: " + e.message, "error");
+        }
+    }
+
+    async markQuoteClosed(quoteName) {
+        const reason = document.getElementById('lifecycle_close_reason').value;
+        const notes = document.getElementById('lifecycle_close_notes').value;
+        
+        if (!reason) {
+            this.showToast("Please select a closing reason.", "error");
+            return;
+        }
+        if (!notes.trim()) {
+            this.showToast("Additional notes are required when closing a quote.", "error");
+            return;
+        }
+        
+        try {
+            await window.electron.invoke('supabase:query', {
+                method: 'update',
+                table: 'omnis_quote_lifecycle',
+                data: {
+                    is_closed: true,
+                    closing_reason: reason,
+                    manager_notes: notes, // Temp store notes here until manager reviews
+                    manager_signoff_status: 'pending'
+                },
+                match: { quote_name: quoteName }
+            });
+            this.showToast("Quote marked as closed. Pending manager approval.", "success");
+            this.openQuoteLifecycleModal(quoteName);
+        } catch (e) {
+            console.error(e);
+            this.showToast("Failed to close quote: " + e.message, "error");
+        }
+    }
+
+    async approveManagerSignoff(quoteName, status) {
+        try {
+            await window.electron.invoke('supabase:query', {
+                method: 'update',
+                table: 'omnis_quote_lifecycle',
+                data: {
+                    manager_signoff_status: status,
+                    is_closed: status === 'approved' // If rejected, it re-opens
+                },
+                match: { quote_name: quoteName }
+            });
+            this.showToast(`Quote ${status} successfully.`, "success");
+            this.openCommandCenter(true); // refresh full dashboard
+        } catch (e) {
+            this.showToast("Failed to update status: " + e.message, "error");
+        }
+    }
+
+    openRepProfile(repName) {
+        if (!this.cachedCommandCenterData) return;
+        const quotes = this.cachedCommandCenterData.quotes || [];
+        const dueQuotes = this.cachedCommandCenterData.dueQuotes || [];
+        
+        const repQuotes = quotes.filter(q => (q.frappe_quotation && q.frappe_quotation.custom_sales_person === repName));
+        const repDue = dueQuotes.filter(q => (q.frappe_quotation && q.frappe_quotation.custom_sales_person === repName));
+        
+        let total = repQuotes.length;
+        // Count how many have passed stage 1 as 'logged'
+        let logged = repQuotes.filter(q => q.current_stage > 1 || (q.current_stage === 1 && q.is_closed)).length;
+        let rate = total > 0 ? Math.round((logged / total) * 100) : 0;
+        
+        let color = rate >= 80 ? '#10b981' : (rate >= 50 ? '#f59e0b' : '#ef4444');
+        
+        let dueHtml = `<div style="color:#64748b; font-size:14px; text-align:center; padding:20px;">No quotes are currently past due for this representative.</div>`;
+        
+        if (repDue.length > 0) {
+            dueHtml = `<table style="width:100%; border-collapse:separate; border-spacing:0; margin-top:10px; font-size:13px;">
+                <thead>
+                    <tr style="border-bottom:2px solid #e2e8f0; color:#475569; text-transform:uppercase; font-size:11px;">
+                        <th style="padding:10px; text-align:left;">Quote</th>
+                        <th style="padding:10px; text-align:left;">Customer</th>
+                        <th style="padding:10px; text-align:left;">Stage</th>
+                        <th style="padding:10px; text-align:left;">Due Date</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    ${repDue.map(q => {
+                        let dueStr = q.current_stage === 1 ? q.stage_1_due : (q.current_stage === 2 ? q.stage_2_due : q.stage_3_due);
+                        return `<tr style="border-bottom:1px solid #f1f5f9; cursor:pointer;" onclick="window.salestrack.openQuoteLifecycleModal('${q.quote_name}')" onmouseover="this.style.backgroundColor='#f8fafc'" onmouseout="this.style.backgroundColor='transparent'">
+                            <td style="padding:12px 10px; color:#2563eb; font-weight:600;">${q.quote_name}</td>
+                            <td style="padding:12px 10px; color:#334155;">${q.frappe_quotation ? q.frappe_quotation.customer_name : '-'}</td>
+                            <td style="padding:12px 10px; color:#0f172a; font-weight:600;">Stage ${q.current_stage}</td>
+                            <td style="padding:12px 10px; color:#ef4444; font-weight:700;">${dueStr}</td>
+                        </tr>`;
+                    }).join('')}
+                </tbody>
+            </table>`;
+        }
+
+        const html = `
+            <div style="padding:20px 30px; font-family:'Inter', sans-serif;">
+                <div style="display:flex; align-items:center; gap:20px; margin-bottom:30px; padding-bottom:20px; border-bottom:1px solid #e2e8f0;">
+                    <div style="width:80px; height:80px; border-radius:50%; background:${color}15; color:${color}; display:flex; align-items:center; justify-content:center; font-size:32px; font-weight:800;">
+                        ${repName.charAt(0).toUpperCase()}
+                    </div>
+                    <div>
+                        <div style="font-size:24px; font-weight:800; color:#0f172a;">${repName}</div>
+                        <div style="font-size:14px; color:#64748b; margin-top:4px;">Sales Representative Profile</div>
+                    </div>
+                    <div style="margin-left:auto; text-align:right;">
+                        <div style="font-size:32px; font-weight:900; color:${color};">${rate}%</div>
+                        <div style="font-size:12px; font-weight:700; color:#64748b; text-transform:uppercase;">Compliance Rate</div>
+                    </div>
+                </div>
+                
+                <h3 style="font-size:16px; font-weight:800; color:#0f172a; margin-bottom:15px; display:flex; align-items:center; gap:8px;">
+                    <i class="fas fa-clock" style="color:#f59e0b;"></i> Due for Follow-Up (${repDue.length})
+                </h3>
+                <div style="background:#fff; border:1px solid #e2e8f0; border-radius:12px; overflow:hidden;">
+                    ${dueHtml}
+                </div>
+            </div>
+        `;
+        
+        this.openListModal(`Rep Profile: ${repName}`, html, "800px");
+    }
+
     async openCommandCenter(isFullView = false) {
         if (!isFullView) {
-            this.openListModal("Quotation Command Center", `<div style="padding:40px; text-align:center;"><i class="fas fa-spinner fa-spin" style="font-size:24px; color:#4f46e5;"></i><div style="margin-top:15px; font-weight:600; color:#64748b;">Scanning for follow-ups...</div></div>`, "1200px");
+            this.openListModal("Follow-up Analytics", `<div style="padding:40px; text-align:center;"><i class="fas fa-spinner fa-spin" style="font-size:24px; color:#4f46e5;"></i></div>`, "1200px");
         } else {
             const fullCont = document.getElementById('command-center-full-container');
-            if (fullCont) {
-                fullCont.innerHTML = `<div style="padding:100px; text-align:center;"><i class="fas fa-spinner fa-spin" style="font-size:32px; color:#4f46e5;"></i><div style="margin-top:20px; font-weight:600; color:#64748b; font-size:18px;">Scanning systems for follow-ups...</div></div>`;
-            }
+            if (fullCont) fullCont.innerHTML = `<div style="padding:100px; text-align:center;"><i class="fas fa-spinner fa-spin" style="font-size:32px; color:#4f46e5;"></i></div>`;
         }
 
         try {
-            const res = await window.callFrappeSequenced(this.sys.baseUrl, "powerstar_salestrack.omnis_dashboard.get_command_center_stats", {});
-            const payload = res.message || res;
-
-            if ((!payload.today || payload.today.length === 0) && (!payload.tomorrow || payload.tomorrow.length === 0)) {
-                const emptyHtml = `<div style="padding:100px 60px; text-align:center; color:#94a3b8;"><i class="fas fa-check-circle" style="font-size:64px; color:#22c55e; margin-bottom:20px;"></i><h3 style="font-size:24px; color:#0f172a; margin-bottom:10px;">All Clear!</h3><div style="font-size:16px;">No quotations are due for follow-up today or tomorrow.</div></div>`;
-                if (!isFullView) {
-                    this.openListModal("Quotation Command Center", emptyHtml, "1200px");
-                } else {
-                    const fullCont = document.getElementById('command-center-full-container');
-                    if (fullCont) fullCont.innerHTML = emptyHtml;
-                }
-                return;
+            // Fetch Lifecycle quotes (Paginated to bypass 1000 row limit)
+            let allQuotes = [];
+            let start = 0;
+            const pageSize = 1000;
+            while (true) {
+                let lifecycleRes = await window.electron.invoke('supabase:query', {
+                    method: 'select',
+                    table: 'omnis_quote_lifecycle',
+                    params: {
+                        columns: '*, frappe_quotation(name, custom_sales_person, customer_name, transaction_date, company)',
+                        range: { from: start, to: start + pageSize - 1 }
+                    }
+                });
+                
+                let chunk = lifecycleRes.data || [];
+                allQuotes = allQuotes.concat(chunk);
+                if (chunk.length < pageSize) break;
+                start += pageSize;
             }
+            
+            const todayStr = new Date().toISOString().split('T')[0];
 
-            this.renderCommandCenter(payload, isFullView);
+            let quotes = allQuotes.filter(q => q.frappe_quotation); // Only valid joins
+            
+            // Due quotes: not closed, and current stage due date <= today
+            let dueQuotes = quotes.filter(q => {
+                if (q.is_closed) return false;
+                let due = q.current_stage === 1 ? q.stage_1_due : (q.current_stage === 2 ? q.stage_2_due : q.stage_3_due);
+                return due <= todayStr;
+            });
+            dueQuotes.sort((a,b) => {
+                let aDue = a.current_stage === 1 ? a.stage_1_due : (a.current_stage === 2 ? a.stage_2_due : a.stage_3_due);
+                let bDue = b.current_stage === 1 ? b.stage_1_due : (b.current_stage === 2 ? b.stage_2_due : b.stage_3_due);
+                return aDue < bDue ? -1 : 1;
+            });
+
+            // Manager Approvals: closed, pending manager signoff
+            let pendingApprovals = quotes.filter(q => q.is_closed && q.manager_signoff_status === 'pending');
+
+            // 2. Fetch recent dispatch logs
+            let emailsRes = await window.electron.invoke('supabase:query', {
+                method: 'select',
+                table: 'omnis_email_queue',
+                params: {
+                    columns: 'id, to_email, subject, status, created_at, related_type',
+                    limit: 50,
+                    order: { column: 'created_at', ascending: false }
+                }
+            });
+            let emails = (emailsRes.data || []).filter(e => e.related_type === 'quotation_reminder');
+
+            // 3. Fetch WA logs
+            let waRes = await window.electron.invoke('supabase:query', {
+                method: 'select',
+                table: 'omnis_whatsapp_logs',
+                params: {
+                    columns: '*',
+                    limit: 100,
+                    order: { column: 'created_at', ascending: false }
+                }
+            });
+            let waLogs = waRes.data || [];
+
+            this.cachedCommandCenterData = { quotes, emails, dueQuotes, pendingApprovals, waLogs };
+            this.renderCommandCenter(this.cachedCommandCenterData, isFullView);
         } catch (e) {
-            console.error("Command Center Error:", e);
+            console.error(e);
             if (!isFullView) {
-                this.openListModal("Command Center Error", `<div style="padding:20px; color:#ef4444;">${e.message || "Failed to load command center"}</div>`);
+                this.openListModal("Error", e.message, "500px");
             } else {
-                const fullCont = document.getElementById('command-center-full-container');
-                if (fullCont) fullCont.innerHTML = `<div style="padding:60px; text-align:center; color:#ef4444;"><i class="fas fa-exclamation-triangle" style="font-size:48px; margin-bottom:20px;"></i><div style="font-size:18px; font-weight:800;">Command Center Error</div><div style="margin-top:10px;">${e.message || "Failed to load follow-up data"}</div></div>`;
+                document.getElementById('command-center-full-container').innerHTML = `<div style="color:red; padding:40px;">${e.message}</div>`;
             }
         }
     }
 
-    renderCommandCenter(data, isFullView = false) {
-        const renderSection = (title, items, accentColor) => {
-            if (!items || items.length === 0) {
-                return `<div style="padding:40px; text-align:center; color:#94a3b8; border:2px dashed #e2e8f0; border-radius:16px; margin-bottom:30px; background:white;">No follow-ups due.</div>`;
+    switchCommandCenterTab(tabId) {
+        // Hide all tabs
+        ['overview', 'due', 'approvals', 'logs', 'wa'].forEach(t => {
+            const el = document.getElementById('cc_tab_' + t);
+            if (el) el.style.display = 'none';
+            const btn = document.getElementById('cc_btn_' + t);
+            if (btn) {
+                btn.style.background = '#f1f5f9';
+                btn.style.color = '#475569';
             }
+        });
 
-            return `
-                <div style="margin-bottom:40px;">
-                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
-                        <div style="font-size:15px; font-weight:900; color:#0f172a; text-transform:uppercase; letter-spacing:0.08em; border-left:5px solid ${accentColor}; padding-left:15px; display:flex; align-items:center; gap:10px;">
-                           ${title} <span style="background:${accentColor}; color:white; font-size:11px; padding:2px 10px; border-radius:99px;">${items.length}</span>
-                        </div>
-                    </div>
-                    <div style="display:grid; grid-template-columns: repeat(auto-fill, minmax(380px, 1fr)); gap:20px;">
-                        ${items.map(q => {
-                const isSent = q.reminder_sent;
-                const stage = q.followup_stage || 1;
+        // Show target tab
+        const activeTab = document.getElementById('cc_tab_' + tabId);
+        if (activeTab) activeTab.style.display = 'block';
+        
+        // Highlight active button
+        const activeBtn = document.getElementById('cc_btn_' + tabId);
+        if (activeBtn) {
+            activeBtn.style.background = '#0f172a';
+            activeBtn.style.color = 'white';
+        }
+    }
+
+    applyGlobalCompanyFilter(isFullView) {
+        if (!this.cachedCommandCenterData) return;
+        const company = document.getElementById('cc_global_company').value;
+        this.renderCommandCenter(this.cachedCommandCenterData, isFullView, company);
+    }
+
+    applyCommandCenterFilters() {
+        if (!this.cachedCommandCenterData) return;
+        
+        const companyFilter = document.getElementById('cc_filter_company')?.value || '';
+        const dateFrom = document.getElementById('cc_filter_date_from')?.value || '';
+        const dateTo = document.getElementById('cc_filter_date_to')?.value || '';
+        
+        let filteredDue = this.cachedCommandCenterData.dueQuotes || [];
+        
+        if (companyFilter) {
+            filteredDue = filteredDue.filter(q => q.frappe_quotation && q.frappe_quotation.company === companyFilter);
+        }
+        
+        if (dateFrom || dateTo) {
+            filteredDue = filteredDue.filter(q => {
+                let due = q.current_stage === 1 ? q.stage_1_due : (q.current_stage === 2 ? q.stage_2_due : q.stage_3_due);
+                if (dateFrom && due < dateFrom) return false;
+                if (dateTo && due > dateTo) return false;
+                return true;
+            });
+        }
+        
+        let html = `<div style="color:#94a3b8; font-size:14px; text-align:center; padding:30px;">No quotes match the selected filters!</div>`;
+        
+        if (filteredDue.length > 0) {
+            let companyGroups = {};
+            filteredDue.forEach(q => {
+                let comp = (q.frappe_quotation && q.frappe_quotation.company) ? q.frappe_quotation.company : 'Unknown Company';
+                if (!companyGroups[comp]) companyGroups[comp] = [];
+                companyGroups[comp].push(q);
+            });
+            
+            html = Object.entries(companyGroups).map(([company, quotes]) => {
                 return `
-                                <div class="cmd-card" style="display:flex; flex-direction:column; gap:16px; transition:all 0.3s; position:relative; padding:24px; border-radius:16px; border: 1px solid ${isSent ? 'rgba(16, 185, 129, 0.3)' : 'rgba(226, 232, 240, 0.5)'}; background: ${isSent ? 'rgba(16, 185, 129, 0.04)' : 'transparent'};">
-                                    ${isSent ? `<div style="position:absolute; top:20px; right:20px; color:#059669; font-size:10px; font-weight:900; padding:4px 12px; border-radius:99px; text-transform:uppercase; letter-spacing:0.05em; background:rgba(5, 150, 105, 0.1);">SENT TODAY</div>` : ''}
-                                    <div style="display:flex; justify-content:space-between; align-items:start;">
-                                        <div style="flex:1;">
-                                            <div style="font-size:16px; font-weight:850; color:#0f172a; margin-bottom:4px;">${q.customer_name}</div>
-                                            <div style="font-size:11px; color:#64748b; font-weight:600; display:flex; align-items:center; gap:6px;">
-                                                <span style="color:#1e40af; font-weight:800;">${q.name}</span> &bull; <span>${q.created_on}</span>
-                                            </div>
-                                        </div>
-                                        <div style="text-align:right;">
-                                            <div style="font-size:10px; font-weight:900; color:#1e40af; background:rgba(30, 64, 175, 0.05); padding:4px 10px; border-radius:6px; display:inline-block; text-transform:uppercase; letter-spacing:0.02em;">STAGE ${stage}</div>
-                                        </div>
-                                    </div>
-                                    <div style="font-size:13px; color:#475569; padding:0; font-style:normal; line-height:1.5;">
-                                        <span style="font-weight:700; color:#94a3b8; font-size:11px; text-transform:uppercase; display:block; margin-bottom:4px;">Quoted Items</span>
-                                        ${q.items_summary || 'No items listed'}
-                                    </div>
-                                    <div style="display:flex; align-items:center; gap:12px; margin-top:4px;">
-                                        <div style="width:32px; height:32px; border-radius:8px; background:#f1f5f9; display:flex; align-items:center; justify-content:center; font-size:14px;">&#x1F464;</div>
-                                        <div style="flex:1;">
-                                            <div style="font-size:12px; font-weight:800; color:#1e293b;">${q.custom_sales_person || 'No Rep'}</div>
-                                            <div style="font-size:11px; color:#64748b; font-weight:600;">${q.mobile_no}</div>
-                                        </div>
-                                    </div>
-                                    <div style="margin-top:8px; display:flex; gap:10px;">
-                                        <button onclick="window.salestrack.previewManualFollowup(${JSON.stringify(q).replace(/\"/g, '&quot;')}, event)" 
-                                                class="cmd-btn-whatsapp"
-                                                style="flex:1; padding:12px; background:${isSent ? '#059669' : '#0f172a'}; color:white; border:none; border-radius:12px; font-size:12px; font-weight:850; cursor:pointer; display:flex; align-items:center; justify-content:center; gap:8px; transition:all 0.2s;">
-                                            <i class="fab fa-whatsapp" style="font-size:16px;"></i> ${isSent ? 'RESEND' : 'SEND REMINDER'}
-                                        </button>
-                                        <button onclick="window.salestrack.openDoc('Quotation', '${q.name}')"
-                                                style="padding:12px 18px; background:transparent; color:#64748b; border:1px solid #e2e8f0; border-radius:12px; font-size:12px; font-weight:800; cursor:pointer; transition:all 0.2s;">
-                                            VIEW
-                                        </button>
-                                        <button onclick="window.salestrack.logFollowupFeedback(${JSON.stringify(q).replace(/\"/g, '&quot;')})"
-                                                style="padding:12px 14px; background:transparent; color:#4f46e5; border:1px solid rgba(79,70,229,0.3); border-radius:12px; font-size:11px; font-weight:800; cursor:pointer; transition:all 0.2s; white-space:nowrap;"
-                                                title="Log follow-up feedback">
-                                            <i class="fas fa-clipboard-check"></i> LOG
-                                        </button>
-                                    </div>
-                                </div>
-                            `;
-            }).join('')}
+                <div style="margin-bottom:16px;">
+                    <div style="background:#f1f5f9; padding:8px 16px; font-weight:800; font-size:12px; color:#475569; border-top:1px solid #e2e8f0; border-bottom:1px solid #e2e8f0;">
+                        ${company} <span style="margin-left:8px; background:#e2e8f0; padding:2px 8px; border-radius:12px; font-size:10px;">${quotes.length} Due</span>
+                    </div>
+                    <table style="width:100%; border-collapse:separate; border-spacing:0; font-size:13px;">
+                        <thead>
+                            <tr style="background:#991b1b; color:white; font-size:11px; text-transform:uppercase;">
+                                <th style="padding:12px 16px; color:white; text-align:left; font-weight:800; border-top-left-radius:6px; border-bottom-left-radius:6px; width:30%;">Quote Name</th>
+                                <th style="padding:12px 16px; color:white; text-align:left; font-weight:800; width:30%;">Sales Person</th>
+                                <th style="padding:12px 16px; color:white; text-align:left; font-weight:800; width:20%;">Stage</th>
+                                <th style="padding:12px 16px; color:white; text-align:right; font-weight:800; border-top-right-radius:6px; border-bottom-right-radius:6px; width:20%;">Due Date</th>
+                            </tr>
+                        </thead>
+                        <tbody style="display:block; height:8px;"></tbody>
+                        <tbody>
+                            ${quotes.map(q => {
+                                let due = q.current_stage === 1 ? q.stage_1_due : (q.current_stage === 2 ? q.stage_2_due : q.stage_3_due);
+                                let daysOverdue = Math.floor((new Date() - new Date(due)) / (1000 * 60 * 60 * 24));
+                                let color = '#ef4444'; // standard red
+                                let bg = '#fef2f2';
+                                let icon = '<i class="fas fa-exclamation-circle" style="margin-right:4px;"></i>';
+                                
+                                if (daysOverdue > 7) {
+                                    color = '#991b1b'; // dark red
+                                    bg = '#fca5a5'; // darker bg
+                                    icon = '<i class="fas fa-radiation" style="margin-right:4px;"></i>';
+                                } else if (daysOverdue < 3) {
+                                    color = '#d97706'; // orange
+                                    bg = '#fef3c7';
+                                    icon = '<i class="fas fa-clock" style="margin-right:4px;"></i>';
+                                }
+
+                                return `<tr style="border-bottom:1px solid #f1f5f9; cursor:pointer;" onclick="window.salestrack.openQuoteLifecycleModal('${q.quote_name}')" onmouseover="this.style.backgroundColor='#f8fafc'" onmouseout="this.style.backgroundColor='transparent'">
+                                    <td style="padding:10px 16px; color:#2563eb; font-weight:600; width:30%;">${q.quote_name}</td>
+                                    <td style="padding:10px 16px; color:#334155; font-weight:500; width:30%;">${q.frappe_quotation.custom_sales_person || '-'}</td>
+                                    <td style="padding:10px 16px; color:#0f172a; font-weight:600; width:20%;">Stage ${q.current_stage}</td>
+                                    <td style="padding:10px 16px; width:20%; text-align:right;">
+                                        <span style="background:${bg}; color:${color}; padding:4px 8px; border-radius:12px; font-size:11px; font-weight:800; display:inline-flex; align-items:center;">
+                                            ${icon} ${due}
+                                        </span>
+                                    </td>
+                                </tr>`
+                            }).join('')}
+                        </tbody>
+                    </table>
+                </div>`;
+            }).join('');
+        }
+        
+        const container = document.getElementById('cc_global_due_container');
+        if (container) container.innerHTML = html;
+        
+        const badge = document.getElementById('cc_due_count_badge');
+        if (badge) badge.innerText = filteredDue.length + ' Quotes Due';
+    }
+
+    renderCommandCenter(data, isFullView = false, companyFilter = 'All') {
+        let { quotes, emails, dueQuotes, pendingApprovals, waLogs = [] } = data;
+        
+        if (companyFilter !== 'All') {
+            quotes = quotes.filter(q => q.frappe_quotation && q.frappe_quotation.company === companyFilter);
+            dueQuotes = dueQuotes.filter(q => q.frappe_quotation && q.frappe_quotation.company === companyFilter);
+            pendingApprovals = pendingApprovals.filter(q => q.frappe_quotation && q.frappe_quotation.company === companyFilter);
+        }
+        
+        let totalQuotes = quotes.length;
+        // Compliance: any quote that has logged at least stage 1 or is legitimately closed
+        let loggedFollowups = quotes.filter(q => q.current_stage > 1 || q.is_closed).length;
+        let complianceRate = totalQuotes > 0 ? Math.round((loggedFollowups / totalQuotes) * 100) : 0;
+
+        let repStats = {};
+        quotes.forEach(q => {
+            const rep = q.frappe_quotation.custom_sales_person || "Unassigned";
+            if (!repStats[rep]) repStats[rep] = { total: 0, logged: 0, hot: 0 };
+            repStats[rep].total++;
+            if (q.current_stage > 1 || q.is_closed) {
+                repStats[rep].logged++;
+            }
+            if (q.is_hot_lead && !q.is_closed) {
+                repStats[rep].hot++;
+            }
+        });
+
+        let leaderboardHtml = Object.entries(repStats)
+            .map(([rep, stat]) => {
+                let rate = stat.total > 0 ? Math.round((stat.logged / stat.total) * 100) : 0;
+                let color = rate >= 80 ? '#10b981' : (rate >= 50 ? '#f59e0b' : '#ef4444');
+                return { rep, stat, rate, color };
+            })
+            .sort((a, b) => b.rate - a.rate)
+            .map(({ rep, stat, rate, color }) => `
+                <div class="ai-order-row ai-leaderboard-grid" style="border-radius: 12px; border-left: 4px solid var(--accent-maroon); cursor:pointer;" onclick="window.salestrack.openRepProfile('${rep.replace(/'/g, "\\'")}')">
+                    <div class="ai-order-cell" style="display:flex; flex-direction:row; align-items:center; gap:10px;">
+                        <div style="width:24px; height:24px; border-radius:50%; background:${color}15; color:${color}; display:flex; align-items:center; justify-content:center; font-size:10px; font-weight:800; flex-shrink:0;">${rep.charAt(0)}</div>
+                        <div style="font-size:13px; font-weight:600; color:#0f172a;">${rep}</div>
+                    </div>
+                    <div class="ai-order-cell">
+                        <span class="cell-label" style="display:none;">Quotes</span>
+                        <div style="font-size:13px; color:#475569;">${stat.total}</div>
+                    </div>
+                    <div class="ai-order-cell">
+                        <span class="cell-label" style="display:none;">Logged</span>
+                        <div style="font-size:13px; color:#475569;">${stat.logged}</div>
+                    </div>
+                    <div class="ai-order-cell">
+                        <span class="cell-label" style="display:none;">Hot</span>
+                        <div style="font-size:13px; font-weight:700; color:#ef4444;"><i class="fas fa-fire" style="margin-right:4px; font-size:11px;"></i>${stat.hot}</div>
+                    </div>
+                    <div class="ai-order-cell">
+                        <span class="cell-label" style="display:none;">Rate</span>
+                        <div style="font-size:13px; font-weight:700; color:${color};">${rate}%</div>
                     </div>
                 </div>
-            `;
-        };
+            `).join('');
+            
+        
+        let globalDueHtml = `<div style="color:#94a3b8; font-size:14px; text-align:center; padding:30px;">No quotes are currently due for follow-up!</div>`;
+        if (dueQuotes && dueQuotes.length > 0) {
+            // Group by company
+            let companyGroups = {};
+            dueQuotes.forEach(q => {
+                let comp = (q.frappe_quotation && q.frappe_quotation.company) ? q.frappe_quotation.company : 'Unknown Company';
+                if (!companyGroups[comp]) companyGroups[comp] = [];
+                companyGroups[comp].push(q);
+            });
+            
+            globalDueHtml = Object.entries(companyGroups).map(([company, quotes]) => {
+                return `
+                <div style="margin-bottom:16px;">
+                    <div style="background:#f1f5f9; padding:8px 16px; font-weight:800; font-size:12px; color:#475569; border-top:1px solid #e2e8f0; border-bottom:1px solid #e2e8f0;">
+                        ${company} <span style="margin-left:8px; background:#e2e8f0; padding:2px 8px; border-radius:12px; font-size:10px;">${quotes.length} Due</span>
+                    </div>
+                    <table style="width:100%; border-collapse:separate; border-spacing:0; font-size:13px;">
+                        <thead>
+                            <tr style="background:#991b1b; color:white; font-size:11px; text-transform:uppercase;">
+                                <th style="padding:12px 16px; color:white; text-align:left; font-weight:800; border-top-left-radius:6px; border-bottom-left-radius:6px; width:30%;">Quote Name</th>
+                                <th style="padding:12px 16px; color:white; text-align:left; font-weight:800; width:30%;">Sales Person</th>
+                                <th style="padding:12px 16px; color:white; text-align:left; font-weight:800; width:20%;">Stage</th>
+                                <th style="padding:12px 16px; color:white; text-align:right; font-weight:800; border-top-right-radius:6px; border-bottom-right-radius:6px; width:20%;">Due Date</th>
+                            </tr>
+                        </thead>
+                        <tbody style="display:block; height:8px;"></tbody>
+                        <tbody>
+                            ${quotes.map(q => {
+                                let due = q.current_stage === 1 ? q.stage_1_due : (q.current_stage === 2 ? q.stage_2_due : q.stage_3_due);
+                                let daysOverdue = Math.floor((new Date() - new Date(due)) / (1000 * 60 * 60 * 24));
+                                let color = '#ef4444'; // standard red
+                                let bg = '#fef2f2';
+                                let icon = '<i class="fas fa-exclamation-circle" style="margin-right:4px;"></i>';
+                                
+                                if (daysOverdue > 7) {
+                                    color = '#991b1b'; // dark red
+                                    bg = '#fca5a5'; // darker bg
+                                    icon = '<i class="fas fa-radiation" style="margin-right:4px;"></i>';
+                                } else if (daysOverdue < 3) {
+                                    color = '#d97706'; // orange
+                                    bg = '#fef3c7';
+                                    icon = '<i class="fas fa-clock" style="margin-right:4px;"></i>';
+                                }
+
+                                return `<tr style="border-bottom:1px solid #f1f5f9; cursor:pointer;" onclick="window.salestrack.openQuoteLifecycleModal('${q.quote_name}')" onmouseover="this.style.backgroundColor='#f8fafc'" onmouseout="this.style.backgroundColor='transparent'">
+                                    <td style="padding:10px 16px; color:#2563eb; font-weight:600; width:30%;">${q.quote_name}</td>
+                                    <td style="padding:10px 16px; color:#334155; font-weight:500; width:30%;">${q.frappe_quotation.custom_sales_person || '-'}</td>
+                                    <td style="padding:10px 16px; color:#0f172a; font-weight:600; width:20%;">Stage ${q.current_stage}</td>
+                                    <td style="padding:10px 16px; width:20%; text-align:right;">
+                                        <span style="background:${bg}; color:${color}; padding:4px 8px; border-radius:12px; font-size:11px; font-weight:800; display:inline-flex; align-items:center;">
+                                            ${icon} ${due}
+                                        </span>
+                                    </td>
+                                </tr>`
+                            }).join('')}
+                        </tbody>
+                    </table>
+                </div>`;
+            }).join('');
+        }
+
+        let pendingApprovalsHtml = '';
+        if (pendingApprovals && pendingApprovals.length > 0) {
+            pendingApprovalsHtml = `<div style="background:#fff7ed; border:1px solid #fdba74; border-radius:16px; padding:24px; box-shadow:0 10px 25px -5px rgba(0,0,0,0.02); margin-top:24px;">
+                <h3 style="margin:0 0 15px 0; font-size:13px; font-weight:800; color:#c2410c; display:flex; align-items:center; gap:8px;">
+                    <i class="fas fa-user-shield"></i> Manager Sign-offs Required (${pendingApprovals.length})
+                </h3>
+                <table style="width:100%; border-collapse:separate; border-spacing:0; font-size:13px;">
+                    <thead>
+                        <tr style="background:#991b1b; color:white; font-size:11px; text-transform:uppercase;">
+                            <th style="padding:12px 16px; color:white; text-align:left; font-weight:800; border-top-left-radius:6px; border-bottom-left-radius:6px;">Quote Details</th>
+                            <th style="padding:12px 16px; color:white; text-align:left; font-weight:800;">Manager Notes</th>
+                            <th style="padding:12px 16px; color:white; text-align:right; font-weight:800; border-top-right-radius:6px; border-bottom-right-radius:6px;">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody style="display:block; height:8px;"></tbody>
+                    <tbody>
+                        ${pendingApprovals.map(q => `
+                        <tr style="border-bottom:1px solid #fed7aa;">
+                            <td style="padding:12px 10px;">
+                                <div style="font-weight:700; color:#c2410c; cursor:pointer;" onclick="window.salestrack.openQuoteLifecycleModal('${q.quote_name}')">${q.quote_name}</div>
+                                <div style="font-size:11px; color:#ea580c; margin-top:4px;">${q.closing_reason}</div>
+                            </td>
+                            <td style="padding:12px 10px;">
+                                <div style="font-size:12px; color:#c2410c;">${q.manager_notes || '-'}</div>
+                            </td>
+                            <td style="padding:12px 10px; text-align:right;">
+                                <button onclick="window.salestrack.approveManagerSignoff('${q.quote_name}', 'approved')" style="background:#10b981; color:white; border:none; padding:6px 12px; border-radius:4px; font-size:11px; font-weight:700; cursor:pointer; margin-right:5px;">APPROVE</button>
+                                <button onclick="window.salestrack.approveManagerSignoff('${q.quote_name}', 'rejected')" style="background:#ef4444; color:white; border:none; padding:6px 12px; border-radius:4px; font-size:11px; font-weight:700; cursor:pointer;">REJECT</button>
+                            </td>
+                        </tr>
+                        `).join('')}
+                    </tbody>
+                </table>
+            </div>`;
+        }
+
+        let emailsHtml = emails.length === 0 
+            ? `<div style="padding:40px; text-align:center; color:#94a3b8; font-style:italic;">No automated emails dispatched recently.</div>`
+            : `<table style="width:100%; border-collapse:separate; border-spacing:0; font-size:13px;">
+                <thead>
+                    <tr style="background:#991b1b; color:white; font-size:11px; text-transform:uppercase;">
+                        <th style="padding:12px 16px; color:white; text-align:left; font-weight:800; border-top-left-radius:6px; border-bottom-left-radius:6px;">Recipient</th>
+                        <th style="padding:12px 16px; color:white; text-align:left; font-weight:800;">Subject</th>
+                        <th style="padding:12px 16px; color:white; text-align:left; font-weight:800;">Date Dispatched</th>
+                        <th style="padding:12px 16px; color:white; text-align:left; font-weight:800; border-top-right-radius:6px; border-bottom-right-radius:6px;">Status</th>
+                    </tr>
+                </thead>
+                <tbody style="display:block; height:8px;"></tbody>
+                <tbody>
+                    ${emails.map(e => {
+                        let dt = new Date(e.created_at).toLocaleString();
+                        let statusColor = e.status === 'sent' ? '#10b981' : (e.status === 'failed' ? '#ef4444' : '#f59e0b');
+                        return `
+                        <tr style="border-bottom:1px solid #f1f5f9;">
+                            <td style="padding:12px; font-weight:600; color:#334155;">${e.to_email}</td>
+                            <td style="padding:12px; color:#64748b;">${e.subject}</td>
+                            <td style="padding:12px; color:#94a3b8;">${dt}</td>
+                            <td style="padding:12px;">
+                                <span style="background:${statusColor}15; color:${statusColor}; padding:4px 8px; border-radius:12px; font-size:11px; font-weight:700; text-transform:uppercase;">${e.status}</span>
+                            </td>
+                        </tr>
+                        `;
+                    }).join('')}
+                </tbody>
+            </table>`;
+
+        let waLogsHtml = waLogs.length === 0 
+            ? `<div style="padding:40px; text-align:center; color:#94a3b8; font-style:italic;">No WhatsApp reminders sent recently.</div>`
+            : `<table style="width:100%; border-collapse:separate; border-spacing:0; font-size:13px;">
+                <thead>
+                    <tr style="background:#065f46; color:white; font-size:11px; text-transform:uppercase;">
+                        <th style="padding:12px 16px; color:white; text-align:left; font-weight:800; border-top-left-radius:6px; border-bottom-left-radius:6px;">Rep / Number</th>
+                        <th style="padding:12px 16px; color:white; text-align:left; font-weight:800;">Quote</th>
+                        <th style="padding:12px 16px; color:white; text-align:left; font-weight:800;">Message</th>
+                        <th style="padding:12px 16px; color:white; text-align:left; font-weight:800;">Date Dispatched</th>
+                        <th style="padding:12px 16px; color:white; text-align:left; font-weight:800; border-top-right-radius:6px; border-bottom-right-radius:6px;">Status</th>
+                    </tr>
+                </thead>
+                <tbody style="display:block; height:8px;"></tbody>
+                <tbody>
+                    ${waLogs.map(w => {
+                        let dt = new Date(w.created_at).toLocaleString();
+                        let statusColor = w.status === 'sent' ? '#10b981' : (w.status === 'failed' ? '#ef4444' : '#f59e0b');
+                        return `
+                        <tr style="border-bottom:1px solid #f1f5f9;">
+                            <td style="padding:12px; font-weight:600; color:#334155;">
+                                ${w.sales_person || 'Unknown'}<br/>
+                                <span style="font-size:11px; color:#64748b; font-weight:400;">${w.to_number}</span>
+                            </td>
+                            <td style="padding:12px; font-weight:600; color:#0f172a;">${w.quote_name}</td>
+                            <td style="padding:12px; color:#64748b; max-width:300px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;" title="${w.message.replace(/"/g, '&quot;')}">${w.message}</td>
+                            <td style="padding:12px; color:#94a3b8;">${dt}</td>
+                            <td style="padding:12px;">
+                                <span style="background:${statusColor}15; color:${statusColor}; padding:4px 8px; border-radius:12px; font-size:11px; font-weight:700; text-transform:uppercase;">${w.status}</span>
+                            </td>
+                        </tr>
+                        `;
+                    }).join('')}
+                </tbody>
+            </table>`;
+            
+        // Pre-calculate data for charts & KPIs
+        const totalActive = quotes.length;
+        const totalDue = dueQuotes.length;
+        const pendingCount = pendingApprovals ? pendingApprovals.length : 0;
+        
+        let stage1Count = quotes.filter(q => q.current_stage === 1 && !q.is_closed).length;
+        let stage2Count = quotes.filter(q => q.current_stage === 2 && !q.is_closed).length;
+        let stage3Count = quotes.filter(q => q.current_stage === 3 && !q.is_closed).length;
+        
+        let complianceColor = complianceRate >= 80 ? '#10b981' : (complianceRate >= 50 ? '#f59e0b' : '#ef4444');
 
         const html = `
-            <div class="command-center-container" style="padding:10px; font-family:'Inter', sans-serif;">
-                <style>
-                    .cmd-card:hover { background: rgba(255,255,255,0.7) !important; border-color:#cbd5e1 !important; transform:translateY(-2px); }
-                    .cmd-btn-whatsapp:hover { opacity: 0.9; transform:translateY(-1px); }
-                    .cmd-btn-whatsapp:active { transform:translateY(0); }
-                </style>
-                
-                <div style="display:flex; align-items:center; gap:20px; margin-bottom:40px; padding:10px 0;">
-                    <div style="width:50px; height:50px; border-radius:12px; background:#0f172a; display:flex; align-items:center; justify-content:center; font-size:24px; color:white;">
-                        <i class="fas fa-satellite-dish"></i>
+            <div class="command-center-container" style="padding:20px; font-family:'Inter', sans-serif;">
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
+                    <div style="display:flex; align-items:center; gap:16px;">
+                        <div style="width:48px; height:48px; border-radius:12px; background:#0f172a; color:#fff; display:flex; align-items:center; justify-content:center; font-size:20px;">
+                            <i class="fas fa-chart-pie"></i>
+                        </div>
+                        <div>
+                            <h2 style="margin:0; font-size:24px; font-weight:800; color:#0f172a; letter-spacing:-0.5px;">Quote Lifecycle Analytics</h2>
+                            <div style="font-size:13px; color:#64748b; margin-top:2px;">Monitor 3-7-21 day follow-up compliance and sign-offs.</div>
+                        </div>
                     </div>
-                    <div>
-                        <div style="font-size:22px; font-weight:900; color:#0f172a; letter-spacing:-0.02em;">Tactical Follow-up Command</div>
-                        <div style="font-size:13px; color:#64748b; font-weight:600;">Real-time dispatch control for high-priority quotation reminders.</div>
-                    </div>
-                    <div style="margin-left:auto; text-align:right;">
-                        <div style="font-size:11px; font-weight:800; color:#94a3b8; text-transform:uppercase; letter-spacing:0.1em; margin-bottom:2px;">Server Telemetry</div>
-                        <div style="font-size:15px; font-weight:850; color:#1e293b;">${data.server_time}</div>
+                    <div style="display:flex; gap:10px; align-items:center;">
+                        <select id="cc_global_company" onchange="window.salestrack.applyGlobalCompanyFilter(${isFullView})" style="padding:10px 16px; border:1px solid #cbd5e1; border-radius:8px; font-size:13px; outline:none; background:white; font-weight:700; color:#475569; cursor:pointer;">
+                            <option value="All" ${companyFilter === 'All' ? 'selected' : ''}>All Companies</option>
+                            <option value="Sinopower" ${companyFilter === 'Sinopower' ? 'selected' : ''}>Sinopower</option>
+                            <option value="Machinery Exchange" ${companyFilter === 'Machinery Exchange' ? 'selected' : ''}>Machinery Exchange</option>
+                        </select>
+                        <button onclick="window.salestrack.forceEmailDispatch()" style="background:#2563eb; color:#ffffff; border:none; padding:10px 16px; border-radius:8px; font-weight:700; cursor:pointer; font-size:13px; box-shadow:0 4px 6px -1px rgba(37,99,235,0.2);"><i class="fas fa-paper-plane" style="margin-right:6px;"></i> FORCE DISPATCH</button>
+                        <button onclick="window.salestrack.openCommandCenter(${isFullView})" style="background:#f1f5f9; color:#475569; border:none; padding:10px 16px; border-radius:8px; font-weight:700; cursor:pointer; font-size:13px;"><i class="fas fa-sync-alt" style="margin-right:6px;"></i> REFRESH</button>
                     </div>
                 </div>
 
-                ${renderSection("Overdue / Due Today", data.today, "#ef4444")}
-                ${renderSection("Upcoming (Tomorrow)", data.tomorrow, "#2563eb")}
+                <!-- Tab Bar -->
+                <div style="display:flex; gap:8px; margin-bottom:24px; border-bottom:1px solid #e2e8f0; padding-bottom:16px;">
+                    <button id="cc_btn_overview" onclick="window.salestrack.switchCommandCenterTab('overview')" style="background:#0f172a; color:white; border:none; padding:8px 16px; border-radius:8px; font-weight:700; cursor:pointer; font-size:13px; transition:all 0.2s;">Overview</button>
+                    <button id="cc_btn_due" onclick="window.salestrack.switchCommandCenterTab('due')" style="background:#f1f5f9; color:#475569; border:none; padding:8px 16px; border-radius:8px; font-weight:700; cursor:pointer; font-size:13px; transition:all 0.2s;">Due Quotes</button>
+                    <button id="cc_btn_approvals" onclick="window.salestrack.switchCommandCenterTab('approvals')" style="background:#f1f5f9; color:#475569; border:none; padding:8px 16px; border-radius:8px; font-weight:700; cursor:pointer; font-size:13px; transition:all 0.2s;">Approvals (${pendingCount})</button>
+                    <button id="cc_btn_logs" onclick="window.salestrack.switchCommandCenterTab('logs')" style="background:#f1f5f9; color:#475569; border:none; padding:8px 16px; border-radius:8px; font-weight:700; cursor:pointer; font-size:13px; transition:all 0.2s;">Dispatch Logs</button>
+                    <button id="cc_btn_wa" onclick="window.salestrack.switchCommandCenterTab('wa')" style="background:#f1f5f9; color:#475569; border:none; padding:8px 16px; border-radius:8px; font-weight:700; cursor:pointer; font-size:13px; transition:all 0.2s;"><i class="fab fa-whatsapp" style="color:#25d366; margin-right:4px;"></i> WA Reminders</button>
+                </div>
+
+                <!-- OVERVIEW TAB -->
+                <div id="cc_tab_overview" style="display:block;">
+                    <!-- KPI Cards Row -->
+                    <div style="display:grid; grid-template-columns: repeat(3, 1fr); gap:20px; margin-bottom:24px;">
+                        <div style="background:rgba(255,255,255,0.8); backdrop-filter:blur(10px); border:1px solid #e2e8f0; border-radius:16px; padding:20px; box-shadow:0 4px 6px -1px rgba(0,0,0,0.02); display:flex; align-items:center; gap:16px;">
+                            <div style="width:56px; height:56px; border-radius:12px; background:#eff6ff; color:#3b82f6; display:flex; align-items:center; justify-content:center; font-size:24px;">
+                                <i class="fas fa-file-invoice-dollar"></i>
+                            </div>
+                            <div>
+                                <div style="font-size:12px; font-weight:700; color:#64748b; text-transform:uppercase; letter-spacing:0.5px;">Total Active Quotes</div>
+                                <div style="font-size:28px; font-weight:800; color:#0f172a; margin-top:2px;">${totalActive}</div>
+                            </div>
+                        </div>
+                        
+                        <div style="background:rgba(255,255,255,0.8); backdrop-filter:blur(10px); border:1px solid #e2e8f0; border-radius:16px; padding:20px; box-shadow:0 4px 6px -1px rgba(0,0,0,0.02); display:flex; align-items:center; gap:16px;">
+                            <div style="width:56px; height:56px; border-radius:12px; background:#fef2f2; color:#ef4444; display:flex; align-items:center; justify-content:center; font-size:24px;">
+                                <i class="fas fa-clock"></i>
+                            </div>
+                            <div>
+                                <div style="font-size:12px; font-weight:700; color:#64748b; text-transform:uppercase; letter-spacing:0.5px;">Due For Follow-Up</div>
+                                <div style="font-size:28px; font-weight:800; color:#ef4444; margin-top:2px;">${totalDue}</div>
+                            </div>
+                        </div>
+
+                        <div style="background:rgba(255,255,255,0.8); backdrop-filter:blur(10px); border:1px solid #e2e8f0; border-radius:16px; padding:20px; box-shadow:0 4px 6px -1px rgba(0,0,0,0.02); display:flex; align-items:center; gap:16px;">
+                            <div style="width:56px; height:56px; border-radius:12px; background:#fff7ed; color:#f97316; display:flex; align-items:center; justify-content:center; font-size:24px;">
+                                <i class="fas fa-user-shield"></i>
+                            </div>
+                            <div>
+                                <div style="font-size:12px; font-weight:700; color:#64748b; text-transform:uppercase; letter-spacing:0.5px;">Pending Sign-offs</div>
+                                <div style="font-size:28px; font-weight:800; color:#c2410c; margin-top:2px;">${pendingCount}</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Charts Row -->
+                    <div style="display:grid; grid-template-columns: 1fr 2fr; gap:24px; margin-bottom:24px;">
+                        <div style="background:#ffffff; border:1px solid #e2e8f0; border-radius:16px; padding:24px; box-shadow:0 10px 25px -5px rgba(0,0,0,0.02);">
+                            <h3 style="margin:0 0 16px 0; font-size:14px; font-weight:800; color:#0f172a; text-transform:uppercase; letter-spacing:0.5px;">Overall Compliance</h3>
+                            <div id="lifecycle_compliance_chart" style="min-height:220px; display:flex; align-items:center; justify-content:center;"></div>
+                        </div>
+
+                        <div style="background:#ffffff; border:1px solid #e2e8f0; border-radius:16px; padding:24px; box-shadow:0 10px 25px -5px rgba(0,0,0,0.02);">
+                            <h3 style="margin:0 0 16px 0; font-size:14px; font-weight:800; color:#0f172a; text-transform:uppercase; letter-spacing:0.5px;">Active Quotes by Stage</h3>
+                            <div id="lifecycle_stages_chart" style="min-height:220px;"></div>
+                        </div>
+                    </div>
+                    
+                    <!-- Leaderboard -->
+                    <div style="background:#ffffff; border:1px solid #e2e8f0; border-radius:16px; padding:24px; box-shadow:0 10px 25px -5px rgba(0,0,0,0.02);">
+                        <h3 style="margin:0 0 20px 0; font-size:14px; font-weight:800; color:#0f172a; text-transform:uppercase; letter-spacing:0.5px;">Sales Team Leaderboard</h3>
+                        
+                        <!-- Grid Header -->
+                        <div class="ai-order-header ai-leaderboard-grid" style="border-radius: 12px 12px 0 0; margin-bottom: 8px;">
+                            <div>Rep</div>
+                            <div>Quotes</div>
+                            <div>Logged</div>
+                            <div>Hot</div>
+                            <div>Rate</div>
+                        </div>
+                        
+                        <!-- Grid Body -->
+                        <div class="ol-orders-grid-container" style="display:flex; flex-direction:column; gap:8px;">
+                            ${leaderboardHtml}
+                        </div>
+                    </div>
+                </div>
+
+                <!-- DUE QUOTES TAB -->
+                <div id="cc_tab_due" style="display:none;">
+                    <div style="background:#ffffff; border:1px solid #e2e8f0; border-radius:16px; overflow:hidden; box-shadow:0 10px 25px -5px rgba(0,0,0,0.02);">
+                        <div style="padding:16px 20px; border-bottom:1px solid #e2e8f0; background:#fef2f2; display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:10px;">
+                            <h3 style="margin:0; font-size:13px; font-weight:800; color:#991b1b; display:flex; align-items:center; gap:8px;">
+                                <i class="fas fa-clock" style="color:#ef4444;"></i> Global Due for Follow-Up
+                            </h3>
+                            <div style="display:flex; gap:10px; align-items:center;">
+                                <select id="cc_filter_company" onchange="window.salestrack.applyCommandCenterFilters()" style="padding:4px 8px; border:1px solid #fca5a5; border-radius:4px; font-size:11px; outline:none; background:white;">
+                                    <option value="">All Companies</option>
+                                    <option value="Sinopower">Sinopower</option>
+                                    <option value="Machinery Exchange">Machinery Exchange</option>
+                                </select>
+                                <input type="date" id="cc_filter_date_from" onchange="window.salestrack.applyCommandCenterFilters()" style="padding:3px 8px; border:1px solid #fca5a5; border-radius:4px; font-size:11px; outline:none; background:white;" title="From Date">
+                                <input type="date" id="cc_filter_date_to" onchange="window.salestrack.applyCommandCenterFilters()" style="padding:3px 8px; border:1px solid #fca5a5; border-radius:4px; font-size:11px; outline:none; background:white;" title="To Date">
+                                <div id="cc_due_count_badge" style="font-size:11px; font-weight:800; color:#ef4444; background:#fee2e2; padding:4px 8px; border-radius:12px; margin-left:10px;">${dueQuotes ? dueQuotes.length : 0} Quotes Due</div>
+                            </div>
+                        </div>
+                        <div id="cc_global_due_container" style="max-height: 600px; overflow-y: auto;">
+                            ${globalDueHtml}
+                        </div>
+                    </div>
+                </div>
+
+                <!-- APPROVALS TAB -->
+                <div id="cc_tab_approvals" style="display:none;">
+                    ${pendingApprovalsHtml || `<div style="background:#ffffff; border:1px solid #e2e8f0; border-radius:16px; padding:40px; text-align:center; color:#94a3b8; font-style:italic;">No pending manager sign-offs.</div>`}
+                </div>
+
+                <!-- LOGS TAB -->
+                <div id="cc_tab_logs" style="display:none;">
+                    <div style="background:#ffffff; border:1px solid #e2e8f0; border-radius:16px; overflow:hidden; box-shadow:0 10px 25px -5px rgba(0,0,0,0.02);">
+                        <div style="padding:16px 20px; border-bottom:1px solid #e2e8f0; background:#f8fafc; display:flex; align-items:center; justify-content:space-between;">
+                            <h3 style="margin:0; font-size:13px; font-weight:800; color:#0f172a; display:flex; align-items:center; gap:8px;">
+                                <i class="fas fa-envelope" style="color:#2563eb;"></i> Automated Dispatch Logs
+                            </h3>
+                        </div>
+                        <div style="max-height: 600px; overflow-y: auto;">
+                            ${emailsHtml}
+                        </div>
+                    </div>
+                </div>
+
+                <!-- WA TAB -->
+                <div id="cc_tab_wa" style="display:none;">
+                    <div style="background:#ffffff; border:1px solid #e2e8f0; border-radius:16px; overflow:hidden; box-shadow:0 10px 25px -5px rgba(0,0,0,0.02);">
+                        <div style="padding:16px 20px; border-bottom:1px solid #e2e8f0; background:#f0fdf4; display:flex; align-items:center; justify-content:space-between;">
+                            <h3 style="margin:0; font-size:13px; font-weight:800; color:#065f46; display:flex; align-items:center; gap:8px;">
+                                <i class="fab fa-whatsapp" style="color:#25d366; font-size:16px;"></i> WhatsApp Reminders Sent
+                            </h3>
+                        </div>
+                        <div style="max-height: 600px; overflow-y: auto;">
+                            ${waLogsHtml}
+                        </div>
+                    </div>
+                </div>
             </div>
         `;
-
+        
+        setTimeout(() => {
+            if (window.ApexCharts) {
+                const donutOptions = {
+                    series: [complianceRate, 100 - complianceRate],
+                    labels: ['Logged', 'Unlogged'],
+                    chart: { type: 'donut', height: 250 },
+                    colors: [complianceColor, '#e2e8f0'],
+                    plotOptions: {
+                        pie: { donut: { size: '75%', labels: { show: true, name: { show: false }, value: { show: true, fontSize: '24px', fontWeight: 800, color: '#0f172a', formatter: function (val) { return val + "%" } } } } }
+                    },
+                    dataLabels: { enabled: false },
+                    legend: { show: false },
+                    stroke: { width: 0 }
+                };
+                new window.ApexCharts(document.querySelector("#lifecycle_compliance_chart"), donutOptions).render();
+                
+                const barOptions = {
+                    series: [{ name: 'Active Quotes', data: [stage1Count, stage2Count, stage3Count] }],
+                    chart: { type: 'bar', height: 220, toolbar: { show: false }, dropShadow: { enabled: true, top: 4, left: 0, blur: 4, opacity: 0.1 } },
+                    plotOptions: { bar: { borderRadius: 8, horizontal: true, distributed: true, barHeight: '55%', dataLabels: { position: 'right' } } },
+                    colors: ['#3b82f6', '#f59e0b', '#ef4444'],
+                    fill: {
+                        type: 'gradient',
+                        gradient: { shade: 'dark', type: "horizontal", shadeIntensity: 0.5, gradientToColors: ['#60a5fa', '#fbbf24', '#f87171'], inverseColors: true, opacityFrom: 1, opacityTo: 1, stops: [0, 100] }
+                    },
+                    dataLabels: { enabled: true, textAnchor: 'start', style: { colors: ['#0f172a'], fontSize: '13px', fontWeight: 800 }, formatter: function (val) { return val + (val === 1 ? ' Quote' : ' Quotes') }, offsetX: 10 },
+                    xaxis: { categories: ['Stage 1 (3-Day)', 'Stage 2 (7-Day)', 'Stage 3 (21-Day)'], labels: { show: false }, axisBorder: { show: false }, axisTicks: { show: false } },
+                    yaxis: { labels: { style: { fontSize: '12px', fontWeight: 700, colors: '#475569' } } },
+                    grid: { show: true, borderColor: '#f1f5f9', strokeDashArray: 4, position: 'back', xaxis: { lines: { show: true } }, yaxis: { lines: { show: false } } },
+                    legend: { show: false }
+                };
+                new window.ApexCharts(document.querySelector("#lifecycle_stages_chart"), barOptions).render();
+            }
+        }, 100);
         if (!isFullView) {
-            this.openListModal("Quotation Command Center", html, "1200px");
+            this.openListModal("Quote Lifecycle Analytics", html, "1200px");
         } else {
             const fullCont = document.getElementById('command-center-full-container');
             if (fullCont) fullCont.innerHTML = html;
         }
     }
-
-    previewManualFollowup(q, event) {
+        previewManualFollowup(q, event) {
         const stage = q.followup_stage || 1;
         const itemsList = (q.items_summary || '').split(',').map(i => `• ${i.trim()}`).join('\n');
         const frappeUrl = `${this.sys.baseUrl}/app/quotation/${encodeURIComponent(q.name)}?fu=1`;
@@ -4276,7 +5215,7 @@ window.OmnisDashboardV6 = class OmnisDashboardV6 {
                         </span>
                     </div>
                     <div style="max-height: 260px; overflow-y: auto; border: 1px solid #e2e8f0; border-radius: 6px;">
-                        <table style="width:100%; border-collapse:collapse; font-size:11px;">
+                        <table style="width:100%; border-collapse:separate; border-spacing:0; font-size:11px;">
                             <thead style="position: sticky; top: 0; background: #f8fafc; z-index: 1;">
                                 <tr style="border-bottom:1px solid #e2e8f0; text-align:left;">
                                     <th style="padding:8px 10px; font-weight:800; color:#64748b; width:15%;">REF</th>
@@ -4898,7 +5837,7 @@ window.OmnisDashboardV6 = class OmnisDashboardV6 {
                        <button onclick="salestrack.addMachineRow()" style="font-size:12px; background:#8b2219; color:white; border:none; padding:8px 16px; border-radius:6px; font-weight:700; cursor:pointer; box-shadow:0 1px 2px rgba(0,0,0,0.1); transition:all 0.2s;">+ Add Machine</button>
                    </div>
                    <div style="border:1px solid #e2e8f0; border-radius:8px; overflow:hidden; box-shadow:0 4px 6px -1px rgba(0,0,0,0.05); background:white;">
-                       <table style="width:100%; border-collapse:collapse; font-size:13px;">
+                       <table style="width:100%; border-collapse:separate; border-spacing:0; font-size:13px;">
                            <thead style="background:#8b2219; color:white; font-weight:800; font-size:11px; text-transform:uppercase; letter-spacing:0.05em;">
                                <tr>
                                    <th style="padding:16px 12px; text-align:left; width:22%; color:white;">Machine / Item</th>
@@ -4924,7 +5863,7 @@ window.OmnisDashboardV6 = class OmnisDashboardV6 {
                     </div>
                     
                     <div style="border:1px solid #e2e8f0; border-radius:8px; overflow:hidden; background:white; box-shadow:0 1px 2px rgba(0,0,0,0.05);">
-                        <table style="width:100%; border-collapse:collapse; font-size:13px;">
+                        <table style="width:100%; border-collapse:separate; border-spacing:0; font-size:13px;">
                             <thead style="background:#8b2219; color:white; font-weight:800; font-size:11px; text-transform:uppercase; letter-spacing:0.05em; border-bottom:2px solid #641a13;">
                                 <tr>
                                     <th style="padding:12px; text-align:left; width:15%; color:white;">Salutation</th>
@@ -6452,7 +7391,7 @@ window.OmnisDashboardV6 = class OmnisDashboardV6 {
         return `<!DOCTYPE html><html><head><meta charset="utf-8"></head>
 <body style="margin:0;padding:24px;font-family:Arial,'Helvetica Neue',sans-serif;background:#f0f4f8;">
 <div style="max-width:920px;margin:0 auto;background:#fff;border-radius:12px;overflow:hidden;box-shadow:0 8px 30px rgba(0,0,0,0.12);">
-  <table style="width:100%;border-collapse:collapse;background:${colour};" cellpadding="0" cellspacing="0"><tr>
+  <table style="width:100%;border-collapse:separate; border-spacing:0;background:${colour};" cellpadding="0" cellspacing="0"><tr>
     <td style="padding:24px 32px;vertical-align:middle;width:45%;">
       ${logo ? `<img src="${logo}" alt="${brand}" style="display:block;height:125px;width:auto;max-width:300px;filter:drop-shadow(0 2px 4px rgba(0,0,0,0.2));">` : ''}
     </td>
@@ -6583,7 +7522,7 @@ window.OmnisDashboardV6 = class OmnisDashboardV6 {
         <div>
             <div style="font-size:11px;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:8px;">Order Contents</div>
             <div style="border:1px solid #e2e8f0;border-radius:10px;overflow:hidden;">
-                <table style="width:100%;border-collapse:collapse;">
+                <table style="width:100%;border-collapse:separate; border-spacing:0;">
                     <thead style="background:${themeColor};">
                         <tr>
                             <th style="padding:10px 12px;text-align:left;color:white;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:0.04em;">Machine / Item</th>
