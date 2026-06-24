@@ -2,6 +2,7 @@
 CREATE TABLE IF NOT EXISTS public.stock_company_mappings (
     brand TEXT PRIMARY KEY,
     company TEXT NOT NULL,
+    logo_url TEXT,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL,
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT timezone('utc'::text, now()) NOT NULL
 );

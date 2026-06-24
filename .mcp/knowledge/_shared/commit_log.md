@@ -49,3 +49,5 @@
   Files: .mcp/knowledge/_shared/commit_log.md,scripts/create_stock_company_mappings.sql,stock_mappings.sql,systems/salestrack/dashboard_logic.js,systems/salestrack/find.js,systems/salestrack/index.html,
 - `c15f6f2` 2026-06-23 [supabase-migration] Restore point before fixing stock brand pills and Hitachi
   Files: .mcp/knowledge/_shared/commit_log.md,scripts/create_stock_contracts_table.sql,systems/salestrack/index.html,
+- `6dfca5e` 2026-06-23 [supabase-migration] Restore point before fixing Hitachi brand and brand pill filtering
+  Files: .mcp/knowledge/_shared/commit_log.md,systems/salestrack/index.html,

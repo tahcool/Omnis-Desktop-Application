@@ -6797,10 +6797,7 @@
                           style="padding:8px 20px; border:none; border-radius:8px; font-size:12px; font-weight:700; cursor:pointer; transition:all 0.3s; background:transparent; color:#64748b; display:flex; align-items:center; gap:8px;">
                           <i class="fas fa-users"></i> Team
                         </button>
-                        <button onclick="salestrack.setSettingsTab('brand-mappings')" class="settings-tab-btn" data-tab="brand-mappings"
-                          style="padding:8px 20px; border:none; border-radius:8px; font-size:12px; font-weight:700; cursor:pointer; transition:all 0.3s; background:transparent; color:#64748b; display:flex; align-items:center; gap:8px;">
-                          <i class="fas fa-tags"></i> Brand Mappings
-                        </button>
+
                       </div>
                     </div>
         
@@ -7244,6 +7241,14 @@
                                           <input type="text" id="new-stock-brand" style="width:100%; box-sizing:border-box; border:1px solid #cbd5e1; border-radius:8px; padding:10px; font-size:13px; outline:none;" placeholder="e.g. Caterpillar">
                                       </div>
                                       <div style="flex:1;">
+                                          <label style="display:block; font-size:12px; font-weight:700; color:#475569; margin-bottom:6px;">Upload Logo</label>
+                                          <div style="display:flex; gap:8px;">
+                                              <input type="file" id="new-stock-logo-upload" accept="image/*" style="flex:1; box-sizing:border-box; border:1px solid #cbd5e1; border-radius:8px; padding:7px; font-size:13px; outline:none; background:white;" onchange="if(this.files && this.files[0]) { const r = new FileReader(); r.onload = e => { const img = document.getElementById('new-stock-logo-preview'); img.src = e.target.result; img.style.display = 'block'; document.getElementById('new-stock-logo').value = e.target.result; }; r.readAsDataURL(this.files[0]); }">
+                                              <input type="hidden" id="new-stock-logo">
+                                              <img id="new-stock-logo-preview" style="height:36px; max-width:60px; object-fit:contain; border-radius:4px; display:none; background:#f8fafc; border:1px solid #e2e8f0;">
+                                          </div>
+                                      </div>
+                                      <div style="flex:1;">
                                           <label style="display:block; font-size:12px; font-weight:700; color:#475569; margin-bottom:6px;">Assign Company <span style="color:#ef4444">*</span></label>
                                           <select id="new-stock-company" style="width:100%; box-sizing:border-box; border:1px solid #cbd5e1; border-radius:8px; padding:10px; font-size:13px; outline:none; background:white;">
                                               <option value="Machinery Exchange">Machinery Exchange</option>
@@ -7265,12 +7270,13 @@
                                               <tr>
                                                   <th style="padding:12px 20px; font-size:12px; font-weight:800; color:#475569; text-transform:uppercase;">Brand / OEM</th>
                                                   <th style="padding:12px 20px; font-size:12px; font-weight:800; color:#475569; text-transform:uppercase;">Assigned Company</th>
+                                                  <th style="padding:12px 20px; font-size:12px; font-weight:800; color:#475569; text-transform:uppercase; text-align:center;">Logo</th>
                                                   <th style="padding:12px 20px; font-size:12px; font-weight:800; color:#475569; text-transform:uppercase; text-align:right;">Actions</th>
                                               </tr>
                                           </thead>
                                           <tbody id="stock-mappings-tbody">
                                               <!-- Mappings populated dynamically -->
-                                              <tr><td colspan="3" style="text-align:center; padding:30px; color:#94a3b8; font-style:italic; font-size:13px;">Loading mappings...</td></tr>
+                                              <tr><td colspan="4" style="text-align:center; padding:30px; color:#94a3b8; font-style:italic; font-size:13px;">Loading mappings...</td></tr>
                                           </tbody>
                                       </table>
                                   </div>
@@ -15987,6 +15993,7 @@
           clearInterval(bootThread);
           if (window.omnisLog) window.omnisLog("[Boot] Class definition found. Instantiating Salestrack...");
           window.salestrack = new OmnisDashboardV6();
+          window.salestrack.supabase = window.supabase || (window.electron && window.electron.supabase) || window.__supabaseClient;
           window.salestrack.init();
         } else if (bootAttempts >= MAX_BOOT_ATTEMPTS) {
           clearInterval(bootThread);
@@ -16029,6 +16036,16 @@
 
       function getOEMLogo(brand) {
         const b = (brand || '').toLowerCase();
+        
+        if (window._stockCompanyMappings) {
+           const mapped = window._stockCompanyMappings.find(m => m.brand && m.brand.toLowerCase() === b);
+           if (mapped && typeof mapped.logo_url !== 'undefined' && mapped.logo_url !== null) {
+               // If it's explicitly mapped (even to an empty string), use it.
+               // If empty string, return null so the text fallback is used.
+               return mapped.logo_url === '' ? null : mapped.logo_url;
+           }
+        }
+
         if (b.includes('shantui')) return 'assets/images/Shantui_logo.png';
         if (b.includes('hitachi')) return 'assets/images/Hitachi_logo.png';
         if (b.includes('bobcat')) return 'assets/images/Bobcat_Black.png';
@@ -16036,6 +16053,7 @@
         if (b.includes('machinery') || b.includes('mxg')) return 'assets/images/omnis-logo.png'; // Generic fallback
         return null;
       }
+
 
       window.renderStockTab = async function () {
         console.log("[Stock] renderStockTab triggered");
@@ -16407,28 +16425,38 @@
         if (window._syncingStock) return;
         try {
           window._syncingStock = true;
-          if (window.salestrack && window.salestrack.supabase) {
+          let sData = null;
+          let sErr = null;
+          if (window.electron) {
+             const res = await window.electron.invoke('supabase:query', {
+                 table: 'stock_inventory',
+                 method: 'select',
+                 params: { columns: '*, stock_potential_customers(customer_name)' }
+             });
+             if (res.ok) { sData = res.data; } else { sErr = res.error; }
+          } else if (window.salestrack && window.salestrack.supabase) {
              const sp = window.salestrack.supabase;
-             const { data: sData, error: sErr } = await sp.from('stock_inventory').select('*, stock_potential_customers(customer_name)');
-             if (!sErr && sData) {
-                 records = sData.map(r => ({
-                     name: r.frappe_id || r.id, // Primary key reference for editing
-                     id: r.id,
-                     oem: r.brand,
-                     model: r.model,
-                     proposed_order: r.proposed_qty,
-                     quantity: r.actual_qty,
-                     production_completion: r.prod_date,
-                     shipping_date: r.ship_date,
-                     eta_durban: r.eta_durban,
-                     eta_beira: r.eta_beira,
-                     ted: r.eta_beira,
-                     eta_harare: r.eta_harare,
-                     contract: r.contract_name,
-                     potential_customers: r.stock_potential_customers || []
-                 }));
-                 localStorage.setItem(cacheKey, JSON.stringify({ timestamp: Date.now(), data: records }));
-             }
+             const res = await sp.from('stock_inventory').select('*, stock_potential_customers(customer_name)');
+             sData = res.data; sErr = res.error;
+          }
+          if (!sErr && sData) {
+             records = sData.map(r => ({
+                 name: r.frappe_id || r.id, // Primary key reference for editing
+                 id: r.id,
+                 oem: r.brand,
+                 model: r.model,
+                 proposed_order: r.proposed_qty,
+                 quantity: r.actual_qty,
+                 production_completion: r.prod_date,
+                 shipping_date: r.ship_date,
+                 eta_durban: r.eta_durban,
+                 eta_beira: r.eta_beira,
+                 ted: r.eta_beira,
+                 eta_harare: r.eta_harare,
+                 contract: r.contract_name,
+                 potential_customers: r.stock_potential_customers || []
+             }));
+             localStorage.setItem(cacheKey, JSON.stringify({ timestamp: Date.now(), data: records }));
           }
         } catch (err) { console.error("Stock sync failed", err); }
         finally { window._syncingStock = false; performRender(records); }

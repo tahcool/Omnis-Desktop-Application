@@ -12,7 +12,7 @@
  * ─────────────────────────────────────────────────────────────────────────────
  */
 const _WEB_SUPABASE_URL = 'https://pfqaeewmlwfayxbgmuaq.supabase.co';
-const _WEB_SUPABASE_KEY = 'REPLACE_WITH_ANON_KEY'; // ← paste anon key here
+const _WEB_SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBmcWFlZXdtbHdmYXl4YmdtdWFxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDc1NTg3OTEsImV4cCI6MjA2MzEzNDc5MX0.YLx-ym_yS6K2lHJJXPx6OBpEdWnqmkBWrdlFd6I7mGU'; // ← paste anon key here
 
 // ── Bootstrap Supabase JS SDK from CDN ───────────────────────────────────────
 (function() {

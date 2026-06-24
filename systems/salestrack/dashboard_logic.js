@@ -8717,15 +8717,22 @@ window.OmnisDashboardV6.prototype.submitOperatorTraining = async function() {
 
 window.omnisFetchStockCompanyMappings = async function() {
     try {
-        if (!window.electron) return [];
-        const res = await window.electron.invoke('supabase:query', {
-            table: 'stock_company_mappings',
-            method: 'select',
-            params: {}
-        });
-        if (res && res.data) {
-            window._stockCompanyMappings = res.data;
-            return res.data;
+        if (window.electron) {
+            const res = await window.electron.invoke('supabase:query', {
+                table: 'stock_company_mappings',
+                method: 'select',
+                params: {}
+            });
+            if (res && res.data) {
+                window._stockCompanyMappings = res.data;
+                return res.data;
+            }
+        } else if (window.salestrack && window.salestrack.supabase) {
+            const { data, error } = await window.salestrack.supabase.from('stock_company_mappings').select('*');
+            if (data && !error) {
+                window._stockCompanyMappings = data;
+                return data;
+            }
         }
         return [];
     } catch(e) {
@@ -8753,6 +8760,7 @@ window.OmnisDashboardV6.prototype.loadStockMappings = async function() {
             const isMxg = m.company === 'Machinery Exchange';
             const companyColor = isMxg ? '#2563eb' : '#b91c1c';
             const companyBg = isMxg ? '#eff6ff' : '#fef2f2';
+            const logoHtml = m.logo_url ? `<img src="${m.logo_url}" style="height:24px; max-width:80px; object-fit:contain; border-radius:4px;">` : `<span style="color:#cbd5e1; font-size:10px; font-style:italic;">No logo</span>`;
             
             html += `
                 <tr style="border-bottom:1px solid #f1f5f9;">
@@ -8762,7 +8770,13 @@ window.OmnisDashboardV6.prototype.loadStockMappings = async function() {
                             ${m.company}
                         </span>
                     </td>
-                    <td style="padding:16px 20px; text-align:right;">
+                    <td style="padding:16px 20px; text-align:center;">
+                        ${logoHtml}
+                    </td>
+                    <td style="padding:16px 20px; text-align:right; display:flex; gap:8px; justify-content:flex-end;">
+                        <button onclick="window.salestrack.editStockMapping('${m.brand.replace(/'/g, "\\'")}', '${m.company.replace(/'/g, "\\'")}', '${(m.logo_url || '').replace(/'/g, "\\'")}')" style="padding:6px 12px; background:white; border:1px solid #e2e8f0; border-radius:6px; color:#3b82f6; font-size:12px; font-weight:700; cursor:pointer; transition:all 0.2s;" onmouseover="this.style.background='#eff6ff'; this.style.borderColor='#bfdbfe';" onmouseout="this.style.background='white'; this.style.borderColor='#e2e8f0';">
+                            <i class="fas fa-edit"></i> Edit
+                        </button>
                         <button onclick="window.salestrack.deleteStockMapping('${m.brand.replace(/'/g, "\\'")}')" style="padding:6px 12px; background:white; border:1px solid #e2e8f0; border-radius:6px; color:#ef4444; font-size:12px; font-weight:700; cursor:pointer; transition:all 0.2s;" onmouseover="this.style.background='#fef2f2'; this.style.borderColor='#fecaca';" onmouseout="this.style.background='white'; this.style.borderColor='#e2e8f0';">
                             <i class="fas fa-trash-alt"></i> Delete
                         </button>
@@ -8781,11 +8795,13 @@ window.OmnisDashboardV6.prototype.loadStockMappings = async function() {
 window.OmnisDashboardV6.prototype.addStockMapping = async function() {
     const brandInput = document.getElementById('new-stock-brand');
     const companySelect = document.getElementById('new-stock-company');
+    const logoInput = document.getElementById('new-stock-logo');
     
     if (!brandInput || !companySelect) return;
     
     const brandName = brandInput.value.trim();
     const company = companySelect.value;
+    const logoUrl = logoInput ? logoInput.value.trim() : '';
     
     if (!brandName) {
         this.showToast ? this.showToast('Please enter a brand name.', 'error') : alert('Please enter a brand name.');
@@ -8793,23 +8809,44 @@ window.OmnisDashboardV6.prototype.addStockMapping = async function() {
     }
     
     try {
-        const res = await window.electron.invoke('supabase:query', {
-            table: 'stock_company_mappings',
-            method: 'upsert',
-            params: {
-                data: {
-                    brand: brandName,
-                    company: company
+        let ok = false;
+        let errorMsg = '';
+        if (window.electron) {
+            const res = await window.electron.invoke('supabase:query', {
+                table: 'stock_company_mappings',
+                method: 'upsert',
+                params: {
+                    data: {
+                        brand: brandName,
+                        company: company,
+                        logo_url: logoUrl
+                    }
                 }
-            }
-        });
+            });
+            ok = res.ok;
+            errorMsg = res.error;
+        } else if (window.salestrack && window.salestrack.supabase) {
+            const { error } = await window.salestrack.supabase.from('stock_company_mappings').upsert({ brand: brandName, company: company, logo_url: logoUrl }, { onConflict: 'brand' });
+            ok = !error;
+            errorMsg = error?.message;
+        } else {
+            throw new Error("No database connection available");
+        }
         
-        if (!res.ok) {
-            throw new Error(res.error || 'Failed to insert mapping');
+        if (!ok) {
+            throw new Error(errorMsg || 'Failed to insert mapping');
         }
         
         brandInput.value = ''; // clear input
-        this.showToast ? this.showToast('Mapping added successfully.', 'success') : alert('Mapping added successfully.');
+        if (logoInput) logoInput.value = ''; // clear logo input
+        
+        // Reset button text if it was changed by editStockMapping
+        const btn = document.querySelector('#settings-oem-brands button[onclick*="addStockMapping"]');
+        if (btn) {
+            btn.innerHTML = '<i class="fas fa-plus"></i> Add Mapping';
+        }
+        
+        this.showToast ? this.showToast('Mapping added/updated successfully.', 'success') : alert('Mapping added/updated successfully.');
         
         // Reload list and update global cache
         await this.loadStockMappings();
@@ -8827,6 +8864,25 @@ window.OmnisDashboardV6.prototype.addStockMapping = async function() {
     }
 };
 
+window.OmnisDashboardV6.prototype.editStockMapping = function(brand, company, logoUrl) {
+    const brandInput = document.getElementById('new-stock-brand');
+    const companySelect = document.getElementById('new-stock-company');
+    const logoInput = document.getElementById('new-stock-logo');
+    
+    if (brandInput) {
+        brandInput.value = brand;
+        brandInput.focus();
+    }
+    if (companySelect) companySelect.value = company;
+    if (logoInput) logoInput.value = logoUrl || '';
+    
+    // Optional: update button text to show it will update
+    const btn = document.querySelector('#settings-oem-brands button[onclick*="addStockMapping"]');
+    if (btn) {
+        btn.innerHTML = '<i class="fas fa-save"></i> Update Mapping';
+    }
+};
+
 window.OmnisDashboardV6.prototype.deleteStockMapping = async function(brand) {
     if (!brand) return;
     
@@ -8835,16 +8891,28 @@ window.OmnisDashboardV6.prototype.deleteStockMapping = async function(brand) {
     if (!confirmDelete) return;
     
     try {
-        const res = await window.electron.invoke('supabase:query', {
-            table: 'stock_company_mappings',
-            method: 'delete',
-            params: {
-                match: { brand: brand }
-            }
-        });
+        let ok = false;
+        let errorMsg = '';
+        if (window.electron) {
+            const res = await window.electron.invoke('supabase:query', {
+                table: 'stock_company_mappings',
+                method: 'delete',
+                params: {
+                    match: { brand: brand }
+                }
+            });
+            ok = res.ok;
+            errorMsg = res.error;
+        } else if (window.salestrack && window.salestrack.supabase) {
+            const { error } = await window.salestrack.supabase.from('stock_company_mappings').delete().eq('brand', brand);
+            ok = !error;
+            errorMsg = error?.message;
+        } else {
+            throw new Error("No database connection available");
+        }
         
-        if (!res.ok) {
-            throw new Error(res.error || 'Failed to delete mapping');
+        if (!ok) {
+            throw new Error(errorMsg || 'Failed to delete mapping');
         }
         
         this.showToast ? this.showToast('Mapping deleted.', 'info') : alert('Mapping deleted.');
