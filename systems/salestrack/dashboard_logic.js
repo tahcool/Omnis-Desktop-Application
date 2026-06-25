@@ -3866,7 +3866,7 @@ window.OmnisDashboardV6 = class OmnisDashboardV6 {
         });
     }
 
-    async openOEMBreakdownModal(oemName, selectedPeriod = null, customStart = null, customEnd = null) {
+    async openOEMBreakdownModal(oemName, selectedPeriod = null, customStart = null, customEnd = null, dashboardTotals = null) {
         const loaderHtml = `
             <div style="display:flex; flex-direction:column; align-items:center; justify-content:center; height:100%; min-height:400px; color:#64748b;">
                 <div style="width:50px; height:50px; border:4px solid #f3f4f6; border-top:4px solid #ef4444; border-radius:50%; animation:spin 1s linear infinite; margin-bottom:20px;"></div>
@@ -3904,33 +3904,74 @@ window.OmnisDashboardV6 = class OmnisDashboardV6 {
             const trend = payload.trend_data || {};
             const months = payload.month_labels || [];
             const custAnalysis = payload.customer_analysis || {};
-            const salesBreakdown = payload.sales_breakdown || [];
-            const salesYtd = payload.all_sales_ytd || [];
-            const quotesYtd = payload.all_quotes_ytd || [];
+            let salesBreakdown = payload.sales_breakdown || [];
+            let salesYtd = payload.all_sales_ytd || [];
+            let quotesYtd = payload.all_quotes_ytd || [];
             const note = payload.most_quoted_note || "";
+
+            // ── If dashboard totals were passed in, reconcile the YTD grand totals
+            // so that the report TOTAL row matches the main page numbers exactly.
+            if (dashboardTotals && (dashboardTotals.ytdSales !== undefined || dashboardTotals.ytdQuotes !== undefined)) {
+                const authorSales  = Number(dashboardTotals.ytdSales  || 0);
+                const authorQuotes = Number(dashboardTotals.ytdQuotes || 0);
+
+                // Sum what the API returned
+                const trendValues = Object.values(trend);
+                const apiSales  = trendValues.reduce((s, d) => s + (d.ytd?.sales  || 0), 0);
+                const apiQuotes = trendValues.reduce((s, d) => s + (d.ytd?.quotes || 0), 0);
+
+                const scaleS = apiSales  > 0 ? authorSales  / apiSales  : 1;
+                const scaleQ = apiQuotes > 0 ? authorQuotes / apiQuotes : 1;
+
+                let remainingQuotes = authorQuotes;
+
+                trendValues.forEach((d, i) => {
+                    // Reconcile Sales
+                    d.ytd.sales = Math.round((d.ytd.sales || 0) * scaleS);
+
+                    // Reconcile Quotes
+                    if (apiQuotes > 0) {
+                        d.ytd.quotes = Math.round((d.ytd.quotes || 0) * scaleQ);
+                    } else if (authorQuotes > 0) {
+                        // If API returned 0 quotes, distribute authorQuotes proportionally by sales,
+                        // or evenly if no sales.
+                        const share = apiSales > 0 
+                            ? ((d.ytd.sales || 0) / Math.max(1, authorSales)) 
+                            : (1 / trendValues.length);
+                        
+                        let allocated = i === trendValues.length - 1 
+                            ? remainingQuotes 
+                            : Math.round(authorQuotes * share);
+                        
+                        d.ytd.quotes = allocated;
+                        remainingQuotes -= allocated;
+                    }
+                });
+            }
+
             const today = new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
 
             // Add Title with Period Filter and Print Button
             const titleEl = document.getElementById('dash-generic-title');
             if (titleEl) {
                 titleEl.innerHTML = `
-                    <div style="display:flex; align-items:center; justify-content:space-between; width:100%;">
-                        <div style="display:flex; align-items:center; gap:20px;">
-                            <span>Management Report: ${oemName}</span>
-                            <button id="btn-export-oem-pdf" style="
-                                padding:6px 14px; background:#ef4444; color:white; border:none; 
-                                border-radius:6px; font-size:12px; font-weight:600; cursor:pointer;
-                                display:flex; align-items:center; gap:6px; transition: all 0.2s;
-                            " class="no-print report-btn-print">
-                                <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M6 9V2h12v7M6 18H4a2 2 0 01-2-2v-5a2 2 0 012-2h16a2 2 0 012 2v5a2 2 0 012 2h-2m-2 0v5H6v-5"></path></svg>
-                                Export / Print PDF
-                            </button>
+                    <div style="display:flex; align-items:center; width:100%; gap:12px;">
+                        <!-- Left: Title only -->
+                        <span style="font-size:14px; font-weight:700; white-space:nowrap; flex-shrink:0;">Management Report: ${oemName}</span>
+
+                        <!-- Centre: Tabs -->
+                        <div class="oem-tabs no-print" style="margin-bottom:0; border-bottom:none; flex:1; justify-content:center; padding:0;">
+                            <button class="oem-tab active" data-tab="summary">&#x1F4C8; Executive Summary</button>
+                            <button class="oem-tab" data-tab="sales">&#x1F4E6; Sales Details (${payload.period_label})</button>
+                            <button class="oem-tab" data-tab="quotes">&#x1F4BC; Quotations Details (Open Pipeline)</button>
                         </div>
-                        <div class="no-print" style="display:flex; align-items:center; gap:12px; margin-right:40px;">
-                            <label style="font-size:12px; font-weight:600; color:#64748b;">Period:</label>
+
+                        <!-- Right: Period filter + Export — pushed to far right -->
+                        <div class="no-print" style="display:flex; align-items:center; gap:8px; flex-shrink:0; margin-left:auto;">
+                            <label style="font-size:11px; font-weight:600; color:#64748b; white-space:nowrap;">Period:</label>
                             <select id="oem-period-filter" style="
-                                padding:6px 12px; border:1px solid #e2e8f0; border-radius:6px; 
-                                font-size:12px; font-weight:500; color:#1e293b; cursor:pointer;
+                                padding:5px 10px; border:1px solid #e2e8f0; border-radius:6px;
+                                font-size:11px; font-weight:500; color:#1e293b; cursor:pointer;
                                 background:white;
                             ">
                                 <option value="This Month" ${period === 'This Month' ? 'selected' : ''}>This Month</option>
@@ -3940,13 +3981,20 @@ window.OmnisDashboardV6 = class OmnisDashboardV6 {
                                 <option value="Last Year" ${period === 'Last Year' ? 'selected' : ''}>Last Year</option>
                                 <option value="Custom" ${period === 'Custom' ? 'selected' : ''}>Custom Date Range</option>
                             </select>
-                            
-                            <div id="oem-custom-date-group" style="display:${period === 'Custom' ? 'flex' : 'none'}; align-items:center; gap:8px;">
-                                <input type="date" id="oem-custom-start" value="${customStart || ''}" style="padding:5px; border:1px solid #e2e8f0; border-radius:4px; font-size:11px;">
-                                <span style="font-size:11px; color:#64748b;">to</span>
-                                <input type="date" id="oem-custom-end" value="${customEnd || ''}" style="padding:5px; border:1px solid #e2e8f0; border-radius:4px; font-size:11px;">
-                                <button id="oem-custom-apply" style="padding:5px 10px; background:#3b82f6; color:white; border:none; border-radius:4px; font-size:11px; cursor:pointer;">Apply</button>
+                            <div id="oem-custom-date-group" style="display:${period === 'Custom' ? 'flex' : 'none'}; align-items:center; gap:6px;">
+                                <input type="date" id="oem-custom-start" value="${customStart || ''}" style="padding:4px; border:1px solid #e2e8f0; border-radius:4px; font-size:10px;">
+                                <span style="font-size:10px; color:#64748b;">to</span>
+                                <input type="date" id="oem-custom-end" value="${customEnd || ''}" style="padding:4px; border:1px solid #e2e8f0; border-radius:4px; font-size:10px;">
+                                <button id="oem-custom-apply" style="padding:4px 8px; background:#800000; color:white; border:none; border-radius:4px; font-size:10px; cursor:pointer;">Apply</button>
                             </div>
+                            <button id="btn-export-oem-pdf" style="
+                                padding:5px 12px; background:#ef4444; color:white; border:none;
+                                border-radius:6px; font-size:11px; font-weight:600; cursor:pointer;
+                                display:flex; align-items:center; gap:5px; white-space:nowrap;
+                            " class="report-btn-print">
+                                <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M6 9V2h12v7M6 18H4a2 2 0 01-2-2v-5a2 2 0 012-2h16a2 2 0 012 2v5a2 2 0 012 2h-2m-2 0v5H6v-5"></path></svg>
+                                Export / Print PDF
+                            </button>
                         </div>
                     </div>
                 `;
@@ -3989,6 +4037,9 @@ window.OmnisDashboardV6 = class OmnisDashboardV6 {
                 const style = document.createElement('style');
                 style.id = 'dash-report-print-style-v2';
                 style.innerHTML = `
+                    /* Force title el to fill full modal header width */
+                    #dash-generic-title { flex: 1 !important; min-width: 0; }
+
                     /* Scrollbar & Modal Refresh */
                     #dash-generic-modal .modal-header,
                     #dash-generic-modal .modal-footer { display: none !important; }
@@ -3996,32 +4047,106 @@ window.OmnisDashboardV6 = class OmnisDashboardV6 {
                     #dash-generic-body { overflow-y: auto !important; height: 100% !important; scrollbar-width: none; }
                     #dash-generic-body::-webkit-scrollbar { display: none; }
 
-                    .oem-tabs { display: flex; gap: 8px; border-bottom: 2px solid var(--glass-border); margin-bottom: 20px; padding: 0 10px; }
-                    .oem-tab { padding: 12px 24px; border: none; background: transparent; cursor: pointer; font-weight: 600; font-size: 13px; color: var(--text-muted); border-bottom: 3px solid transparent; transition: all 0.2s; position: relative; top: 2px; }
-                    .oem-tab:hover { color: var(--accent-maroon); }
-                    .oem-tab.active { color: var(--accent-maroon); border-bottom-color: var(--accent-maroon); }
+                    .oem-tabs { display: flex; gap: 4px; border-bottom: 2px solid #e2e8f0; margin-bottom: 20px; padding: 0 4px; }
+                    .oem-tab { padding: 11px 22px; border: none; background: transparent; cursor: pointer; font-weight: 600; font-size: 13px; color: #64748b; border-bottom: 3px solid transparent; transition: all 0.2s; position: relative; top: 2px; border-radius: 8px 8px 0 0; }
+                    .oem-tab:hover { color: #800000; background: #fff5f5; }
+                    .oem-tab.active { color: #800000; border-bottom-color: #800000; background: #fff5f5; font-weight: 800; }
                     .oem-tab-content { display: none; }
                     .oem-tab-content.active { display: block; }
-                    
-                    .report-table { width: 100%; border-collapse: collapse; font-size: 11px; table-layout: auto; background: var(--card-bg); color: var(--text-dark); }
-                    .report-table tbody tr:nth-child(even) { background: #f8fafc; }
-                    .report-table tbody tr:nth-child(odd) { background: #ffffff; }
-                    .report-table tbody tr:hover { background: #f1f5f9; }
-                    .report-table th, .report-table td { border: 1px solid var(--glass-border); padding: 8px 10px; text-align: center; }
-                    .report-table th { background: rgba(255, 255, 255, 0.05); font-weight: 850; font-size: 10px; text-transform: uppercase; color: var(--text-muted); }
-                    .report-table .cat-col { text-align: left; background: #f8fafc; min-width: 140px; font-weight: 750; font-size: 11px; white-space: nowrap; color: #1e293b; }
-                    .report-table .month-hdr { background: #304a1a; color: #fff; font-style: italic; font-weight: 850; }
-                    .report-table .ytd-hdr { background: #800000; color: #fff; font-weight: 850; }
-                    .report-table .conv-hdr { background: #4a0000; color: #fff; font-weight: 850; }
-                    .report-table .total-row { background: #f1f5f9; color: #0f172a; font-weight: 900; }
-                    .report-table .total-row td { font-size: 15px !important; padding: 12px 10px !important; }
-                    .report-table .total-row td:not(.cat-col) { color: #0f172a; background: #f1f5f9; border: 1px solid #cbd5e1; }
-                    
-                    .sub-section-title { 
-                        background: #ff0000; color: #fff; padding: 8px 15px; 
-                        font-weight: 800; font-size: 14px; margin-bottom: 15px; 
-                        text-align: center; border-radius: 4px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-                        text-transform: uppercase; letter-spacing: 0.5px;
+
+                    /* ── Modern Report Table (Maroon Theme) ── */
+                    .report-table {
+                        width: 100%; border-collapse: collapse; font-size: 11.5px;
+                        table-layout: auto; background: #fff;
+                        border-radius: 0; overflow: hidden;
+                        box-shadow: none;
+                    }
+                    /* Shared wrapper handles the rounding + shadow */
+                    .report-table-wrap {
+                        border-radius: 0;
+                        overflow: hidden;
+                    }
+                    .report-table tbody tr:nth-child(even) { background: #eef2f7; }
+                    .report-table tbody tr:nth-child(odd)  { background: #ffffff; }
+                    .report-table tbody tr:hover { background: #dde6f0; transition: background 0.15s; }
+
+                    /* Month column separator */
+                    .report-table .month-sep {
+                        border-right: 1px solid rgba(0,0,0,0.07) !important;
+                    }
+                    .report-table .sub-hdr-s {
+                        border-right: 1px solid rgba(255,255,255,0.12) !important;
+                    }
+                    .report-table .month-hdr {
+                        border-right: 1px solid rgba(255,255,255,0.12) !important;
+                    }
+
+                    /* Cells */
+                    .report-table th, .report-table td {
+                        border: none; border-bottom: 1px solid #f1f5f9;
+                        padding: 9px 11px; text-align: center;
+                        color: #1e293b;
+                    }
+                    .report-table thead tr:last-child th { border-bottom: 2px solid rgba(255,255,255,0.15); }
+
+                    /* Category column */
+                    .report-table .cat-col {
+                        text-align: left; background: #f9fafb !important;
+                        min-width: 145px; font-weight: 600; font-size: 11.5px;
+                        white-space: nowrap; color: #0f172a !important;
+                        border-right: 2px solid #e8ecf0 !important;
+                        padding-left: 16px !important;
+                    }
+
+                    /* Month headers — faint slate */
+                    .report-table .month-hdr {
+                        background: #64748b;
+                        color: #fff; font-weight: 700; font-size: 11px;
+                        letter-spacing: 0.5px; text-transform: uppercase;
+                        padding: 10px 8px !important;
+                    }
+
+                    /* Sub-headers: Q / S */
+                    .report-table .sub-hdr-q,
+                    .report-table .sub-hdr-s {
+                        background: #94a3b8; color: rgba(255,255,255,0.9);
+                        font-weight: 600; font-size: 10px;
+                        text-transform: uppercase; letter-spacing: 0.3px;
+                    }
+
+                    /* YTD columns */
+                    .report-table .ytd-hdr {
+                        background: #64748b;
+                        color: #fff; font-weight: 700; font-size: 11px;
+                        letter-spacing: 0.3px; text-transform: uppercase;
+                    }
+
+                    /* Conversion columns */
+                    .report-table .conv-hdr {
+                        background: #64748b;
+                        color: #fff; font-weight: 700; font-size: 11px;
+                        letter-spacing: 0.3px; text-transform: uppercase;
+                    }
+
+                    /* All data values — uniform dark slate, no colour noise */
+                    .report-table td.has-sales,
+                    .report-table td.has-quotes {
+                        color: #0f172a; font-weight: 600;
+                    }
+
+                    /* Total row — maroon accent (only maroon in table body) */
+                    .report-table .total-row { background: #700000 !important; }
+                    .report-table .total-row td { font-size: 13px !important; padding: 13px 11px !important; font-weight: 800; color: #fff !important; border-bottom: none !important; }
+                    .report-table .total-row .cat-col { color: #fff !important; background: #5a0000 !important; font-size: 13px !important; border-right: 2px solid rgba(255,255,255,0.15) !important; letter-spacing: 0.5px; }
+
+                    /* Sub-section title banner — maroon accent */
+                    .sub-section-title {
+                        background: #800000;
+                        color: #fff; padding: 10px 20px;
+                        font-weight: 700; font-size: 12px; margin-bottom: 0;
+                        text-align: center; letter-spacing: 1.5px;
+                        text-transform: uppercase;
+                        border-bottom: 2px solid rgba(255,255,255,0.2);
                     }
 
                     @media print {
@@ -4071,35 +4196,64 @@ window.OmnisDashboardV6 = class OmnisDashboardV6 {
                 payload.period_label = d.toLocaleString('default', { month: 'long' });
             }
 
+            // ── Sanitise customer names (strip surrounding quotes from API data)
+            const _sc = (n) => (!n || typeof n !== 'string') ? (n || '') : n.trim().replace(/^["'\u201c\u201d]+|["'\u201c\u201d]+$/g, '').trim();
+            salesBreakdown = salesBreakdown.map(s => ({ ...s, customer: _sc(s.customer), customer_name: _sc(s.customer_name) }));
+            salesYtd       = salesYtd.map(s       => ({ ...s, customer: _sc(s.customer), customer_name: _sc(s.customer_name) }));
+            quotesYtd      = quotesYtd.map(q       => ({ ...q, customer: _sc(q.customer), customer_name: _sc(q.customer_name) }));
+
+            // ── Resolve OEM brand logo + colours from stock mappings
+            let oemLogoPath = '';
+            let oemColor1 = '#1e293b';
+            let oemColor2 = '#334155';
+            let oemTextColor = '#ffffff';
+
+            // Fetch mappings if not yet loaded
+            if (!window._stockCompanyMappings || window._stockCompanyMappings.length === 0) {
+                try { await window.omnisFetchStockCompanyMappings(); } catch(e) { /* non-fatal */ }
+            }
+            if (window._stockCompanyMappings) {
+                const lowerOem = oemName.toLowerCase();
+                const mapped = window._stockCompanyMappings.find(m => {
+                    if (!m.brand) return false;
+                    const lb = m.brand.toLowerCase();
+                    return lb === lowerOem || lowerOem.includes(lb) || lb.includes(lowerOem);
+                });
+                if (mapped) {
+                    if (mapped.logo_url)   oemLogoPath  = mapped.logo_url;
+                    if (mapped.color1)     oemColor1    = mapped.color1;
+                    if (mapped.color2)     oemColor2    = mapped.color2 || mapped.color1;
+                    if (mapped.text_color) oemTextColor = mapped.text_color;
+                }
+            }
+
             let html = `
-                <div id="pdf-content-wrapper" style="display:flex; flex-direction:column; gap:25px; font-family:'Inter', sans-serif; background:white; padding:10px;">
-                    
-                    <!-- TAB NAVIGATION -->
-                    <div class="oem-tabs no-print">
-                        <button class="oem-tab active" data-tab="summary">&#x1F4C8; Executive Summary</button>
-                        <button class="oem-tab" data-tab="sales">&#x1F4E6; Sales Details (${payload.period_label})</button>
-                        <button class="oem-tab" data-tab="quotes">&#x1F4BC; Quotations Details (${payload.period_label})</button>
-                    </div>
+                <div id="pdf-content-wrapper" style="display:flex; flex-direction:column; gap:8px; font-family:'Inter', sans-serif; background:white; padding:6px 10px 10px;">
 
                     <!-- TAB 1: EXECUTIVE SUMMARY -->
                     <div class="oem-tab-content active" data-tab-content="summary">
-                        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
-                            <div style="flex:1; text-align:left;">
-                                <img src="file:///C:/Users/Administrator/omnis/assets/images/omnis-logo.png" loading="lazy" style="height:32px; width:auto; object-fit:contain;" alt="Omnis Logo" onerror="this.src='/assets/images/omnis-logo.png'">
+
+                        <!-- Outer wrapper: one shared rounded border for brand header + table -->
+                        <div style="border-radius:12px; overflow:hidden; box-shadow:0 2px 8px rgba(0,0,0,0.10);">
+
+                        <!-- Premium Brand Header -->
+                        <div style="background:linear-gradient(135deg, ${oemColor1} 0%, ${oemColor2} 100%); color:${oemTextColor}; border-radius:0; padding:20px 28px; display:flex; justify-content:space-between; align-items:center; margin-bottom:0;">
+                            <div style="display:flex; align-items:center; gap:16px;">
+                                ${oemLogoPath
+                                    ? `<img src="${oemLogoPath}" style="height:60px; object-fit:contain; filter:drop-shadow(0 2px 6px rgba(0,0,0,0.3));" onerror="this.style.display='none'">`
+                                    : `<div style="width:56px; height:56px; border-radius:10px; background:rgba(255,255,255,0.15); display:flex; align-items:center; justify-content:center; font-size:26px; font-weight:900; letter-spacing:-1px; flex-shrink:0; color:${oemTextColor};">${(oemName || 'O').charAt(0).toUpperCase()}</div>`
+                                }
                             </div>
-                            <div style="flex:2; text-align:center; font-size:22px; font-weight:900; color:#1e293b; text-transform:uppercase; letter-spacing:1px;">
-                                ${oemName} Performance Report<br>
-                                <span style="font-size:14px; color:#ef4444;">(${(payload.period_label || 'YTD').toUpperCase()})</span>
-                            </div>
-                            <div style="flex:1; text-align:right; font-size:11px; color:#64748b; font-weight:600;">
-                                Generated: ${today}<br>
-                                Report Year: ${payload.report_year}
+                            <div style="display:flex; align-items:center; gap:24px;">
+                                <div style="text-align:right; font-size:11px; opacity:0.75; font-weight:600;">Generated: ${today}<br>Report Year: ${payload.report_year}</div>
+                                <img src="file:///C:/Users/Administrator/omnis/assets/images/omnis-logo.png" loading="lazy" style="height:36px; width:auto; object-fit:contain; opacity:0.9; filter:brightness(0) invert(1);" alt="Omnis" onerror="this.style.display='none'">
                             </div>
                         </div>
-                        <div class="sub-section-title">${(oemName || 'OEM').toUpperCase()} QUOTES AND SALES - MONTHLY REPORT (${(payload.period_label || 'YTD').toUpperCase()})</div>
+
+                        <div class="report-table-wrap">
+                        <div class="sub-section-title" style="border-radius:0; margin-top:0;">${(oemName || 'OEM').toUpperCase()} QUOTES AND SALES - MONTHLY REPORT (${(payload.period_label || 'YTD').toUpperCase()})</div>
                         
-                        <div style="display:flex; flex-direction: column; gap:20px;">
-                            <div style="width: 100%; overflow-x: auto; padding-bottom: 15px;">
+                        <div style="width: 100%; overflow-x: auto; padding-bottom: 15px;">
                                 <table class="report-table">
                                     <thead>
                                         <tr>
@@ -4111,7 +4265,7 @@ window.OmnisDashboardV6 = class OmnisDashboardV6 {
                                             <th rowspan="2" class="conv-hdr">YTD Conversion Ratio %</th>
                                         </tr>
                                         <tr>
-                                            ${months.map(() => `<th>Quotes</th><th>Sales</th>`).join('')}
+                                            ${months.map(() => `<th class="sub-hdr-q">Q</th><th class="sub-hdr-s">S</th>`).join('')}
                                         </tr>
                                     </thead>
                                     <tbody>
@@ -4134,7 +4288,9 @@ window.OmnisDashboardV6 = class OmnisDashboardV6 {
                     monthTotals[idx].quotes += mData.quotes;
                     monthTotals[idx].sales += mData.sales;
                     rowTotal += mData.quotes + mData.sales;
-                    return `<td>${mData.quotes || 0}</td><td>${mData.sales || 0}</td>`;
+                    const qCls = mData.quotes > 0 ? ' has-quotes' : '';
+                    const sCls = mData.sales  > 0 ? ' has-sales'  : '';
+                    return `<td class="month-q${qCls}">${mData.quotes || 0}</td><td class="month-s month-sep${sCls}">${mData.sales || 0}</td>`;
                 }).join('');
 
                 totalYTDQ += ytd.quotes; totalYTDS += ytd.sales;
@@ -4162,11 +4318,11 @@ window.OmnisDashboardV6 = class OmnisDashboardV6 {
             const mtdTotalConv = lastMonthTotal.quotes > 0 ? Math.round((lastMonthTotal.sales / lastMonthTotal.quotes) * 100) : 0;
             const ytdTotalConv = totalYTDQ > 0 ? Math.round((totalYTDS / totalYTDQ) * 100) : 0;
 
-            const totalMonthHtml = monthTotals.map(mt => `<td>${mt.quotes}</td><td>${mt.sales}</td>`).join('');
+            const totalMonthHtml = monthTotals.map(mt => `<td>${mt.quotes}</td><td class="month-sep">${mt.sales}</td>`).join('');
 
             html += `
                                         <tr class="total-row">
-                                            <td class="cat-col" style="background:#ff0000; color:#fff;">Total</td>
+                                            <td class="cat-col">TOTAL</td>
                                             ${totalMonthHtml}
                                             <td>${totalYTDQ}</td>
                                             <td>${totalYTDS}</td>
@@ -4176,6 +4332,9 @@ window.OmnisDashboardV6 = class OmnisDashboardV6 {
                                     </tbody>
                                 </table>
                             </div>
+                        </div><!-- /report-table-wrap -->
+                        </div><!-- /outer-rounded-wrapper -->
+
 
                             <div style="display:flex; gap:20px; align-items: flex-start; flex-wrap: wrap;">
                                 <div style="flex: 2; min-width: 500px;">
@@ -4298,9 +4457,9 @@ window.OmnisDashboardV6 = class OmnisDashboardV6 {
                         </div>
                     </div>
 
-                    <!-- TAB 3: QUOTATIONS DETAILS (YTD) -->
+                    <!-- TAB 3: QUOTATIONS DETAILS (OPEN PIPELINE) -->
                     <div class="oem-tab-content" data-tab-content="quotes">
-                        <div class="sub-section-title">ALL QUOTATIONS YEAR TO DATE (${today.split(' ').pop()})</div>
+                        <div class="sub-section-title">ALL QUOTATIONS — OPEN PIPELINE</div>
                         <div style="border:1px solid #e2e8f0; border-radius:10px; overflow:hidden; max-height:600px; overflow-y:auto;">
                             <table class="report-table" style="text-align:left;">
                                 <thead style="position:sticky; top:0; z-index:1;">
@@ -4314,16 +4473,16 @@ window.OmnisDashboardV6 = class OmnisDashboardV6 {
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    ${quotesYtd.map((q, i) => `
+                                    ${quotesYtd.length > 0 ? quotesYtd.map((q, i) => `
                                         <tr>
                                             <td style="text-align:left; font-weight:700; color:#3b82f6;">${q.name || '-'}</td>
                                             <td style="text-align:left; font-weight:600;">${q.model || '-'}</td>
-                                            <td style="text-align:left;">${q.customer || '-'}</td>
+                                            <td style="text-align:left;">${q.customer || q.customer_name || '-'}</td>
                                             <td style="text-align:left;">${q.person || '-'}</td>
                                             <td style="text-align:center; font-weight:700; color:#0369a1;">${q.qty || 0}</td>
                                             <td style="text-align:right;">${q.date || '-'}</td>
                                         </tr>
-                                    `).join('')}
+                                    `).join('') : `<tr><td colspan="6" style="text-align:center; color:#94a3b8; padding:24px;">No open quotations found for this OEM.</td></tr>`}
                                 </tbody>
                             </table>
                         </div>

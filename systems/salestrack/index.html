@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 
 <head>
@@ -6184,7 +6184,14 @@
           style="position:fixed; bottom:0; right:0; width:300px; height:200px; background:rgba(255,255,255,0.95); border:1px solid #ddd; font-size:10px; font-family:monospace; padding:10px; overflow-y:auto; z-index:9999; display:none;">
           <div style="font-weight:bold; border-bottom:2px solid #ddd; margin-bottom:5px;">Omnis Debug Log</div>
         </div>
-        <script>if (localStorage.getItem("omnisDebug") === "true") document.getElementById("omnis-debug-logs").style.display = "block";</script>
+                <!-- Global utilities — must load before all other scripts -->
+        <script>
+          window._cleanCust = function(name) {
+            if (!name || typeof name !== 'string') return name || '';
+            return name.trim().replace(/^["'\u201c\u201d]+|["'\u201c\u201d]+$/g, '').trim();
+          };
+        </script>
+<script>if (localStorage.getItem("omnisDebug") === "true") document.getElementById("omnis-debug-logs").style.display = "block";</script>
 
         <script>
           /**
@@ -13018,7 +13025,7 @@
           </div>
           <div class="ai-order-cell">
             <span class="cell-label">Customer</span>
-            <div style="font-weight:600; color:#475569; font-size:13px;">${escapeHtml(row.customer_name || '-')}</div>
+            <div style="font-weight:600; color:#475569; font-size:13px;">${escapeHtml(window._cleanCust(row.customer_name) || '-')}</div>
           </div>
           <div class="ai-order-cell" style="text-align:center;">
             <span class="cell-label">Date</span>
@@ -13439,7 +13446,7 @@
       }
       rows.forEach(r => {
         const ce = r.name || "";
-        const customer = r.party_name || r.customer_name || "";
+        const customer = window._cleanCust(r.party_name || r.customer_name || "");
         const title = r.title || "";
         const status = r.status || "";
         const sp = r.custom_salesperson || r.sales_person || r.opportunity_owner || r.owner || "";
@@ -13983,7 +13990,7 @@
 
         row.innerHTML = `
           <td>${imgHtml}</td>
-          <td style="font-weight: 700; color: #1e293b;">${customer.customer_name || '-'}</td>
+          <td style="font-weight: 700; color: #1e293b;">${window._cleanCust(customer.customer_name) || '-'}</td>
           <td style="color: #64748b; font-weight: 500;">${customer.customer_group || '-'}</td>
           <td style="color: #64748b;">${customer.territory || '-'}</td>
           <td style="color: #64748b;">${customer.frappe_id || '-'}</td>
@@ -14130,7 +14137,7 @@
         row.innerHTML = `
           <div class="ai-order-cell">
             <span class="cell-label">Customer</span>
-            <div style="font-weight:700; color:#1e293b; font-size:14px;">${escapeHtml(item.customer || "")}</div>
+            <div style="font-weight:700; color:#1e293b; font-size:14px;">${escapeHtml(window._cleanCust(item.customer) || "")}</div>
           </div>
           <div class="ai-order-cell">
             <span class="cell-label">Brand</span>
@@ -14498,7 +14505,7 @@
         <div class="modal-item-top" >
             <div class="modal-item-info">
               <div class="modal-item-id">${item.id}</div>
-              <div class="modal-item-sub">${item.customer}</div>
+              <div class="modal-item-sub">${window._cleanCust(item.customer)}</div>
               <div class="modal-item-date">${dateText}</div>
             </div>
             <div class="modal-item-val">${valText}</div>
@@ -16058,7 +16065,8 @@
       window.renderStockTab = async function () {
         console.log("[Stock] renderStockTab triggered");
         
-        if (!window._stockCompanyMappings && window.omnisFetchStockCompanyMappings) {
+        // Always re-fetch mappings so Settings changes are immediately reflected
+        if (window.omnisFetchStockCompanyMappings) {
             await window.omnisFetchStockCompanyMappings();
         }
         
@@ -16122,7 +16130,21 @@
           window._stockRecordsMap = {}; // Reset cache
 
           data_records.forEach(r => {
-            const brand = r.oem || "Other";
+            let brand = r.oem || "Other";
+            
+            // Reassign "Special Build" items if their name contains the actual brand
+            const checkBrand = brand.toLowerCase().trim();
+            if (checkBrand === "special build" || checkBrand === "special builds" || checkBrand.includes("special")) {
+                const searchString = `${r.item_name || ''} ${r.model || ''} ${r.description || ''} ${r.name || ''}`.toLowerCase();
+                if (searchString.includes('foton')) {
+                    brand = "Foton";
+                } else if (searchString.includes('powerstar')) {
+                    brand = "Powerstar";
+                } else if (searchString.includes('sino')) {
+                    brand = "Sino";
+                }
+            }
+
             if (!groups[brand]) groups[brand] = [];
             groups[brand].push(r);
             oemList.add(brand);
@@ -17287,6 +17309,8 @@
                 // Check more specific term first to avoid misclassification
                 if (cl.includes("machinery exchange") || cl === "machinery") return "Machinery Exchange";
                 if (cl.includes("sinopower")) return "Sinopower";
+                if (cl.includes("everstar")) return "Everstar Industries";
+                if (cl.includes("powerstar") || cl.includes("power star") || cl.includes("powerstar ft")) return "Everstar Industries";
                 return "Unassigned";
             };
 
@@ -22642,12 +22666,15 @@
             <tr class="oem-brand-row" data-oem-id="${id}" data-signal="${models.some(m=>signal(m).label==='ORDER')?'order':models.some(m=>signal(m).label==='WATCH')?'watch':'hold'}" data-moving="${velocity>0?'1':'0'}"
                 style="border-bottom:1px solid #e2e8f0; cursor:pointer; transition:background 0.15s; background:#fff;">
                 <td style="padding:14px 16px; font-weight:800; color:#0f172a;">
-                    <div style="display:flex; align-items:center; gap:10px; white-space:nowrap;">
+                    <div style="display:flex; align-items:center; gap:10px; white-space:nowrap; width:100%;">
                     <span id="oem-chevron-${id}" style="display:inline-flex;align-items:center;justify-content:center;width:20px;height:20px;border-radius:5px;background:#f1f5f9;color:#64748b;font-size:10px;transition:transform 0.2s;flex-shrink:0;">
                         <i class="fas fa-chevron-right"></i>
                     </span>
                     ${d.oem}
                     ${models.length > 0 ? `<span style="background:#e0e7ff;color:#4338ca;font-size:10px;font-weight:700;padding:2px 7px;border-radius:10px;flex-shrink:0;">${models.length} model${models.length!==1?'s':''}</span>` : ''}
+                    <button onclick="event.stopPropagation(); window.salestrack.openOEMBreakdownModal('${d.oem.replace(/'/g, "\\'")}', null, null, null, {ytdSales:${sales},ytdQuotes:${quotes}})" title="Presentation Mode" style="background:#f1f5f9; border:1px solid #e2e8f0; color:#3b82f6; border-radius:6px; padding:4px 10px; font-size:11px; font-weight:700; cursor:pointer; margin-left:auto; transition:all 0.2s;" onmouseover="this.style.background='#e0f2fe';this.style.borderColor='#bae6fd';" onmouseout="this.style.background='#f1f5f9';this.style.borderColor='#e2e8f0';">
+                        <i class="fas fa-desktop" style="margin-right:4px;"></i> Present
+                    </button>
                     </div>
                 </td>
                 <td style="padding:14px 16px; font-weight:700; color:#0f172a; text-align:center;">${sales}</td>
@@ -22717,6 +22744,86 @@
         };
 
         const render = (rawData, signalFilter, searchTerm) => {
+            // --- INTERCEPT & REASSIGN "SPECIAL BUILD" ---
+            if (Array.isArray(rawData)) {
+                const specialIndex = rawData.findIndex(d => (d.oem || "").toLowerCase().includes("special build"));
+                if (specialIndex > -1) {
+                    const specialD = rawData[specialIndex];
+                    const specialModels = specialD.models || [];
+                    const keptModels = [];
+                    
+                    specialModels.forEach(m => {
+                        const searchStr = `${m.model || ''} ${m.item_name || ''} ${m.item_code || ''}`.toLowerCase();
+                        let target = null;
+                        if (searchStr.includes("foton")) target = "Foton";
+                        else if (searchStr.includes("powerstar")) target = "Powerstar";
+                        else if (searchStr.includes("sino")) target = "Sino";
+                        
+                        if (target) {
+                            let tOem = rawData.find(d => (d.oem || "").toLowerCase() === target.toLowerCase());
+                            if (!tOem) {
+                                tOem = { oem: target, models: [], sales: 0, total_qty: 0, quotes: 0, monthly_velocity: 0, suggested_order: 0 };
+                                rawData.push(tOem);
+                            }
+                            if (!tOem.models) tOem.models = [];
+                            if (!tOem.models.includes(m)) tOem.models.push(m);
+                        } else {
+                            keptModels.push(m);
+                        }
+                    });
+                    
+                    specialD.models = keptModels;
+                    
+                    rawData.forEach(d => {
+                        if (d.models && d.models.length > 0) {
+                            d.sales = d.models.reduce((sum, m) => sum + (m.sales || m.total_qty || 0), 0);
+                            d.total_qty = d.sales;
+                            d.quotes = d.models.reduce((sum, m) => sum + (m.quotes || 0), 0);
+                            d.monthly_velocity = parseFloat(d.models.reduce((sum, m) => sum + (m.monthly_velocity || 0), 0).toFixed(1));
+                            d.suggested_order = d.models.reduce((sum, m) => sum + (m.suggested_order || 0), 0);
+                        }
+                    });
+                    
+                    if (specialD.models.length === 0) {
+                        rawData.splice(rawData.indexOf(specialD), 1);
+                    }
+                }
+            }
+            // --- INTERCEPT & MERGE POWERSTAR → EVERSTAR INDUSTRIES ---
+            if (Array.isArray(rawData)) {
+                // Find all Powerstar-named rows (any variant)
+                const powerstarRows = rawData.filter(d =>
+                    (d.oem || '').toLowerCase().includes('powerstar') ||
+                    (d.oem || '').toLowerCase().includes('power star')
+                );
+                if (powerstarRows.length > 0) {
+                    // Find or create the Everstar Industries row
+                    let everstarRow = rawData.find(d => (d.oem || '').toLowerCase().includes('everstar'));
+                    if (!everstarRow) {
+                        everstarRow = { oem: 'Everstar Industries', models: [], sales: 0, total_qty: 0, quotes: 0, monthly_velocity: 0, suggested_order: 0 };
+                        rawData.push(everstarRow);
+                    }
+                    if (!everstarRow.models) everstarRow.models = [];
+                    // Absorb all powerstar rows into Everstar Industries
+                    powerstarRows.forEach(psRow => {
+                        (psRow.models || []).forEach(m => {
+                            if (!everstarRow.models.includes(m)) everstarRow.models.push(m);
+                        });
+                        // Remove the powerstar row from rawData
+                        const idx = rawData.indexOf(psRow);
+                        if (idx > -1) rawData.splice(idx, 1);
+                    });
+                    // Recalculate Everstar totals
+                    everstarRow.sales = everstarRow.models.reduce((s, m) => s + (m.sales || m.total_qty || 0), 0);
+                    everstarRow.total_qty = everstarRow.sales;
+                    everstarRow.quotes = everstarRow.models.reduce((s, m) => s + (m.quotes || 0), 0);
+                    everstarRow.monthly_velocity = parseFloat(everstarRow.models.reduce((s, m) => s + (m.monthly_velocity || 0), 0).toFixed(1));
+                    everstarRow.suggested_order = everstarRow.models.reduce((s, m) => s + (m.suggested_order || 0), 0);
+                }
+            }
+            // ----------------------------------------------------
+
+
             let filtered = rawData.filter(d => {
                 if (searchTerm) {
                     const q = searchTerm.toLowerCase();

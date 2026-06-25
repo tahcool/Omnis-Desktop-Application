@@ -4788,6 +4788,8 @@ def get_dashboard_charts(period="This Year", payload=None):
             top_items_map[r.model] = top_items_map.get(r.model, 0) + q
             hot_cust_map[r.customer] = hot_cust_map.get(r.customer, 0) + q
             oem = r.oem or "Unknown"
+            if (r.model and "powerstar" in str(r.model).lower()) or ("powerstar" in oem.lower()):
+                oem = "Everstar Industries"
             
             if oem not in oem_stats_map:
                 oem_stats_map[oem] = {"oem": oem, "sales": 0, "quotes": 0, "top_bought": {}, "top_quoted": {}}
@@ -4808,6 +4810,9 @@ def get_dashboard_charts(period="This Year", payload=None):
         for r in quotes_rows:
             q = float(r.qty or 0)
             oem = r.oem or "Unknown"
+            if (r.model and "powerstar" in str(r.model).lower()) or ("powerstar" in oem.lower()):
+                oem = "Everstar Industries"
+                
             if oem not in oem_stats_map:
                 oem_stats_map[oem] = {"oem": oem, "sales": 0, "quotes": 0, "top_bought": {}, "top_quoted": {}}
             oem_stats_map[oem]["quotes"] += q
@@ -5095,14 +5100,24 @@ def get_omnis_oem_details_v2(oem=None, period="This Year", custom_start=None, cu
         end_date = nowdate()
         period_label = f"YTD {today_dt.year}"
 
-        if period == "This Month":
+        if period == "This Week":
+            import datetime
+            start_date = today_dt - datetime.timedelta(days=today_dt.weekday())
+            period_label = "This Week"
+        elif period == "Last Week":
+            import datetime
+            end_date = today_dt - datetime.timedelta(days=today_dt.weekday() + 1)
+            start_date = end_date - datetime.timedelta(days=6)
+            period_label = "Last Week"
+        elif period == "This Month":
             start_date = get_first_day(today_dt)
             period_label = today_dt.strftime("%B %Y")
         elif period == "Last Month":
-            lm = add_months(today_dt, -1)
-            start_date = get_first_day(lm)
-            end_date = get_last_day(start_date)
-            period_label = lm.strftime("%B %Y")
+            lm = add_months(today_dt, -1)          # most recent completed month
+            lm3 = add_months(today_dt, -3)         # 3 months back
+            start_date = get_first_day(lm3)
+            end_date   = get_last_day(lm)
+            period_label = f"{get_first_day(lm3).strftime('%b')} \u2013 {lm.strftime('%b %Y')}"
         elif period == "This Quarter":
             month = (today_dt.month - 1) // 3 * 3 + 1
             start_date = f"{today_dt.year}-{month:02d}-01"
@@ -5125,22 +5140,34 @@ def get_omnis_oem_details_v2(oem=None, period="This Year", custom_start=None, cu
 
         # Using _has_col for extra resiliency
         gs_brand_col = "brand" if _has_col("Group Sales", "brand", log_missing=False) else "oem"
+
+        oem_cond_sales = f"(gs.{gs_brand_col} = %s OR i.brand = %s)"
+        oem_cond_quotes = "i.brand = %s"
         
+        if oem == "Everstar Industries":
+            oem_cond_sales = f"(gs.{gs_brand_col} IN (%s, 'Powerstar') OR i.brand IN (%s, 'Powerstar') OR LOWER(gs.model) LIKE '%%powerstar%%' OR LOWER(i.item_name) LIKE '%%powerstar%%')"
+            oem_cond_quotes = "(i.brand IN (%s, 'Powerstar') OR LOWER(qi.item_name) LIKE '%%powerstar%%')"
+        
+        # Determine param tuples
+        # oem_cond_sales always has 2 %s placeholders (brand col + i.brand), quotes always has 1
+        sales_params = (oem, oem, ytd_sql_start, ytd_sql_end)
+        quotes_params = (oem,)
+
         sales = frappe.db.sql(f"""
             SELECT 
                 gs.name, gs.customer, gs.qty, gs.order_date as date, gs.model, i.item_group,
-                c.creation as customer_creation, i.brand, gs.owner as salesperson
+                c.creation as customer_creation, i.brand, gs.owner as salesperson, c.customer_name
             FROM `tabGroup Sales` gs
             LEFT JOIN `tabCustomer` c ON c.name = gs.customer
             LEFT JOIN `tabItem` i ON i.name = gs.model
             WHERE gs.docstatus < 2
-              AND (gs.{gs_brand_col} = %s OR i.brand = %s)
+              AND {oem_cond_sales}
               AND gs.order_date BETWEEN %s AND %s
             ORDER BY gs.order_date DESC
-        """, (oem, oem, ytd_sql_start, ytd_sql_end), as_dict=True)
+        """, sales_params, as_dict=True)
 
-        # 3. Fetch Quotation Data
-        quotes = frappe.db.sql("""
+        # 3. Fetch Quotation Data (All-time pipeline, no date filter to match dashboard)
+        quotes = frappe.db.sql(f"""
             SELECT 
                 qi.qty, q.transaction_date as date, qi.item_name as model, i.item_group,
                 q.name, q.customer_name as customer, i.brand, q.owner as person
@@ -5148,10 +5175,9 @@ def get_omnis_oem_details_v2(oem=None, period="This Year", custom_start=None, cu
             JOIN `tabQuotation Item` qi ON qi.parent = q.name
             JOIN `tabItem` i ON i.name = qi.item_code
             WHERE q.docstatus < 2 
-              AND i.brand = %s 
-              AND q.transaction_date BETWEEN %s AND %s
+              AND {oem_cond_quotes} 
             ORDER BY q.transaction_date DESC
-        """, (oem, ytd_sql_start, ytd_sql_end), as_dict=True)
+        """, quotes_params, as_dict=True)
 
         # 4. Process Trends & Analysis (Hierarchical Structure for Table)
         month_labels = []
@@ -5331,9 +5357,19 @@ def get_mer_report_data(period="This Year", company="Machinery Exchange", payloa
         # Discover additional OEMs from data
         discovered_oems = set()
         for s in all_sales:
+            if s.model and "powerstar" in str(s.model).lower():
+                s.oem = "Everstar Industries"
+            elif s.oem and "powerstar" in s.oem.lower():
+                s.oem = "Everstar Industries"
+                
             if s.oem and s.oem.strip():
                 discovered_oems.add(s.oem.strip())
         for q in all_quotes:
+            if q.model and "powerstar" in str(q.model).lower():
+                q.oem = "Everstar Industries"
+            elif q.oem and "powerstar" in q.oem.lower():
+                q.oem = "Everstar Industries"
+                
             if q.oem and q.oem.strip():
                 discovered_oems.add(q.oem.strip())
         
@@ -5386,7 +5422,7 @@ def get_mer_report_data(period="This Year", company="Machinery Exchange", payloa
         performance_sp = []
         
         mxg_brands = ["Shantui", "Bobcat", "Wirtgen", "Hitachi", "Rokbak", "Bendi"]
-        sp_brands = ["Sinotruk", "Shacman", "Foton", "Henred", "Asia Star", "Baoli", "Crown", "Etnyre", "Everstar Industries", "Genie", "HAMM", "Lombardini", "Powerstar", "Weichai"]
+        sp_brands = ["Sinotruk", "Shacman", "Foton", "Henred", "Asia Star", "Baoli", "Crown", "Etnyre", "Everstar Industries", "Genie", "HAMM", "Lombardini", "Weichai"]
 
         for oem in oems + ["Others"]:
             o_prev_q = stats["prev"]["quotes"][oem]
@@ -7924,6 +7960,8 @@ def get_oem_summary(period="This Year", payload=None, **kwargs):
 
         for r in sales_rows:
             oem = r.oem or "Unknown"
+            if (r.model and "powerstar" in str(r.model).lower()) or ("powerstar" in oem.lower()):
+                oem = "Everstar Industries"
             q   = float(r.qty or 0)
             if oem not in oem_map:
                 oem_map[oem] = {"sales": 0, "quotes": 0, "model_sales": {}, "model_quotes": {}}
@@ -7932,6 +7970,8 @@ def get_oem_summary(period="This Year", payload=None, **kwargs):
 
         for r in quotes_rows:
             oem = r.oem or "Unknown"
+            if (r.model and "powerstar" in str(r.model).lower()) or ("powerstar" in oem.lower()):
+                oem = "Everstar Industries"
             q   = float(r.qty or 0)
             if oem not in oem_map:
                 oem_map[oem] = {"sales": 0, "quotes": 0, "model_sales": {}, "model_quotes": {}}
