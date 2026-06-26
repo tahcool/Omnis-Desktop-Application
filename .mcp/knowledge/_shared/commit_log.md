@@ -54,3 +54,6 @@
 \n## 2026-06-24
 - `6af84e9` 2026-06-24 [supabase-migration] Restore point: Stock Pipeline Logo Management
   Files: .mcp/knowledge/_shared/commit_log.md,scripts/create_stock_company_mappings.sql,systems/salestrack/add_logo_url.sql,systems/salestrack/dashboard_logic.js,systems/salestrack/index.html,temp_check_anon_join.js,temp_check_hitachi.js,temp_check_hitachi_in_join.js,temp_check_mappings.js,temp_check_query.js,temp_check_query_anon.js,temp_check_query_join.js,temp_check_render_logic.js,test_mappings.js,test_supabase_query.js,web-deploy/supabase-web-bridge.js,
+\n## 2026-06-25
+- `08769cb` 2026-06-25 [supabase-migration] restore-point: OEM report quotations pipeline fix + data reconciliation
+  Files: .mcp/knowledge/_shared/commit_log.md,omnis_dashboard.py,systems/salestrack/dashboard_logic.js,systems/salestrack/index.html,

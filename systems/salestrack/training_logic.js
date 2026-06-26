@@ -80,8 +80,10 @@ window.loadTrainingList = async function(forceRefresh = false) {
 };
 
 window.renderTrainingGrid = function() {
-    const search = (document.getElementById('training-search').value || '').toLowerCase();
+    const searchEl = document.getElementById('training-search');
     const tbody = document.getElementById('training-list-body');
+    if (!searchEl || !tbody) return; // view not currently visible
+    const search = (searchEl.value || '').toLowerCase();
     
     const filtered = rawTrainingMachines.filter(m => {
         const cust = m.frappe_fmb_report?.customer?.toLowerCase() || '';
@@ -189,7 +191,10 @@ document.addEventListener('DOMContentLoaded', () => {
     document.body.addEventListener('click', (e) => {
         const navItem = e.target.closest('.nav-item, .top-nav-item, .top-nav-dropdown-item');
         if (navItem && navItem.getAttribute('data-view') === 'view-training') {
-            if (window.loadTrainingList) window.loadTrainingList();
+            // Only load if the view is actually being shown (not a phantom bubble)
+            const view = document.getElementById('view-training');
+            const isVisible = view && view.style.display !== 'none' && !view.classList.contains('hidden');
+            if (isVisible && window.loadTrainingList) window.loadTrainingList();
         }
     });
 

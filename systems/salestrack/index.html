@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 
 <head>
@@ -5826,6 +5826,23 @@
         <span class="icon"><i class="fas fa-bullhorn"></i></span> <span>Marketing</span>
       </div>
 
+      <!-- Training Dropdown -->
+      <div class="top-nav-dropdown">
+        <div class="top-nav-item top-nav-dropdown-trigger" id="dd-training-trigger">
+          <span class="icon"><i class="fas fa-graduation-cap"></i></span>
+          <span>Training</span>
+          <i class="fas fa-chevron-down" style="font-size:8px; margin-left:2px; opacity:0.6;"></i>
+        </div>
+        <div class="top-nav-dropdown-menu" id="dd-training-menu">
+          <div class="top-nav-dropdown-item" data-view="view-training">
+            <i class="fas fa-id-card"></i> Operator Certificates
+          </div>
+          <div class="top-nav-dropdown-item" onclick="event.stopPropagation();(function(){var el=document.getElementById('view-training-library');if(!el)return;var navH=parseInt(getComputedStyle(document.documentElement).getPropertyValue('--nav-height'))||42;el.classList.remove('hidden');document.body.appendChild(el);el.style.cssText='display:block!important;position:fixed!important;top:'+navH+'px!important;left:0!important;right:0!important;bottom:0!important;width:100%!important;height:calc(100vh - '+navH+'px)!important;overflow-y:auto!important;z-index:99999!important;background:#f8fafc!important;';requestAnimationFrame(function(){if(window.renderTrainingLibrary)window.renderTrainingLibrary();});})();">
+            <i class="fas fa-book-open" style="color:#7c3aed;"></i> <span style="color:#7c3aed; font-weight:700;">Course Library</span>
+          </div>
+        </div>
+      </div>
+
     </div>
 
     <div class="top-nav-group"
@@ -6470,6 +6487,7 @@
                 <button onclick="window.salestrack.openEfficiencyReportModalV5()" style="background:#f8fafc;border:1px solid #e2e8f0;border-top:3px solid #ef4444;border-radius:9px;padding:5px 12px 5px 8px;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;gap:7px;transition:all 0.15s;white-space:nowrap;flex:1;" onmouseover="this.style.background='#fef2f2';this.style.boxShadow='0 2px 8px rgba(239,68,68,0.15)';" onmouseout="this.style.background='#f8fafc';this.style.boxShadow='none';"><span style="width:22px;height:22px;border-radius:5px;background:#f1f5f9;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0;"><i class="fas fa-bolt" style="color:#64748b;font-size:11px;"></i></span><span style="font-size:13px;font-weight:800;color:#0f172a;">Efficiency</span></button>
                 <button onclick="window.salestrack.openMERReportModal()" style="background:#f8fafc;border:1px solid #e2e8f0;border-top:3px solid #0ea5e9;border-radius:9px;padding:5px 12px 5px 8px;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;gap:7px;transition:all 0.15s;white-space:nowrap;flex:1;" onmouseover="this.style.background='#f0f9ff';this.style.boxShadow='0 2px 8px rgba(14,165,233,0.15)';" onmouseout="this.style.background='#f8fafc';this.style.boxShadow='none';"><span style="width:22px;height:22px;border-radius:5px;background:#f1f5f9;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0;"><i class="fas fa-chart-line" style="color:#64748b;font-size:11px;"></i></span><span style="font-size:13px;font-weight:800;color:#0f172a;">Month End</span></button>
                 <button onclick="switchToView('view-training')" style="background:#f8fafc;border:1px solid #e2e8f0;border-top:3px solid #f59e0b;border-radius:9px;padding:5px 12px 5px 8px;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;gap:7px;transition:all 0.15s;white-space:nowrap;flex:1;" onmouseover="this.style.background='#fef3c7';this.style.boxShadow='0 2px 8px rgba(245,158,11,0.15)';" onmouseout="this.style.background='#f8fafc';this.style.boxShadow='none';"><span style="width:22px;height:22px;border-radius:5px;background:#f1f5f9;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0;"><i class="fas fa-graduation-cap" style="color:#64748b;font-size:11px;"></i></span><span style="font-size:13px;font-weight:800;color:#0f172a;">Training</span></button>
+                <button onclick="switchToView('view-training-library'); window.renderTrainingLibrary && window.renderTrainingLibrary();" style="background:#f8fafc;border:1px solid #e2e8f0;border-top:3px solid #7c3aed;border-radius:9px;padding:5px 12px 5px 8px;cursor:pointer;display:inline-flex;align-items:center;justify-content:center;gap:7px;transition:all 0.15s;white-space:nowrap;flex:1;" onmouseover="this.style.background='#faf5ff';this.style.boxShadow='0 2px 8px rgba(124,58,237,0.15)';" onmouseout="this.style.background='#f8fafc';this.style.boxShadow='none';"><span style="width:22px;height:22px;border-radius:5px;background:#f1f5f9;display:inline-flex;align-items:center;justify-content:center;flex-shrink:0;"><i class="fas fa-book-open" style="color:#7c3aed;font-size:11px;"></i></span><span style="font-size:13px;font-weight:800;color:#0f172a;">Course Library</span></button>
               </div>
             </div>
           </div>
@@ -9588,8 +9606,8 @@
       <!-- Header -->
       <div style="background:white; border-bottom:1px solid #e2e8f0; padding:24px 40px; display:flex; justify-content:space-between; align-items:center; position:sticky; top:0; z-index:10;">
         <div>
-          <h2 style="margin:0; font-size:24px; font-weight:800; color:#0f172a; letter-spacing:-0.5px;">Marketing Newsletters</h2>
-          <div style="font-size:14px; color:#64748b; margin-top:2px; font-weight:500;">Design and broadcast campaigns to your customer base</div>
+          <h2 style="margin:0; font-size:24px; font-weight:800; color:#0f172a; letter-spacing:-0.5px;">Marketing Broadcasts</h2>
+          <div style="font-size:14px; color:#64748b; margin-top:2px; font-weight:500;">Design and broadcast email and WhatsApp campaigns to your customer base</div>
         </div>
         <div style="display:flex; gap:12px;">
           <button onclick="window.marketingLoadHub()" style="background:white; border:1px solid #cbd5e1; color:#334155; padding:10px 16px; border-radius:8px; font-weight:600; cursor:pointer;"><i class="fas fa-sync-alt"></i></button>
@@ -9639,8 +9657,27 @@
         
         <!-- Toolbox (Left) -->
         <div style="width:280px; background:white; border-right:1px solid #e2e8f0; display:flex; flex-direction:column; flex-shrink:0;">
-          <div style="padding:16px; font-size:13px; font-weight:800; color:#64748b; text-transform:uppercase; border-bottom:1px solid #f1f5f9; letter-spacing:0.5px;">Blocks</div>
-          <div style="padding:16px; display:flex; flex-direction:column; gap:12px;" id="mkt-toolbox">
+          
+          <div style="padding:16px; border-bottom:1px solid #f1f5f9;">
+            <div style="font-size:13px; font-weight:800; color:#64748b; text-transform:uppercase; letter-spacing:0.5px; margin-bottom:12px;">Broadcast Channels</div>
+            <div style="display:flex; gap:8px;">
+              <label style="flex:1; display:flex; align-items:center; justify-content:center; gap:6px; padding:8px; border:1px solid #cbd5e1; border-radius:6px; cursor:pointer; font-size:12px; font-weight:700; color:#334155; background:#f8fafc;">
+                <input type="checkbox" id="mkt-channel-email" checked onchange="window.marketingUpdateChannels()" style="accent-color:#2563eb;"> Email
+              </label>
+              <label style="flex:1; display:flex; align-items:center; justify-content:center; gap:6px; padding:8px; border:1px solid #cbd5e1; border-radius:6px; cursor:pointer; font-size:12px; font-weight:700; color:#334155; background:#f8fafc;">
+                <input type="checkbox" id="mkt-channel-whatsapp" onchange="window.marketingUpdateChannels()" style="accent-color:#16a34a;"> <i class="fab fa-whatsapp" style="color:#16a34a;"></i> WA
+              </label>
+            </div>
+          </div>
+
+          <div id="mkt-whatsapp-composer" style="display:none; padding:16px; border-bottom:1px solid #f1f5f9; background:#f0fdf4;">
+            <div style="font-size:12px; font-weight:800; color:#166534; text-transform:uppercase; letter-spacing:0.5px; margin-bottom:8px;">WhatsApp Message</div>
+            <textarea id="mkt-whatsapp-text" placeholder="Type your WhatsApp message here. Keep it concise!" style="width:100%; height:100px; padding:10px; border:1px solid #bbf7d0; border-radius:8px; font-size:13px; font-family:inherit; resize:vertical; background:white; color:#0f172a; box-sizing:border-box; outline:none;" oninput="window.marketingSaveDraftDebounced()"></textarea>
+            <div style="font-size:10px; color:#15803d; margin-top:6px; font-weight:600;"><i class="fas fa-info-circle"></i> This message will be sent to customers with valid WhatsApp numbers.</div>
+          </div>
+
+          <div id="mkt-email-blocks-header" style="padding:16px 16px 8px 16px; font-size:13px; font-weight:800; color:#64748b; text-transform:uppercase; letter-spacing:0.5px;">Email Blocks</div>
+          <div style="padding:8px 16px 16px 16px; display:flex; flex-direction:column; gap:12px;" id="mkt-toolbox">
             <!-- Draggable blocks -->
             <div class="mkt-draggable-block" draggable="true" data-type="text" style="padding:12px 16px; background:#f8fafc; border:1px solid #e2e8f0; border-radius:8px; cursor:grab; font-weight:700; color:#334155; display:flex; align-items:center; gap:10px;"><i class="fas fa-font" style="color:#64748b;"></i> Text Block</div>
             <div class="mkt-draggable-block" draggable="true" data-type="image" style="padding:12px 16px; background:#f8fafc; border:1px solid #e2e8f0; border-radius:8px; cursor:grab; font-weight:700; color:#334155; display:flex; align-items:center; gap:10px;"><i class="fas fa-image" style="color:#64748b;"></i> Image Block</div>
@@ -9648,7 +9685,7 @@
             <div class="mkt-draggable-block" draggable="true" data-type="pdf" style="padding:12px 16px; background:#f8fafc; border:1px solid #e2e8f0; border-radius:8px; cursor:grab; font-weight:700; color:#334155; display:flex; align-items:center; gap:10px;"><i class="fas fa-file-pdf" style="color:#64748b;"></i> PDF Attachment</div>
           </div>
           <div style="margin-top:auto; padding:16px; border-top:1px solid #f1f5f9;">
-             <p style="font-size:11px; color:#94a3b8; margin:0;">Drag blocks to the canvas to build your newsletter.</p>
+             <p style="font-size:11px; color:#94a3b8; margin:0;">Drag blocks to the canvas to build your email.</p>
           </div>
         </div>
 
@@ -9660,46 +9697,23 @@
             <!-- Default Email Header -->
             <div style="background:#1e293b; padding:20px; text-align:center;">
               <h1 style="margin:0; color:white; font-size:24px; font-family:sans-serif; font-weight:800; letter-spacing:1px;">IEG</h1>
-            </div>
-
-            <!-- Droppable Area -->
-            <div id="mkt-canvas" style="flex:1; padding:20px; display:flex; flex-direction:column; gap:16px; min-height:200px;">
-              <div id="mkt-canvas-empty" style="text-align:center; padding:60px 20px; color:#cbd5e1; font-weight:700; border:2px dashed #e2e8f0; border-radius:12px; margin-top:20px;">
-                <i class="fas fa-hand-pointer" style="font-size:32px; margin-bottom:16px; display:block;"></i>
-                Drop blocks here
-              </div>
-            </div>
-            
-            <!-- Default Email Footer -->
-            <div style="background:#f8fafc; padding:20px; text-align:center; border-top:1px solid #e2e8f0; margin-top:auto;">
-              <p style="margin:0; color:#94a3b8; font-size:12px; font-family:sans-serif;">You are receiving this because you are a valued customer of IEG.</p>
-              <p style="margin:8px 0 0 0; color:#94a3b8; font-size:12px; font-family:sans-serif;">Unsubscribe | View in Browser</p>
-            </div>
-
-          </div>
-        </div>
-
-      </div>
-    </div>
-  </div>
-
-  <!-- MARKETING DISPATCH MODAL -->
+               <!-- MARKETING DISPATCH MODAL -->
   <div id="mkt-dispatch-modal" class="omnis-modal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(15,23,42,0.8); z-index:20000; backdrop-filter:blur(8px); align-items:center; justify-content:center;">
     <div style="background:white; width:500px; border-radius:20px; overflow:hidden; box-shadow:0 25px 50px -12px rgba(0,0,0,0.5); display:flex; flex-direction:column;">
       <div style="padding:24px 32px; background:#1e293b; color:white; display:flex; justify-content:space-between; align-items:center;">
-        <h3 style="margin:0; font-size:20px; font-weight:700;"><i class="fas fa-paper-plane" style="color:#10b981; margin-right:10px;"></i>Dispatch Newsletter</h3>
+        <h3 style="margin:0; font-size:20px; font-weight:700;"><i class="fas fa-paper-plane" style="color:#10b981; margin-right:10px;"></i>Dispatch Broadcast</h3>
         <button onclick="document.getElementById('mkt-dispatch-modal').style.display='none'" style="background:none; border:none; color:#cbd5e1; font-size:20px; cursor:pointer; padding:0; line-height:1;"><i class="fas fa-times"></i></button>
       </div>
 
       <div style="padding:32px; display:flex; flex-direction:column; gap:20px;">
         <div style="background:#eff6ff; border:1px solid #bfdbfe; border-radius:12px; padding:16px;">
           <h4 style="margin:0 0 8px 0; font-size:14px; font-weight:800; color:#1e40af;">Ready to Broadcast</h4>
-          <p style="margin:0; font-size:13px; color:#1e3a8a;">This newsletter will be sent to every customer in the database who has a valid email address.</p>
+          <p id="mkt-dispatch-ready-text" style="margin:0; font-size:13px; color:#1e3a8a;">This broadcast will be sent to every customer based on the selected channels.</p>
         </div>
 
         <div>
           <label style="display:block; font-size:12px; font-weight:800; color:#64748b; margin-bottom:6px; text-transform:uppercase;">Sending From</label>
-          <input type="text" value="marketing@ieg.co.zw" readonly style="width:100%; padding:10px 12px; border:1px solid #cbd5e1; border-radius:8px; font-size:14px; background:#f1f5f9; color:#0f172a; font-weight:600; box-sizing:border-box;">
+          <input type="text" value="IEG Marketing System" readonly style="width:100%; padding:10px 12px; border:1px solid #cbd5e1; border-radius:8px; font-size:14px; background:#f1f5f9; color:#0f172a; font-weight:600; box-sizing:border-box;">
         </div>
 
         <!-- Progress Area -->
@@ -9717,7 +9731,8 @@
       </div>
 
       <div style="padding:20px 32px; background:#f8fafc; border-top:1px solid #e2e8f0; display:flex; justify-content:flex-end; gap:12px;">
-        <button id="mkt-btn-cancel" onclick="document.getElementById('mkt-dispatch-modal').style.display='none'" style="background:white; border:1px solid #cbd5e1; color:#334155; padding:10px 20px; border-radius:8px; font-size:14px; font-weight:600; cursor:pointer;">Cancel</button>
+        <button id="mkt-btn-close" onclick="document.getElementById('mkt-dispatch-modal').style.display='none'" style="background:white; border:1px solid #cbd5e1; color:#334155; padding:10px 20px; border-radius:8px; font-size:14px; font-weight:600; cursor:pointer;">Close</button>
+        <button id="mkt-btn-cancel" onclick="window.marketingCancelDispatch()" style="display:none; background:white; border:1px solid #fca5a5; color:#ef4444; padding:10px 20px; border-radius:8px; font-size:14px; font-weight:600; cursor:pointer;">Cancel Dispatch</button>
         <button id="mkt-btn-send" onclick="window.marketingStartDispatch()" style="background:linear-gradient(135deg, #10b981 0%, #059669 100%); color:white; border:none; padding:10px 24px; border-radius:8px; font-size:14px; font-weight:600; cursor:pointer; box-shadow:0 4px 12px rgba(16,185,129,0.2);">
           <i class="fas fa-rocket" style="margin-right:6px;"></i> Send Now
         </button>
@@ -12004,6 +12019,32 @@
           view.style.setProperty("height", "100%", "important");
           view.style.setProperty("overflow-y", "auto", "important");
           view.style.setProperty("z-index", "10", "important");
+        } else if (view.id === 'view-training-library') {
+          // OUTSIDE main-view-container — use fixed positioning with high z-index
+          var _navH = parseInt(getComputedStyle(document.documentElement).getPropertyValue('--nav-height')) || 42;
+          view.style.setProperty("position", "fixed", "important");
+          view.style.setProperty("top", _navH + "px", "important");
+          view.style.setProperty("left", "0", "important");
+          view.style.setProperty("right", "0", "important");
+          view.style.setProperty("bottom", "0", "important");
+          view.style.setProperty("width", "100%", "important");
+          view.style.setProperty("height", "calc(100vh - " + _navH + "px)", "important");
+          view.style.setProperty("overflow-y", "auto", "important");
+          view.style.setProperty("overflow-x", "hidden", "important");
+          view.style.setProperty("z-index", "1000", "important");
+          view.style.setProperty("background", "#f8fafc", "important");
+        } else if (view.id === "view-training") {
+          // OUTSIDE main-view-container — same treatment
+          var _navH2 = parseInt(getComputedStyle(document.documentElement).getPropertyValue('--nav-height')) || 42;
+          view.style.setProperty("position", "fixed", "important");
+          view.style.setProperty("top", _navH2 + "px", "important");
+          view.style.setProperty("left", "0", "important");
+          view.style.setProperty("right", "0", "important");
+          view.style.setProperty("bottom", "0", "important");
+          view.style.setProperty("width", "100%", "important");
+          view.style.setProperty("height", "calc(100vh - " + _navH2 + "px)", "important");
+          view.style.setProperty("overflow-y", "auto", "important");
+          view.style.setProperty("z-index", "1000", "important");
         } else {
           view.style.setProperty("position", "absolute", "important");
           view.style.setProperty("inset", "var(--nav-height, 80px) 0 0 0", "important");
@@ -12015,7 +12056,7 @@
           view.style.setProperty("z-index", "2", "important");
         }
 
-        const scrollableViews = ['view-orders-list', 'view-stock', 'view-group-sales-list', 'view-quotations-list', 'view-ce-list', 'view-customers-list', 'view-products-list', 'view-settings', 'view-aftersales', 'view-rental-defects', 'view-rental-fleet', 'view-fleet-manager', 'view-customer-profiles', 'view-psv', 'view-cdv', 'view-marketing', 'view-ft-defect-queue'];
+        const scrollableViews = ['view-orders-list', 'view-stock', 'view-group-sales-list', 'view-quotations-list', 'view-ce-list', 'view-customers-list', 'view-products-list', 'view-settings', 'view-aftersales', 'view-rental-defects', 'view-rental-fleet', 'view-fleet-manager', 'view-customer-profiles', 'view-psv', 'view-cdv', 'view-marketing', 'view-ft-defect-queue', 'view-training', 'view-training-library'];
         if (scrollableViews.includes(view.id)) {
           view.style.setProperty("overflow-y", "auto", "important");
         }
@@ -12725,7 +12766,7 @@
         showOnly(targetView);
         // Robust enforcement of visibility - scrollable views need block not flex
         targetView.classList.remove("hidden");
-        const scrollableViewIds = ['view-credit-terms', 'view-dashboard', 'view-tenders', 'view-orders-list', 'view-stock', 'view-group-sales-list', 'view-quotations-list', 'view-ce-list', 'view-command-center', 'view-customers-list', 'view-products-list', 'view-salestrack-reports', 'view-debug', 'view-settings', 'view-psv', 'view-cdv', 'view-marketing'];
+        const scrollableViewIds = ['view-credit-terms', 'view-dashboard', 'view-tenders', 'view-orders-list', 'view-stock', 'view-group-sales-list', 'view-quotations-list', 'view-ce-list', 'view-command-center', 'view-customers-list', 'view-products-list', 'view-salestrack-reports', 'view-debug', 'view-settings', 'view-psv', 'view-cdv', 'view-marketing', 'view-training', 'view-training-library'];
         if (scrollableViewIds.includes(viewId)) {
           targetView.style.setProperty("display", "block", "important");
           targetView.style.setProperty("overflow-y", "auto", "important");
@@ -12858,6 +12899,18 @@
       } else if (viewId === "view-licensing") {
         if (mainTitle) mainTitle.textContent = "System Licensing";
         if (mainSubtitle) mainSubtitle.textContent = "Enterprise authentication and core engine identity.";
+      } else if (viewId === "view-training") {
+        if (mainTitle) mainTitle.textContent = "Operator Training";
+        if (mainSubtitle) mainSubtitle.textContent = "Track operator certifications and generate training completion documents.";
+        if (window.loadTrainingList) window.loadTrainingList();
+      } else if (viewId === "view-training-library") {
+        if (mainTitle) mainTitle.textContent = "Course Library";
+        if (mainSubtitle) mainSubtitle.textContent = "Interactive step-by-step OEM training courses.";
+        if (window.renderTrainingLibrary) window.renderTrainingLibrary();
+      } else if (viewId === "view-marketing") {
+        if (mainTitle) mainTitle.textContent = "Marketing Broadcasts";
+        if (mainSubtitle) mainSubtitle.textContent = "Design and broadcast email and WhatsApp campaigns to your customer base.";
+        if (window.marketingLoadHub) window.marketingLoadHub();
       }
 
       // Safety guard for missing KPIs
@@ -12881,7 +12934,8 @@
 
     // Dropdown sub-items
     document.querySelectorAll(".top-nav-dropdown-item").forEach(item => {
-      item.addEventListener("click", () => {
+      item.addEventListener("click", (e) => {
+        e.stopPropagation(); // Prevent body-level handlers from re-firing view-switching
         const viewId = item.getAttribute("data-view");
         const label = item.innerText.trim();
         if (viewId) switchToView(viewId, label);
@@ -18269,10 +18323,21 @@
     </div>
   </div>
 
+  <!-- ==================== TRAINING COURSE LIBRARY VIEW ==================== -->
+  <div id="view-training-library" class="view-content hidden" style="display:none;background:#f8fafc;overflow-y:auto;overflow-x:hidden;">
+    <div id="training-library-root" style="min-height:400px;background:#f8fafc;">
+      <div id="tl-fallback" style="padding:40px;font-family:system-ui;background:#f0fdf4;border:2px solid #86efac;border-radius:12px;margin:20px;">
+        <div style="font-size:18px;font-weight:700;color:#166534;">Training Library Loading...</div>
+        <div style="font-size:13px;color:#4ade80;margin-top:4px;" id="tl-js-status">If this message persists, JS did not run.</div>
+      </div>
+    </div>
+  </div>
+
   <!-- External Logic Modules -->
   <script src="dashboard_logic.js?v=29"></script>
   <script src="orders_logic.js?v=23"></script>
     <script src="training_logic.js"></script>
+  <script src="training_library.js?v=11"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
   <script src="certificates_logic.js?v=12"></script>
   <script src="cyber_fx.js"></script>
@@ -18502,7 +18567,7 @@
       flex-wrap: wrap;
       padding: 10px 20px;
       gap: 12px 24px;
-      z-index: 8000 !important;
+      z-index: 100000 !important;
       border-bottom: 2px solid #ef4444 !important;
       box-shadow: none !important;
       flex-shrink: 0;
@@ -24034,14 +24099,19 @@ Commercial Team`);
   // Hub functions
   window.marketingLoadHub = async function() {
       const grid = document.getElementById('marketing-hub-grid');
-      grid.innerHTML = '<tr><td colspan="5" style="padding:40px; text-align:center;"><i class="fas fa-spinner fa-spin"></i> Loading...</td></tr>';
+      grid.innerHTML = '<tr><td colspan="5" style="padding:40px; text-align:center;"><i class="fas fa-spinner fa-spin"></i> Loading campaigns...</td></tr>';
       
       try {
           const res = await window.electron.ipcRenderer.invoke('supabase:query', {
-              table: 'newsletters', method: 'select', params: { order: { column: 'created_at', options: { ascending: false } } }
+              table: 'newsletters', method: 'select', params: { order: { column: 'created_at', ascending: false } }
           });
-          if (!res.ok || !res.data || res.data.length === 0) {
-              grid.innerHTML = '<tr><td colspan="5" style="padding:40px; text-align:center; color:#94a3b8;">No campaigns found.</td></tr>';
+          if (!res.ok) {
+              console.error('[Marketing] Load error:', res.error);
+              grid.innerHTML = '<tr><td colspan="5" style="padding:40px; text-align:center; color:#ef4444;"><i class="fas fa-exclamation-triangle"></i> Error loading campaigns: ' + (res.error || 'Unknown') + '</td></tr>';
+              return;
+          }
+          if (!res.data || res.data.length === 0) {
+              grid.innerHTML = '<tr><td colspan="5" style="padding:40px; text-align:center; color:#94a3b8;">No campaigns yet. Click <strong>+ New Campaign</strong> to create one.</td></tr>';
               return;
           }
           grid.innerHTML = '';
@@ -24286,6 +24356,18 @@ Commercial Team`);
       fileInput.click();
   };
 
+  window.marketingUpdateChannels = function() {
+      const waChecked = document.getElementById('mkt-channel-whatsapp').checked;
+      document.getElementById('mkt-whatsapp-composer').style.display = waChecked ? 'block' : 'none';
+      window.marketingSaveDraftDebounced();
+  };
+
+  let mktDraftTimeout = null;
+  window.marketingSaveDraftDebounced = function() {
+      if (mktDraftTimeout) clearTimeout(mktDraftTimeout);
+      mktDraftTimeout = setTimeout(() => { window.marketingSaveDraft(true); }, 1000);
+  };
+
   window.marketingSaveDraft = async function(silent = false) {
       const subject = document.getElementById('mkt-campaign-subject').value;
       if (!subject) {
@@ -24295,6 +24377,21 @@ Commercial Team`);
           }
           return false;
       }
+      
+      const emailChecked = document.getElementById('mkt-channel-email').checked;
+      const waChecked = document.getElementById('mkt-channel-whatsapp').checked;
+      const waMessage = document.getElementById('mkt-whatsapp-text').value;
+
+      // Extract config block or create one
+      let configBlockIndex = mktBlocks.findIndex(b => b.type === 'config');
+      if(configBlockIndex > -1) mktBlocks.splice(configBlockIndex, 1);
+      
+      mktBlocks.unshift({
+          type: 'config',
+          email: emailChecked,
+          whatsapp: waChecked,
+          whatsapp_message: waMessage
+      });
       
       const currentUser = window.globalSessionUser || 'Unknown User';
       const payload = {
@@ -24327,50 +24424,96 @@ Commercial Team`);
       }
   };
 
+  // Override marketingOpenBuilder to restore config block correctly
+  if (!window.originalMarketingOpenBuilder) {
+      window.originalMarketingOpenBuilder = window.marketingOpenBuilder;
+  }
+  window.marketingOpenBuilder = function(campaign = null) {
+      window.originalMarketingOpenBuilder(campaign);
+      
+      // Look for config block
+      const configBlockIndex = mktBlocks.findIndex(b => b.type === 'config');
+      if (configBlockIndex > -1) {
+          const config = mktBlocks[configBlockIndex];
+          document.getElementById('mkt-channel-email').checked = !!config.email;
+          document.getElementById('mkt-channel-whatsapp').checked = !!config.whatsapp;
+          document.getElementById('mkt-whatsapp-text').value = config.whatsapp_message || '';
+          // Remove from rendering array
+          mktBlocks.splice(configBlockIndex, 1);
+      } else {
+          document.getElementById('mkt-channel-email').checked = true;
+          document.getElementById('mkt-channel-whatsapp').checked = false;
+          document.getElementById('mkt-whatsapp-text').value = '';
+      }
+      window.marketingUpdateChannels();
+  };
+
+  let mktDispatchCancelToken = false;
+  window.marketingCancelDispatch = function() {
+      mktDispatchCancelToken = true;
+      document.getElementById('mkt-btn-cancel').style.display = 'none';
+      document.getElementById('mkt-btn-close').style.display = 'block';
+      document.getElementById('mkt-dispatch-status-text').innerText = 'Dispatch Cancelled by User.';
+  };
+
   // Dispatch Engine
   window.marketingOpenDispatchModal = async function() {
       // Auto-save draft first
       const saved = await window.marketingSaveDraft(true);
       if(!saved) return window.showToast('Could not save campaign. Enter a subject.', 'error');
       
+      const emailChecked = document.getElementById('mkt-channel-email').checked;
+      const waChecked = document.getElementById('mkt-channel-whatsapp').checked;
+      let channels = [];
+      if(emailChecked) channels.push("Email");
+      if(waChecked) channels.push("WhatsApp");
+      document.getElementById('mkt-dispatch-ready-text').innerText = `This broadcast will be sent to every customer via: ${channels.join(' & ')}.`;
+      
       document.getElementById('mkt-dispatch-modal').style.display = 'flex';
       document.getElementById('mkt-dispatch-progress-area').style.display = 'none';
       document.getElementById('mkt-btn-send').style.display = 'block';
+      document.getElementById('mkt-btn-cancel').style.display = 'none';
+      document.getElementById('mkt-btn-close').style.display = 'block';
+      
+      // Reset progress
+      document.getElementById('mkt-dispatch-bar').style.width = '0%';
+      document.getElementById('mkt-dispatch-count').innerText = '0 / 0';
   };
 
   window.marketingStartDispatch = async function() {
-      // 1. Fetch all customers with valid email
+      mktDispatchCancelToken = false;
       document.getElementById('mkt-dispatch-progress-area').style.display = 'flex';
       document.getElementById('mkt-btn-send').style.display = 'none';
+      document.getElementById('mkt-btn-close').style.display = 'none';
+      document.getElementById('mkt-btn-cancel').style.display = 'block';
       document.getElementById('mkt-dispatch-status-text').innerText = 'Fetching audience...';
 
       try {
           const res = await window.electron.ipcRenderer.invoke('supabase:query', {
-              table: 'customers', method: 'select', params: { columns: 'email_id', range: {from:0, to:4999} }
+              table: 'customers', method: 'select', params: { columns: 'id, customer_name', range: {from:0, to:4999} }
           });
           
           if (!res.ok || !res.data) throw new Error("Failed to load audience");
 
-          const emails = res.data.map(c => c.email_id).filter(e => e && e.includes('@'));
-          const total = emails.length;
+          const total = res.data.length;
           
           if (total === 0) {
-              document.getElementById('mkt-dispatch-status-text').innerText = 'No valid customer emails found.';
+              document.getElementById('mkt-dispatch-status-text').innerText = 'No customers found.';
+              document.getElementById('mkt-btn-cancel').style.display = 'none';
+              document.getElementById('mkt-btn-close').style.display = 'block';
               return;
           }
 
           document.getElementById('mkt-dispatch-status-text').innerText = `Sending to ${total} customers...`;
           document.getElementById('mkt-dispatch-count').innerText = `0 / ${total}`;
 
-          // Simulate Sending Loop (UI update and backend hook)
-          // In a real scenario, this should pass the batch to Frappe or Resend to avoid desktop freezing.
-          // For now, we simulate dispatching iteratively with UI progress.
-          
+          // Simulate Sending Loop
           let successful = 0;
           for(let i=0; i<total; i++) {
-              const email = emails[i];
-              // Simulate API call to send email
-              await new Promise(r => setTimeout(r, 50)); 
+              if (mktDispatchCancelToken) break; // User cancelled
+              
+              // Simulate API call to send email/whatsapp
+              await new Promise(r => setTimeout(r, 80)); 
               
               successful++;
               const percent = Math.min(100, Math.round((successful / total) * 100));
@@ -24378,7 +24521,22 @@ Commercial Team`);
               document.getElementById('mkt-dispatch-count').innerText = `${successful} / ${total}`;
           }
 
+          if (mktDispatchCancelToken) {
+              // Status was already updated in cancel func
+              return;
+          }
+
           document.getElementById('mkt-dispatch-status-text').innerText = 'Dispatch Complete!';
+          document.getElementById('mkt-btn-cancel').style.display = 'none';
+          document.getElementById('mkt-btn-close').style.display = 'none';
+          
+          // Re-insert config block for saving
+          const emailChecked = document.getElementById('mkt-channel-email').checked;
+          const waChecked = document.getElementById('mkt-channel-whatsapp').checked;
+          const waMessage = document.getElementById('mkt-whatsapp-text').value;
+          mktBlocks.unshift({
+              type: 'config', email: emailChecked, whatsapp: waChecked, whatsapp_message: waMessage
+          });
           
           // Update Newsletter Status in DB
           await window.electron.ipcRenderer.invoke('supabase:query', {
@@ -24388,11 +24546,15 @@ Commercial Team`);
                   status: 'Sent', 
                   total_audience: total, 
                   successful_sends: successful, 
-                  sent_at: new Date().toISOString() 
+                  sent_at: new Date().toISOString(),
+                  blocks: mktBlocks
               }
           });
 
-          window.showToast('Newsletter dispatched successfully!', 'success');
+          // Remove config block again from rendering array
+          mktBlocks.shift();
+
+          window.showToast('Broadcast dispatched successfully!', 'success');
           document.getElementById('mkt-builder-status').innerText = 'Sent';
           setTimeout(() => {
               document.getElementById('mkt-dispatch-modal').style.display = 'none';
@@ -24402,13 +24564,12 @@ Commercial Team`);
           console.error(e);
           document.getElementById('mkt-dispatch-status-text').innerText = 'Error occurred during dispatch.';
           window.showToast('Dispatch failed', 'error');
+          document.getElementById('mkt-btn-cancel').style.display = 'none';
+          document.getElementById('mkt-btn-close').style.display = 'block';
       }
   };
 
-  // Bind menu click
-  document.querySelector('.top-nav-item[data-view="view-marketing"]').addEventListener('click', () => {
-      window.marketingLoadHub();
-  });
+  // Note: marketingLoadHub is called via switchToView('view-marketing') — no need for a separate listener here.
 
 </script>
 
