@@ -6587,7 +6587,7 @@
           </script>
 
           <!-- MAIN 3-COL GRID -->
-          <div style="display:grid; grid-template-columns:300px 1fr; gap:22px; align-items:start; padding:12px 40px 0;">
+          <div style="display:grid; grid-template-columns:300px 1fr; gap:22px; align-items:stretch; padding:12px 40px 22px; flex:1; min-height:0;">
 
               <!-- LEFT: Welcome + Visits + Quick Actions -->
               <div style="display:flex; flex-direction:column; gap:18px; min-width:0;">
@@ -6693,7 +6693,7 @@
 
 
               <!-- LOGISTICS & PIPELINE KANBAN WIDGET -->
-              <div style="background:#fff;border:1px solid #e2e8f0;border-radius:18px;box-shadow:0 2px 12px rgba(0,0,0,0.05);display:flex;flex-direction:column;overflow:hidden;margin-bottom:22px;height:600px;">
+              <div style="background:#fff;border:1px solid #e2e8f0;border-radius:18px;box-shadow:0 2px 12px rgba(0,0,0,0.05);display:flex;flex-direction:column;overflow:hidden;height:100%;min-height:400px;isolation:isolate;">
                 <!-- Header -->
                 <div style="display:flex;align-items:center;justify-content:space-between;padding:16px 20px 14px;border-bottom:1px solid #e2e8f0;background:#f1f5f9;border-top-left-radius:18px;border-top-right-radius:18px;">
                   <div style="display:flex;align-items:center;gap:10px;">
@@ -6736,7 +6736,7 @@
 
                   <!-- Column 2: This Week -->
                   <div style="border-right:1px solid #f1f5f9;display:flex;flex-direction:column;min-height:0;background:#f8fafc;">
-                    <div style="padding:14px 16px;border-bottom:2px solid #ef4444;background:#0f172a;display:flex;align-items:center;justify-content:space-between;">
+                    <div style="padding:14px 16px;border-bottom:2px solid #3b82f6;background:#1e293b;display:flex;align-items:center;justify-content:space-between;">
                       <div style="display:flex;align-items:center;gap:8px;">
                         <i class="fas fa-calendar-day" style="color:#3b82f6;font-size:12px;"></i>
                         <span style="font-size:11px;font-weight:900;color:#ffffff;text-transform:uppercase;">This Week</span>
@@ -6750,7 +6750,7 @@
 
                   <!-- Column 3: Next Week -->
                   <div style="border-right:1px solid #f1f5f9;display:flex;flex-direction:column;min-height:0;background:#f1f5f9;">
-                    <div style="padding:14px 16px;border-bottom:2px solid #ef4444;background:#0f172a;display:flex;align-items:center;justify-content:space-between;">
+                    <div style="padding:14px 16px;border-bottom:2px solid #8b5cf6;background:#334155;display:flex;align-items:center;justify-content:space-between;">
                       <div style="display:flex;align-items:center;gap:8px;">
                         <i class="fas fa-calendar-week" style="color:#8b5cf6;font-size:12px;"></i>
                         <span style="font-size:11px;font-weight:900;color:#ffffff;text-transform:uppercase;">Next Week</span>
@@ -6764,7 +6764,7 @@
 
                   <!-- Column 4: Later -->
                   <div style="display:flex;flex-direction:column;min-height:0;background:#e2e8f0;">
-                    <div style="padding:14px 16px;border-bottom:2px solid #ef4444;background:#0f172a;display:flex;align-items:center;justify-content:space-between;">
+                    <div style="padding:14px 16px;border-bottom:2px solid #94a3b8;background:#475569;display:flex;align-items:center;justify-content:space-between;">
                       <div style="display:flex;align-items:center;gap:8px;">
                         <i class="fas fa-calendar-alt" style="color:#94a3b8;font-size:12px;"></i>
                         <span style="font-size:11px;font-weight:900;color:#ffffff;text-transform:uppercase;">Later Pipeline</span>
