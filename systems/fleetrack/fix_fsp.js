@@ -9,7 +9,7 @@ const addStartIndex = content.indexOf(addStart);
 const addEndIndex = content.indexOf(addEnd) + addEnd.length;
 
 if (addStartIndex !== -1 && addEndIndex !== -1) {
-    const newAdd = sync function addToServicePlan(machineName) {
+    const newAdd = sync function addToServicePlan(machineName) {
       if (!machineName) return;
 
       showToast("Adding " + machineName + " to plan...", "info");
@@ -61,7 +61,7 @@ const loadStartIndex = content.indexOf(loadStart);
 const loadEndIndex = content.indexOf(loadEnd) + loadEnd.length;
 
 if (loadStartIndex !== -1 && loadEndIndex !== -1) {
-    const newLoad = sync function loadFieldServicePlan() {
+    const newLoad = sync function loadFieldServicePlan() {
       const tbody = document.getElementById("tbl-fsi");
       if (!tbody) return;
 

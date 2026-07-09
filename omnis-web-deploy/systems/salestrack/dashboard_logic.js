@@ -14,7 +14,7 @@ window.OmnisDashboardV6 = class OmnisDashboardV6 {
         window.salestrack = this;
         window.dashManager = this;
 
-        // &#x1F44B; Listeners
+        // 👋 Listeners
         this.initWhatsAppListeners();
     }
 

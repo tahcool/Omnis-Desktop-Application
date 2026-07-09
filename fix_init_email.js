@@ -39,7 +39,7 @@ const newFunction = `    async initEmailUpdate(reportId) {
         }
 
         const recipientList = emailContacts.map(c =>
-            \`\${c.salutation ? c.salutation + ' ' : ''}\${c.name} &lt;\${c.email}&gt;\`
+            \`\${c.salutation ? c.salutation + ' ' : ''}\${c.name} <\${c.email}>\`
         ).join('<br>');
 
         const customerName = document.querySelector('#dash-generic-body div[style*="font-size:18px"]')?.textContent.trim()

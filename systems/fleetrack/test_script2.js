@@ -4516,7 +4516,7 @@
       setTimeout(() => {
         appendChatMessage(
           "assistant",
-          "This is a placeholder reply.\n\nOnce Omnis AI is wired for Fleetrack, I’ll be able to answer with live data."
+          "This is a placeholder reply.\n\nOnce Omnis AI is wired for Fleetrack, I'll be able to answer with live data."
         );
         setChatStatus("");
       }, 600);

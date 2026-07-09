@@ -1,4 +1,4 @@
-﻿import re
+import re
 
 with open(r'c:\Users\Administrator\omnis\systems\salestrack\index.html', 'r', encoding='utf-8') as f:
     content = f.read()

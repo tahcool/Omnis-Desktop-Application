@@ -47,7 +47,7 @@ frappe.ui.form.on('FT Alert', {
             frm.page.set_title(`${frm.doc.alert_type} - ${frm.page.title}`);
 
             if (frm.doc.alert_type === "Quote Alert" && frm.doc.status === "Pending") {
-                let QDLable = __("&plus; Quote Details");
+                let QDLable = __("+ Quote Details");
                 frm.add_custom_button(QDLable, function () {
                     let d = new frappe.ui.Dialog({
                         title: `Enter Quote No. for <b>${frm.doc.on_service_type} HOUR Service</b>`,

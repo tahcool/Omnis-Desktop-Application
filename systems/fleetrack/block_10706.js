@@ -2329,7 +2329,7 @@
       if (!defectFilterSummary) return;
       const sevText = defectFilters.severity === "all" ? "all severities" : defectFilters.severity.charAt(0).toUpperCase() +
         defectFilters.severity.slice(1); const machineText = defectFilters.machine ? `machines containing
-    “${defectFilters.machine}”` : "all machines"; const overdueText = defectFilters.overdueOnly ? "only overdue"
+    "${defectFilters.machine}"` : "all machines"; const overdueText = defectFilters.overdueOnly ? "only overdue"
         : "open & closed"; defectFilterSummary.innerHTML = `Showing <strong>${sevText}</strong>,
       <strong>${machineText}</strong>, ` +
           `including <strong>${overdueText}</strong>.`;
@@ -4662,7 +4662,7 @@
       setTimeout(() => {
         appendChatMessage(
           "assistant",
-          "This is a placeholder reply.\n\nOnce Omnis AI is wired for Fleetrack, I’ll be able to answer with live data."
+          "This is a placeholder reply.\n\nOnce Omnis AI is wired for Fleetrack, I'll be able to answer with live data."
         );
         setChatStatus("");
       }, 600);
@@ -6282,4 +6282,4 @@
       filters._ts = Date.now();
 
       loadFtMachineRegister(filters);
-    }
+    }

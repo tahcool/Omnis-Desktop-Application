@@ -44,7 +44,7 @@
         var chs=Array.isArray(c.channels)?c.channels:['email'];
         var icons=chs.map(function(ch){return ch==='whatsapp'?'<i class="fab fa-whatsapp" style="color:#25d366;"></i>':'<i class="fas fa-envelope" style="color:#3b82f6;"></i>';}).join(' ');
         var tr=document.createElement('tr'); tr.className='mkt-hub-row';
-        tr.innerHTML='<td style="padding:16px 20px;font-weight:700;color:#0f172a;">'+(c.subject||'Untitled')+'</td><td style="padding:16px 20px;text-align:center;">'+badge+'</td><td style="padding:16px 20px;text-align:center;font-size:18px;">'+icons+'</td><td style="padding:16px 20px;text-align:center;color:#64748b;">'+(c.sent_at?new Date(c.sent_at).toLocaleDateString():'â€”')+'</td><td style="padding:16px 20px;text-align:center;font-weight:600;">'+((c.successful_sends||0).toLocaleString())+' / '+((c.total_audience||0).toLocaleString())+'</td><td style="padding:16px 20px;text-align:right;"><button onclick="window.marketingEditCampaign(\''+c.id+'\')" class="mkt-btn-sm mkt-btn-blue"><i class="fas fa-edit"></i> Edit</button></td>';
+        tr.innerHTML='<td style="padding:16px 20px;font-weight:700;color:#0f172a;">'+(c.subject||'Untitled')+'</td><td style="padding:16px 20px;text-align:center;">'+badge+'</td><td style="padding:16px 20px;text-align:center;font-size:18px;">'+icons+'</td><td style="padding:16px 20px;text-align:center;color:#64748b;">'+(c.sent_at?new Date(c.sent_at).toLocaleDateString():'—')+'</td><td style="padding:16px 20px;text-align:center;font-weight:600;">'+((c.successful_sends||0).toLocaleString())+' / '+((c.total_audience||0).toLocaleString())+'</td><td style="padding:16px 20px;text-align:right;"><button onclick="window.marketingEditCampaign(\''+c.id+'\')" class="mkt-btn-sm mkt-btn-blue"><i class="fas fa-edit"></i> Edit</button></td>';
         grid.appendChild(tr);
       });
     } catch(e){ grid.innerHTML='<tr><td colspan="6" style="padding:40px;text-align:center;color:#ef4444;font-weight:600;"><i class="fas fa-exclamation-triangle" style="margin-right:8px;"></i>Error: '+e.message+'</td></tr>'; }
@@ -383,10 +383,10 @@
 })();
 
 /* ============================================================
-   PHASE 2 â€” TEMPLATES, HTML EDITOR, AUDIENCE, ANALYTICS, SCHEDULING
+   PHASE 2 — TEMPLATES, HTML EDITOR, AUDIENCE, ANALYTICS, SCHEDULING
    ============================================================ */
 
-/* â”€â”€ PHASE 2 HELPER SHIMS (globals needed outside the IIFE) â”€â”€ */
+/* ── PHASE 2 HELPER SHIMS (globals needed outside the IIFE) ── */
 function _el(id){ return document.getElementById(id); }
 function _val(id){ var e=_el(id); return e?e.value:''; }
 function _setVal(id,v){ var e=_el(id); if(e) e.value=v; }
@@ -691,7 +691,7 @@ var MKT_TEMPLATES = {
     desc:'Discounts, deals and limited-time offers',
     icon:'fas fa-tag', color:'#dc2626',
     blocks:[
-      {type:'header',text:'EXCLUSIVE OFFER â€” Limited Time Only',bg:'#dc2626',color:'#ffffff',size:'26px'},
+      {type:'header',text:'EXCLUSIVE OFFER — Limited Time Only',bg:'#dc2626',color:'#ffffff',size:'26px'},
       {type:'text',content:'This weekend only, we are offering incredible savings on our most popular products. Do not miss this opportunity to upgrade your operations at an unbeatable price.'},
       {type:'image',url:'https://placehold.co/600x250/fef2f2/dc2626?text=Special+Offer',alt:'Special Offer',align:'center'},
       {type:'button',label:'Claim Your Discount',link:'https://powerstar.co.zw',bg:'#dc2626',color:'#ffffff',align:'center'},
@@ -722,12 +722,12 @@ var MKT_TEMPLATES = {
       {type:'text',content:'Welcome to this month\'s edition. Here\'s a roundup of what\'s been happening at IEG and what\'s coming next.'},
       {type:'divider',color:'#d1fae5',margin:'8px'},
       {type:'header',text:'Company Updates',bg:'#f0fdf4',color:'#064e3b',size:'20px'},
-      {type:'text',content:'[Update 1] â€” Description of first company update or achievement this month.'},
+      {type:'text',content:'[Update 1] — Description of first company update or achievement this month.'},
       {type:'header',text:'New Products',bg:'#f0fdf4',color:'#064e3b',size:'20px'},
       {type:'image',url:'https://placehold.co/600x200/d1fae5/059669?text=New+Products',alt:'Products',align:'center'},
-      {type:'text',content:'[Product Update] â€” Describe any new products, features or services launched this month.'},
+      {type:'text',content:'[Product Update] — Describe any new products, features or services launched this month.'},
       {type:'header',text:'Industry News',bg:'#f0fdf4',color:'#064e3b',size:'20px'},
-      {type:'text',content:'[Industry Update] â€” Share relevant industry news or insights that your customers would find valuable.'},
+      {type:'text',content:'[Industry Update] — Share relevant industry news or insights that your customers would find valuable.'},
       {type:'button',label:'Visit Our Website',link:'https://powerstar.co.zw',bg:'#059669',color:'#ffffff',align:'center'}
     ]
   },
@@ -739,7 +739,7 @@ var MKT_TEMPLATES = {
       {type:'header',text:'Following Up On Your Enquiry',bg:'#0c4a6e',color:'#ffffff',size:'24px'},
       {type:'text',content:'Dear [Customer Name],\n\nThank you for your interest in our products. I wanted to follow up on the quotation we sent you and see if you have any questions or require any additional information.'},
       {type:'divider',color:'#bae6fd',margin:'12px'},
-      {type:'text',content:'We understand that making the right purchase decision takes time, and our team is here to assist you every step of the way. Whether you need a product demonstration, technical specifications, or a revised quote â€” we are ready to help.'},
+      {type:'text',content:'We understand that making the right purchase decision takes time, and our team is here to assist you every step of the way. Whether you need a product demonstration, technical specifications, or a revised quote — we are ready to help.'},
       {type:'button',label:'Contact Your Sales Rep',link:'https://powerstar.co.zw',bg:'#0284c7',color:'#ffffff',align:'center'},
       {type:'divider',color:'#e2e8f0',margin:'12px'},
       {type:'text',content:'Best regards,\n[Sales Representative Name]\nCommercial Manager\nIEG | International Equipment Group'}
@@ -771,7 +771,7 @@ window.mktSelectTemplate = function(tplId) {
   window.marketingOpenBuilder(null);
 };
 
-/* â”€â”€ HTML EDITOR â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+/* ── HTML EDITOR ────────────────────────────────────────────── */
 window.mktSwitchTab = (function(){
   var _orig = window.mktSwitchTab;
   return function(tab) {
@@ -815,7 +815,7 @@ window.mktHTMLUseThis = function(){
   var frame = _el('mkt-preview-frame');
   if (frame) frame.srcdoc = ta ? ta.value : '';
   window.mktSwitchTab('preview');
-  _p2toast('Custom HTML saved â€” Preview updated','success');
+  _p2toast('Custom HTML saved — Preview updated','success');
   window.marketingSaveDraftDebounced();
 };
 
@@ -833,7 +833,7 @@ window.mktBuildHTML = function(){
   return _origBuildHTML();
 };
 
-/* â”€â”€ AUDIENCE MANAGER â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+/* ── AUDIENCE MANAGER ───────────────────────────────────────── */
 window.mktLoadAudience = async function(filter) {
   var tbody = _el('mkt-audience-tbody');
   var countEl = _el('mkt-audience-total');
@@ -869,9 +869,9 @@ window.mktLoadAudience = async function(filter) {
       tr.onmouseover = function(){this.style.background='#f8fafc';};
       tr.onmouseout = function(){this.style.background='';};
       tr.innerHTML =
-        '<td style="padding:12px 16px;font-weight:600;color:#0f172a;">'+escH(c.name||'â€”')+'</td>'+
-        '<td style="padding:12px 16px;color:#475569;">'+escH(c.email||'â€”')+'</td>'+
-        '<td style="padding:12px 16px;color:#475569;">'+escH(c.phone||'â€”')+'</td>'+
+        '<td style="padding:12px 16px;font-weight:600;color:#0f172a;">'+escH(c.name||'—')+'</td>'+
+        '<td style="padding:12px 16px;color:#475569;">'+escH(c.email||'—')+'</td>'+
+        '<td style="padding:12px 16px;color:#475569;">'+escH(c.phone||'—')+'</td>'+
         '<td style="padding:12px 16px;">'+(tagHtml||'<span style="color:#cbd5e1;font-size:11px;">No tags</span>')+'</td>'+
         '<td style="padding:12px 16px;text-align:center;">'+subBtn+'</td>'+
         '<td style="padding:12px 16px;text-align:right;"><button onclick="mktEditContact(\''+c.id+'\',\''+escH(c.name||'')+'\',\''+escH(c.tags?c.tags.join(','):'')+'\',\''+escH(c.notes||'')+'\')" style="background:#f1f5f9;color:#475569;border:1px solid #e2e8f0;padding:4px 10px;border-radius:6px;font-size:11px;font-weight:700;cursor:pointer;"><i class="fas fa-edit"></i></button></td>';
@@ -935,7 +935,7 @@ window.mktExportAudienceCSV = async function() {
   } catch(e){ _p2toast('Export failed: '+e.message,'error'); }
 };
 
-/* â”€â”€ CAMPAIGN ANALYTICS â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+/* ── CAMPAIGN ANALYTICS ─────────────────────────────────────── */
 window.mktOpenAnalytics = async function(campaignId) {
   var modal = _el('mkt-analytics-modal');
   if (!modal) return;
@@ -958,7 +958,7 @@ window.mktOpenAnalytics = async function(campaignId) {
 
     var failRows = recs.filter(function(r){return r.status==='failed';}).map(function(r){
       return '<tr><td style="padding:8px 12px;color:#334155;font-size:13px;">'+escH(r.contact_name||'?')+'</td>'+
-             '<td style="padding:8px 12px;color:#64748b;font-size:13px;">'+escH(r.email||r.phone||'â€”')+'</td>'+
+             '<td style="padding:8px 12px;color:#64748b;font-size:13px;">'+escH(r.email||r.phone||'—')+'</td>'+
              '<td style="padding:8px 12px;color:#ef4444;font-size:12px;">'+escH(r.error_msg||'Unknown error')+'</td></tr>';
     }).join('');
 
@@ -1037,7 +1037,7 @@ window.mktCloseAnalytics = function(){
   var m=_el('mkt-analytics-modal');if(m) m.style.display='none';
 };
 
-/* â”€â”€ SCHEDULING â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+/* ── SCHEDULING ─────────────────────────────────────────────── */
 window.marketingSaveDraft = (function(){
   var _orig = window.marketingSaveDraft;
   return async function(silent) {
@@ -1099,7 +1099,7 @@ window.mktConfirmSchedule = async function() {
   } catch(e){ _p2toast('Schedule failed: '+e.message,'error'); }
 };
 
-// Background scheduler â€” runs every 60s, fires scheduled campaigns
+// Background scheduler — runs every 60s, fires scheduled campaigns
 (function mktStartScheduler(){
   setInterval(async function(){
     try {
@@ -1129,7 +1129,7 @@ window.mktConfirmSchedule = async function() {
   }, 60000);
 })();
 
-/* â”€â”€ HUB TABS â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ */
+/* ── HUB TABS ───────────────────────────────────────────────── */
 window.mktHubSwitchTab = function(tab){
   var tabs=['campaigns','audience'];
   tabs.forEach(function(t){
@@ -1141,7 +1141,7 @@ window.mktHubSwitchTab = function(tab){
   if(tab==='audience') window.mktLoadAudience();
 };
 
-/* â”€â”€ OVERRIDE marketingOpenBuilder to handle template blocks â”€â”€ */
+/* ── OVERRIDE marketingOpenBuilder to handle template blocks ── */
 var _origOpenBuilder = window.marketingOpenBuilder;
 window.marketingOpenBuilder = async function(campaign) {
   _mkt().htmlEditorMode = 'canvas';
@@ -1158,7 +1158,7 @@ window.marketingOpenBuilder = async function(campaign) {
   if(window.mktInitDragExposed) window.mktInitDragExposed();
 };
 
-/* â”€â”€ OVERRIDE Hub to show analytics buttons â”€â”€ */
+/* ── OVERRIDE Hub to show analytics buttons ── */
 var _origLoadHub = window.marketingLoadHub;
 window.marketingLoadHub = async function(){
   await _origLoadHub();

@@ -18,7 +18,7 @@ const startIndex = content.indexOf(targetStart);
 const endIndex = content.indexOf(targetEnd) + targetEnd.length;
 
 if (startIndex !== -1 && endIndex !== -1) {
-    const dashboard_code = \sync function loadFtBreakdownDashboard() {
+    const dashboard_code = \sync function loadFtBreakdownDashboard() {
         try {
             const setKpi = (id, value) => {
                 const el = document.getElementById(id);

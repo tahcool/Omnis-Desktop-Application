@@ -1056,6 +1056,47 @@
 
       let lastError = "";
 
+      // 🔐 ADMIN / GH05T: Intercept login for Admin Dashboard
+      if (usr === "gh05t") {
+        const adminEmail = "gh05t@omnis.local";
+        let res = await window.electron.invoke('supabase:signIn', { email: adminEmail, password: pwd });
+        if (!res.ok && res.error && res.error.includes("Invalid login credentials")) {
+           const createRes = await window.electron.invoke('supabase:createUser', { 
+             email: adminEmail, password: pwd, is_admin: true, 
+             systems: ["fleetrack", "salestrack", "powertrack", "engtrack", "spe", "medicals"] 
+           });
+           if (createRes.ok) {
+               res = await window.electron.invoke('supabase:signIn', { email: adminEmail, password: pwd });
+           } else {
+               setStatus("Admin Setup Failed: " + createRes.error, "error");
+               submitBtn.disabled = false;
+               return;
+           }
+        }
+        if (!res.ok) {
+            setStatus(res.error || "Invalid credentials", "error");
+            submitBtn.disabled = false;
+            return;
+        }
+        
+        localStorage.setItem("omnisUser", usr);
+        localStorage.setItem("supabase_access_token", res.access_token);
+        localStorage.setItem("omnis_is_admin", "true");
+        localStorage.setItem("omnis_admin_systems", JSON.stringify(res.user.systems || []));
+        
+        if (rememberMe.checked || silentAuto) {
+          localStorage.setItem(LS_REMEMBER, "1");
+          localStorage.setItem(LS_USER, usr);
+          localStorage.setItem(LS_PWD, pwd);
+        }
+        
+        setStatus("Admin Login Successful! Loading dashboard...", "success");
+        setTimeout(() => {
+           window.location.href = "admin_dashboard.html";
+        }, 800);
+        return; 
+      }
+
       // Jargon rotator for visual feedback
       const jargonInterval = setInterval(() => {
         updateSplash(getRandomJargon());

@@ -4862,7 +4862,7 @@ def get_dashboard_charts(period="This Year", payload=None):
                     "suggested_order": math.ceil(mv * 1.5),
                 })
 
-            # Movement score: 1–5 dots relative to brand’s top model
+            # Movement score: 1–5 dots relative to brand's top model
             max_mv = max((m["monthly_velocity"] for m in raw_models), default=0.01) or 0.01
             for m in raw_models:
                 score = round((m["monthly_velocity"] / max_mv) * 5)

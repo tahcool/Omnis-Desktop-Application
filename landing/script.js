@@ -1,4 +1,4 @@
-﻿/* OMNIS Landing — Interactions + Map Telemetry Canvas */
+/* OMNIS Landing — Interactions + Map Telemetry Canvas */
 
 // ── Floating nav ──────────────────────────────────
 const nav = document.getElementById('nav');

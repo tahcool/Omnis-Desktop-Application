@@ -14,7 +14,7 @@ window.OmnisDashboardV6 = class OmnisDashboardV6 {
         window.salestrack = this;
         window.dashManager = this;
 
-        // &#x1F44B; Listeners
+        // 👋 Listeners
         this.initWhatsAppListeners();
     }
 
@@ -60,6 +60,9 @@ window.OmnisDashboardV6 = class OmnisDashboardV6 {
                 window.electron.getVersion().then(v => {
                     const label = document.getElementById('app-version-label');
                     if (label) label.innerText = `V${v}-NEXUS`;
+
+                    const dashPill = document.getElementById('dash-app-version-pill');
+                    if (dashPill) dashPill.innerText = `V${v}`;
 
                     const sLabel = document.getElementById('update-settings-status');
                     if (sLabel) sLabel.innerText = `Version ${v} Nexus`;
@@ -5096,64 +5099,44 @@ window.OmnisDashboardV6 = class OmnisDashboardV6 {
     }
 
     renderMTDTargets() {
-        const cardsEl = document.getElementById('mtd-company-cards');
-        const labelEl = document.getElementById('mtd-month-label');
-        const badgeEl = document.getElementById('mtd-overall-badge');
-        if (!cardsEl) return;
-
         const companySales = this.data?.company_sales || {};
         const companies    = Object.keys(companySales);
 
-        // Month / year label
-        const now       = new Date();
-        const monthName = now.toLocaleString('default', { month: 'long' });
-        const year      = now.getFullYear();
-        const day       = now.getDate();
-        if (labelEl) labelEl.textContent = `${monthName} ${year} — Day ${day} of month`;
-
-        if (!companies.length) {
-            cardsEl.innerHTML = `<div style="color:#94a3b8;text-align:center;padding:40px;">No company data available.</div>`;
-            return;
+        // Month / year label (if it exists)
+        const labelEl = document.getElementById('mtd-month-label');
+        if (labelEl) {
+            const now       = new Date();
+            const monthName = now.toLocaleString('default', { month: 'long' });
+            const year      = now.getFullYear();
+            const day       = now.getDate();
+            labelEl.textContent = `${monthName} ${year} — Day ${day} of month`;
         }
 
-        // Overall MTD badge (combined)
-        const totalMTD    = companies.reduce((s, c) => s + (companySales[c].mtd         || 0), 0);
-        const totalMTDTgt = companies.reduce((s, c) => s + (companySales[c].mtd_target  || 0), 0);
-        const overallPct  = totalMTDTgt > 0 ? Math.round((totalMTD / totalMTDTgt) * 100) : 0;
-        if (badgeEl) {
+        // Overall MTD badge (combined) (if it exists)
+        const badgeEl = document.getElementById('mtd-overall-badge');
+        if (badgeEl && companies.length > 0) {
+            const totalMTD    = companies.reduce((s, c) => s + (companySales[c].mtd         || 0), 0);
+            const totalMTDTgt = companies.reduce((s, c) => s + (companySales[c].mtd_target  || 0), 0);
+            const overallPct  = totalMTDTgt > 0 ? Math.round((totalMTD / totalMTDTgt) * 100) : 0;
             const isAhead = overallPct >= 100;
             const isMid   = overallPct >= 60;
             badgeEl.textContent      = `MTD ${overallPct}% — ${Math.round(totalMTD)} / ${totalMTDTgt} units`;
-            badgeEl.style.background = isAhead ? '#f0fdf4' : (isMid ? '#fffbeb' : '#fef2f2');
-            badgeEl.style.color      = isAhead ? '#16a34a' : (isMid ? '#d97706' : '#dc2626');
+            badgeEl.style.background = isAhead ? '#16a34a' : (isMid ? '#f59e0b' : '#dc2626');
+            badgeEl.style.color      = '#fff';
         }
-        // ── Mirror to top KPI strip (legacy) ──
-        const kpiUnits = document.getElementById('dash-kpi-mtd-units');
-        if (kpiUnits) kpiUnits.textContent = Math.round(totalMTD);
-        const kpiPct = document.getElementById('dash-kpi-mtd-pct');
-        if (kpiPct) {
-            kpiPct.textContent = overallPct + '%';
-            kpiPct.style.color = overallPct >= 100 ? '#16a34a' : (overallPct >= 60 ? '#d97706' : '#dc2626');
-        }
-        const kpiSub = document.getElementById('dash-kpi-mtd-sub');
-        if (kpiSub) kpiSub.textContent = `${Math.round(totalMTD)} of ${totalMTDTgt} units`;
 
-        const barBlock = (actual, target, colorKey) => {
-            const isG = colorKey >= 100, isY = colorKey >= 60;
-            const col = isG ? '#16a34a' : (isY ? '#d97706' : '#dc2626');
-            const pct = target > 0 ? Math.min((actual / target) * 100, 100) : 0;
-            return { pct, col };
-        };
-
-        // ── Target resolver — source of truth is here, not the backend ──
-        const resolveTargets = (name) => {
-            const up = name.toUpperCase();
+        // Resolve targets helper
+        const resolveTargets = (cName) => {
+            if (companySales[cName].mtd_target && companySales[cName].ytd_target) {
+                return { mtd: companySales[cName].mtd_target, ytd: companySales[cName].ytd_target };
+            }
+            const up = cName.toUpperCase();
             if (up.includes('SINO') || up.includes('SINOPOWER'))     return { mtd: 16, ytd: 192 };
             if (up.includes('MACH') || up.includes('EXCHANGE'))       return { mtd: 18, ytd: 216 };
             return { mtd: 10, ytd: 120 }; // default
         };
 
-        // ── Populate per-company header cards ──
+        // Populate per-company header cards using fixed IDs in index.html
         const setCard = (pfx, actual, target, col) => {
             const pct = target > 0 ? Math.min(Math.round((actual / target) * 100), 999) : 0;
             const isG = pct >= 100, isY = pct >= 60;
@@ -5166,6 +5149,7 @@ window.OmnisDashboardV6 = class OmnisDashboardV6 {
             if (el(`${pfx}-bar`))  el(`${pfx}-bar`).style.width   = `${barW}%`;
             if (el(`${pfx}-note`)) el(`${pfx}-note`).textContent  = actual >= target ? '✓ Target hit!' : `Need ${target - Math.round(actual)} more`;
         };
+        
         companies.forEach(compName => {
             const c    = companySales[compName];
             const tgts = resolveTargets(compName);
@@ -5178,111 +5162,6 @@ window.OmnisDashboardV6 = class OmnisDashboardV6 {
                 setCard('dash-mxg-ytd', c.ytd || 0, tgts.ytd, '#1e3a5f');
             }
         });
-
-        cardsEl.innerHTML = companies.map(compName => {
-            const c           = companySales[compName];
-            const mtd         = c.mtd || 0;
-            const ytd         = c.ytd || 0;
-            const tgts        = resolveTargets(compName);
-            const mtdTarget   = tgts.mtd;
-            const ytdTarget   = tgts.ytd;
-            const daysElapsed = c.days_elapsed  || day;
-            const daysInMonth = c.days_in_month || 30;
-
-            // MTD calcs
-            const mtdPct     = mtdTarget > 0 ? Math.min((mtd / mtdTarget) * 100, 100) : 0;
-            const mtdPace    = daysElapsed > 0 ? Math.round((mtd / daysElapsed) * daysInMonth) : 0;
-            const mtdPacePct = mtdTarget > 0 ? Math.min((mtdPace / mtdTarget) * 100, 100) : 0;
-            const mtdVar     = mtd - Math.round((mtdTarget / daysInMonth) * daysElapsed);
-
-            // YTD calcs
-            const ytdPct        = ytdTarget > 0 ? Math.min((ytd / ytdTarget) * 100, 100) : 0;
-            const monthsElapsed = now.getMonth() + (day / daysInMonth);
-            const ytdExpected   = Math.round((ytdTarget / 12) * monthsElapsed);
-            const ytdVar        = ytd - ytdExpected;
-
-            // Colours
-            const mtdIsG = mtdPct >= 100, mtdIsY = mtdPct >= 60;
-            const mtdCol = mtdIsG ? '#16a34a' : (mtdIsY ? '#d97706' : '#dc2626');
-            const mtdBg  = mtdIsG ? '#f0fdf4' : (mtdIsY ? '#fffbeb' : '#fef2f2');
-            const mtdTxt = mtdIsG ? '#15803d' : (mtdIsY ? '#b45309' : '#b91c1c');
-
-            const ytdIsG = ytdPct >= 100, ytdIsY = ytdPct >= 60;
-            const ytdCol = ytdIsG ? '#16a34a' : (ytdIsY ? '#d97706' : '#dc2626');
-            const ytdBg  = ytdIsG ? '#f0fdf4' : (ytdIsY ? '#fffbeb' : '#fef2f2');
-            const ytdTxt = ytdIsG ? '#15803d' : (ytdIsY ? '#b45309' : '#b91c1c');
-
-            // Top 3 models
-            const topModels    = (c.breakdown || []).sort((a, b) => b.qty - a.qty).slice(0, 3);
-            const topModelHtml = topModels.length
-                ? topModels.map(m => `<span style="background:#f1f5f9;color:#475569;font-size:10px;font-weight:700;padding:2px 6px;border-radius:6px;">${m.model}: ${m.qty}</span>`).join(' ')
-                : `<span style="color:#94a3b8;font-size:10px;">No model detail</span>`;
-
-            // Compact callout helper
-            const callout = (actual, target, col, bg) =>
-                actual >= target
-                    ? `<span style="font-size:10px;font-weight:800;color:#15803d;background:#dcfce7;padding:1px 7px;border-radius:99px;">✓ Hit!</span>`
-                    : `<span style="font-size:10px;font-weight:700;color:${col};">Need <strong>${target - Math.round(actual)}</strong> more</span>`;
-
-            return `
-            <div style="background:#fff;border:1px solid #e2e8f0;border-radius:14px;padding:14px 16px;transition:box-shadow 0.2s,border-color 0.2s;overflow:hidden;min-width:0;"
-                 onmouseover="this.style.boxShadow='0 6px 20px rgba(0,0,0,0.07)';this.style.borderColor='#cbd5e1';"
-                 onmouseout="this.style.boxShadow='none';this.style.borderColor='#e2e8f0';">
-
-                <!-- Company name row -->
-                <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px;">
-                    <div style="font-size:13px;font-weight:800;color:#0f172a;display:flex;align-items:center;gap:7px;">
-                        <span style="width:7px;height:7px;border-radius:50%;background:#8b2219;flex-shrink:0;"></span>
-                        ${compName}
-                    </div>
-                    <span style="font-size:10px;font-weight:700;color:#64748b;background:#f1f5f9;padding:2px 8px;border-radius:6px;">Pace ${mtdPace}u/mo</span>
-                </div>
-
-                <!-- ── COMPACT MTD | YTD GRID ── -->
-                <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;min-width:0;">
-
-                    <!-- MTD -->
-                    <div style="border-radius:10px;padding:10px 12px;background:${mtdBg};border-top:2px solid ${mtdCol};">
-                        <div style="font-size:9px;font-weight:900;color:${mtdTxt};text-transform:uppercase;letter-spacing:0.1em;margin-bottom:5px;">MTD</div>
-                        <div style="display:flex;align-items:baseline;gap:3px;margin-bottom:1px;">
-                            <span style="font-size:26px;font-weight:900;color:#0f172a;line-height:1;letter-spacing:-0.03em;">${Math.round(mtd)}</span>
-                            <span style="font-size:11px;font-weight:600;color:#94a3b8;">/ ${mtdTarget}</span>
-                        </div>
-                        <div style="font-size:10px;color:#64748b;font-weight:500;margin-bottom:7px;">units this month</div>
-                        <div style="position:relative;height:5px;background:#e2e8f0;border-radius:99px;margin-bottom:6px;">
-                            <div style="position:absolute;top:0;left:0;height:100%;width:${mtdPacePct.toFixed(1)}%;background:${mtdCol}30;border-radius:99px;"></div>
-                            <div style="position:absolute;top:0;left:0;height:100%;width:${mtdPct.toFixed(1)}%;background:${mtdCol};border-radius:99px;box-shadow:0 1px 3px ${mtdCol}55;transition:width 0.8s ease;"></div>
-                        </div>
-                        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:5px;">
-                            <span style="font-size:14px;font-weight:900;color:${mtdTxt};">${Math.round(mtdPct)}%</span>
-                            <span style="font-size:9px;font-weight:700;color:${mtdVar >= 0 ? '#16a34a' : '#dc2626'};">${mtdVar >= 0 ? '+' : ''}${Math.round(mtdVar)} vs pace</span>
-                        </div>
-                        ${callout(mtd, mtdTarget, mtdCol, mtdBg)}
-                    </div>
-
-                    <!-- YTD -->
-                    <div style="border-radius:10px;padding:10px 12px;background:${ytdBg};border-top:2px solid ${ytdCol};">
-                        <div style="font-size:9px;font-weight:900;color:${ytdTxt};text-transform:uppercase;letter-spacing:0.1em;margin-bottom:5px;">YTD</div>
-                        <div style="display:flex;align-items:baseline;gap:3px;margin-bottom:1px;">
-                            <span style="font-size:26px;font-weight:900;color:#0f172a;line-height:1;letter-spacing:-0.03em;">${Math.round(ytd)}</span>
-                            <span style="font-size:11px;font-weight:600;color:#94a3b8;">/ ${ytdTarget}</span>
-                        </div>
-                        <div style="font-size:10px;color:#64748b;font-weight:500;margin-bottom:7px;">units this year</div>
-                        <div style="position:relative;height:5px;background:#e2e8f0;border-radius:99px;margin-bottom:6px;">
-                            <div style="position:absolute;top:0;left:0;height:100%;width:${ytdPct.toFixed(1)}%;background:${ytdCol};border-radius:99px;box-shadow:0 1px 3px ${ytdCol}55;transition:width 0.9s ease;"></div>
-                        </div>
-                        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:5px;">
-                            <span style="font-size:14px;font-weight:900;color:${ytdTxt};">${Math.round(ytdPct)}%</span>
-                            <span style="font-size:9px;font-weight:700;color:${ytdVar >= 0 ? '#16a34a' : '#dc2626'};">${ytdVar >= 0 ? '+' : ''}${Math.round(ytdVar)} vs exp.</span>
-                        </div>
-                        ${callout(ytd, ytdTarget, ytdCol, ytdBg)}
-                    </div>
-                </div>
-
-                <!-- Top models -->
-                <div style="display:flex;flex-wrap:wrap;gap:4px;margin-top:10px;">${topModelHtml}</div>
-            </div>`;
-        }).join('');
     }
 
     renderCompanyChart() {
@@ -5843,7 +5722,7 @@ window.OmnisDashboardV6 = class OmnisDashboardV6 {
         const html = `
             <div id="dash-generic-modal" style="
                 display:none; position:fixed; top:0; left:0; width:100%; height:100%;
-                background:rgba(0,0,0,0.5); z-index:10000; align-items:center; justify-content:center;
+                background:rgba(0,0,0,0.5); z-index:999999; align-items:center; justify-content:center;
                 backdrop-filter: blur(5px);
             ">
                 <div id="dash-modal-inner" style="

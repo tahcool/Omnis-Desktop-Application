@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 
 <head>
@@ -1773,7 +1773,7 @@
                 <div>
                     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px;">
                         <h3 style="margin: 0; font-size: 16px; font-weight: 800; color: var(--accent);">Critical Downtime Focus</h3>
-                        <button class="btn btn-secondary" onclick='document.querySelector("[data-view=breakdowns]").click()' style="font-size: 11px; padding: 8px 16px; font-weight: 700; background: transparent; border: 1px solid #e2e8f0; color: #64748b; border-radius: 6px;">View Full Log â†’</button>
+                        <button class="btn btn-secondary" onclick='document.querySelector("[data-view=breakdowns]").click()' style="font-size: 11px; padding: 8px 16px; font-weight: 700; background: transparent; border: 1px solid #e2e8f0; color: #64748b; border-radius: 6px;">View Full Log →</button>
                     </div>
                     <div id="critical-focus-list" style="display: flex; flex-direction: column; gap: 4px;">
                         <div style="text-align: center; padding: 20px; color: #94a3b8; font-size: 13px;">Analyzing downtime priorities...</div>
@@ -1836,7 +1836,7 @@
                     </div>
                     <div class="dbr-actions-area">
                         <button class="btn btn-new-bd">+ New BD</button>
-                        <button class="btn btn-secondary" style="background:#e2e8f0; font-weight:700;">ðŸ–¨ï¸ Print
+                        <button class="btn btn-secondary" style="background:#e2e8f0; font-weight:700;">🖨️ Print
                             PDF</button>
                         <div class="tag-black" id="dbr-kpi-efficiency">% Efficiency: Total: 0</div>
 
@@ -2030,7 +2030,7 @@
                     <h2 style="margin: 0;">Machine Readings / HMR</h2>
                     <button class="btn btn-primary" onclick="window.openHmrActivityReport()"
                         style="display: flex; align-items: center; gap: 8px; background: linear-gradient(135deg, #0ea5e9, #6366f1); border: none; padding: 10px 20px; font-weight: 700;">
-                        ðŸ“Š HMR Activity Report
+                        📊 HMR Activity Report
                     </button>
                 </div>
                 <div class="table-container">
@@ -2342,9 +2342,9 @@
             <div style="display: flex; flex: 1; overflow: hidden;">
                 <!-- Tab Navigation -->
                 <div style="width: 200px; background: #f8fafc; border-right: 1px solid #e2e8f0; padding: 20px 0;">
-                    <div class="settings-tab active" onclick="switchSettingsTab('email')" id="tab-email">ðŸ“§ Email Config</div>
-                    <div class="settings-tab" onclick="switchSettingsTab('licensing')" id="tab-licensing">ðŸ“œ Licensing</div>
-                    <div class="settings-tab" onclick="switchSettingsTab('about')" id="tab-about">â„¹ï¸ About System</div>
+                    <div class="settings-tab active" onclick="switchSettingsTab('email')" id="tab-email">📧 Email Config</div>
+                    <div class="settings-tab" onclick="switchSettingsTab('licensing')" id="tab-licensing">📜 Licensing</div>
+                    <div class="settings-tab" onclick="switchSettingsTab('about')" id="tab-about">ℹ️ About System</div>
                 </div>
 
                 <!-- Tab Content -->
@@ -2491,7 +2491,7 @@
                     const isGood = isLowerBetter ? current <= target : current >= target;
                     el.style.background = isGood ? 'rgba(16, 185, 129, 0.1)' : 'rgba(239, 68, 68, 0.1)';
                     el.style.color = isGood ? '#10b981' : '#ef4444';
-                    el.textContent = `${diff > 0 ? 'â†‘' : 'â†“'} ${Math.abs(diff)}%`;
+                    el.textContent = `${diff > 0 ? '↑' : '↓'} ${Math.abs(diff)}%`;
                 };
 
                 updateTrend('active', kpis.active_trucks || 0, 45, false); // Target 45 active
@@ -2660,14 +2660,14 @@
             container.innerHTML = `
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px;">
                     <div style="display: flex; align-items: center; gap: 12px;">
-                        <div style="width: 38px; height: 38px; background: #eff6ff; border-radius: 10px; display: flex; align-items: center; justify-content: center; color: #2563eb; font-size: 18px;">ðŸ“…</div>
+                        <div style="width: 38px; height: 38px; background: #eff6ff; border-radius: 10px; display: flex; align-items: center; justify-content: center; color: #2563eb; font-size: 18px;">📅</div>
                         <div>
                             <h4 style="margin: 0; font-size: 16px; font-weight: 800; color: #1e293b;">Automated Reporting Queue</h4>
                             <div style="font-size: 11px; font-weight: 700; color: #94a3b8; text-transform: uppercase; letter-spacing: 0.5px; margin-top: 2px;">Next 7 Days Forecast</div>
                         </div>
                     </div>
                     <div style="display: flex; align-items: center; gap: 16px;">
-                        <span style="font-size: 11px; font-weight: 700; color: #64748b;">${data.schedule[0].date} â€” ${data.schedule[6].date}</span>
+                        <span style="font-size: 11px; font-weight: 700; color: #64748b;">${data.schedule[0].date} — ${data.schedule[6].date}</span>
                         <button class="wa-link-btn" onclick="openWaLinkModal()">
                             <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M.057 24l1.687-6.163c-1.041-1.804-1.588-3.849-1.587-5.946.003-6.556 5.338-11.891 11.893-11.891 3.181.001 6.167 1.24 8.413 3.488 2.246 2.248 3.484 5.232 3.484 8.412-.003 6.557-5.338 11.892-11.893 11.892-1.997-.001-3.951-.5-5.688-1.448l-6.309 1.656zm6.224-3.82c1.516.903 3.136 1.379 4.809 1.38h.005c5.405 0 9.803-4.397 9.806-9.803.001-2.618-1.02-5.08-2.871-6.932-1.851-1.852-4.312-2.873-6.931-2.874-5.404 0-9.802 4.398-9.806 9.804-.001 1.688.439 3.334 1.274 4.79l-.97 3.541 3.633-.953-.05-.034z"/></svg>
                             WhatsApp Gateway
@@ -2855,7 +2855,7 @@
                     </div>
                     <div class="settings-form-group">
                         <label>Password</label>
-                        <input type="password" class="settings-input" id="set-mail-pass" placeholder="â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢">
+                        <input type="password" class="settings-input" id="set-mail-pass" placeholder="••••••••••••">
                     </div>
                     <p style="font-size: 11px; color: #64748b; margin-bottom: 20px;">Note: These settings update the <b>tabEmail Account</b> in the Frappe backend for autonomous report distribution.</p>
                     <div style="display: flex; gap: 12px;">
@@ -2867,7 +2867,7 @@
                 content.innerHTML = `
                     <h4 style="margin-bottom: 24px;">Software Licensing</h4>
                     <div class="about-card" style="border-left: 4px solid #10b981;">
-                        <div style="font-size: 12px; font-weight: 800; color: #10b981; margin-bottom: 8px;">âœ“ ENTERPRISE LICENSE ACTIVE</div>
+                        <div style="font-size: 12px; font-weight: 800; color: #10b981; margin-bottom: 8px;">✓ ENTERPRISE LICENSE ACTIVE</div>
                         <div style="font-size: 11px;">Licensed to: <b>Powerstar Zimbabwe</b></div>
                         <div style="font-size: 11px; opacity: 0.6;">Key: OMNIS-XXXX-XXXX-XXXX-XXXX</div>
                     </div>
@@ -2913,7 +2913,7 @@
 
                     <div style="margin-top: 32px; font-size: 11px; text-align: center; color: #94a3b8;">
                         Build ID: 20260415-PROD-OMNIS-ZIM<br>
-                        Â© 2026 Omnis Operational Intelligence.
+                        © 2026 Omnis Operational Intelligence.
                     </div>
                 `;
             }
@@ -2943,7 +2943,7 @@
                         payload: safePayload
                     });
                     
-                    statusEl.innerText = "âœ“ Settings Saved Successfully";
+                    statusEl.innerText = "✓ Settings Saved Successfully";
                     statusEl.style.color = "#10b981";
                     showToast("Email configuration updated.", "success");
                     
@@ -2978,14 +2978,14 @@
                 });
                 
                 if (res && res.message && res.message.status === "success") {
-                    statusEl.innerText = "âœ“ " + res.message.message;
+                    statusEl.innerText = "✓ " + res.message.message;
                     statusEl.style.color = "#10b981";
                 } else {
-                    statusEl.innerText = "âŒ " + (res.message ? res.message.message : "Connection Failed");
+                    statusEl.innerText = "❌ " + (res.message ? res.message.message : "Connection Failed");
                     statusEl.style.color = "#ef4444";
                 }
             } catch (err) {
-                statusEl.innerText = "âŒ Error: " + err.message;
+                statusEl.innerText = "❌ Error: " + err.message;
                 statusEl.style.color = "#ef4444";
             }
         };
@@ -3369,7 +3369,7 @@
                         <p style="font-size:13px; color:var(--text-muted);">Consolidated internal DBR report.</p>
                         <div style="display:flex; gap:8px;">
                             <button onclick="copyToClipboard('wa-textarea-internal')" class="btn btn-secondary" style="padding:4px 12px; font-size:12px;">Copy Text</button>
-                            <button onclick="sendWaInternal()" class="btn btn-wa" style="padding:4px 12px; font-size:12px; background:#25d366; color:#fff;">ðŸ“± Send WhatsApp</button>
+                            <button onclick="sendWaInternal()" class="btn btn-wa" style="padding:4px 12px; font-size:12px; background:#25d366; color:#fff;">📱 Send WhatsApp</button>
                         </div>
                     </div>
                     <textarea id="wa-textarea-internal" style="width:100%; height:300px; border:1px solid #cbd5e1; border-radius:8px; padding:12px; font-family:monospace; font-size:12px; resize:none;">${txt}</textarea>
@@ -3392,7 +3392,7 @@
                         <span style="font-weight:700;">${r.customer}</span>
                         <div style="display:flex; gap:8px;">
                             <button onclick="copyText('${r.text.replace(/\n/g, '\\n').replace(/'/g, "\\'")}')" class="tiny-btn btn-secondary">Copy</button>
-                            <button onclick="sendWaDirect('${r.text.replace(/\n/g, '\\n').replace(/'/g, "\\'")}')" class="tiny-btn btn-wa">ðŸ“± Send</button>
+                            <button onclick="sendWaDirect('${r.text.replace(/\n/g, '\\n').replace(/'/g, "\\'")}')" class="tiny-btn btn-wa">📱 Send</button>
                         </div>
                     </div>
                     <div class="wa-preview-text">${r.text}</div>
@@ -3484,7 +3484,7 @@
         }
 
         function formatDate(isoStr) {
-            if (!isoStr || isoStr === "0000-00-00") return "â€”";
+            if (!isoStr || isoStr === "0000-00-00") return "—";
             const d = new Date(isoStr);
             if (isNaN(d.getTime())) return isoStr;
             const day = d.getDate();
@@ -3562,7 +3562,7 @@
             map = L.map('map').setView([-17.8252, 31.0335], 7); // Zimbabwe center
 
             L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-                attribution: 'Â© OpenStreetMap contributors'
+                attribution: '© OpenStreetMap contributors'
             }).addTo(map);
 
             // Add markers
@@ -3747,7 +3747,7 @@
         <div class="modal wa-modal">
             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:24px;">
                 <h3>WhatsApp Report Distribution</h3>
-                <button class="btn btn-secondary" onclick="closeWhatsAppModal()" style="padding:8px 12px;">âœ•</button>
+                <button class="btn btn-secondary" onclick="closeWhatsAppModal()" style="padding:8px 12px;">✕</button>
             </div>
 
             <div class="wa-tabs">
@@ -3779,8 +3779,8 @@
             <div
                 style="padding: 18px 24px; background: linear-gradient(135deg, #0f172a, #1e293b); border-bottom: 1px solid #334155; display: flex; justify-content: space-between; align-items: center; flex-shrink: 0;">
                 <div>
-                    <div style="font-size: 19px; font-weight: 800; color: #f8fafc;">ðŸ“Š HMR Activity Report</div>
-                    <div style="font-size: 12px; color: #94a3b8; margin-top: 3px;">Track machine hours usage (Î” HMR)
+                    <div style="font-size: 19px; font-weight: 800; color: #f8fafc;">📊 HMR Activity Report</div>
+                    <div style="font-size: 12px; color: #94a3b8; margin-top: 3px;">Track machine hours usage (Δ HMR)
                         over a selected period</div>
                 </div>
                 <button onclick="closeHmrModal()"
@@ -3820,10 +3820,10 @@
                     </div>
                     <div style="display: flex; gap: 8px; flex-shrink: 0;">
                         <button onclick="runHmrReport()"
-                            style="background: linear-gradient(135deg, #0ea5e9, #6366f1); color: white; border: none; padding: 9px 18px; border-radius: 8px; font-size: 12px; font-weight: 700; cursor: pointer;">ðŸ”
+                            style="background: linear-gradient(135deg, #0ea5e9, #6366f1); color: white; border: none; padding: 9px 18px; border-radius: 8px; font-size: 12px; font-weight: 700; cursor: pointer;">🔍
                             Generate</button>
                         <button onclick="exportHmrCsv()"
-                            style="background: #1e293b; color: #94a3b8; border: 1px solid #334155; padding: 9px 12px; border-radius: 8px; font-size: 12px; font-weight: 600; cursor: pointer;">â¬‡ï¸
+                            style="background: #1e293b; color: #94a3b8; border: 1px solid #334155; padding: 9px 12px; border-radius: 8px; font-size: 12px; font-weight: 600; cursor: pointer;">⬇️
                             CSV</button>
                     </div>
                 </div>
@@ -3854,7 +3854,7 @@
                                 <th style="text-align: center;">Logs</th>
                                 <th style="text-align: right;">HMR Start</th>
                                 <th style="text-align: right;">HMR End</th>
-                                <th style="text-align: right; background: rgba(56, 189, 248, 0.1);">Î” HMR</th>
+                                <th style="text-align: right; background: rgba(56, 189, 248, 0.1);">Δ HMR</th>
                                 <th>First Date</th>
                                 <th>Last Date</th>
                                 <th>Loggers</th>
@@ -3934,7 +3934,7 @@
                 table.style.display = 'table';
                 summary.style.display = 'block';
 
-                document.getElementById('sum-period').innerText = `${df} â†’ ${dt}`;
+                document.getElementById('sum-period').innerText = `${df} → ${dt}`;
                 document.getElementById('sum-total').innerText = rows.length;
 
                 tbody.innerHTML = rows.map((r, i) => {
@@ -4035,12 +4035,12 @@
                 let btnsHtml = '';
                 if (filterCustomer) {
                     btnsHtml += `
-                        <button class="btn btn-secondary" onclick="renderWwr(currentWwrData)" style="padding: 8px 16px; background: #e2e8f0; color: #1e293b; border: 1px solid #cbd5e1; font-weight:700;">â¬…ï¸ Back to Full Report</button>
-                        <button class="btn" onclick="showEmailModal('${filterCustomer.replace(/'/g, "\\'")}')" style="background: #0f172a; color: white; border: none; padding: 8px 16px; border-radius: 6px; font-weight:700;">ðŸ“§ Email This Report</button>
+                        <button class="btn btn-secondary" onclick="renderWwr(currentWwrData)" style="padding: 8px 16px; background: #e2e8f0; color: #1e293b; border: 1px solid #cbd5e1; font-weight:700;">⬅️ Back to Full Report</button>
+                        <button class="btn" onclick="showEmailModal('${filterCustomer.replace(/'/g, "\\'")}')" style="background: #0f172a; color: white; border: none; padding: 8px 16px; border-radius: 6px; font-weight:700;">📧 Email This Report</button>
                     `;
                 }
                 btnsHtml += `
-                    <button class="btn btn-primary" onclick="printWwr(${filterCustomer ? `'${filterCustomer.replace(/'/g, "\\'")}'` : ''})" style="background: #8b2219; border: none; box-shadow: 0 4px 6px -1px rgba(139, 34, 25, 0.2);">ðŸ–¨ï¸ Print ${filterCustomer ? 'Individual' : 'Full'} Report</button>
+                    <button class="btn btn-primary" onclick="printWwr(${filterCustomer ? `'${filterCustomer.replace(/'/g, "\\'")}'` : ''})" style="background: #8b2219; border: none; box-shadow: 0 4px 6px -1px rgba(139, 34, 25, 0.2);">🖨️ Print ${filterCustomer ? 'Individual' : 'Full'} Report</button>
                     <button class="btn btn-secondary" onclick="closeWwrModal()" style="padding: 8px 16px; background: #f1f5f9; color: #475569; border: 1px solid #e2e8f0;">Close</button>
                 `;
                 headerBtns.innerHTML = btnsHtml;
@@ -4104,7 +4104,7 @@
                                                     <td rowspan="${items.length}" class="customer-panel">
                                                         <div style="font-weight: 900; color: #0f172a; font-size: 14px; margin-bottom: 8px; line-height: 1.2;">${customer}</div>
                                                         <div style="font-size: 10px; color: #64748b; margin-bottom: 16px; font-weight: 500;">${items.length} machine${items.length > 1 ? 's' : ''}</div>
-                                                        ${!filterCustomer ? `<button onclick="renderWwr(currentWwrData, '${customer.replace(/'/g, "\\'")}')" style="background: #8b2219; color: white; border: none; padding: 8px 14px; border-radius: 8px; font-size: 11px; cursor: pointer; font-weight: 700; transition: all 0.2s; box-shadow: 0 4px 6px rgba(139, 34, 25, 0.2); width: 140px; margin: 0 auto;">ðŸ‘ï¸ View & Email</button>` : ''}
+                                                        ${!filterCustomer ? `<button onclick="renderWwr(currentWwrData, '${customer.replace(/'/g, "\\'")}')" style="background: #8b2219; color: white; border: none; padding: 8px 14px; border-radius: 8px; font-size: 11px; cursor: pointer; font-weight: 700; transition: all 0.2s; box-shadow: 0 4px 6px rgba(139, 34, 25, 0.2); width: 140px; margin: 0 auto;">👁️ View & Email</button>` : ''}
                                                     </td>
                                                 ` : ''}
                                                 <td>
@@ -4249,11 +4249,11 @@
                                             </td>
                                             <td style="font-size: 10px;">${r.Date}</td>
                                             <td style="font-size: 9px; color: #475569;">${r.description}</td>
-                                            <td class="text-red">${r.Ted === 'â€”' ? 'TBA' : r.Ted}</td>
-                                            <td>${r.Red === 'â€”' ? '' : r.Red}</td>
+                                            <td class="text-red">${r.Ted === '—' ? 'TBA' : r.Ted}</td>
+                                            <td>${r.Red === '—' ? '' : r.Red}</td>
                                             <td style="font-size: 9px;">${r.status}</td>
                                             <td style="text-align: center; font-weight: 700;">${r["Days on BD"]}</td>
-                                            <td class="text-blue">${r.ETA === 'â€”' ? 'TBA' : r.ETA}</td>
+                                            <td class="text-blue">${r.ETA === '—' ? 'TBA' : r.ETA}</td>
                                         </tr>
                                     `).join('');
                     }).join('');
@@ -4318,7 +4318,7 @@
                 },
                 callback: function (r) {
                     if (r.message && r.message.status === "success") {
-                        statusDiv.innerHTML = '<span style="color: #10b981;">âœ… Sent successfully!</span>';
+                        statusDiv.innerHTML = '<span style="color: #10b981;">✅ Sent successfully!</span>';
                         setTimeout(closeWwrEmailModal, 2000);
                     } else {
                         statusDiv.innerHTML = `<span style="color: #ef4444;">Error: ${r.message ? r.message.message : 'Failed to send'}</span>`;
@@ -4335,7 +4335,7 @@
             
             body.innerHTML = `
                 <div style="padding: 60px; text-align: center; max-width: 400px; margin: 0 auto;">
-                    <div style="font-size: 48px; margin-bottom: 24px;">ðŸ“‹</div>
+                    <div style="font-size: 48px; margin-bottom: 24px;">📋</div>
                     <h3 style="margin-bottom: 8px; color: #1e293b;">Select GDR Region</h3>
                     <p style="color: #64748b; font-size: 14px; margin-bottom: 32px;">Please choose the region to generate the General Defect Report for.</p>
                     
@@ -4375,8 +4375,8 @@
             const headerBtns = document.querySelector('.mdr-modal .modal-header .actions');
             if (headerBtns) {
                 headerBtns.innerHTML = `
-                    <button class="btn btn-secondary" onclick="generateGDR()" style="background: #f1f5f9; color: #475569; border: 1px solid #e2e8f0; font-weight: 700;">ðŸ”„ Switch Region</button>
-                    <button class="btn btn-primary" onclick="printGDR('${region}')" style="background: #8b2219; border: none; box-shadow: 0 4px 6px -1px rgba(139, 34, 25, 0.2);">ðŸ–¨ï¸ Print Report</button>
+                    <button class="btn btn-secondary" onclick="generateGDR()" style="background: #f1f5f9; color: #475569; border: 1px solid #e2e8f0; font-weight: 700;">🔄 Switch Region</button>
+                    <button class="btn btn-primary" onclick="printGDR('${region}')" style="background: #8b2219; border: none; box-shadow: 0 4px 6px -1px rgba(139, 34, 25, 0.2);">🖨️ Print Report</button>
                     <button class="btn btn-secondary" onclick="closeMdrModal()" style="padding: 8px 16px; background: #f1f5f9; color: #475569; border: 1px solid #e2e8f0;">Close</button>
                 `;
             }
@@ -4531,7 +4531,7 @@
             // Show Region Selector First if not set or just as default entry
             body.innerHTML = `
                 <div style="padding: 60px; text-align: center; max-width: 400px; margin: 0 auto;">
-                    <div style="font-size: 48px; margin-bottom: 24px;">ðŸ“Š</div>
+                    <div style="font-size: 48px; margin-bottom: 24px;">📊</div>
                     <h3 style="margin-bottom: 8px; color: #1e293b;">Select Report Region</h3>
                     <p style="color: #64748b; font-size: 14px; margin-bottom: 32px;">Please choose the region to generate the Major Defects Report for.</p>
                     
@@ -4573,8 +4573,8 @@
             const headerBtns = document.querySelector('.mdr-modal .modal-header .actions');
             if (headerBtns) {
                 headerBtns.innerHTML = `
-                    <button class="btn btn-secondary" onclick="generateMDR()" style="background: #f1f5f9; color: #475569; border: 1px solid #e2e8f0; font-weight: 700;">ðŸ”„ Switch Region</button>
-                    <button class="btn btn-primary" onclick="printMdr()" style="background: #8b2219; border: none; box-shadow: 0 4px 6px -1px rgba(139, 34, 25, 0.2);">ðŸ–¨ï¸ Print Report</button>
+                    <button class="btn btn-secondary" onclick="generateMDR()" style="background: #f1f5f9; color: #475569; border: 1px solid #e2e8f0; font-weight: 700;">🔄 Switch Region</button>
+                    <button class="btn btn-primary" onclick="printMdr()" style="background: #8b2219; border: none; box-shadow: 0 4px 6px -1px rgba(139, 34, 25, 0.2);">🖨️ Print Report</button>
                     <button class="btn btn-secondary" onclick="closeMdrModal()" style="padding: 8px 16px; background: #f1f5f9; color: #475569; border: 1px solid #e2e8f0;">Close</button>
                 `;
             }
@@ -4705,7 +4705,7 @@
             <div class="modal-header"
                 style="padding: 18px 24px; background: #f8fafc; border-bottom: 1px solid #e2e8f0; display: flex; justify-content: space-between; align-items: center; flex-shrink: 0;">
                 <h3 style="margin:0; color: #0f172a; font-weight: 800; display: flex; align-items: center; gap: 10px;">
-                    <span style="color: #8b2219;">ðŸ“‹</span> Weekly Workshop Report Preview
+                    <span style="color: #8b2219;">📋</span> Weekly Workshop Report Preview
                 </h3>
                 <div class="actions" style="display: flex; gap: 12px;">
                     <!-- Actions dynamically injected by renderWwr -->
@@ -4724,7 +4724,7 @@
             <div class="modal-header"
                 style="padding: 18px 24px; background: #f8fafc; border-bottom: 1px solid #e2e8f0; display: flex; justify-content: space-between; align-items: center; flex-shrink: 0;">
                 <h3 style="margin:0; color: #0f172a; font-weight: 800; display: flex; align-items: center; gap: 10px;">
-                    <span style="color: #8b2219;">ðŸ“Š</span> Major Defects Report Preview
+                    <span style="color: #8b2219;">📊</span> Major Defects Report Preview
                 </h3>
                 <div class="actions" style="display: flex; gap: 12px;">
                     <!-- Actions dynamically injected by renderMdr -->
@@ -4739,7 +4739,7 @@
     <div id="wwr-email-modal-overlay" class="modal-overlay" style="z-index: 2500;">
         <div class="modal" style="max-width: 450px; background: #ffffff; border-radius: 16px; border: 1px solid #e2e8f0; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.5);">
             <div style="padding: 20px 24px; border-bottom: 1px solid #e2e8f0; display: flex; justify-content: space-between; align-items: center;">
-                <h4 style="margin:0; color: #0f172a; font-weight: 800;">ðŸ“§ Email Report</h4>
+                <h4 style="margin:0; color: #0f172a; font-weight: 800;">📧 Email Report</h4>
                 <button class="btn-close" onclick="closeWwrEmailModal()" style="background: none; border: none; font-size: 20px; cursor: pointer; color: #94a3b8;">&times;</button>
             </div>
             <div style="padding: 24px;">
@@ -4760,13 +4760,13 @@
     <!-- Security Tip Modal -->
     <div class="modal-overlay" id="security-tip-modal" style="z-index: 100000;">
         <div class="modal" style="max-width: 500px; text-align: center; border-top: 4px solid #3b82f6;">
-            <div style="font-size: 48px; margin-bottom: 16px;">ðŸ›¡ï¸</div>
+            <div style="font-size: 48px; margin-bottom: 16px;">🛡️</div>
             <h3 style="margin-bottom: 8px;">Security First: Daily Reminder</h3>
             <p style="font-size: 13px; color: #64748b; margin-bottom: 24px; text-align: left;">
-                â€¢ <strong>Never Share Credentials:</strong> Your login details are personal. Support will never ask for your password.<br><br>
-                â€¢ <strong>Verify Links:</strong> Double-check URLs before entering sensitive data.<br><br>
-                â€¢ <strong>Lock Your Screen:</strong> Always lock your computer when stepping away.<br><br>
-                â€¢ <strong>Report Suspicious Activity:</strong> If you notice unusual system behavior, contact the IT desk immediately.
+                • <strong>Never Share Credentials:</strong> Your login details are personal. Support will never ask for your password.<br><br>
+                • <strong>Verify Links:</strong> Double-check URLs before entering sensitive data.<br><br>
+                • <strong>Lock Your Screen:</strong> Always lock your computer when stepping away.<br><br>
+                • <strong>Report Suspicious Activity:</strong> If you notice unusual system behavior, contact the IT desk immediately.
             </p>
             <button class="btn btn-primary" style="width: 100%; background: #3b82f6; border: none;" onclick="closeSecurityTip()">I understand</button>
         </div>

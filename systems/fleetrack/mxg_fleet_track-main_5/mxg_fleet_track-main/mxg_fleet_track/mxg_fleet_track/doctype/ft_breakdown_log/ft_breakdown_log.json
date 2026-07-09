@@ -135,7 +135,7 @@
    "fetch_from": "machine.fleetrack_managed",
    "fieldname": "fleetrack_managed",
    "fieldtype": "Select",
-   "label": "On Fleetrack&trade;?",
+   "label": "On Fleetrack™?",
    "options": "No\nYes",
    "read_only": 1
   },

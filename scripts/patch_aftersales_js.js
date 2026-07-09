@@ -139,7 +139,7 @@ const printFunc = `    // ── Print Aftersales Form ──
         };
 
         const drawCheck = (val) => {
-            const checked = val === 'Yes' ? 'X' : '&nbsp;';
+            const checked = val === 'Yes' ? 'X' : ' ';
             return \`<div style="width: 30px; height: 16px; border: 2px solid #000; display: inline-block; text-align: center; line-height: 14px; font-weight: bold; font-family: monospace;">\${checked}</div>\`;
         };
 

@@ -412,7 +412,7 @@
    "default": "No",
    "fieldname": "fleetrack_managed",
    "fieldtype": "Select",
-   "label": "On Fleetrack&trade;?",
+   "label": "On Fleetrack™?",
    "options": "No\nYes",
    "read_only_depends_on": "eval:!doc.name",
    "reqd": 1

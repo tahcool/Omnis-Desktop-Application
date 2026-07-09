@@ -396,7 +396,7 @@ def _send_edit_field_picker(docname, chat_id):
     _send_list(
         to=chat_id,
         header="Edit Breakdown fields",
-        body=f"Choose which field you’d like to edit for Breakdown *{docname}*.",
+        body=f"Choose which field you'd like to edit for Breakdown *{docname}*.",
         footer="Pick a field to update.",
         sections=sections,
         label="Select field to edit",

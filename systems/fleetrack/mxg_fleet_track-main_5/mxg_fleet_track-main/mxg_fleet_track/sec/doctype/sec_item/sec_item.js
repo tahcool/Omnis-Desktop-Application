@@ -13,7 +13,7 @@ frappe.ui.form.on('SEC Item', {
 
         if (frm.doc.creation) {
             frm.page.set_title(`${frm.doc.component_name}`);
-            $("#page-SEC\\ Item div.ellipsis.sub-heading.text-muted").html(`[${frm.doc.ref}] &mdash; ${frm.doc.part_no}`);
+            $("#page-SEC\\ Item div.ellipsis.sub-heading.text-muted").html(`[${frm.doc.ref}] — ${frm.doc.part_no}`);
 
             frm.add_custom_button(__('&plus; <b>Recon. & Repair</b> Log'), function () {
                 let d = new frappe.ui.Dialog({

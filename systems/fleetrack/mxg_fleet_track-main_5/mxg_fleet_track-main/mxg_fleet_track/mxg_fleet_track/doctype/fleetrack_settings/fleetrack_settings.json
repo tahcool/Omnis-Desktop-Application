@@ -43,7 +43,7 @@
    "fieldname": "send_ft_report_every",
    "fieldtype": "Select",
    "in_list_view": 1,
-   "label": "Send Fleetrack &trade; Report every",
+   "label": "Send Fleetrack ™ Report every",
    "options": "Monday\nTuesday\nWednesday\nThursday\nFriday",
    "reqd": 1
   },

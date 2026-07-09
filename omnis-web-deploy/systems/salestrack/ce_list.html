@@ -442,7 +442,7 @@
 
       if (!navigator.onLine) {
         setSync("offline");
-        metaSub.textContent = "Offline. Connect to the internet to load CE’s.";
+        metaSub.textContent = "Offline. Connect to the internet to load CE's.";
         body.innerHTML = "<tr><td colspan='8' class='danger'>You are offline.</td></tr>";
         return;
       }
@@ -485,7 +485,7 @@
         hasMore = !!msg.has_more;
 
         if (!rows.length) {
-          body.innerHTML = "<tr><td colspan='8' class='muted'>No CE’s found.</td></tr>";
+          body.innerHTML = "<tr><td colspan='8' class='muted'>No CE's found.</td></tr>";
           info.textContent = "No records";
           prevBtn.disabled = offset === 0;
           nextBtn.disabled = true;
@@ -539,7 +539,7 @@
         setSync("ready");
         console.error(e);
         err.innerHTML = "<span class='danger'>Error:</span> " + escapeHtml(e.message || String(e));
-        body.innerHTML = "<tr><td colspan='8' class='danger'>Failed to load CE’s.</td></tr>";
+        body.innerHTML = "<tr><td colspan='8' class='danger'>Failed to load CE's.</td></tr>";
         info.textContent = "Error";
         prevBtn.disabled = offset === 0;
         nextBtn.disabled = true;

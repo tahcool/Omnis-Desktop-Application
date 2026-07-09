@@ -1110,14 +1110,88 @@ ipcMain.handle('supabase:signIn', async (event, { email, password }) => {
   try {
     const { data, error } = await supabase.auth.signInWithPassword({ email, password });
     if (error) return { ok: false, error: error.message };
+    
+    let is_admin = false;
+    let systems = [];
+    try {
+      const { data: accessData } = await supabase
+        .from('user_system_access')
+        .select('is_admin, systems')
+        .eq('user_id', data.user.id)
+        .single();
+      
+      if (accessData) {
+        is_admin = accessData.is_admin;
+        systems = accessData.systems;
+      }
+    } catch(err) {
+      console.warn("Could not fetch user access:", err.message);
+    }
+
     return {
       ok: true,
-      user: { id: data.user.id, email: data.user.email, role: data.user.role },
+      user: { id: data.user.id, email: data.user.email, role: data.user.role, is_admin, systems },
       access_token: data.session.access_token,
       refresh_token: data.session.refresh_token,
       expires_at: data.session.expires_at,
     };
   } catch (e) {
+    return { ok: false, error: e.message };
+  }
+});
+
+// 🔐 Admin: Get all users with their access levels
+ipcMain.handle('supabase:getUsers', async () => {
+  try {
+    // Requires service_role key to list auth users
+    const { data: authData, error: authError } = await supabase.auth.admin.listUsers();
+    if (authError) return { ok: false, error: authError.message };
+    
+    const { data: accessData, error: accessError } = await supabase.from('user_system_access').select('*');
+    if (accessError) return { ok: false, error: accessError.message };
+
+    const users = authData.users.map(u => {
+      const access = accessData.find(a => a.user_id === u.id) || { is_admin: false, systems: [] };
+      return { id: u.id, email: u.email, is_admin: access.is_admin, systems: access.systems };
+    });
+    return { ok: true, users };
+  } catch (e) {
+    return { ok: false, error: e.message };
+  }
+});
+
+// 🔐 Admin: Create a new user
+ipcMain.handle('supabase:createUser', async (event, { email, password, is_admin, systems }) => {
+  try {
+    const { data: authData, error: authError } = await supabase.auth.admin.createUser({
+      email,
+      password,
+      email_confirm: true
+    });
+    if (authError) return { ok: false, error: authError.message };
+    
+    // The trigger might have created a row, so we UPDATE it, or insert if not exists
+    const { error: upsertError } = await supabase
+      .from('user_system_access')
+      .upsert({ user_id: authData.user.id, is_admin, systems }, { onConflict: 'user_id' });
+    
+    if (upsertError) return { ok: false, error: upsertError.message };
+    
+    return { ok: true, user: authData.user };
+  } catch(e) {
+    return { ok: false, error: e.message };
+  }
+});
+
+// 🔐 Admin: Update user access
+ipcMain.handle('supabase:updateUserAccess', async (event, { user_id, is_admin, systems }) => {
+  try {
+    const { error } = await supabase
+      .from('user_system_access')
+      .upsert({ user_id, is_admin, systems }, { onConflict: 'user_id' });
+    if (error) return { ok: false, error: error.message };
+    return { ok: true };
+  } catch(e) {
     return { ok: false, error: e.message };
   }
 });

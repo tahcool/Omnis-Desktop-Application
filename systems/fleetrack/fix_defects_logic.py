@@ -56,7 +56,7 @@ new_list_logic = """
 c = re.sub(r'async function loadFtDefects\(\) \{[\s\S]*?renderDefectsTable\(FT_DEFECTS_DATA\);[\s\S]*?\} catch \(e\) \{[\s\S]*?\}[\s\S]*?\}', new_list_logic.strip(), c, count=1)
 
 # 3. Update saveDefect logic
-# In modal_search.txt, the save logic was inside a function, let's find it. It's likely sync function submitDefectModal or something?
+# In modal_search.txt, the save logic was inside a function, let's find it. It's likely sync function submitDefectModal or something?
 # Actually, the button has onclick="saveDefect()". No wait, let's look for const id = document.getElementById("defect-id").value;
 new_save_logic = """
       showToast("Saving...", "info", 1000);

@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 
 <head>
@@ -8,7 +8,7 @@
   <script src="../../supabase-web-bridge.js"></script>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Group Accounts â€“ Omnis</title>
+  <title>Group Accounts – Omnis</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;850&display=swap" rel="stylesheet">
@@ -185,19 +185,19 @@
       <div class="nav-list">
         <div class="nav-section-title">Main</div>
         <div class="nav-item active" onclick="switchView('calendar')">
-          <span>ðŸ“…</span>
+          <span>📅</span>
           <span>Reporting Calendar</span>
         </div>
         <div class="nav-item" onclick="switchView('submitted-reports')">
-          <span>ðŸ“„</span>
+          <span>📄</span>
           <span>Submitted Reports</span>
         </div>
         <div class="nav-item" onclick="switchView('purchase-order')">
-          <span>ðŸ›’</span>
+          <span>🛒</span>
           <span>Submit Order</span>
         </div>
         <div class="nav-item" onclick="switchView('leave-days')">
-          <span>âœˆï¸</span>
+          <span>✈️</span>
           <span>Leave Days</span>
         </div>
       </div>
@@ -211,11 +211,11 @@
           <span id="user-name" style="font-size:13px; font-weight:600;">User</span>
         </div>
         <div class="nav-item" onclick="openSettingsModal()">
-          <span>âš™ï¸</span>
+          <span>⚙️</span>
           <span>Settings</span>
         </div>
         <div class="nav-item" id="logout-btn">
-          <span>ðŸšª</span>
+          <span>🚪</span>
           <span>Logout</span>
         </div>
       </div>
@@ -256,8 +256,8 @@
           <div class="fin-cal-kpis">
             <div class="fin-cal-kpi-card">
               <div class="fin-cal-kpi-label">Next Report Due</div>
-              <div class="fin-cal-kpi-value fin-kpi-next-title">â€“</div>
-              <div class="fin-cal-kpi-sub fin-kpi-next-date">â€“</div>
+              <div class="fin-cal-kpi-value fin-kpi-next-title">–</div>
+              <div class="fin-cal-kpi-sub fin-kpi-next-date">–</div>
             </div>
             <div class="fin-cal-kpi-card">
               <div class="fin-cal-kpi-label">Reports This Week</div>
@@ -281,7 +281,7 @@
             <div class="fin-cal-left">
               <div class="fin-cal-note">
                 * Fixed due dates that fall on a weekend, Zimbabwe public holidays, or
-                the annual shutdown (19 Dec â€“ 12 Jan) are moved to the previous working
+                the annual shutdown (19 Dec – 12 Jan) are moved to the previous working
                 day. You can drag items to adjust dates, or click an item to edit its
                 text.
               </div>
@@ -826,7 +826,7 @@
       let html = '';
       reports.forEach(r => {
         const isOverdue = r.status === 'Overdue' || r.status === 'Pending';
-        const icon = isOverdue ? 'âš ï¸' : 'âœ…';
+        const icon = isOverdue ? '⚠️' : '✅';
         const statusColor = isOverdue ? '#e11d48' : '#166534';
         const statusBg = isOverdue ? '#fee2e2' : '#dcfce7';
         const flashClass = isOverdue ? 'fin-flash-pending' : '';

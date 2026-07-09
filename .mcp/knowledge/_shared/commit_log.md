@@ -65,3 +65,25 @@
   Files: .env,.gitignore,check.js,check2.js,check3.js,check_all_tables.js,check_count.js,check_cron.js,check_cust.js,check_customers.js,check_email_queue.js,check_exec_sql.js,check_gen_id.js,check_guesses.js,check_items.js,check_items_count.js,check_products.js,check_q_cols.js,check_q_fup.js,check_q_items.js,
 - `a65012c` 2026-07-09 [supabase-migration] Security fix: rotate compromised Supabase service key, configure dotenv
   Files: .gitignore,check.js,check2.js,check3.js,check_all_tables.js,check_count.js,check_cron.js,check_cust.js,check_customers.js,check_email_queue.js,check_exec_sql.js,check_gen_id.js,check_guesses.js,check_items.js,check_items_count.js,check_products.js,check_q_cols.js,check_q_fup.js,check_q_items.js,check_schema.js,
+- `9f4d4b1` 2026-07-09 [supabase-migration] UI: Add glassmorphism to KPI cards and align Order Tracking with system theme
+  Files: .mcp/knowledge/_shared/commit_log.md,omnis_dashboard.py,systems/salestrack/index.html,
+- `3a94db0` 2026-07-09 [supabase-migration] Bump version to 4.2.1 and fix tracking order bugs
+  Files: omnis-web-deploy/systems/salestrack/dashboard_logic.js,omnis_dashboard.py,package.json,systems/salestrack/dashboard_logic.js,
+- `1d19f0a` 2026-07-09 [supabase-migration] Fix supabaseKey is required crash in production
+  Files: main.js,package.json,
+- `6e6ea76` 2026-07-09 [supabase-migration] Fix supabaseKey is required crash in production
+  Files: main.js,package.json,
+- `ff08f2e` 2026-07-09 [supabase-migration] Fix supabaseKey error in email-manager in production
+  Files: lib/email-manager.js,package.json,
+- `f60194d` 2026-07-09 [supabase-migration] feat: sync email cc recipients globally using Supabase omnis_app_settings
+  Files: omnis-web-deploy/systems/salestrack/dashboard_logic.js,supabase/Supabase_Phase10_Settings.sql,systems/salestrack/dashboard_logic.js,
+- `9163b17` 2026-07-09 [supabase-migration] chore: bump version to 4.2.4 for settings fix
+  Files: package.json,
+- `701d215` 2026-07-09 [supabase-migration] chore: release v4.2.5
+  Files: package.json,systems/salestrack/index.html,systems/salestrack/timeline_logic.js,
+- `ca5f0bf` 2026-07-09 [supabase-migration] UI: Fix kanban overlapping frame and update column header shades
+  Files: systems/salestrack/index.html,
+- `91b7dcd` 2026-07-09 [supabase-migration] chore: downgrade electron-builder to fix esm build error
+  Files: package-lock.json,package.json,
+- `65d2e77` 2026-07-09 [supabase-migration] Restore point: Before adding Admin Accounts and RBAC
+  Files: .agents/AGENTS.md,.env,.mcp/knowledge/_shared/commit_log.md,add_kanban_filter.py,fix_init_email.js,fix_scripts.py,kanban_toggle.py,kanban_toggle_regex.py,landing/index.html,landing/script.js,omnis-web-deploy/index.html,omnis-web-deploy/supabase-min.js,omnis-web-deploy/systems/SPE/index.html,omnis-web-deploy/systems/fleetrack/index.html,omnis-web-deploy/systems/group_accounts/index.html,omnis-web-deploy/systems/powertrack/dashboard.html,omnis-web-deploy/systems/powertrack/powertrack_index.html,omnis-web-deploy/systems/salestrack/ce_list.html,omnis-web-deploy/systems/salestrack/dashboard_logic.js,omnis-web-deploy/systems/salestrack/index.html,
