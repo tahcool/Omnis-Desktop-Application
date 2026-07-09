@@ -4365,7 +4365,7 @@ def get_omnis_group_sales_kpi(payload=None, **kwargs):
             "Group Sales",
             filters=filters,
             or_filters=or_filters,
-            fields=["name", "company", "order_date", "qty", "salesperson", "model", "customer"]
+            fields=["name", "company", "order_date", "qty", "salesperson", "model", "customer", "sector"]
         )
     finally:
         frappe.set_user(previous_user)
@@ -4378,6 +4378,7 @@ def get_omnis_group_sales_kpi(payload=None, **kwargs):
     
     sales_mtd = {} # name -> qty
     sales_ytd = {} # name -> qty
+    sector_counts = {} # sector -> qty
 
     current_month_start = getdate(s_this_month)
 
@@ -4386,6 +4387,7 @@ def get_omnis_group_sales_kpi(payload=None, **kwargs):
         odate = getdate(r.order_date)
         company = (r.company or "").strip()
         person = (r.salesperson or "").strip()
+        sector = (r.sector or "").strip()
 
         # Company splits
         if "Machinery Exchange" in company:
@@ -4402,6 +4404,10 @@ def get_omnis_group_sales_kpi(payload=None, **kwargs):
             sales_ytd[person] = sales_ytd.get(person, 0) + qty
             if odate >= current_month_start:
                 sales_mtd[person] = sales_mtd.get(person, 0) + qty
+                
+        # Sector stats
+        if sector:
+            sector_counts[sector] = sector_counts.get(sector, 0) + qty
 
     # Targets
     target_me_mo = 12
@@ -4417,6 +4423,7 @@ def get_omnis_group_sales_kpi(payload=None, **kwargs):
 
     top_mtd = get_top(sales_mtd)
     top_ytd = get_top(sales_ytd)
+    top_sector = max(sector_counts, key=sector_counts.get) if sector_counts else "-"
 
     # Calculate general aggregates
     sales_mtd_total = me_mtd + sp_mtd
@@ -4445,6 +4452,8 @@ def get_omnis_group_sales_kpi(payload=None, **kwargs):
             "sales_ytd": sales_ytd_total,
             "active_dealers": active_customers,
             "top_model": top_model,
+            "top_sector": top_sector,
+            "top_salesperson": top_ytd["name"],
             
             # New split fields
             "me_mtd": {"actual": me_mtd, "target": target_me_mo, "var": me_mtd - target_me_mo},

@@ -60,3 +60,8 @@
 \n## 2026-06-26
 - `f437133` 2026-06-26 [supabase-migration] restore-point: Training Library overlay fully working - navbar z-index fix, body.appendChild, dynamic nav height, null guards in training_logic.js
   Files: .gemini/patch_present_btn.py,.mcp/knowledge/_shared/commit_log.md,check_count.js,landing/index.html,landing/script.js,landing/style.css,systems/salestrack/index.html,systems/salestrack/tmp_marketing.js,systems/salestrack/training_library.js,systems/salestrack/training_logic.js,update_db.js,
+\n## 2026-07-09
+- `b7501f1` 2026-07-09 [supabase-migration] Security fix: rotate compromised Supabase service key, configure dotenv
+  Files: .env,.gitignore,check.js,check2.js,check3.js,check_all_tables.js,check_count.js,check_cron.js,check_cust.js,check_customers.js,check_email_queue.js,check_exec_sql.js,check_gen_id.js,check_guesses.js,check_items.js,check_items_count.js,check_products.js,check_q_cols.js,check_q_fup.js,check_q_items.js,
+- `a65012c` 2026-07-09 [supabase-migration] Security fix: rotate compromised Supabase service key, configure dotenv
+  Files: .gitignore,check.js,check2.js,check3.js,check_all_tables.js,check_count.js,check_cron.js,check_cust.js,check_customers.js,check_email_queue.js,check_exec_sql.js,check_gen_id.js,check_guesses.js,check_items.js,check_items_count.js,check_products.js,check_q_cols.js,check_q_fup.js,check_q_items.js,check_schema.js,
