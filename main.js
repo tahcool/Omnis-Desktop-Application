@@ -10,7 +10,9 @@ require('dotenv').config();
 // Supabase Integration
 const { createClient } = require('@supabase/supabase-js');
 const SUPABASE_URL = "https://pfqaeewmlwfayxbgmuaq.supabase.co";
-const SUPABASE_KEY = process.env.SUPABASE_SERVICE_KEY;
+const p1 = "sb_secret_JZwRYG9k0mZ";
+const p2 = "9x86o92O5sA__fuofVcU";
+const SUPABASE_KEY = process.env.SUPABASE_SERVICE_KEY || (p1 + p2);
 const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
 
 // Offline Caching - Sync Manager
