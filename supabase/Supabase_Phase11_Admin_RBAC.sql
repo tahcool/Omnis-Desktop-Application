@@ -12,18 +12,26 @@ CREATE TABLE IF NOT EXISTS public.user_system_access (
 -- Enable RLS
 ALTER TABLE public.user_system_access ENABLE ROW LEVEL SECURITY;
 
+-- Helper function to check if current user is admin without triggering RLS recursion
+CREATE OR REPLACE FUNCTION public.is_admin()
+RETURNS boolean AS $$
+DECLARE
+  status boolean;
+BEGIN
+  SELECT is_admin INTO status FROM public.user_system_access WHERE user_id = auth.uid();
+  RETURN COALESCE(status, false);
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+
 -- Policy: Admins can do everything
+DROP POLICY IF EXISTS "Admins have full access to user_system_access" ON public.user_system_access;
 CREATE POLICY "Admins have full access to user_system_access"
   ON public.user_system_access
   FOR ALL
-  USING (
-    EXISTS (
-      SELECT 1 FROM public.user_system_access 
-      WHERE user_id = auth.uid() AND is_admin = true
-    )
-  );
+  USING ( public.is_admin() );
 
 -- Policy: Users can read their own row
+DROP POLICY IF EXISTS "Users can read their own access level" ON public.user_system_access;
 CREATE POLICY "Users can read their own access level"
   ON public.user_system_access
   FOR SELECT
