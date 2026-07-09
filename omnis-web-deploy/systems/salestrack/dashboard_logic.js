@@ -59,68 +59,78 @@ window.OmnisDashboardV6 = class OmnisDashboardV6 {
             if (window.electron && window.electron.getVersion) {
                 window.electron.getVersion().then(v => {
                     const label = document.getElementById('app-version-label');
-                    if (label) label.innerText = `V${v}-NEXUS`;
+                    if (label) label.innerText = `V${v}-FORGE`;
 
                     const sLabel = document.getElementById('update-settings-status');
-                    if (sLabel) sLabel.innerText = `Version ${v} Nexus`;
+                    if (sLabel) sLabel.innerText = `Version ${v} Forge`;
                 });
             }
 
-            // ... Update Message Listener (Toasts)
+            // ─── BACKGROUND UPDATE LISTENER (silent) ──────────────────────
             if (window.electron && window.electron.on) {
+
                 window.electron.on('update-message', (event, data) => {
+                    // Always update the Settings panel status text (only visible if user opens Settings)
                     const sStatus = document.getElementById('update-settings-status');
                     if (sStatus && data.text) sStatus.innerText = data.text;
 
                     const progContainer = document.getElementById('update-progress-container');
 
                     if (data.type === 'uptodate') {
-                        this.showToast("System is up to date", "success");
+                        // Completely silent — just update the settings label
                         if (progContainer) progContainer.style.display = 'none';
-                        this.loadReleaseNotes(); // Always load current notes
+                        this.loadReleaseNotes();
+
                     } else if (data.type === 'available') {
-                        this.showToast("New Update Found! Downloading...", "success");
+                        // Silent — update is downloading in background, show progress bar only in Settings
                         if (progContainer) progContainer.style.display = 'block';
                         this.loadReleaseNotes();
+
                     } else if (data.type === 'error') {
-                        this.showToast("Update Check Failed", "error");
+                        // Silent — only log to console, never interrupt the user
+                        console.warn('[OMNIS Update] Check failed:', data.text);
+
                     } else if (data.type === 'downloaded') {
-                        this.showToast("Update Downloaded. Restarting...", "success");
+                        // Update is ready — show a non-intrusive floating pill (not a toast)
                         if (progContainer) {
                             const bar = document.getElementById('update-progress-bar');
                             if (bar) bar.style.width = '100%';
                             const pct = document.getElementById('update-progress-percent');
                             if (pct) pct.innerText = '100%';
                         }
+                        this._showUpdateReadyPill();
                     }
                 });
 
-                // New Progress Listener
+                // Download progress — silently update the Settings progress bar only
                 window.electron.on('download-progress', (event, info) => {
                     const progContainer = document.getElementById('update-progress-container');
-                    if (progContainer) progContainer.style.display = 'block';
+                    // Only show progress bar if the user has Settings open; don't force-open anything
+                    if (progContainer && progContainer.offsetParent !== null) {
+                        progContainer.style.display = 'block';
+                    }
 
-                    const bar = document.getElementById('update-progress-bar');
-                    const pct = document.getElementById('update-progress-percent');
+                    const bar   = document.getElementById('update-progress-bar');
+                    const pct   = document.getElementById('update-progress-percent');
                     const stats = document.getElementById('update-progress-stats');
-                    const eta = document.getElementById('update-progress-eta');
+                    const eta   = document.getElementById('update-progress-eta');
 
                     if (info) {
                         const p = Math.floor(info.percent || 0);
-                        if (bar) bar.style.width = p + '%';
-                        if (pct) pct.innerText = p + '%';
+                        if (bar)   bar.style.width   = p + '%';
+                        if (pct)   pct.innerText      = p + '%';
 
-                        const speed = (info.bytesPerSecond / 1024 / 1024).toFixed(2); // MB/s
-                        const transferred = (info.transferred / 1024 / 1024).toFixed(1);
-                        const total = (info.total / 1024 / 1024).toFixed(1);
-
+                        const speed       = (info.bytesPerSecond / 1024 / 1024).toFixed(2);
+                        const transferred = (info.transferred   / 1024 / 1024).toFixed(1);
+                        const total       = (info.total         / 1024 / 1024).toFixed(1);
                         if (stats) stats.innerText = `${transferred} MB / ${total} MB • ${speed} MB/s`;
 
                         if (eta && info.bytesPerSecond > 0) {
                             const remaining = info.total - info.transferred;
-                            const seconds = Math.round(remaining / info.bytesPerSecond);
-                            if (seconds < 60) eta.innerText = `ETA: ${seconds}s`;
-                            else eta.innerText = `ETA: ${Math.floor(seconds / 60)}m ${seconds % 60}s`;
+                            const seconds   = Math.round(remaining / info.bytesPerSecond);
+                            eta.innerText   = seconds < 60
+                                ? `ETA: ${seconds}s`
+                                : `ETA: ${Math.floor(seconds / 60)}m ${seconds % 60}s`;
                         }
                     }
                 });
@@ -248,18 +258,97 @@ window.OmnisDashboardV6 = class OmnisDashboardV6 {
     checkUpdatesManually() {
         if (window.electron && window.electron.checkForUpdates) {
             const btn = document.getElementById('btn-manual-update');
-            if (!btn) return;
-            const originalText = btn.innerHTML;
-            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> CHECKING...';
-            btn.disabled = true;
-
-            window.electron.checkForUpdates().then(() => {
-                setTimeout(() => {
-                    btn.innerHTML = originalText;
-                    btn.disabled = false;
-                }, 2000);
-            });
+            if (btn) {
+                const originalText = btn.innerHTML;
+                btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> CHECKING...';
+                btn.disabled = true;
+                window.electron.checkForUpdates().then(() => {
+                    setTimeout(() => {
+                        btn.innerHTML = originalText;
+                        btn.disabled  = false;
+                    }, 2000);
+                });
+            }
         }
+    }
+
+    // ─── UPDATE-READY PILL (non-intrusive notification) ───────────────────────
+    _showUpdateReadyPill() {
+        // Don't show twice
+        if (document.getElementById('omnis-update-pill')) return;
+
+        const pill = document.createElement('div');
+        pill.id = 'omnis-update-pill';
+        pill.innerHTML = `
+            <div style="display:flex;align-items:center;gap:10px;">
+                <div style="width:32px;height:32px;border-radius:8px;background:rgba(255,255,255,0.15);display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+                    <i class="fas fa-download" style="color:#fff;font-size:13px;"></i>
+                </div>
+                <div>
+                    <div style="font-size:12px;font-weight:800;color:#fff;line-height:1.2;">Update Ready</div>
+                    <div style="font-size:10px;color:rgba(255,255,255,0.75);margin-top:1px;">Restart to apply the latest changes</div>
+                </div>
+            </div>
+            <div style="display:flex;gap:6px;margin-top:10px;">
+                <button id="omnis-update-pill-apply"
+                    style="flex:1;padding:7px 0;background:#fff;color:#1e3a5f;border:none;border-radius:7px;font-size:11px;font-weight:800;cursor:pointer;">
+                    Restart Now
+                </button>
+                <button id="omnis-update-pill-dismiss"
+                    style="padding:7px 14px;background:rgba(255,255,255,0.15);color:#fff;border:none;border-radius:7px;font-size:11px;font-weight:700;cursor:pointer;">
+                    Later
+                </button>
+            </div>`;
+
+        Object.assign(pill.style, {
+            position:       'fixed',
+            bottom:         '24px',
+            right:          '24px',
+            width:          '260px',
+            background:     'linear-gradient(135deg,#1e3a5f,#1e40af)',
+            borderRadius:   '14px',
+            padding:        '14px 16px',
+            boxShadow:      '0 8px 32px rgba(0,0,0,0.25)',
+            zIndex:         '99999',
+            animation:      'omnisSlideUp 0.35s cubic-bezier(0.34,1.56,0.64,1) both',
+            fontFamily:     'inherit',
+        });
+
+        // Inject keyframe once
+        if (!document.getElementById('omnis-update-kf')) {
+            const s = document.createElement('style');
+            s.id = 'omnis-update-kf';
+            s.textContent = `
+                @keyframes omnisSlideUp {
+                    from { opacity:0; transform:translateY(20px) scale(0.95); }
+                    to   { opacity:1; transform:translateY(0)   scale(1);    }
+                }
+                @keyframes omnisSlideDown {
+                    from { opacity:1; transform:translateY(0)   scale(1);    }
+                    to   { opacity:0; transform:translateY(20px) scale(0.95); }
+                }`;
+            document.head.appendChild(s);
+        }
+
+        document.body.appendChild(pill);
+
+        const _dismiss = () => {
+            pill.style.animation = 'omnisSlideDown 0.25s ease both';
+            setTimeout(() => pill.remove(), 260);
+        };
+
+        document.getElementById('omnis-update-pill-dismiss').addEventListener('click', _dismiss);
+        document.getElementById('omnis-update-pill-apply').addEventListener('click', () => {
+            if (window.electron && window.electron.restartAndUpdate) {
+                window.electron.restartAndUpdate();
+            } else if (window.electron && window.electron.quitAndInstall) {
+                window.electron.quitAndInstall();
+            } else {
+                // fallback — shouldn't normally happen
+                _dismiss();
+                this.showToast('Please restart the application to apply the update.', 'info');
+            }
+        });
     }
 
     formatNumber(num) {
@@ -2866,19 +2955,50 @@ window.OmnisDashboardV6 = class OmnisDashboardV6 {
             }
             
             const todayStr = new Date().toISOString().split('T')[0];
+            const currentYearStart = `${new Date().getFullYear()}-01-01`;
 
-            let quotes = allQuotes.filter(q => q.frappe_quotation); // Only valid joins
+            let allValidQuotes = allQuotes.filter(q => q.frappe_quotation); // Only valid joins
+
+            // Year cutoff: split into current-year (active) and prior-year (archived)
+            let quotes = allValidQuotes.filter(q => {
+                const txDate = q.frappe_quotation.transaction_date || '';
+                return txDate >= currentYearStart;
+            });
+            let archivedQuotes = allValidQuotes.filter(q => {
+                const txDate = q.frappe_quotation.transaction_date || '';
+                return txDate < currentYearStart && txDate !== '';
+            });
+            // Sort archived newest first
+            archivedQuotes.sort((a,b) => {
+                const ad = a.frappe_quotation.transaction_date || '';
+                const bd = b.frappe_quotation.transaction_date || '';
+                return bd < ad ? -1 : 1;
+            });
             
-            // Due quotes: not closed, and current stage due date <= today
+            // Due quotes: not closed, and current stage due date is exactly TODAY
             let dueQuotes = quotes.filter(q => {
                 if (q.is_closed) return false;
                 let due = q.current_stage === 1 ? q.stage_1_due : (q.current_stage === 2 ? q.stage_2_due : q.stage_3_due);
-                return due <= todayStr;
+                return due === todayStr;  // ONLY today — not past-due
             });
             dueQuotes.sort((a,b) => {
                 let aDue = a.current_stage === 1 ? a.stage_1_due : (a.current_stage === 2 ? a.stage_2_due : a.stage_3_due);
                 let bDue = b.current_stage === 1 ? b.stage_1_due : (b.current_stage === 2 ? b.stage_2_due : b.stage_3_due);
                 return aDue < bDue ? -1 : 1;
+            });
+
+            // Overdue quotes: past due + NO logged entry for the current stage
+            let overdueQuotes = quotes.filter(q => {
+                if (q.is_closed) return false;
+                let due = q.current_stage === 1 ? q.stage_1_due : (q.current_stage === 2 ? q.stage_2_due : q.stage_3_due);
+                if (!due || due >= todayStr) return false; // must be strictly in the past
+                let loggedAt = q.current_stage === 1 ? q.stage_1_logged_at : (q.current_stage === 2 ? q.stage_2_logged_at : q.stage_3_logged_at);
+                return !loggedAt; // no entry made
+            });
+            overdueQuotes.sort((a,b) => {
+                let aDue = a.current_stage === 1 ? a.stage_1_due : (a.current_stage === 2 ? a.stage_2_due : a.stage_3_due);
+                let bDue = b.current_stage === 1 ? b.stage_1_due : (b.current_stage === 2 ? b.stage_2_due : b.stage_3_due);
+                return aDue < bDue ? -1 : 1; // oldest overdue first
             });
 
             // Manager Approvals: closed, pending manager signoff
@@ -2908,7 +3028,7 @@ window.OmnisDashboardV6 = class OmnisDashboardV6 {
             });
             let waLogs = waRes.data || [];
 
-            this.cachedCommandCenterData = { quotes, emails, dueQuotes, pendingApprovals, waLogs };
+            this.cachedCommandCenterData = { quotes, emails, dueQuotes, overdueQuotes, archivedQuotes, pendingApprovals, waLogs };
             this.renderCommandCenter(this.cachedCommandCenterData, isFullView);
         } catch (e) {
             console.error(e);
@@ -2922,7 +3042,7 @@ window.OmnisDashboardV6 = class OmnisDashboardV6 {
 
     switchCommandCenterTab(tabId) {
         // Hide all tabs
-        ['overview', 'due', 'approvals', 'logs', 'wa'].forEach(t => {
+        ['overview', 'due', 'overdue', 'approvals', 'logs', 'wa', 'archived'].forEach(t => {
             const el = document.getElementById('cc_tab_' + t);
             if (el) el.style.display = 'none';
             const btn = document.getElementById('cc_btn_' + t);
@@ -2942,6 +3062,129 @@ window.OmnisDashboardV6 = class OmnisDashboardV6 {
             activeBtn.style.background = '#0f172a';
             activeBtn.style.color = 'white';
         }
+    }
+
+    toggleSelectAll(companyKey, checked) {
+        document.querySelectorAll(`.cc_due_group_${companyKey} .cc_due_checkbox`).forEach(cb => cb.checked = checked);
+    }
+
+    filterOverdueByRep(rep) {
+        const rows = document.querySelectorAll('#cc_overdue_tbody .cc_overdue_row');
+        const headers = document.querySelectorAll('#cc_overdue_tbody .cc_overdue_group_header');
+        let visible = 0;
+        rows.forEach(row => {
+            const show = !rep || row.dataset.rep === rep;
+            row.style.display = show ? '' : 'none';
+            if (show) visible++;
+        });
+        // Show/hide group headers only if groupBy is active
+        const groupActive = document.getElementById('cc_overdue_group_btn')?.dataset.active === '1';
+        if (groupActive) {
+            headers.forEach(h => {
+                h.style.display = (!rep || h.dataset.rep === rep) ? '' : 'none';
+            });
+        }
+        // Update visible count label
+        const badge = document.getElementById('cc_overdue_visible_count');
+        if (badge) badge.textContent = rep ? `Showing ${visible} for ${rep}` : '';
+        // Update "Select All" label to reflect context
+        const selectAllLabel = document.getElementById('cc_overdue_select_all_label');
+        if (selectAllLabel) {
+            selectAllLabel.textContent = rep ? `Select All (${rep})` : 'Select All';
+        }
+        // Uncheck Select All when filter changes
+        const selectAll = document.getElementById('cc_overdue_select_all');
+        if (selectAll) selectAll.checked = false;
+    }
+
+    toggleOverdueGroupBy() {
+        const btn = document.getElementById('cc_overdue_group_btn');
+        const headers = document.querySelectorAll('#cc_overdue_tbody .cc_overdue_group_header');
+        const isActive = btn?.dataset.active === '1';
+        const currentRep = document.getElementById('cc_overdue_rep_filter')?.value || '';
+        if (isActive) {
+            // Deactivate grouping — hide all headers
+            headers.forEach(h => h.style.display = 'none');
+            if (btn) { btn.dataset.active = '0'; btn.style.background = '#fff'; btn.style.color = '#991b1b'; }
+        } else {
+            // Activate grouping — show headers (respecting current filter)
+            headers.forEach(h => {
+                h.style.display = (!currentRep || h.dataset.rep === currentRep) ? '' : 'none';
+            });
+            if (btn) { btn.dataset.active = '1'; btn.style.background = '#991b1b'; btn.style.color = '#fff'; }
+        }
+    }
+
+    toggleOverdueSelectAll(checked) {
+        // Only check/uncheck rows that are currently VISIBLE (respects rep filter)
+        document.querySelectorAll('#cc_overdue_tbody .cc_overdue_row').forEach(row => {
+            if (row.style.display !== 'none') {
+                const cb = row.querySelector('.cc_overdue_checkbox');
+                if (cb) cb.checked = checked;
+            }
+        });
+    }
+
+    async selectiveOverdueDispatch() {
+        const checked = Array.from(document.querySelectorAll('.cc_overdue_checkbox:checked'));
+        if (checked.length === 0) {
+            this.showToast('No overdue quotes selected. Tick the checkboxes next to the quotes you want to notify.', 'info');
+            return;
+        }
+        const quoteNames = checked.map(cb => cb.dataset.quote);
+        if (!confirm(`Send OVERDUE urgent email alerts for ${quoteNames.length} selected quote(s)?\n\nSales reps will receive a red urgent-themed reminder email.\n\n${quoteNames.join('\n')}`)) return;
+        try {
+            this.showToast(`Sending overdue alerts for ${quoteNames.length} quote(s)...`, 'info');
+            const res = await window.electron.invoke('supabase:edgeFunction', {
+                name: 'daily-quote-reminders',
+                data: { quote_names: quoteNames, overdue: true }
+            });
+            if (res && res.data) {
+                this.showToast(`Queued ${res.data.emails_queued || 0} overdue alert email(s).`, 'success');
+            } else {
+                this.showToast('Overdue alerts dispatched successfully.', 'success');
+            }
+            setTimeout(() => this.openCommandCenter(true), 2000);
+        } catch (e) {
+            console.error(e);
+            this.showToast('Failed to send overdue alerts: ' + e.message, 'error');
+        }
+    }
+
+    async selectiveDispatch() {
+        const checked = Array.from(document.querySelectorAll('.cc_due_checkbox:checked'));
+        if (checked.length === 0) {
+            this.showToast('No quotes selected. Tick the checkboxes next to the quotes you want to dispatch.', 'info');
+            return;
+        }
+        const quoteNames = checked.map(cb => cb.dataset.quote);
+        if (!confirm(`Send follow-up reminder emails for these ${quoteNames.length} selected quote(s)?\n\n${quoteNames.join('\n')}`)) return;
+        try {
+            this.showToast(`Dispatching ${quoteNames.length} quote reminder(s)...`, 'info');
+            const res = await window.electron.invoke('supabase:edgeFunction', {
+                name: 'daily-quote-reminders',
+                data: { quote_names: quoteNames }
+            });
+            if (res && res.data) {
+                this.showToast(`Queued ${res.data.emails_queued || 0} email(s) for ${quoteNames.length} quote(s).`, 'success');
+            } else {
+                this.showToast('Dispatch triggered for selected quotes.', 'success');
+            }
+            setTimeout(() => this.openCommandCenter(true), 2000);
+        } catch (e) {
+            console.error(e);
+            this.showToast('Dispatch failed: ' + e.message, 'error');
+        }
+    }
+
+    filterArchived(searchTerm) {
+        const term = (searchTerm || '').toLowerCase();
+        const tbody = document.getElementById('cc_archive_tbody');
+        if (!tbody) return;
+        Array.from(tbody.rows).forEach(row => {
+            const text = row.innerText.toLowerCase();
+            row.style.display = !term || text.includes(term) ? '' : 'none';
+        });
     }
 
     applyGlobalCompanyFilter(isFullView) {
@@ -3041,11 +3284,17 @@ window.OmnisDashboardV6 = class OmnisDashboardV6 {
     }
 
     renderCommandCenter(data, isFullView = false, companyFilter = 'All') {
-        let { quotes, emails, dueQuotes, pendingApprovals, waLogs = [] } = data;
+        let { quotes, emails, dueQuotes, overdueQuotes, archivedQuotes, pendingApprovals, waLogs = [] } = data;
+        overdueQuotes = overdueQuotes || [];
+        archivedQuotes = archivedQuotes || [];
+        const todayStr = new Date().toISOString().split('T')[0];
+        const currentYear = new Date().getFullYear();
         
         if (companyFilter !== 'All') {
             quotes = quotes.filter(q => q.frappe_quotation && q.frappe_quotation.company === companyFilter);
             dueQuotes = dueQuotes.filter(q => q.frappe_quotation && q.frappe_quotation.company === companyFilter);
+            overdueQuotes = overdueQuotes.filter(q => q.frappe_quotation && q.frappe_quotation.company === companyFilter);
+            archivedQuotes = archivedQuotes.filter(q => q.frappe_quotation && q.frappe_quotation.company === companyFilter);
             pendingApprovals = pendingApprovals.filter(q => q.frappe_quotation && q.frappe_quotation.company === companyFilter);
         }
         
@@ -3100,7 +3349,7 @@ window.OmnisDashboardV6 = class OmnisDashboardV6 {
             `).join('');
             
         
-        let globalDueHtml = `<div style="color:#94a3b8; font-size:14px; text-align:center; padding:30px;">No quotes are currently due for follow-up!</div>`;
+        let globalDueHtml = `<div style="color:#94a3b8; font-size:14px; text-align:center; padding:30px;">No quotes are currently due for follow-up today!</div>`;
         if (dueQuotes && dueQuotes.length > 0) {
             // Group by company
             let companyGroups = {};
@@ -3113,47 +3362,49 @@ window.OmnisDashboardV6 = class OmnisDashboardV6 {
             globalDueHtml = Object.entries(companyGroups).map(([company, quotes]) => {
                 return `
                 <div style="margin-bottom:16px;">
-                    <div style="background:#f1f5f9; padding:8px 16px; font-weight:800; font-size:12px; color:#475569; border-top:1px solid #e2e8f0; border-bottom:1px solid #e2e8f0;">
-                        ${company} <span style="margin-left:8px; background:#e2e8f0; padding:2px 8px; border-radius:12px; font-size:10px;">${quotes.length} Due</span>
+                    <div style="background:#f1f5f9; padding:8px 16px; font-weight:800; font-size:12px; color:#475569; border-top:1px solid #e2e8f0; border-bottom:1px solid #e2e8f0; display:flex; align-items:center; gap:10px;">
+                        <label style="display:flex; align-items:center; gap:6px; cursor:pointer; font-size:11px; color:#64748b; font-weight:600;">
+                            <input type="checkbox" id="cc_select_all_${company.replace(/\s/g,'_')}" onchange="window.salestrack.toggleSelectAll('${company.replace(/\s/g,'_')}', this.checked)" style="width:14px; height:14px; cursor:pointer;"> Select All
+                        </label>
+                        <span>${company}</span>
+                        <span style="background:#e2e8f0; padding:2px 8px; border-radius:12px; font-size:10px;">${quotes.length} Due Today</span>
                     </div>
                     <table style="width:100%; border-collapse:separate; border-spacing:0; font-size:13px;">
                         <thead>
                             <tr style="background:#991b1b; color:white; font-size:11px; text-transform:uppercase;">
-                                <th style="padding:12px 16px; color:white; text-align:left; font-weight:800; border-top-left-radius:6px; border-bottom-left-radius:6px; width:30%;">Quote Name</th>
-                                <th style="padding:12px 16px; color:white; text-align:left; font-weight:800; width:30%;">Sales Person</th>
-                                <th style="padding:12px 16px; color:white; text-align:left; font-weight:800; width:20%;">Stage</th>
-                                <th style="padding:12px 16px; color:white; text-align:right; font-weight:800; border-top-right-radius:6px; border-bottom-right-radius:6px; width:20%;">Due Date</th>
+                                <th style="padding:10px 14px; color:white; text-align:left; width:40px;"></th>
+                                <th style="padding:10px 14px; color:white; text-align:left; font-weight:800; width:25%;">Quote</th>
+                                <th style="padding:10px 14px; color:white; text-align:left; font-weight:800; width:25%;">Sales Person</th>
+                                <th style="padding:10px 14px; color:white; text-align:left; font-weight:800; width:15%;">Stage</th>
+                                <th style="padding:10px 14px; color:white; text-align:left; font-weight:800; width:15%;">Hot</th>
+                                <th style="padding:10px 14px; color:white; text-align:right; font-weight:800; width:20%;">Due Date</th>
                             </tr>
                         </thead>
                         <tbody style="display:block; height:8px;"></tbody>
-                        <tbody>
+                        <tbody class="cc_due_group_${company.replace(/\s/g,'_')}">
                             ${quotes.map(q => {
                                 let due = q.current_stage === 1 ? q.stage_1_due : (q.current_stage === 2 ? q.stage_2_due : q.stage_3_due);
                                 let daysOverdue = Math.floor((new Date() - new Date(due)) / (1000 * 60 * 60 * 24));
-                                let color = '#ef4444'; // standard red
+                                let color = '#ef4444';
                                 let bg = '#fef2f2';
                                 let icon = '<i class="fas fa-exclamation-circle" style="margin-right:4px;"></i>';
-                                
-                                if (daysOverdue > 7) {
-                                    color = '#991b1b'; // dark red
-                                    bg = '#fca5a5'; // darker bg
-                                    icon = '<i class="fas fa-radiation" style="margin-right:4px;"></i>';
-                                } else if (daysOverdue < 3) {
-                                    color = '#d97706'; // orange
-                                    bg = '#fef3c7';
-                                    icon = '<i class="fas fa-clock" style="margin-right:4px;"></i>';
-                                }
-
-                                return `<tr style="border-bottom:1px solid #f1f5f9; cursor:pointer;" onclick="window.salestrack.openQuoteLifecycleModal('${q.quote_name}')" onmouseover="this.style.backgroundColor='#f8fafc'" onmouseout="this.style.backgroundColor='transparent'">
-                                    <td style="padding:10px 16px; color:#2563eb; font-weight:600; width:30%;">${q.quote_name}</td>
-                                    <td style="padding:10px 16px; color:#334155; font-weight:500; width:30%;">${q.frappe_quotation.custom_sales_person || '-'}</td>
-                                    <td style="padding:10px 16px; color:#0f172a; font-weight:600; width:20%;">Stage ${q.current_stage}</td>
-                                    <td style="padding:10px 16px; width:20%; text-align:right;">
-                                        <span style="background:${bg}; color:${color}; padding:4px 8px; border-radius:12px; font-size:11px; font-weight:800; display:inline-flex; align-items:center;">
-                                            ${icon} ${due}
-                                        </span>
+                                if (daysOverdue > 7) { color = '#991b1b'; bg = '#fca5a5'; icon = '<i class="fas fa-radiation" style="margin-right:4px;"></i>'; }
+                                else if (daysOverdue < 3) { color = '#d97706'; bg = '#fef3c7'; icon = '<i class="fas fa-clock" style="margin-right:4px;"></i>'; }
+                                const hotBadge = q.is_hot_lead
+                                    ? `<span style="background:#fef3c7; color:#d97706; padding:3px 8px; border-radius:10px; font-size:11px; font-weight:800;"><i class="fas fa-fire" style="margin-right:3px;"></i>HOT</span>`
+                                    : `<span style="color:#cbd5e1; font-size:11px;">—</span>`;
+                                return `<tr style="border-bottom:1px solid #f1f5f9;" onmouseover="this.style.backgroundColor='#f8fafc'" onmouseout="this.style.backgroundColor='transparent'">
+                                    <td style="padding:10px 14px;" onclick="event.stopPropagation()">
+                                        <input type="checkbox" class="cc_due_checkbox" data-quote="${q.quote_name}" data-company="${company.replace(/\s/g,'_')}" style="width:15px; height:15px; cursor:pointer;">
                                     </td>
-                                </tr>`
+                                    <td style="padding:10px 14px; color:#2563eb; font-weight:600; cursor:pointer;" onclick="window.salestrack.openQuoteLifecycleModal('${q.quote_name}')">${q.quote_name}</td>
+                                    <td style="padding:10px 14px; color:#334155; font-weight:500;">${q.frappe_quotation.custom_sales_person || '-'}</td>
+                                    <td style="padding:10px 14px; color:#0f172a; font-weight:600;">Stage ${q.current_stage}</td>
+                                    <td style="padding:10px 14px;">${hotBadge}</td>
+                                    <td style="padding:10px 14px; text-align:right;">
+                                        <span style="background:${bg}; color:${color}; padding:4px 8px; border-radius:12px; font-size:11px; font-weight:800; display:inline-flex; align-items:center;">${icon} ${due}</span>
+                                    </td>
+                                </tr>`;
                             }).join('')}
                         </tbody>
                     </table>
@@ -3265,6 +3516,7 @@ window.OmnisDashboardV6 = class OmnisDashboardV6 {
         // Pre-calculate data for charts & KPIs
         const totalActive = quotes.length;
         const totalDue = dueQuotes.length;
+        const totalOverdue = overdueQuotes.length;
         const pendingCount = pendingApprovals ? pendingApprovals.length : 0;
         
         let stage1Count = quotes.filter(q => q.current_stage === 1 && !q.is_closed).length;
@@ -3297,35 +3549,47 @@ window.OmnisDashboardV6 = class OmnisDashboardV6 {
                 </div>
 
                 <!-- Tab Bar -->
-                <div style="display:flex; gap:8px; margin-bottom:24px; border-bottom:1px solid #e2e8f0; padding-bottom:16px;">
+                <div style="display:flex; gap:8px; margin-bottom:24px; border-bottom:1px solid #e2e8f0; padding-bottom:16px; flex-wrap:wrap;">
                     <button id="cc_btn_overview" onclick="window.salestrack.switchCommandCenterTab('overview')" style="background:#0f172a; color:white; border:none; padding:8px 16px; border-radius:8px; font-weight:700; cursor:pointer; font-size:13px; transition:all 0.2s;">Overview</button>
-                    <button id="cc_btn_due" onclick="window.salestrack.switchCommandCenterTab('due')" style="background:#f1f5f9; color:#475569; border:none; padding:8px 16px; border-radius:8px; font-weight:700; cursor:pointer; font-size:13px; transition:all 0.2s;">Due Quotes</button>
+                    <button id="cc_btn_due" onclick="window.salestrack.switchCommandCenterTab('due')" style="background:#f1f5f9; color:#475569; border:none; padding:8px 16px; border-radius:8px; font-weight:700; cursor:pointer; font-size:13px; transition:all 0.2s;">Due Today (${totalDue})</button>
+                    <button id="cc_btn_overdue" onclick="window.salestrack.switchCommandCenterTab('overdue')" style="background:#f1f5f9; color:#475569; border:none; padding:8px 16px; border-radius:8px; font-weight:700; cursor:pointer; font-size:13px; transition:all 0.2s;"><i class="fas fa-exclamation-triangle" style="color:#f59e0b; margin-right:4px;"></i> Overdue (${totalOverdue})</button>
                     <button id="cc_btn_approvals" onclick="window.salestrack.switchCommandCenterTab('approvals')" style="background:#f1f5f9; color:#475569; border:none; padding:8px 16px; border-radius:8px; font-weight:700; cursor:pointer; font-size:13px; transition:all 0.2s;">Approvals (${pendingCount})</button>
                     <button id="cc_btn_logs" onclick="window.salestrack.switchCommandCenterTab('logs')" style="background:#f1f5f9; color:#475569; border:none; padding:8px 16px; border-radius:8px; font-weight:700; cursor:pointer; font-size:13px; transition:all 0.2s;">Dispatch Logs</button>
                     <button id="cc_btn_wa" onclick="window.salestrack.switchCommandCenterTab('wa')" style="background:#f1f5f9; color:#475569; border:none; padding:8px 16px; border-radius:8px; font-weight:700; cursor:pointer; font-size:13px; transition:all 0.2s;"><i class="fab fa-whatsapp" style="color:#25d366; margin-right:4px;"></i> WA Reminders</button>
+                    <button id="cc_btn_archived" onclick="window.salestrack.switchCommandCenterTab('archived')" style="background:#f1f5f9; color:#475569; border:none; padding:8px 16px; border-radius:8px; font-weight:700; cursor:pointer; font-size:13px; transition:all 0.2s;"><i class="fas fa-archive" style="color:#94a3b8; margin-right:4px;"></i> Archived (${archivedQuotes.length})</button>
                 </div>
 
                 <!-- OVERVIEW TAB -->
                 <div id="cc_tab_overview" style="display:block;">
-                    <!-- KPI Cards Row -->
-                    <div style="display:grid; grid-template-columns: repeat(3, 1fr); gap:20px; margin-bottom:24px;">
+                    <!-- KPI Cards Row (4 cards) -->
+                    <div style="display:grid; grid-template-columns: repeat(4, 1fr); gap:16px; margin-bottom:24px;">
                         <div style="background:rgba(255,255,255,0.8); backdrop-filter:blur(10px); border:1px solid #e2e8f0; border-radius:16px; padding:20px; box-shadow:0 4px 6px -1px rgba(0,0,0,0.02); display:flex; align-items:center; gap:16px;">
                             <div style="width:56px; height:56px; border-radius:12px; background:#eff6ff; color:#3b82f6; display:flex; align-items:center; justify-content:center; font-size:24px;">
                                 <i class="fas fa-file-invoice-dollar"></i>
                             </div>
                             <div>
-                                <div style="font-size:12px; font-weight:700; color:#64748b; text-transform:uppercase; letter-spacing:0.5px;">Total Active Quotes</div>
+                                <div style="font-size:11px; font-weight:700; color:#64748b; text-transform:uppercase; letter-spacing:0.5px;">Total Active</div>
                                 <div style="font-size:28px; font-weight:800; color:#0f172a; margin-top:2px;">${totalActive}</div>
                             </div>
                         </div>
                         
-                        <div style="background:rgba(255,255,255,0.8); backdrop-filter:blur(10px); border:1px solid #e2e8f0; border-radius:16px; padding:20px; box-shadow:0 4px 6px -1px rgba(0,0,0,0.02); display:flex; align-items:center; gap:16px;">
+                        <div style="background:rgba(255,255,255,0.8); backdrop-filter:blur(10px); border:1px solid #e2e8f0; border-radius:16px; padding:20px; box-shadow:0 4px 6px -1px rgba(0,0,0,0.02); display:flex; align-items:center; gap:16px; cursor:pointer;" onclick="window.salestrack.switchCommandCenterTab('due')">
                             <div style="width:56px; height:56px; border-radius:12px; background:#fef2f2; color:#ef4444; display:flex; align-items:center; justify-content:center; font-size:24px;">
                                 <i class="fas fa-clock"></i>
                             </div>
                             <div>
-                                <div style="font-size:12px; font-weight:700; color:#64748b; text-transform:uppercase; letter-spacing:0.5px;">Due For Follow-Up</div>
+                                <div style="font-size:11px; font-weight:700; color:#64748b; text-transform:uppercase; letter-spacing:0.5px;">Due Today</div>
                                 <div style="font-size:28px; font-weight:800; color:#ef4444; margin-top:2px;">${totalDue}</div>
+                            </div>
+                        </div>
+
+                        <div style="background:rgba(255,255,255,0.8); backdrop-filter:blur(10px); border:1px solid ${totalOverdue > 0 ? '#fef3c7' : '#e2e8f0'}; border-radius:16px; padding:20px; box-shadow:0 4px 6px -1px rgba(0,0,0,0.02); display:flex; align-items:center; gap:16px; cursor:pointer;" onclick="window.salestrack.switchCommandCenterTab('overdue')">
+                            <div style="width:56px; height:56px; border-radius:12px; background:#fffbeb; color:#f59e0b; display:flex; align-items:center; justify-content:center; font-size:24px;">
+                                <i class="fas fa-exclamation-triangle"></i>
+                            </div>
+                            <div>
+                                <div style="font-size:11px; font-weight:700; color:#64748b; text-transform:uppercase; letter-spacing:0.5px;">Overdue (No Entry)</div>
+                                <div style="font-size:28px; font-weight:800; color:#d97706; margin-top:2px;">${totalOverdue}</div>
                             </div>
                         </div>
 
@@ -3334,7 +3598,7 @@ window.OmnisDashboardV6 = class OmnisDashboardV6 {
                                 <i class="fas fa-user-shield"></i>
                             </div>
                             <div>
-                                <div style="font-size:12px; font-weight:700; color:#64748b; text-transform:uppercase; letter-spacing:0.5px;">Pending Sign-offs</div>
+                                <div style="font-size:11px; font-weight:700; color:#64748b; text-transform:uppercase; letter-spacing:0.5px;">Pending Sign-offs</div>
                                 <div style="font-size:28px; font-weight:800; color:#c2410c; margin-top:2px;">${pendingCount}</div>
                             </div>
                         </div>
@@ -3374,11 +3638,12 @@ window.OmnisDashboardV6 = class OmnisDashboardV6 {
                 </div>
 
                 <!-- DUE QUOTES TAB -->
+                <!-- DUE TODAY TAB -->
                 <div id="cc_tab_due" style="display:none;">
                     <div style="background:#ffffff; border:1px solid #e2e8f0; border-radius:16px; overflow:hidden; box-shadow:0 10px 25px -5px rgba(0,0,0,0.02);">
                         <div style="padding:16px 20px; border-bottom:1px solid #e2e8f0; background:#fef2f2; display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:10px;">
                             <h3 style="margin:0; font-size:13px; font-weight:800; color:#991b1b; display:flex; align-items:center; gap:8px;">
-                                <i class="fas fa-clock" style="color:#ef4444;"></i> Global Due for Follow-Up
+                                <i class="fas fa-clock" style="color:#ef4444;"></i> Follow-Ups Due Today
                             </h3>
                             <div style="display:flex; gap:10px; align-items:center;">
                                 <select id="cc_filter_company" onchange="window.salestrack.applyCommandCenterFilters()" style="padding:4px 8px; border:1px solid #fca5a5; border-radius:4px; font-size:11px; outline:none; background:white;">
@@ -3388,11 +3653,125 @@ window.OmnisDashboardV6 = class OmnisDashboardV6 {
                                 </select>
                                 <input type="date" id="cc_filter_date_from" onchange="window.salestrack.applyCommandCenterFilters()" style="padding:3px 8px; border:1px solid #fca5a5; border-radius:4px; font-size:11px; outline:none; background:white;" title="From Date">
                                 <input type="date" id="cc_filter_date_to" onchange="window.salestrack.applyCommandCenterFilters()" style="padding:3px 8px; border:1px solid #fca5a5; border-radius:4px; font-size:11px; outline:none; background:white;" title="To Date">
-                                <div id="cc_due_count_badge" style="font-size:11px; font-weight:800; color:#ef4444; background:#fee2e2; padding:4px 8px; border-radius:12px; margin-left:10px;">${dueQuotes ? dueQuotes.length : 0} Quotes Due</div>
+                                <div id="cc_due_count_badge" style="font-size:11px; font-weight:800; color:#ef4444; background:#fee2e2; padding:4px 8px; border-radius:12px; margin-left:10px;">${dueQuotes ? dueQuotes.length : 0} Quotes Due Today</div>
+                                <button onclick="window.salestrack.selectiveDispatch()" style="background:#0f172a; color:#fff; border:none; padding:5px 14px; border-radius:8px; font-size:11px; font-weight:800; cursor:pointer; display:flex; align-items:center; gap:6px;"><i class="fas fa-paper-plane"></i> Send Selected</button>
                             </div>
                         </div>
                         <div id="cc_global_due_container" style="max-height: 600px; overflow-y: auto;">
                             ${globalDueHtml}
+                        </div>
+                    </div>
+                </div>
+
+                <!-- OVERDUE (NO ENTRY) TAB -->
+                <div id="cc_tab_overdue" style="display:none;">
+                    <div style="background:#ffffff; border:1px solid #fca5a5; border-radius:16px; overflow:hidden; box-shadow:0 10px 25px -5px rgba(185,28,28,0.08);">
+
+                        <!-- OVERDUE HEADER ROW 1: title + count + send button -->
+                        <div style="padding:14px 20px; border-bottom:1px solid #fca5a5; background:#fff5f5; display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:10px;">
+                            <h3 style="margin:0; font-size:13px; font-weight:800; color:#991b1b; display:flex; align-items:center; gap:8px;">
+                                <i class="fas fa-exclamation-triangle" style="color:#dc2626;"></i> Overdue — No Follow-Up Entry Made
+                            </h3>
+                            <div style="display:flex; align-items:center; gap:10px; flex-wrap:wrap;">
+                                <label style="display:flex; align-items:center; gap:6px; cursor:pointer; font-size:11px; color:#991b1b; font-weight:700;">
+                                    <input type="checkbox" id="cc_overdue_select_all" onchange="window.salestrack.toggleOverdueSelectAll(this.checked)" style="width:14px; height:14px; cursor:pointer;"> <span id="cc_overdue_select_all_label">Select All</span>
+                                </label>
+                                <div style="font-size:11px; font-weight:800; color:#dc2626; background:#fee2e2; padding:4px 12px; border-radius:12px;" id="cc_overdue_count_badge">${overdueQuotes.length} Quotes Overdue</div>
+                                <button onclick="window.salestrack.selectiveOverdueDispatch()" style="background:#991b1b; color:#fff; border:none; padding:6px 14px; border-radius:8px; font-size:11px; font-weight:800; cursor:pointer; display:flex; align-items:center; gap:6px; box-shadow:0 2px 8px rgba(185,28,28,0.3);"><i class="fas fa-paper-plane"></i> Send Overdue Selected</button>
+                            </div>
+                        </div>
+
+                        <!-- OVERDUE HEADER ROW 2: filter controls -->
+                        <div style="padding:10px 20px; border-bottom:1px solid #fca5a5; background:#fff0f0; display:flex; align-items:center; gap:12px; flex-wrap:wrap;">
+                            <label style="font-size:11px; font-weight:700; color:#991b1b; display:flex; align-items:center; gap:6px;">
+                                <i class="fas fa-user"></i> Sales Rep:
+                                <select id="cc_overdue_rep_filter" onchange="window.salestrack.filterOverdueByRep(this.value)" style="padding:4px 10px; border:1px solid #fca5a5; border-radius:6px; font-size:12px; outline:none; background:white; color:#334155; font-weight:600; cursor:pointer;">
+                                    <option value="">All Reps (${overdueQuotes.length})</option>
+                                    ${[...new Set(overdueQuotes.map(q => (q.frappe_quotation||{}).custom_sales_person || 'Unassigned'))].sort().map(rep => {
+                                        const cnt = overdueQuotes.filter(q => ((q.frappe_quotation||{}).custom_sales_person||'Unassigned') === rep).length;
+                                        return `<option value="${rep}">${rep} (${cnt})</option>`;
+                                    }).join('')}
+                                </select>
+                            </label>
+                            <button id="cc_overdue_group_btn" onclick="window.salestrack.toggleOverdueGroupBy()" style="background:#fff; border:1px solid #fca5a5; color:#991b1b; padding:5px 12px; border-radius:6px; font-size:11px; font-weight:700; cursor:pointer; display:flex; align-items:center; gap:5px; transition:all 0.2s;">
+                                <i class="fas fa-layer-group"></i> Group by Rep
+                            </button>
+                            <span id="cc_overdue_visible_count" style="font-size:11px; color:#94a3b8;"></span>
+                        </div>
+
+                        <!-- TABLE -->
+                        <div style="max-height:600px; overflow-y:auto;">
+                        ${ overdueQuotes.length === 0
+                            ? `<div style="padding:40px; text-align:center; color:#94a3b8; font-style:italic;"><i class="fas fa-check-circle" style="font-size:24px; color:#10b981; display:block; margin-bottom:8px;"></i>No overdue quotes without entries. Great compliance!</div>`
+                            : `<table style="width:100%; border-collapse:collapse; font-size:13px;" id="cc_overdue_table">
+                                <thead>
+                                    <tr style="background:#fff5f5; border-bottom:2px solid #fca5a5; position:sticky; top:0; z-index:2;">
+                                        <th style="padding:12px 14px; text-align:left; width:40px;"></th>
+                                        <th style="padding:12px 14px; text-align:left; font-weight:800; color:#991b1b; text-transform:uppercase; font-size:11px;">Quote</th>
+                                        <th style="padding:12px 14px; text-align:left; font-weight:800; color:#991b1b; text-transform:uppercase; font-size:11px;">Customer</th>
+                                        <th style="padding:12px 14px; text-align:left; font-weight:800; color:#991b1b; text-transform:uppercase; font-size:11px;">Sales Rep</th>
+                                        <th style="padding:12px 14px; text-align:left; font-weight:800; color:#991b1b; text-transform:uppercase; font-size:11px;">Stage</th>
+                                        <th style="padding:12px 14px; text-align:left; font-weight:800; color:#991b1b; text-transform:uppercase; font-size:11px;">Was Due</th>
+                                        <th style="padding:12px 14px; text-align:left; font-weight:800; color:#991b1b; text-transform:uppercase; font-size:11px;">⏰ Overdue By</th>
+                                        <th style="padding:12px 14px; text-align:left; font-weight:800; color:#10b981; text-transform:uppercase; font-size:11px;">✉️ Reminder</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="cc_overdue_tbody">
+                                    ${(() => {
+                                        // Sort by rep name then days overdue desc
+                                        const sorted = [...overdueQuotes].sort((a,b) => {
+                                            const ra = (a.frappe_quotation||{}).custom_sales_person||'Unassigned';
+                                            const rb = (b.frappe_quotation||{}).custom_sales_person||'Unassigned';
+                                            return ra.localeCompare(rb);
+                                        });
+                                        let lastRep = null;
+                                        return sorted.map(q => {
+                                            const due = q.current_stage === 1 ? q.stage_1_due : (q.current_stage === 2 ? q.stage_2_due : q.stage_3_due);
+                                            const daysOver = due ? Math.floor((new Date(todayStr) - new Date(due)) / 86400000) : 0;
+                                            const daysColor = daysOver > 14 ? '#b91c1c' : (daysOver > 7 ? '#d97706' : '#ef4444');
+                                            const rowBg = daysOver > 14 ? '#fff5f5' : '#fffbeb';
+                                            const fq = q.frappe_quotation || {};
+                                            const rep = fq.custom_sales_person || 'Unassigned';
+                                            const repCnt = overdueQuotes.filter(x => ((x.frappe_quotation||{}).custom_sales_person||'Unassigned') === rep).length;
+                                            // Group header row (hidden by default, shown when groupBy is active)
+                                            let groupHeader = '';
+                                            if (rep !== lastRep) {
+                                                lastRep = rep;
+                                                const initials = rep.split(' ').map(w=>w[0]).join('').toUpperCase().slice(0,2);
+                                                groupHeader = `<tr class="cc_overdue_group_header" data-rep="${rep}" style="display:none; background:#7f1d1d; position:sticky; top:44px; z-index:1;">
+                                                    <td colspan="7" style="padding:8px 14px;">
+                                                        <div style="display:flex; align-items:center; gap:10px;">
+                                                            <div style="width:28px; height:28px; border-radius:50%; background:#dc2626; color:#fff; display:flex; align-items:center; justify-content:center; font-size:11px; font-weight:800;">${initials}</div>
+                                                            <span style="font-weight:800; color:#fca5a5; font-size:12px; text-transform:uppercase; letter-spacing:0.05em;">${rep}</span>
+                                                            <span style="background:#dc2626; color:#fff; padding:2px 8px; border-radius:10px; font-size:10px; font-weight:800;">${repCnt} overdue</span>
+                                                        </div>
+                                                    </td>
+                                                </tr>`;
+                                            }
+                                            const sentAt = q.last_overdue_reminder_sent_at;
+                                            const sentBadge = sentAt
+                                                ? (() => { const d = new Date(sentAt); const ago = Math.floor((Date.now() - d) / 3600000); const label = ago < 1 ? 'Just now' : ago < 24 ? `${ago}h ago` : `${Math.floor(ago/24)}d ago`; return `<span style="background:#d1fae5; color:#065f46; padding:3px 8px; border-radius:10px; font-size:10px; font-weight:800; display:inline-flex; align-items:center; gap:4px;"><i class="fas fa-check"></i> Sent ${label}</span>`; })()
+                                                : `<span style="color:#cbd5e1; font-size:11px;">—</span>`;
+                                            const sentRowBorder = sentAt ? 'border-left:3px solid #10b981;' : '';
+                                            return groupHeader + `<tr class="cc_overdue_row" data-rep="${rep}" style="border-bottom:1px solid #fee2e2; background:${rowBg}; ${sentRowBorder}" onmouseover="this.style.opacity='0.85'" onmouseout="this.style.opacity='1'">
+                                                <td style="padding:12px 14px;" onclick="event.stopPropagation()">
+                                                    <input type="checkbox" class="cc_overdue_checkbox" data-quote="${q.quote_name}" data-rep="${rep}" style="width:15px; height:15px; cursor:pointer; accent-color:#dc2626;">
+                                                </td>
+                                                <td style="padding:12px 14px; color:#2563eb; font-weight:700; cursor:pointer;" onclick="window.salestrack.openQuoteLifecycleModal('${q.quote_name}')">${q.quote_name}</td>
+                                                <td style="padding:12px 14px; color:#334155;">${fq.customer_name || '-'}</td>
+                                                <td style="padding:12px 14px; color:#334155; font-weight:600;">${rep}</td>
+                                                <td style="padding:12px 14px;">
+                                                    <span style="background:#fee2e2; color:#991b1b; padding:3px 8px; border-radius:10px; font-size:11px; font-weight:700;">Stage ${q.current_stage}</span>
+                                                </td>
+                                                <td style="padding:12px 14px; color:#d97706; font-weight:600;">${due||'-'}</td>
+                                                <td style="padding:12px 14px; font-weight:800; color:${daysColor};">${daysOver}d overdue</td>
+                                                <td style="padding:12px 14px;">${sentBadge}</td>
+                                            </tr>`;
+                                        }).join('');
+                                    })()}
+                                </tbody>
+                            </table>`
+                        }
                         </div>
                     </div>
                 </div>
@@ -3426,6 +3805,52 @@ window.OmnisDashboardV6 = class OmnisDashboardV6 {
                         </div>
                         <div style="max-height: 600px; overflow-y: auto;">
                             ${waLogsHtml}
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ARCHIVED (PRIOR YEAR) TAB -->
+                <div id="cc_tab_archived" style="display:none;">
+                    <div style="background:#ffffff; border:1px solid #cbd5e1; border-radius:16px; overflow:hidden; box-shadow:0 10px 25px -5px rgba(0,0,0,0.02);">
+                        <div style="padding:16px 20px; border-bottom:1px solid #e2e8f0; background:#f8fafc; display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:10px;">
+                            <h3 style="margin:0; font-size:13px; font-weight:800; color:#475569; display:flex; align-items:center; gap:8px;">
+                                <i class="fas fa-archive" style="color:#94a3b8;"></i> Archived Quotes &mdash; Prior to ${currentYear}
+                            </h3>
+                            <div style="display:flex; gap:10px; align-items:center;">
+                                <div style="font-size:11px; color:#94a3b8; background:#f1f5f9; padding:4px 12px; border-radius:12px; font-weight:700;">${archivedQuotes.length} archived quotes</div>
+                                <input type="text" id="cc_archive_search" placeholder="Search quote or customer..." oninput="window.salestrack.filterArchived(this.value)" style="padding:5px 10px; border:1px solid #cbd5e1; border-radius:6px; font-size:12px; outline:none; width:200px;">
+                            </div>
+                        </div>
+                        <div id="cc_archived_container" style="max-height:600px; overflow-y:auto;">
+                        ${ archivedQuotes.length === 0
+                            ? `<div style="padding:40px; text-align:center; color:#94a3b8; font-style:italic;"><i class="fas fa-inbox" style="font-size:24px; display:block; margin-bottom:8px;"></i>No archived quotes found.</div>`
+                            : `<table style="width:100%; border-collapse:collapse; font-size:13px;" id="cc_archive_table">
+                                <thead>
+                                    <tr style="background:#f1f5f9; border-bottom:2px solid #e2e8f0; position:sticky; top:0; z-index:1;">
+                                        <th style="padding:12px 16px; text-align:left; font-weight:800; color:#475569; text-transform:uppercase; font-size:11px;">Quote</th>
+                                        <th style="padding:12px 16px; text-align:left; font-weight:800; color:#475569; text-transform:uppercase; font-size:11px;">Customer</th>
+                                        <th style="padding:12px 16px; text-align:left; font-weight:800; color:#475569; text-transform:uppercase; font-size:11px;">Sales Rep</th>
+                                        <th style="padding:12px 16px; text-align:left; font-weight:800; color:#475569; text-transform:uppercase; font-size:11px;">Date</th>
+                                        <th style="padding:12px 16px; text-align:left; font-weight:800; color:#475569; text-transform:uppercase; font-size:11px;">Stage</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="cc_archive_tbody">
+                                    ${archivedQuotes.map(q => {
+                                        const fq = q.frappe_quotation || {};
+                                        const statusColor = q.is_closed ? '#10b981' : '#64748b';
+                                        const statusLabel = q.is_closed ? 'Closed' : `Stage ${q.current_stage}`;
+                                        const statusBg = q.is_closed ? '#ecfdf5' : '#f1f5f9';
+                                        return '<tr style="border-bottom:1px solid #f1f5f9; cursor:pointer;" onclick="window.salestrack.openQuoteLifecycleModal(\'' + q.quote_name + '\')" onmouseover="this.style.backgroundColor=\'#f8fafc\'" onmouseout="this.style.backgroundColor=\'transparent\'">'
+                                            + '<td style="padding:11px 16px; color:#2563eb; font-weight:600;">' + q.quote_name + '</td>'
+                                            + '<td style="padding:11px 16px; color:#334155;">' + (fq.customer_name || '-') + '</td>'
+                                            + '<td style="padding:11px 16px; color:#334155;">' + (fq.custom_sales_person || '-') + '</td>'
+                                            + '<td style="padding:11px 16px; color:#94a3b8; font-size:12px;">' + (fq.transaction_date || '-') + '</td>'
+                                            + '<td style="padding:11px 16px;"><span style="background:' + statusBg + '; color:' + statusColor + '; padding:3px 8px; border-radius:10px; font-size:11px; font-weight:700;">' + statusLabel + '</span></td>'
+                                            + '</tr>';
+                                    }).join('')}
+                                </tbody>
+                            </table>`
+                        }
                         </div>
                     </div>
                 </div>
@@ -6015,22 +6440,22 @@ window.OmnisDashboardV6 = class OmnisDashboardV6 {
 
                 return `
                 <tr class="machine-row" data-mid="${m.name || ''}" style="background:${i % 2 === 0 ? '#ffffff' : '#f8fafc'}; border-bottom:1px solid #e2e8f0;">
-                    <td style="padding:8px 12px; border-bottom:1px solid #f1f5f9;">
-                        <input type="text" class="m-item" data-item="${m.item || ''}" value="${(m.item_name || m.machine || m.item || '').replace(/\"/g, '&quot;')}" placeholder="Machine/Item" style="width:100%; padding:6px 8px; border:1px solid #cbd5e1; border-radius:4px; font-size:12px; background:white;">
+                    <td style="padding:12px; border-bottom:1px solid #f1f5f9;">
+                        <input type="text" class="m-item" data-item="${m.item || ''}" value="${(m.item_name || m.machine || m.item || '').replace(/\"/g, '&quot;')}" placeholder="Machine/Item" style="width:100%; padding:8px; border:1px solid #cbd5e1; border-radius:6px; font-size:12px; background:white;">
                     </td>
-                    <td style="padding:8px 12px; border-bottom:1px solid #f1f5f9;">
-                        <input type="number" class="m-qty" value="${m.qty || 1}" style="width:100%; padding:6px 8px; border:1px solid #cbd5e1; border-radius:4px; font-size:13px; font-weight:700; text-align:center; background:white; color:#0f172a; box-shadow:inset 0 1px 2px rgba(0,0,0,0.02);">
+                    <td style="padding:12px; border-bottom:1px solid #f1f5f9;">
+                        <input type="number" class="m-qty" value="${m.qty || 1}" style="width:100%; padding:10px 8px; border:1px solid #cbd5e1; border-radius:8px; font-size:14px; font-weight:700; text-align:center; background:white; color:#0f172a; box-shadow:inset 0 1px 2px rgba(0,0,0,0.02);">
                     </td>
-                    <td style="padding:8px 12px; border-bottom:1px solid #f1f5f9;">
-                        <input type="date" class="m-target" value="${m.target_handover_date || m.target_handover || ''}" readonly style="width:100%; padding:6px 8px; border:1px solid #e2e8f0; border-radius:4px; font-size:12px; background:#f1f5f9; color:#64748b; cursor:not-allowed;" title="Target date is locked and cannot be changed">
+                    <td style="padding:12px; border-bottom:1px solid #f1f5f9;">
+                        <input type="date" class="m-target" value="${m.target_handover_date || m.target_handover || ''}" readonly style="width:100%; padding:8px; border:1px solid #e2e8f0; border-radius:6px; font-size:12px; background:#f1f5f9; color:#64748b; cursor:not-allowed;" title="Target date is locked and cannot be changed">
                     </td>
-                    <td style="padding:8px 12px; border-bottom:1px solid #f1f5f9;">
-                        <input type="date" class="m-revised" value="${m.revised_handover_date || m.revised_handover || ''}" style="width:100%; padding:6px 8px; border:1px solid #cbd5e1; border-radius:4px; font-size:12px; background:white;">
+                    <td style="padding:12px; border-bottom:1px solid #f1f5f9;">
+                        <input type="date" class="m-revised" value="${m.revised_handover_date || m.revised_handover || ''}" style="width:100%; padding:8px; border:1px solid #cbd5e1; border-radius:6px; font-size:12px; background:white;">
                     </td>
-                    <td style="padding:8px 12px; border-bottom:1px solid #f1f5f9;">
-                        <input type="date" class="m-actual" value="${m.actual_handover_date || ''}" style="width:100%; padding:6px 8px; border:1px solid #cbd5e1; border-radius:4px; font-size:12px; background:white;">
+                    <td style="padding:12px; border-bottom:1px solid #f1f5f9;">
+                        <input type="date" class="m-actual" value="${m.actual_handover_date || ''}" style="width:100%; padding:8px; border:1px solid #cbd5e1; border-radius:6px; font-size:12px; background:white;">
                     </td>
-                    <td style="padding:8px 12px; border-bottom:1px solid #f1f5f9;">
+                    <td style="padding:10px 12px; border-bottom:1px solid #f1f5f9;">
                          <div style="display:flex; gap:8px; align-items:stretch; width:100%;">
                             <div style="flex:1; display:flex; flex-direction:column; gap:6px;">
                                 <textarea class="m-notes" rows="2" style="flex:1; min-height:60px; padding:8px; border:1px solid #cbd5e1; border-radius:8px; font-size:12px; font-family:inherit; background:white; line-height:1.4; resize:vertical; border-color:#d1d5db;" placeholder="Machine status...">${m.notes || ''}</textarea>
@@ -6066,9 +6491,9 @@ window.OmnisDashboardV6 = class OmnisDashboardV6 {
         // Initial tbody content will be set by refreshContactsTable
 
         const content = `
-           <div style="padding: 16px; display:flex; flex-direction:column; gap:16px; background:#f8fafc;">
+           <div style="padding: 24px; display:flex; flex-direction:column; gap:24px; background:#f8fafc;">
                <!-- Header Info -->
-               <div style="display:flex; justify-content:space-between; align-items:flex-start; background:white; padding:16px; border-radius:8px; border:1px solid #e2e8f0; box-shadow:0 1px 2px rgba(0,0,0,0.05);">
+               <div style="display:flex; justify-content:space-between; align-items:flex-start; background:white; padding:20px; border-radius:12px; border:1px solid #e2e8f0; box-shadow:0 1px 3px rgba(0,0,0,0.05);">
                     <div>
                         <div style="font-size:11px; font-weight:700; color:#64748b; margin-bottom:6px; text-transform:uppercase; letter-spacing:0.5px;">Customer</div>
                         <div style="font-size:18px; font-weight:700; color:#0f172a;">${(order ? order.customer : (fullDoc ? fullDoc.customer_name : 'Unknown')).replace(/"/g, '')}</div>
@@ -6118,18 +6543,18 @@ window.OmnisDashboardV6 = class OmnisDashboardV6 {
                             <span>MACHINES</span>
                             <span style="background:#e2e8f0; color:#64748b; font-size:10px; padding:2px 8px; border-radius:99px; font-weight:600;">${machines.length}</span>
                        </div>
-                       <button onclick="salestrack.addMachineRow()" style="font-size:12px; background:#ffffff; color:#0f172a; border:1px solid #cbd5e1; padding:6px 12px; border-radius:6px; font-weight:600; cursor:pointer; box-shadow:0 1px 2px rgba(0,0,0,0.05); transition:all 0.2s;">+ Add Machine</button>
+                       <button onclick="salestrack.addMachineRow()" style="font-size:12px; background:#8b2219; color:white; border:none; padding:8px 16px; border-radius:6px; font-weight:700; cursor:pointer; box-shadow:0 1px 2px rgba(0,0,0,0.1); transition:all 0.2s;">+ Add Machine</button>
                    </div>
-                   <div style="border:1px solid #e2e8f0; border-radius:8px; overflow:hidden; box-shadow:0 1px 2px rgba(0,0,0,0.05); background:white;">
-                       <table style="width:100%; border-collapse:separate; border-spacing:0; font-size:12px;">
-                           <thead style="background:#f8fafc; color:#475569; font-weight:700; font-size:11px; text-transform:uppercase; letter-spacing:0.05em; border-bottom:1px solid #e2e8f0;">
+                   <div style="border:1px solid #e2e8f0; border-radius:8px; overflow:hidden; box-shadow:0 4px 6px -1px rgba(0,0,0,0.05); background:white;">
+                       <table style="width:100%; border-collapse:separate; border-spacing:0; font-size:13px;">
+                           <thead style="background:#8b2219; color:white; font-weight:800; font-size:11px; text-transform:uppercase; letter-spacing:0.05em;">
                                <tr>
-                                   <th style="padding:10px 12px; text-align:left; width:22%; color:#475569; border-bottom:1px solid #e2e8f0;">Machine / Item</th>
-                                   <th style="padding:10px 12px; text-align:center; width:6%; color:#475569; border-bottom:1px solid #e2e8f0;">Qty</th>
-                                   <th style="padding:10px 12px; text-align:left; width:13%; color:#475569; border-bottom:1px solid #e2e8f0;">Target Date</th>
-                                   <th style="padding:10px 12px; text-align:left; width:13%; color:#475569; border-bottom:1px solid #e2e8f0;">Revised Date</th>
-                                   <th style="padding:10px 12px; text-align:left; width:13%; color:#475569; border-bottom:1px solid #e2e8f0;">Actual Date</th>
-                                   <th style="padding:10px 12px; text-align:left; width:33%; color:#475569; border-bottom:1px solid #e2e8f0;">Status</th>
+                                   <th style="padding:16px 12px; text-align:left; width:22%; color:white;">Machine / Item</th>
+                                   <th style="padding:16px 12px; text-align:center; width:6%; color:white;">Qty</th>
+                                   <th style="padding:16px 12px; text-align:left; width:13%; color:white;">Target Date</th>
+                                   <th style="padding:16px 12px; text-align:left; width:13%; color:white;">Revised Date</th>
+                                   <th style="padding:16px 12px; text-align:left; width:13%; color:white;">Actual Date</th>
+                                   <th style="padding:16px 12px; text-align:left; width:33%; color:white;">Status</th>
                                </tr>
                            </thead>
                            <tbody id="machines-tbody">
@@ -6143,18 +6568,18 @@ window.OmnisDashboardV6 = class OmnisDashboardV6 {
                <div style="display:flex; flex-direction:column; gap:12px;">
                     <div style="display:flex; justify-content:space-between; align-items:center;">
                         <div style="font-size:14px; font-weight:700; color:#334155;">CONTACTS</div>
-                        <button onclick="salestrack.addContactRow()" style="font-size:12px; background:#ffffff; color:#0f172a; border:1px solid #cbd5e1; padding:6px 12px; border-radius:6px; font-weight:600; cursor:pointer; box-shadow:0 1px 2px rgba(0,0,0,0.05); transition:all 0.2s;">+ Add Contact</button>
+                        <button onclick="salestrack.addContactRow()" style="font-size:12px; background:white; color:#8b2219; border:1px solid #8b2219; padding:8px 16px; border-radius:6px; font-weight:700; cursor:pointer; transition:all 0.2s;">+ Add Contact</button>
                     </div>
                     
                     <div style="border:1px solid #e2e8f0; border-radius:8px; overflow:hidden; background:white; box-shadow:0 1px 2px rgba(0,0,0,0.05);">
-                        <table style="width:100%; border-collapse:separate; border-spacing:0; font-size:12px;">
-                            <thead style="background:#f8fafc; color:#475569; font-weight:700; font-size:11px; text-transform:uppercase; letter-spacing:0.05em; border-bottom:1px solid #e2e8f0;">
+                        <table style="width:100%; border-collapse:separate; border-spacing:0; font-size:13px;">
+                            <thead style="background:#8b2219; color:white; font-weight:800; font-size:11px; text-transform:uppercase; letter-spacing:0.05em; border-bottom:2px solid #641a13;">
                                 <tr>
-                                    <th style="padding:10px 12px; text-align:left; width:15%; color:#475569; border-bottom:1px solid #e2e8f0;">Salutation</th>
-                                    <th style="padding:10px 12px; text-align:left; width:30%; color:#475569; border-bottom:1px solid #e2e8f0;">Name</th>
-                                    <th style="padding:10px 12px; text-align:left; width:25%; color:#475569; border-bottom:1px solid #e2e8f0;">Phone</th>
-                                    <th style="padding:10px 12px; text-align:left; width:25%; color:#475569; border-bottom:1px solid #e2e8f0;">Email</th>
-                                    <th style="width:5%; color:#475569; border-bottom:1px solid #e2e8f0;"></th>
+                                    <th style="padding:12px; text-align:left; width:15%; color:white;">Salutation</th>
+                                    <th style="padding:12px; text-align:left; width:30%; color:white;">Name</th>
+                                    <th style="padding:12px; text-align:left; width:25%; color:white;">Phone</th>
+                                    <th style="padding:12px; text-align:left; width:25%; color:white;">Email</th>
+                                    <th style="width:5%; color:white;"></th>
                                 </tr>
                             </thead>
                             <tbody id="contacts-tbody">
@@ -6188,41 +6613,26 @@ window.OmnisDashboardV6 = class OmnisDashboardV6 {
                      </div>
 
                      <!-- Right: Standard Actions -->
-                     <div style="display:flex; gap:12px; flex-wrap:wrap; align-items:center;">
-                        <span id="auto-save-indicator" style="font-size:12px; font-weight:700; color:#10b981; margin-right:8px; opacity:0; transition:opacity 0.3s;">&#10003; Auto-saved</span>
-                        <button onclick="salestrack.closeListModal()" style="padding:12px 24px; border:1px solid #cbd5e1; background:white; color:#475569; border-radius:8px; font-size:14px; font-weight:600; cursor:pointer;">Close</button>
+                     <div style="display:flex; gap:12px; flex-wrap:wrap;">
+                        <button onclick="salestrack.closeListModal()" style="padding:12px 24px; border:1px solid #cbd5e1; background:white; color:#475569; border-radius:8px; font-size:14px; font-weight:600; cursor:pointer;">Cancel</button>
                         <button id="btn-send-email-update" onclick="salestrack.initEmailUpdate('${(reportId || '').replace(/'/g, "\\'").replace(/"/g, '&quot;')}')" style="padding:12px 24px; background:#1d4ed8; color:white; border:none; border-radius:8px; font-size:14px; font-weight:700; cursor:pointer; display:flex; align-items:center; gap:8px; box-shadow:0 10px 15px -3px rgba(29, 78, 216, 0.25); transition:all 0.2s;">
                            <span style="font-size:18px;">&#128231;</span> Send Email
                         </button>
                         <button id="btn-send-whatsapp-update" onclick="salestrack.initWhatsAppUpdate('${(reportId || '').replace(/'/g, "\\'").replace(/"/g, '&quot;')}', '${(machineId || '').replace(/'/g, "\\'").replace(/"/g, '&quot;')}')" style="padding:12px 24px; background:#25d366; color:white; border:none; border-radius:8px; font-size:14px; font-weight:700; cursor:pointer; display:flex; align-items:center; gap:8px; box-shadow:0 10px 15px -3px rgba(37, 211, 102, 0.2); transition:all 0.2s;">
                            <span style="font-size:18px;">&#128172;</span> WhatsApp Update
                         </button>
+                        <button id="btn-save-order-changes" class="btn-primary" style="padding:12px 32px; background:#8b2219; color:white; border:none; border-radius:8px; font-size:14px; font-weight:700; cursor:pointer; box-shadow:0 10px 15px -3px rgba(139, 34, 25, 0.25);">Save Changes</button>
                      </div>
                 </div>
            </div>
        `;
 
-        this.openListModal("Edit Order Details", content, "1150px");
+        this.openListModal("Edit Order Details", content, "1400px");
         this.refreshContactsTable(); // ✅ Populate contacts and bind listeners immediately
 
-        // Auto-save Logic
-        const modalBody = document.getElementById('dash-generic-body');
-        if (modalBody) {
-            const triggerSave = () => {
-                const indicator = document.getElementById('auto-save-indicator');
-                if (indicator) {
-                    indicator.textContent = 'Saving...';
-                    indicator.style.color = '#64748b';
-                    indicator.style.opacity = '1';
-                }
-                clearTimeout(this._autoSaveTimer);
-                this._autoSaveTimer = setTimeout(() => {
-                    this.saveOrderFull(reportId, machineId, false);
-                }, 800);
-            };
-            modalBody.addEventListener('input', triggerSave);
-            modalBody.addEventListener('change', triggerSave);
-        }
+        // Bind Listeners (Safe method for quotes)
+        const btnSave = document.getElementById('btn-save-order-changes');
+        if (btnSave) btnSave.onclick = () => this.saveOrderFull(reportId, machineId);
 
         const btnDeleteConfirm = document.getElementById('btn-confirm-delete-order');
         if (btnDeleteConfirm) btnDeleteConfirm.onclick = () => this.confirmDeleteOrder(reportId);
@@ -6331,7 +6741,7 @@ window.OmnisDashboardV6 = class OmnisDashboardV6 {
         });
     }
 
-    async saveOrderFull(reportId, machineId, closeAfter = true) {
+    async saveOrderFull(reportId, machineId) {
         // 1. Get Parent Status
         const status = document.getElementById('edit-order-status').value;
         const isTermsCheckbox = document.getElementById('edit-order-is-terms');
@@ -6404,16 +6814,11 @@ window.OmnisDashboardV6 = class OmnisDashboardV6 {
         try {
             const sys = window.getCurrentSystem ? window.getCurrentSystem() : { baseUrl: "https://salestrack.powerstar.co.zw" };
 
-            let orderRec = (window.olOrdersData || []).find(o => o.report_id === reportId);
-            let safeCompany = orderRec ? orderRec.company : (this._currentFullDoc?.company || this._currentFullDoc?.frappe_quotation?.company || "");
-
             const params = {
                 report_id: reportId || "",
                 machine_id: machineId || "",
                 status: status || "",
                 is_payment_terms: is_payment_terms,
-                company: safeCompany,
-                owner: this._currentFullDoc?.owner || "",
                 contacts: this._tempContacts || [],
                 machines: machinesUpdates,
                 new_machines: newMachines,
@@ -6446,18 +6851,10 @@ window.OmnisDashboardV6 = class OmnisDashboardV6 {
                 }
                 
                 this.showToast("Tracking Order Saved", "success");
-                
-                const indicator = document.getElementById('auto-save-indicator');
-                if (indicator) { indicator.innerHTML = '&#10003; Auto-saved'; indicator.style.color = '#10b981'; setTimeout(() => { if(indicator.innerHTML.includes('Auto-saved')) indicator.style.opacity = '0'; }, 2000); }
-
-                if (closeAfter) {
-                    this.closeListModal();
-                    const refreshBtn = document.getElementById('ol-refresh-btn');
-                    if (refreshBtn) refreshBtn.click();
-                    else if (window.loadOrdersList) window.loadOrdersList(true);
-                } else {
-                    if (window.loadOrdersList) window.loadOrdersList(true);
-                }
+                this.closeListModal();
+                const refreshBtn = document.getElementById('ol-refresh-btn');
+                if (refreshBtn) refreshBtn.click();
+                else if (window.loadOrdersList) window.loadOrdersList(true);
                 
                 if (btn) { btn.textContent = "Save Changes"; btn.disabled = false; }
                 return;
@@ -6475,17 +6872,10 @@ window.OmnisDashboardV6 = class OmnisDashboardV6 {
                     console.error("[Supabase Sync Error]", err);
                 }
 
-                const indicator = document.getElementById('auto-save-indicator');
-                if (indicator) { indicator.innerHTML = '&#10003; Auto-saved'; indicator.style.color = '#10b981'; setTimeout(() => { if(indicator.innerHTML.includes('Auto-saved')) indicator.style.opacity = '0'; }, 2000); }
-
-                if (closeAfter) {
-                    this.closeListModal();
-                    const refreshBtn = document.getElementById('ol-refresh-btn');
-                    if (refreshBtn) refreshBtn.click();
-                    else if (window.loadOrdersList) window.loadOrdersList(true);
-                } else {
-                    if (window.loadOrdersList) window.loadOrdersList(true);
-                }
+                this.closeListModal();
+                const refreshBtn = document.getElementById('ol-refresh-btn');
+                if (refreshBtn) refreshBtn.click();
+                else if (window.loadOrdersList) window.loadOrdersList(true);
             } else {
                 throw new Error("Save Failed: " + (payload?.error || JSON.stringify(payload)));
             }
@@ -7218,16 +7608,6 @@ window.OmnisDashboardV6 = class OmnisDashboardV6 {
             console.error("WhatsApp built-in requires Desktop environment");
             return;
         }
-        try {
-            const checkRes = await window.electron.invoke('supabase:query', {
-                table: 'omnis_salestrack_notifications', method: 'select', params: { columns: 'notified_wa', filters: { report_id: reportId } }
-            });
-            if (checkRes && checkRes.data && checkRes.data.length > 0 && checkRes.data[0].notified_wa) {
-                const confirmResend = confirm("⚠️ You have already sent a WhatsApp update for this order.\nAre you sure you want to send another one?");
-                if (!confirmResend) return;
-            }
-        } catch(e) { console.error("Could not check notified_wa", e); }
-
 
         const stats = await window.electron.invoke('whatsapp:get-status');
         if (stats.status !== 'CONNECTED') {
@@ -8017,22 +8397,8 @@ window.OmnisDashboardV6 = class OmnisDashboardV6 {
         };
     }
     async sendEmailUpdate(btn, originalHtml, emailContacts, reportId, customerName, company, machines, ccList) {
-        if (btn) { btn.disabled = true; btn.innerHTML = `<span>&#9203;</span> Checking...`; }
+        if (btn) { btn.disabled = true; btn.innerHTML = `<span>&#9203;</span> Sending...`; }
         try {
-            // Check if already sent
-            if (window.electron) {
-                const checkRes = await window.electron.invoke('supabase:query', {
-                    table: 'omnis_salestrack_notifications', method: 'select', params: { columns: 'notified_email', filters: { report_id: reportId } }
-                });
-                if (checkRes && checkRes.data && checkRes.data.length > 0 && checkRes.data[0].notified_email) {
-                    const confirmResend = confirm("⚠️ You have already sent an email for this order.\nAre you sure you want to send another one?");
-                    if (!confirmResend) {
-                        if (btn) { btn.disabled = false; btn.innerHTML = originalHtml || `<span style="font-size:18px;">&#128231;</span> Send Email`; }
-                        return;
-                    }
-                }
-            }
-
             const recipientEmails = emailContacts.map(c => c.email).join(',');
             const greetingName = emailContacts.map(c => c.salutation ? `${c.salutation} ${c.name}` : c.name).join(' and ') || 'Valued Customer';
             const subject = `Order Status Report \u2014 ${customerName}`;
@@ -8045,31 +8411,18 @@ window.OmnisDashboardV6 = class OmnisDashboardV6 {
                 return { ...m, actual: dm?.actual_handover_date || '', notes: dm?.notes || '' };
             });
             const html = this._buildEmailHTML(customerName, greetingName, company, enriched, doc);
-            
-            // USE OUTBOX QUEUE INSTEAD OF SENDING IMMEDIATELY
-            const payload = {
+            if (!window.electron || !window.electron.invoke) throw new Error('Electron IPC unavailable');
+            const res = await window.electron.invoke('email:send', {
                 to: recipientEmails, cc: ccList.join(','), subject, html,
                 relatedDoc: reportId, relatedType: 'order'
-            };
-            
-            if (window.OutboxManager) {
-                window.OutboxManager.addToQueue('email', payload, `Email to ${customerName}`, `To: ${recipientEmails}`);
+            });
+            if (res && res.ok) {
                 if (btn) btn.innerHTML = `<span>&#9989;</span> Queued!`;
+                this.showToast(`Email queued for ${emailContacts.length} recipient${emailContacts.length > 1 ? 's' : ''}!`, 'success');
             } else {
-                // Fallback
-                if (!window.electron || !window.electron.invoke) throw new Error('Electron IPC unavailable');
-                const res = await window.electron.invoke('email:send', payload);
-                if (res && res.ok) {
-                    if (btn) btn.innerHTML = `<span>&#9989;</span> Sent!`;
-                    this.showToast(`Email sent for ${emailContacts.length} recipient${emailContacts.length > 1 ? 's' : ''}!`, 'success');
-                } else {
-                    throw new Error(res?.error || 'Failed to send email.');
-                }
+                throw new Error(res?.error || 'Failed to queue email.');
             }
-            
             setTimeout(() => { if (btn) { btn.disabled = false; btn.innerHTML = originalHtml || `<span style="font-size:18px;">&#128231;</span> Send Email`; } }, 3000);
-            return; // Exit normal flow
-
         } catch (err) {
             console.error('[Email Update Error]', err);
             this.showToast('Email failed: ' + err.message, 'error');
@@ -8472,8 +8825,6 @@ window.OmnisDashboardV6 = class OmnisDashboardV6 {
         document.getElementById('defect-input-customer').value = customerName;
         
         overlay.classList.remove('hidden');
-        overlay.style.display = 'flex';
-        overlay.style.zIndex = '9999999';
         
         this.loadDefectsForMachine(machineName, orderId);
     }
@@ -8597,183 +8948,6 @@ window.OmnisDashboardV6 = class OmnisDashboardV6 {
     }
 
 }
-
-
-
-// ─────────────────────────────────────────────────────────────────────────────
-// OEM REPORTS — Global helper functions (defined AFTER the main class)
-// ─────────────────────────────────────────────────────────────────────────────
-
-/**
- * Renders the OEM Performance Breakdown table into `container`.
- * Called from OmnisDashboardV6.renderOEMChart() after data is loaded.
- *
- * @param {HTMLElement} container - Target DOM element (widget-oem-kpis)
- * @param {Array}       oemData   - Array of OEM objects from dashboard data
- * @param {string}      period    - Human-readable period label (e.g. "This Year")
- */
-window._renderOEMProcurementTable = function (container, oemData, period) {
-    if (!container) return;
-
-    if (!oemData || oemData.length === 0) {
-        container.innerHTML = `
-            <div style="padding:40px; text-align:center; color:#94a3b8; font-size:13px;">
-                No OEM data available.
-            </div>`;
-        return;
-    }
-
-    const totalSales  = oemData.reduce((a, b) => a + (b.sales  || b.total_qty || 0), 0);
-    const totalQuotes = oemData.reduce((a, b) => a + (b.quotes || 0), 0);
-    const totalConv   = totalQuotes > 0 ? ((totalSales / totalQuotes) * 100).toFixed(1) + '%' : '—';
-
-    const sorted = [...oemData].sort(
-        (a, b) => (b.sales || b.total_qty || 0) - (a.sales || a.total_qty || 0)
-    );
-
-    const rows = sorted.map(d => {
-        const sales    = d.sales || d.total_qty || 0;
-        const quotes   = d.quotes || 0;
-        const convRate = quotes > 0 ? ((sales / quotes) * 100).toFixed(1) : null;
-        const convDisp = convRate ? `${convRate}%` : '—';
-        const sharePct = totalSales > 0 ? ((sales / totalSales) * 100).toFixed(1) : 0;
-        const barWidth = totalSales > 0 ? Math.round((sales / totalSales) * 100) : 0;
-
-        const convColor = !convRate          ? '#94a3b8'
-            : parseFloat(convRate) >= 20     ? '#10b981'
-            : parseFloat(convRate) >= 10     ? '#f59e0b'
-            :                                  '#ef4444';
-
-        // onclick uses data-oem attribute to avoid quote-escaping inside HTML
-        return `
-            <tr class="oem-perf-row"
-                data-oem="${d.oem.replace(/"/g, '&quot;')}"
-                onmouseout="this.style.background=''"
-                onmouseover="this.style.background='#f8fafc'"
-                onclick="window._oemRowClick(this)"
-                style="border-bottom:1px solid #f1f5f9; cursor:pointer;">
-                <td style="padding:10px 14px; font-weight:700; color:#0f172a;">
-                    <div style="font-size:13px;">${d.oem}</div>
-                    <div style="margin-top:5px; height:4px; background:#f1f5f9; border-radius:4px; overflow:hidden; width:120px;">
-                        <div style="height:100%; width:${barWidth}%; background:linear-gradient(90deg,#8b2219,#c0392b); border-radius:4px;"></div>
-                    </div>
-                </td>
-                <td style="padding:10px 14px; text-align:center; font-weight:800; font-size:15px; color:#0f172a;">${sales}</td>
-                <td style="padding:10px 14px; text-align:center; font-weight:600; color:#475569;">${quotes}</td>
-                <td style="padding:10px 14px; text-align:center;">
-                    <span style="font-size:12px; font-weight:800; color:${convColor};">${convDisp}</span>
-                </td>
-                <td style="padding:10px 14px; text-align:right; font-size:12px; font-weight:700; color:#64748b;">${sharePct}%</td>
-                <td style="padding:10px 14px; text-align:center;">
-                    <button class="oem-view-btn"
-                            data-oem="${d.oem.replace(/"/g, '&quot;')}"
-                            onclick="event.stopPropagation(); window._oemRowClick(this)"
-                            style="padding:4px 10px; background:#8b2219; color:#fff; border:none; border-radius:6px;
-                                   font-size:11px; font-weight:700; cursor:pointer; white-space:nowrap;"
-                            onmouseover="this.style.background='#6d1a14'"
-                            onmouseout="this.style.background='#8b2219'">
-                        View Report
-                    </button>
-                </td>
-            </tr>`;
-    }).join('');
-
-    container.innerHTML = `
-        <div style="background:#fff; border:1px solid #e2e8f0; border-radius:14px;
-                    overflow:hidden; box-shadow:0 1px 4px rgba(0,0,0,0.04);">
-            <div style="padding:16px 20px; border-bottom:1px solid #f1f5f9;
-                        display:flex; align-items:center; justify-content:space-between;">
-                <h3 style="margin:0; font-size:13px; font-weight:800; color:#0f172a;
-                            text-transform:uppercase; letter-spacing:0.06em;">
-                    <i class="fas fa-table" style="color:#8b2219; margin-right:8px;"></i>
-                    OEM Performance Breakdown
-                </h3>
-                <span style="font-size:11px; color:#94a3b8; font-weight:600;">${period}</span>
-            </div>
-            <div style="overflow-x:auto;">
-                <table style="width:100%; border-collapse:collapse; font-size:13px;">
-                    <thead>
-                        <tr style="background:#f8fafc;">
-                            <th style="padding:10px 14px; text-align:left;   font-size:11px; font-weight:700; color:#64748b; text-transform:uppercase; letter-spacing:0.05em;">OEM / Brand</th>
-                            <th style="padding:10px 14px; text-align:center; font-size:11px; font-weight:700; color:#64748b; text-transform:uppercase;">Sales</th>
-                            <th style="padding:10px 14px; text-align:center; font-size:11px; font-weight:700; color:#64748b; text-transform:uppercase;">Quotes</th>
-                            <th style="padding:10px 14px; text-align:center; font-size:11px; font-weight:700; color:#64748b; text-transform:uppercase;">Conv %</th>
-                            <th style="padding:10px 14px; text-align:right;  font-size:11px; font-weight:700; color:#64748b; text-transform:uppercase;">Share</th>
-                            <th style="padding:10px 14px; text-align:center; font-size:11px; font-weight:700; color:#64748b; text-transform:uppercase;">Action</th>
-                        </tr>
-                    </thead>
-                    <tbody>${rows}</tbody>
-                    <tfoot>
-                        <tr style="background:#f8fafc; border-top:2px solid #e2e8f0;">
-                            <td style="padding:10px 14px; font-weight:900; font-size:13px; color:#0f172a;">TOTAL</td>
-                            <td style="padding:10px 14px; text-align:center; font-weight:900; font-size:15px; color:#8b2219;">${totalSales}</td>
-                            <td style="padding:10px 14px; text-align:center; font-weight:700; color:#475569;">${totalQuotes}</td>
-                            <td style="padding:10px 14px; text-align:center; font-weight:800; color:#10b981; font-size:12px;">${totalConv}</td>
-                            <td style="padding:10px 14px; text-align:right;  font-weight:700; color:#64748b;">100%</td>
-                            <td></td>
-                        </tr>
-                    </tfoot>
-                </table>
-            </div>
-        </div>`;
-};
-
-/**
- * Opens the OEM breakdown modal for the OEM named in a row's data-oem attribute.
- * Used by oem-perf-row rows and View Report buttons to avoid inline quote issues.
- *
- * @param {HTMLElement} el - The clicked row or button element
- */
-window._oemRowClick = function (el) {
-    const row = el.closest('[data-oem]') || el;
-    const oem = row.getAttribute('data-oem');
-    if (oem && window.salestrack && window.salestrack.openOEMBreakdownModal) {
-        window.salestrack.openOEMBreakdownModal(oem);
-    } else if (oem && window.omnisDashboard && window.omnisDashboard.openOEMBreakdownModal) {
-        window.omnisDashboard.openOEMBreakdownModal(oem);
-    }
-};
-
-/**
- * Toggles the "Hot Lead" flag for a Quotation, persisted in localStorage.
- * Called from the 3-dots action menu on the Quotations Details tab.
- *
- * @param {string}          docname - Quotation name (e.g. "SAL-QTN-2026-00042")
- * @param {boolean|string}  isHot   - Current hot state (true = currently hot, will remove)
- * @param {Event}           event   - Click event (stopped from bubbling)
- */
-window.toggleQuoteHot = function (docname, isHot, event) {
-    if (event) event.stopPropagation();
-    try {
-        let hotCache = {};
-        try { hotCache = JSON.parse(localStorage.getItem('local_hot_leads') || '{}'); } catch (e) { /* ignore parse errors */ }
-
-        if (isHot === true || isHot === 'true') {
-            delete hotCache[docname];
-        } else {
-            hotCache[docname] = true;
-        }
-        localStorage.setItem('local_hot_leads', JSON.stringify(hotCache));
-
-        // Refresh the currently open OEM modal so the hot badge updates immediately
-        const titleEl = document.querySelector('.modal-title');
-        if (!titleEl) return;
-        const oemName = titleEl.innerText
-            .replace('Details: ', '')
-            .replace('Management Report: ', '')
-            .trim();
-        const periodFilter = document.getElementById('oem-period-filter');
-        const period = periodFilter ? periodFilter.value : 'This Year';
-
-        if (window.salestrack && window.salestrack.openOEMBreakdownModal) {
-            window.salestrack.openOEMBreakdownModal(oemName, period);
-        } else if (window.omnisDashboard && window.omnisDashboard.openOEMBreakdownModal) {
-            window.omnisDashboard.openOEMBreakdownModal(oemName, period);
-        }
-    } catch (err) {
-        console.error('toggleQuoteHot failed:', err);
-    }
-};
 
 // Initialize settings on load
 document.addEventListener('DOMContentLoaded', () => {
@@ -9342,188 +9516,4 @@ window.OmnisDashboardV6.prototype.deleteStockMapping = async function(brand) {
     }
 };
 
-
-
-
-// ==========================================
-// OUTBOX MANAGER (150s Recall System)
-// ==========================================
-window.OutboxManager = {
-    queue: [],
-    timer: null,
-    recallWindowMs: 150000, // 150 seconds
-
-    init() {
-        if (this.timer) clearInterval(this.timer);
-        this.timer = setInterval(() => this.tick(), 1000);
-        this.render();
-    },
-
-    addToQueue(type, payload, displayTitle, displayDesc) {
-        const item = {
-            id: 'msg_' + Date.now() + '_' + Math.floor(Math.random()*1000),
-            type: type, // 'email' or 'whatsapp'
-            payload: payload,
-            displayTitle: displayTitle,
-            displayDesc: displayDesc,
-            sendAt: Date.now() + this.recallWindowMs,
-            status: 'pending'
-        };
-        this.queue.push(item);
-        this.render();
-        document.getElementById('omnis-outbox-manager').style.display = 'flex';
-        document.getElementById('outbox-trigger-btn').style.display = 'none';
-        
-        if (window.salestrack && window.salestrack.showToast) {
-            window.salestrack.showToast(`Queued! Sending in 150 seconds. Open Outbox to recall.`, 'success');
-        }
-    },
-
-    recall(id) {
-        const idx = this.queue.findIndex(i => i.id === id);
-        if (idx !== -1) {
-            this.queue.splice(idx, 1);
-            this.render();
-            if (window.salestrack && window.salestrack.showToast) {
-                window.salestrack.showToast('Message Recalled Successfully', 'info');
-            }
-        }
-    },
-
-    async tick() {
-        const now = Date.now();
-        let needsRender = false;
-        
-        for (let i = this.queue.length - 1; i >= 0; i--) {
-            const item = this.queue[i];
-            if (item.status === 'pending') {
-                if (now >= item.sendAt) {
-                    item.status = 'sending';
-                    needsRender = true;
-                    this.processItem(item).then(() => {
-                        this.queue = this.queue.filter(q => q.id !== item.id);
-                        this.render();
-                    }).catch(err => {
-                        console.error('Failed to send outbox item', err);
-                        item.status = 'error';
-                        item.errorMsg = err.message;
-                        this.render();
-                    });
-                } else {
-                    // Just update countdown
-                    needsRender = true;
-                }
-            }
-        }
-        
-        if (needsRender) this.render();
-    },
-
-    async processItem(item) {
-        if (!window.electron) throw new Error("Electron not available");
-        
-        if (item.type === 'email') {
-            const res = await window.electron.invoke('email:send', item.payload);
-            if (res && res.ok) {
-                // Update Supabase Flag
-                await window.electron.invoke('supabase:query', {
-                    table: 'omnis_salestrack_notifications', method: 'upsert',
-                    params: { data: { report_id: item.payload.relatedDoc, notified_email: true } }
-                });
-                localStorage.setItem('notified_email_' + item.payload.relatedDoc, 'true');
-            } else {
-                throw new Error(res?.error || 'Email send failed');
-            }
-        } 
-        else if (item.type === 'whatsapp') {
-            // Wait WhatsApp payload includes phone numbers, msg, report_id
-            const res = await window.electron.invoke('whatsapp:sendMessage', item.payload);
-            if (res && res.ok) {
-                // Update Supabase Flag
-                await window.electron.invoke('supabase:query', {
-                    table: 'omnis_salestrack_notifications', method: 'upsert',
-                    params: { data: { report_id: item.payload.report_id, notified_wa: true } }
-                });
-                localStorage.setItem('notified_wa_' + item.payload.report_id, 'true');
-            } else {
-                throw new Error(res?.error || 'WhatsApp send failed');
-            }
-        }
-    },
-
-    render() {
-        const container = document.getElementById('outbox-list');
-        const badge1 = document.getElementById('outbox-count-badge');
-        const badge2 = document.getElementById('outbox-trigger-badge');
-        const trigger = document.getElementById('outbox-trigger-btn');
-        const manager = document.getElementById('omnis-outbox-manager');
-        
-        if (!container) return;
-
-        const pendingCount = this.queue.filter(q => q.status === 'pending').length;
-        badge1.innerText = pendingCount;
-        badge2.innerText = pendingCount;
-
-        if (this.queue.length === 0) {
-            container.innerHTML = '<div style="text-align:center; padding:20px; color:#94a3b8; font-size:12px;">Queue is empty.</div>';
-            if (manager.style.display === 'none') trigger.style.display = 'none';
-            return;
-        }
-
-        if (manager.style.display === 'none') {
-            trigger.style.display = 'flex';
-        } else {
-            trigger.style.display = 'none';
-        }
-
-        const now = Date.now();
-        container.innerHTML = this.queue.map(item => {
-            if (item.status === 'error') {
-                return `
-                <div style="background:#fff; border:1px solid var(--accent-red); border-radius:8px; padding:10px; display:flex; flex-direction:column; gap:8px;">
-                    <div style="display:flex; justify-content:space-between; align-items:center;">
-                        <div style="font-weight:700; font-size:12px; color:var(--text);">${item.displayTitle}</div>
-                        <span style="color:var(--accent-red); font-size:11px; font-weight:700;">Failed</span>
-                    </div>
-                    <div style="font-size:11px; color:#64748b;">${item.displayDesc}</div>
-                    <div style="font-size:10px; color:var(--accent-red);">${item.errorMsg}</div>
-                    <div style="display:flex; justify-content:flex-end;">
-                        <button onclick="window.OutboxManager.recall('${item.id}')" style="background:#e2e8f0; border:none; padding:4px 8px; border-radius:4px; font-size:10px; cursor:pointer;">Dismiss</button>
-                    </div>
-                </div>`;
-            }
-            
-            if (item.status === 'sending') {
-                return `
-                <div style="background:#fff; border:1px solid var(--border); border-radius:8px; padding:10px; display:flex; justify-content:space-between; align-items:center;">
-                    <div>
-                        <div style="font-weight:700; font-size:12px; color:var(--text);">${item.displayTitle}</div>
-                        <div style="font-size:11px; color:#64748b;">Sending...</div>
-                    </div>
-                    <i class="fas fa-spinner fa-spin" style="color:var(--accent-blue);"></i>
-                </div>`;
-            }
-            
-            const secondsLeft = Math.max(0, Math.ceil((item.sendAt - now) / 1000));
-            
-            return `
-            <div style="background:#fff; border:1px solid var(--border); border-radius:8px; padding:10px; display:flex; flex-direction:column; gap:8px;">
-                <div style="display:flex; justify-content:space-between; align-items:center;">
-                    <div style="font-weight:700; font-size:12px; color:var(--text);">${item.displayTitle}</div>
-                    <span style="color:var(--accent-orange); font-size:11px; font-weight:700;"><i class="fas fa-stopwatch"></i> ${secondsLeft}s</span>
-                </div>
-                <div style="font-size:11px; color:#64748b;">${item.displayDesc}</div>
-                <div style="display:flex; justify-content:flex-end;">
-                    <button onclick="window.OutboxManager.recall('${item.id}')" style="background:var(--accent-red); color:white; border:none; padding:4px 12px; border-radius:4px; font-size:11px; font-weight:700; cursor:pointer; display:flex; align-items:center; gap:4px;"><i class="fas fa-undo"></i> Recall</button>
-                </div>
-            </div>`;
-        }).join('');
-    }
-};
-
-document.addEventListener('DOMContentLoaded', () => {
-    setTimeout(() => {
-        if(window.OutboxManager) window.OutboxManager.init();
-    }, 1000);
-});
 

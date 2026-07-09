@@ -159,6 +159,22 @@ function esc(s) {
   return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
 }
 
+function _renderVideoNode(url, poster) {
+  if (!url) return '';
+  if (url.indexOf('youtube.com/watch?v=') > -1) {
+    var id = url.split('v=')[1].split('&')[0];
+    return '<iframe width="100%" height="400" src="https://www.youtube.com/embed/'+id+'" frameborder="0" allowfullscreen style="border:none;display:block;"></iframe>';
+  } else if (url.indexOf('youtu.be/') > -1) {
+    var id = url.split('youtu.be/')[1].split('?')[0];
+    return '<iframe width="100%" height="400" src="https://www.youtube.com/embed/'+id+'" frameborder="0" allowfullscreen style="border:none;display:block;"></iframe>';
+  } else if (url.indexOf('vimeo.com/') > -1) {
+    var id = url.split('vimeo.com/')[1].split('/')[0];
+    return '<iframe src="https://player.vimeo.com/video/'+id+'" width="100%" height="400" frameborder="0" allow="autoplay; fullscreen; picture-in-picture" allowfullscreen style="border:none;display:block;"></iframe>';
+  } else {
+    return '<video controls preload="metadata" style="width:100%;height:auto;max-height:400px;display:block;"' + (poster ? ' poster="' + poster + '"' : '') + '><source src="' + url + '" type="video/mp4"></video>';
+  }
+}
+
 // ── MAIN ENTRY ────────────────────────────────────────────────────────────────
 window.renderTrainingLibrary = function() {
   console.log('[TrainingLibrary] render called, view:', _tlState.view);
@@ -167,6 +183,8 @@ window.renderTrainingLibrary = function() {
   try {
     if (_tlState.view === 'library') {
       _renderLibraryHome(c);
+    } else if (_tlState.view === 'stats') {
+      _renderStatsDashboard(c);
     } else {
       _renderCoursePlayer(c);
     }
@@ -187,8 +205,11 @@ function _renderLibraryHome(container) {
   html += '<i class="fas fa-graduation-cap" style="color:#7c3aed;margin-right:10px;"></i>Training Library</h1>';
   html += '<p style="font-size:13px;color:#64748b;margin:0;">' + TRAINING_COURSES.length + ' course(s) available</p>';
   html += '</div>';
-  html += '<button onclick="window.tlAddCourse()" style="background:linear-gradient(135deg,#7c3aed,#6d28d9);color:white;border:none;border-radius:10px;padding:10px 18px;font-size:13px;font-weight:700;cursor:pointer;">';
-  html += 'Add Course</button>';
+  html += '<div style="display:flex;gap:12px;">';
+  html += '<button onclick="window.tlViewStats()" style="background:white;color:#0f172a;border:1px solid #e2e8f0;border-radius:10px;padding:10px 18px;font-size:13px;font-weight:700;cursor:pointer;box-shadow:0 1px 2px rgba(0,0,0,0.05);"><i class="fas fa-chart-pie" style="color:#7c3aed;margin-right:8px;"></i>Admin Stats</button>';
+  html += '<button onclick="window.tlAddCourse()" style="background:linear-gradient(135deg,#7c3aed,#6d28d9);color:white;border:none;border-radius:10px;padding:10px 18px;font-size:13px;font-weight:700;cursor:pointer;box-shadow:0 4px 12px rgba(124,58,237,0.2);">';
+  html += '<i class="fas fa-plus" style="margin-right:8px;"></i>Add Course</button>';
+  html += '</div>';
   html += '</div>';
 
   // Cards grid
@@ -215,8 +236,9 @@ function _renderLibraryHome(container) {
     html += '<div style="background:white;border:1px solid #e2e8f0;border-radius:16px;overflow:hidden;box-shadow:0 1px 4px rgba(0,0,0,0.04);">';
 
     // Card header gradient
-    html += '<div style="background:linear-gradient(135deg,' + course.color1 + ',' + course.color2 + ');padding:20px;">';
-    html += '<div style="font-size:10px;font-weight:700;color:rgba(255,255,255,0.6);text-transform:uppercase;letter-spacing:1px;margin-bottom:4px;">' + esc(course.brand) + '</div>';
+    html += '<div style="background:linear-gradient(135deg,' + course.color1 + ',' + course.color2 + ');padding:20px;position:relative;">';
+    html += '<button onclick="event.stopPropagation(); window.tlDeleteCourse(\''+course.id+'\')" title="Delete Course" style="position:absolute;top:16px;right:16px;background:rgba(0,0,0,0.2);border:none;border-radius:6px;color:rgba(255,255,255,0.7);width:26px;height:26px;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:all 0.2s;" onmouseover="this.style.background=\'#dc2626\';this.style.color=\'white\'" onmouseout="this.style.background=\'rgba(0,0,0,0.2)\';this.style.color=\'rgba(255,255,255,0.7)\'"><i class="fas fa-trash-alt" style="font-size:12px;"></i></button>';
+    html += '<div style="font-size:10px;font-weight:700;color:rgba(255,255,255,0.6);text-transform:uppercase;letter-spacing:1px;margin-bottom:4px;padding-right:24px;">' + esc(course.brand) + '</div>';
     html += '<div style="font-size:16px;font-weight:800;color:#fff;line-height:1.3;">' + esc(course.title) + '</div>';
     html += '<div style="font-size:11px;color:rgba(255,255,255,0.7);margin-top:3px;">' + esc(course.subtitle) + '</div>';
     html += '<div style="margin-top:12px;">';
@@ -245,6 +267,97 @@ function _renderLibraryHome(container) {
   }
   html += '</div></div>';
   container.innerHTML = html;
+}
+
+window.tlViewStats = function() {
+  _tlState.view = 'stats';
+  window.renderTrainingLibrary();
+};
+
+async function _renderStatsDashboard(container) {
+  var html = '<div style="padding:28px 32px;max-width:1400px;margin:0 auto;font-family:\'Inter\',sans-serif;">';
+  
+  // Header
+  html += '<div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:28px;">';
+  html += '<div>';
+  html += '<h1 style="font-size:22px;font-weight:800;color:#0f172a;margin:0 0 4px;">';
+  html += '<i class="fas fa-chart-pie" style="color:#7c3aed;margin-right:10px;"></i>Training Admin Stats</h1>';
+  html += '<p style="font-size:13px;color:#64748b;margin:0;">System-wide course completions</p>';
+  html += '</div>';
+  html += '<button onclick="window.tlBackToLibrary()" style="background:white;color:#64748b;border:1px solid #e2e8f0;border-radius:10px;padding:10px 18px;font-size:13px;font-weight:700;cursor:pointer;"><i class="fas fa-arrow-left" style="margin-right:8px;"></i>Back to Library</button>';
+  html += '</div>';
+
+  html += '<div id="tl-stats-content" style="text-align:center;padding:40px;color:#94a3b8;"><i class="fas fa-spinner fa-spin" style="margin-right:8px;"></i> Loading stats...</div>';
+  html += '</div>';
+  container.innerHTML = html;
+
+  try {
+    if (!window.electron || !window.electron.invoke) throw new Error("IPC unavailable");
+    var res = await window.electron.invoke('supabase:query', {
+      table: 'training_progress',
+      method: 'select',
+      params: { columns: '*' }
+    });
+    if (!res || res.error) throw new Error(res.error || "Failed to fetch stats");
+
+    var records = res.data || [];
+    records.sort((a,b) => new Date(b.completed_at) - new Date(a.completed_at));
+
+    var totalCompletions = records.length;
+    var totalScore = 0;
+    var totalQ = 0;
+    records.forEach(r => { totalScore += (r.score || 0); totalQ += (r.total_questions || 0); });
+    var avgScore = totalQ > 0 ? Math.round((totalScore / totalQ) * 100) : 0;
+
+    // Metrics
+    var contentHtml = '<div style="display:flex;gap:20px;margin-bottom:28px;">';
+    contentHtml += '<div style="flex:1;background:linear-gradient(135deg,#7c3aed,#6d28d9);border-radius:16px;padding:24px;color:white;box-shadow:0 10px 25px rgba(124,58,237,0.2);">';
+    contentHtml += '<div style="font-size:13px;font-weight:600;opacity:0.9;">Total Course Completions</div>';
+    contentHtml += '<div style="font-size:36px;font-weight:800;margin-top:8px;">' + totalCompletions + '</div>';
+    contentHtml += '</div>';
+
+    contentHtml += '<div style="flex:1;background:white;border:1px solid #e2e8f0;border-radius:16px;padding:24px;box-shadow:0 4px 12px rgba(0,0,0,0.02);">';
+    contentHtml += '<div style="font-size:13px;font-weight:600;color:#64748b;">Average Score</div>';
+    contentHtml += '<div style="font-size:36px;font-weight:800;color:#0f172a;margin-top:8px;">' + avgScore + '%</div>';
+    contentHtml += '</div>';
+    contentHtml += '</div>';
+
+    // Table
+    contentHtml += '<div style="background:white;border-radius:16px;border:1px solid #e2e8f0;overflow:hidden;box-shadow:0 4px 12px rgba(0,0,0,0.02);">';
+    contentHtml += '<table style="width:100%;border-collapse:collapse;font-size:13px;text-align:left;">';
+    contentHtml += '<thead><tr style="background:#f8fafc;border-bottom:1px solid #e2e8f0;color:#475569;">';
+    contentHtml += '<th style="padding:16px 20px;font-weight:700;">User</th>';
+    contentHtml += '<th style="padding:16px 20px;font-weight:700;">Course</th>';
+    contentHtml += '<th style="padding:16px 20px;font-weight:700;">Score</th>';
+    contentHtml += '<th style="padding:16px 20px;font-weight:700;">Completed At</th>';
+    contentHtml += '</tr></thead><tbody>';
+
+    if (records.length === 0) {
+      contentHtml += '<tr><td colspan="4" style="padding:30px;text-align:center;color:#94a3b8;">No courses completed yet.</td></tr>';
+    } else {
+      records.forEach(r => {
+        var pct = r.total_questions > 0 ? Math.round((r.score / r.total_questions) * 100) : 0;
+        var color = pct >= 80 ? '#10b981' : (pct >= 50 ? '#f59e0b' : '#ef4444');
+        var date = new Date(r.completed_at).toLocaleString();
+
+        contentHtml += '<tr style="border-bottom:1px solid #f1f5f9;">';
+        contentHtml += '<td style="padding:16px 20px;color:#0f172a;font-weight:600;">' + esc(r.user_email) + '</td>';
+        contentHtml += '<td style="padding:16px 20px;color:#475569;">' + esc(r.course_title || r.course_id) + '</td>';
+        contentHtml += '<td style="padding:16px 20px;"><span style="background:' + color + '15;color:' + color + ';padding:4px 8px;border-radius:6px;font-weight:700;font-size:12px;">' + r.score + '/' + r.total_questions + ' (' + pct + '%)</span></td>';
+        contentHtml += '<td style="padding:16px 20px;color:#64748b;font-size:12px;">' + date + '</td>';
+        contentHtml += '</tr>';
+      });
+    }
+
+    contentHtml += '</tbody></table></div>';
+    var contentDiv = document.getElementById('tl-stats-content');
+    if (contentDiv) contentDiv.innerHTML = contentHtml;
+
+  } catch (err) {
+    console.error(err);
+    var contentDiv = document.getElementById('tl-stats-content');
+    if (contentDiv) contentDiv.innerHTML = '<div style="color:#ef4444;">Failed to load stats: ' + err.message + '</div>';
+  }
 }
 
 // ── COURSE PLAYER ─────────────────────────────────────────────────────────────
@@ -344,9 +457,8 @@ function _renderCoursePlayer(container) {
     html += '</div>';
     // Video player — natural 16:9 height, wraps tightly to content
     html += '<div style="width:100%;background:#f8fafc;">';
-    html += '<video controls preload="metadata" style="width:100%;height:auto;display:block;"' + (step.poster ? ' poster="' + step.poster + '"' : '') + '>';
-    html += '<source src="' + step.video + '" type="video/mp4">';
-    html += '</video></div>';
+    html += _renderVideoNode(step.video, step.poster);
+    html += '</div>';
     // Body text below video
     html += '<div style="padding:12px 20px;background:#f8fafc;border-top:1px solid #e2e8f0;">';
     html += '<p style="font-size:12px;color:#475569;line-height:1.6;margin:0;">' + esc(step.body) + '</p>';
@@ -391,10 +503,8 @@ function _renderTitleStep(step, course) {
   // Video or poster image
   if (step.video) {
     h += '<div style="border-radius:16px;overflow:hidden;box-shadow:0 8px 32px rgba(0,0,0,0.10);margin-bottom:28px;background:#f8fafc;">';
-    h += '<video controls preload="metadata" style="width:100%;display:block;max-height:400px;"' + (step.poster ? ' poster="' + step.poster + '"' : '') + '>';
-    h += '<source src="' + step.video + '" type="video/mp4">';
-    h += 'Your browser does not support video playback.';
-    h += '</video></div>';
+    h += _renderVideoNode(step.video, step.poster);
+    h += '</div>';
   } else if (step.poster) {
     h += '<div style="border-radius:16px;overflow:hidden;box-shadow:0 8px 32px rgba(0,0,0,0.18);margin-bottom:28px;">';
     h += '<img src="' + step.poster + '" alt="' + esc(step.title) + '" style="width:100%;display:block;max-height:400px;object-fit:cover;">';
@@ -634,7 +744,7 @@ window.tlSelectAnswer = function(qi, oi) {
   _tlState.quizAnswers[qi] = oi;
   window.renderTrainingLibrary();
 };
-window.tlSubmitQuiz = function() {
+window.tlSubmitQuiz = async function() {
   var step = _tlState.course && _tlState.course.sections[_tlState.sectionIdx] && _tlState.course.sections[_tlState.sectionIdx].steps[_tlState.stepIdx];
   var totalQ = (step && step.questions && step.questions.length) || 0;
   if (Object.keys(_tlState.quizAnswers).length < totalQ) {
@@ -643,17 +753,268 @@ window.tlSubmitQuiz = function() {
     }
     return;
   }
+  
+  // Calculate score
+  var score = 0;
+  for (var i = 0; i < totalQ; i++) {
+    if (_tlState.quizAnswers[i] === step.questions[i].correctIndex) {
+      score++;
+    }
+  }
+  
+  // Save to DB
+  var userEmail = localStorage.getItem('ft_user_email') || localStorage.getItem('omnisUser') || 'anonymous';
+  if (window.electron && window.electron.invoke) {
+    try {
+      await window.electron.invoke('supabase:query', {
+        table: 'training_progress',
+        method: 'insert',
+        data: {
+          user_email: userEmail,
+          course_id: _tlState.course.id,
+          course_title: _tlState.course.title,
+          score: score,
+          total_questions: totalQ,
+          status: 'completed'
+        }
+      });
+    } catch (err) {
+      console.error('Failed to save progress:', err);
+    }
+  }
+  
   _tlState.quizSubmitted = true;
+  _tlState.lastScore = score;
   window.renderTrainingLibrary();
 };
 window.tlResetQuiz = function() {
   _tlState.quizSubmitted = false; _tlState.quizAnswers = {};
   window.renderTrainingLibrary();
 };
-window.tlAddCourse = function() {
-  if (window.salestrack && window.salestrack.showToast) {
-    window.salestrack.showToast('Course import coming soon.', 'info');
-  }
-};
+  window.tlDeleteCourse = function(courseId) {
+    if (!confirm("Are you sure you want to delete this course?")) return;
+    for (var i = 0; i < TRAINING_COURSES.length; i++) {
+      if (TRAINING_COURSES[i].id === courseId) {
+        TRAINING_COURSES.splice(i, 1);
+        break;
+      }
+    }
+    window.renderTrainingLibrary();
+  };
 
-console.log('[TrainingLibrary] v4 ready. renderTrainingLibrary:', typeof window.renderTrainingLibrary);
+  window._tlWebviewBuffer = [];
+
+  window.tlOpenInAppBrowser = function() {
+    window._tlWebviewBuffer = [];
+    var ex = document.getElementById('tl-add-course-modal');
+    if (ex) ex.remove();
+    var wvEx = document.getElementById('tl-webview-modal');
+    if (wvEx) wvEx.remove();
+    
+    var modal = document.createElement('div');
+    modal.id = 'tl-webview-modal';
+    modal.style.cssText = 'position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(15,23,42,0.8);z-index:2147483647;display:flex;align-items:center;justify-content:center;font-family:"Inter",sans-serif;';
+    
+    var html = '<div style="background:white;border-radius:16px;width:90vw;height:90vh;display:flex;flex-direction:column;box-shadow:0 25px 50px rgba(0,0,0,0.3);overflow:hidden;">';
+    
+    // Header & URL Bar
+    html += '<div style="padding:16px 24px;border-bottom:1px solid #e2e8f0;display:flex;align-items:center;gap:12px;background:#f8fafc;">';
+    html += '<h2 style="margin:0;font-size:16px;font-weight:800;color:#0f172a;white-space:nowrap;"><i class="fas fa-globe" style="color:#7c3aed;margin-right:8px;"></i>Portal Browser</h2>';
+    html += '<div style="flex:1;display:flex;gap:8px;">';
+    html += '<input type="text" id="tl-wv-url" value="https://google.com" style="flex:1;padding:8px 12px;border:1px solid #cbd5e1;border-radius:6px;font-size:13px;outline:none;" onkeydown="if(event.key===\'Enter\') document.getElementById(\'tl-wv-go\').click()">';
+    html += '<button id="tl-wv-go" style="background:#e2e8f0;border:none;border-radius:6px;padding:0 16px;font-weight:700;color:#334155;cursor:pointer;">Go</button>';
+    html += '<button id="tl-wv-back" style="background:transparent;border:none;color:#64748b;cursor:pointer;padding:0 10px;"><i class="fas fa-arrow-left"></i></button>';
+    html += '</div>';
+    html += '<button onclick="this.closest(\'#tl-webview-modal\').remove()" style="background:transparent;border:none;cursor:pointer;color:#64748b;font-size:16px;margin-left:12px;"><i class="fas fa-times"></i></button>';
+    html += '</div>';
+    
+    // Webview
+    html += '<div style="flex:1;background:#f1f5f9;position:relative;">';
+    html += '<webview id="tl-wv" src="https://google.com" style="width:100%;height:100%;display:flex;"></webview>';
+    html += '</div>';
+    
+    // Footer & Extract Buttons
+    html += '<div style="padding:16px 24px;border-top:1px solid #e2e8f0;display:flex;justify-content:space-between;align-items:center;background:white;">';
+    html += '<div style="display:flex;align-items:center;gap:16px;">';
+    html += '<div style="font-size:12px;color:#64748b;">Navigate to the training and click Capture for each page.</div>';
+    html += '<div id="tl-wv-badge" style="display:none;background:#fef3c7;color:#d97706;padding:4px 10px;border-radius:20px;font-size:12px;font-weight:700;"><i class="fas fa-layer-group" style="margin-right:4px;"></i><span id="tl-wv-count">0</span> Pages Captured</div>';
+    html += '</div>';
+
+    html += '<div style="display:flex;gap:12px;">';
+    html += '<button onclick="this.closest(\'#tl-webview-modal\').remove()" style="background:transparent;border:none;color:#64748b;font-weight:600;font-size:13px;cursor:pointer;">Cancel</button>';
+    html += '<button id="tl-btn-capture" style="background:white;color:#0f172a;border:1px solid #e2e8f0;border-radius:8px;padding:12px 20px;font-size:13px;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:8px;box-shadow:0 1px 2px rgba(0,0,0,0.05);"><i class="fas fa-camera"></i> Capture Current Page</button>';
+    html += '<button id="tl-btn-extract" style="background:linear-gradient(135deg,#10b981,#059669);color:white;border:none;border-radius:8px;padding:12px 24px;font-size:14px;font-weight:800;cursor:pointer;display:flex;align-items:center;gap:8px;"><i class="fas fa-bolt"></i> Generate Course</button>';
+    html += '</div></div></div>';
+    
+    modal.innerHTML = html;
+    document.body.appendChild(modal);
+    
+    var wv = document.getElementById('tl-wv');
+    var urlInp = document.getElementById('tl-wv-url');
+    
+    document.getElementById('tl-wv-go').onclick = function() {
+      var u = urlInp.value.trim();
+      if (u && !u.startsWith('http')) u = 'https://' + u;
+      wv.loadURL(u);
+    };
+    document.getElementById('tl-wv-back').onclick = function() {
+      if (wv.canGoBack()) wv.goBack();
+    };
+    wv.addEventListener('did-navigate', function(e) {
+      urlInp.value = e.url;
+    });
+    
+    document.getElementById('tl-btn-capture').onclick = async function() {
+      var btn = this;
+      var origHtml = btn.innerHTML;
+      btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Capturing...';
+      btn.disabled = true;
+      try {
+        var outerHTML = await wv.executeJavaScript('document.documentElement.outerHTML');
+        var innerText = await wv.executeJavaScript('document.body.innerText');
+        
+        var foundVideos = [];
+        var ytRegex = /(https?:\/\/(?:www\.)?(?:youtube\.com\/watch\?v=|youtu\.be\/)[a-zA-Z0-9_-]+)/g;
+        var matches = outerHTML.match(ytRegex);
+        if (matches) foundVideos = [...new Set(matches)];
+        
+        window._tlWebviewBuffer.push({ text: innerText, videos: foundVideos });
+        
+        document.getElementById('tl-wv-badge').style.display = 'inline-block';
+        document.getElementById('tl-wv-count').innerText = window._tlWebviewBuffer.length;
+        
+        if (window.salestrack && window.salestrack.showToast) {
+          window.salestrack.showToast("Page captured! Buffer: " + window._tlWebviewBuffer.length + " page(s)", "success");
+        }
+      } catch (err) {
+        console.error("Capture failed:", err);
+      }
+      btn.innerHTML = origHtml;
+      btn.disabled = false;
+    };
+    
+    document.getElementById('tl-btn-extract').onclick = async function() {
+      var btn = this;
+      btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Generating...';
+      btn.disabled = true;
+      
+      try {
+        // If buffer is empty, automatically capture the current page
+        if (window._tlWebviewBuffer.length === 0) {
+          document.getElementById('tl-btn-capture').click();
+          // Wait briefly for capture to finish
+          await new Promise(r => setTimeout(r, 1000));
+        }
+        
+        var combinedText = "";
+        var allVideos = [];
+        window._tlWebviewBuffer.forEach((p, i) => {
+            combinedText += "--- PAGE " + (i+1) + " ---\\n" + p.text + "\\n\\n";
+            allVideos = allVideos.concat(p.videos);
+        });
+        allVideos = [...new Set(allVideos)];
+        
+        var contentToProcess = combinedText + '\\n\\nFound Videos: ' + allVideos.join(', ');
+        
+        if (!window.electron || !window.electron.invoke) throw new Error("IPC unavailable");
+        var res = await window.electron.invoke('supabase:edgeFunction', {
+          name: 'ai-marketing-assistant',
+          data: { task: 'create_course', content: contentToProcess, tone: '' }
+        });
+        if (!res || res.error) throw new Error(res?.error || "Unknown edge function error");
+        
+        var courseData = res.data;
+        if (!courseData.id) courseData.id = 'ai-course-' + Date.now();
+        
+        TRAINING_COURSES.push(courseData);
+        if (window.salestrack && window.salestrack.showToast) {
+          window.salestrack.showToast("Course successfully created from " + window._tlWebviewBuffer.length + " pages!", "success");
+        }
+        
+        window._tlWebviewBuffer = [];
+        document.getElementById('tl-webview-modal').remove();
+        window.renderTrainingLibrary();
+        
+      } catch (err) {
+        if (window.salestrack && window.salestrack.showToast) {
+          window.salestrack.showToast("Extraction failed: " + err.message, "error");
+        }
+        btn.innerHTML = '<i class="fas fa-bolt"></i> Generate Course';
+        btn.disabled = false;
+      }
+    };
+  };
+
+  window.tlAddCourse = function() {
+    var ex = document.getElementById('tl-add-course-modal');
+    if (ex) ex.remove();
+    
+    var modal = document.createElement('div');
+    modal.id = 'tl-add-course-modal';
+    modal.style.cssText = 'position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(15,23,42,0.6);z-index:2147483647;display:flex;align-items:center;justify-content:center;font-family:"Inter",sans-serif;';
+    
+    var html = '<div style="background:white;border-radius:16px;width:520px;padding:24px;box-shadow:0 20px 40px rgba(0,0,0,0.2);">';
+    html += '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;">';
+    html += '<h2 style="margin:0;font-size:18px;font-weight:800;color:#0f172a;"><i class="fas fa-magic" style="color:#7c3aed;margin-right:8px;"></i>AI Course Importer</h2>';
+    html += '<button onclick="this.closest(\'#tl-add-course-modal\').remove()" style="background:transparent;border:none;cursor:pointer;color:#64748b;font-size:16px;"><i class="fas fa-times"></i></button>';
+    html += '</div>';
+    html += '<p style="font-size:13px;color:#475569;margin:0 0 16px;line-height:1.5;">Paste a link to a training article or YouTube video, <b>OR</b> paste raw text content. For password-protected portals, <button onclick="window.tlOpenInAppBrowser()" style="background:transparent;border:none;color:#7c3aed;font-weight:700;cursor:pointer;padding:0;font-size:13px;text-decoration:underline;">open the In-App Browser</button>.</p>';
+    
+    html += '<div style="font-size:12px;font-weight:700;color:#0f172a;margin-bottom:6px;">URL Link (Public)</div>';
+    html += '<input type="text" id="tl-course-url" placeholder="https://example.com/training" style="width:100%;box-sizing:border-box;padding:12px;border:1px solid #e2e8f0;border-radius:8px;font-size:14px;margin-bottom:16px;outline:none;">';
+    
+    html += '<div style="font-size:12px;font-weight:700;color:#0f172a;margin-bottom:6px;">OR Raw Text</div>';
+    html += '<textarea id="tl-course-text" placeholder="Copy & paste training materials here..." style="width:100%;box-sizing:border-box;padding:12px;border:1px solid #e2e8f0;border-radius:8px;font-size:13px;height:120px;resize:vertical;margin-bottom:20px;outline:none;font-family:inherit;"></textarea>';
+    
+    html += '<div style="display:flex;justify-content:flex-end;gap:12px;">';
+    html += '<button onclick="this.closest(\'#tl-add-course-modal\').remove()" style="background:transparent;border:none;color:#64748b;font-weight:600;font-size:13px;cursor:pointer;">Cancel</button>';
+    html += '<button id="tl-btn-import" style="background:linear-gradient(135deg,#7c3aed,#6d28d9);color:white;border:none;border-radius:8px;padding:10px 20px;font-size:13px;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:8px;">Generate Course</button>';
+    html += '</div></div>';
+    modal.innerHTML = html;
+    document.body.appendChild(modal);
+    
+    setTimeout(function(){ var inp=document.getElementById('tl-course-url'); if(inp) inp.focus(); }, 50);
+    
+    document.getElementById('tl-btn-import').onclick = async function() {
+      var url = document.getElementById('tl-course-url').value.trim();
+      var rawText = document.getElementById('tl-course-text').value.trim();
+      
+      if (!url && !rawText) {
+        if (window.salestrack && window.salestrack.showToast) window.salestrack.showToast("Please provide a URL or raw text.", "error");
+        return;
+      }
+      
+      var contentToProcess = rawText ? rawText : url;
+      var btn = this;
+      btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Generating...';
+      btn.disabled = true;
+      try {
+        if (!window.electron || !window.electron.invoke) throw new Error("IPC unavailable");
+        var res = await window.electron.invoke('supabase:edgeFunction', {
+          name: 'ai-marketing-assistant',
+          data: { task: 'create_course', content: contentToProcess, tone: '' }
+        });
+        if (!res || res.error) throw new Error(res?.error || "Unknown edge function error");
+        
+        var courseData = res.data;
+        if (!courseData.id) courseData.id = 'ai-course-' + Date.now();
+        
+        TRAINING_COURSES.push(courseData);
+        if (window.salestrack && window.salestrack.showToast) {
+          window.salestrack.showToast("Course successfully created!", "success");
+        }
+        
+        document.getElementById('tl-add-course-modal').remove();
+        window.renderTrainingLibrary();
+        
+      } catch (err) {
+        if (window.salestrack && window.salestrack.showToast) {
+          window.salestrack.showToast("Import failed: " + err.message, "error");
+        }
+        btn.innerHTML = 'Generate Course';
+        btn.disabled = false;
+      }
+    };
+  };
+
+console.log('[TrainingLibrary] v4 ready. renderTrainingLibrary:', typeof window.renderTrainingLibrary);

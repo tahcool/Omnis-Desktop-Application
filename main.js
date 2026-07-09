@@ -775,11 +775,21 @@ ipcMain.handle('supabase:query', async (event, { table, method, params, data }) 
           if (val !== undefined && val !== null && val !== '') query = query.eq(col, val);
         }
       }
+      if (params.ilike && Array.isArray(params.ilike)) {
+        for (const { col, pat } of params.ilike) query = query.ilike(col, pat);
+      }
+      if (params.gte && Array.isArray(params.gte)) {
+        for (const { col, val } of params.gte) query = query.gte(col, val);
+      }
+      if (params.lte && Array.isArray(params.lte)) {
+        for (const { col, val } of params.lte) query = query.lte(col, val);
+      }
       if (params.match) query = query.match(params.match);
       if (params.order) query = query.order(params.order.column, { ascending: params.order.ascending ?? true });
       if (params.limit) query = query.limit(params.limit);
       if (params.range) query = query.range(params.range.from, params.range.to);
       if (params.or) query = query.or(params.or);
+
 
     } else if (method === 'getOne') {
       // Fetch a single record by primary key (name or id)

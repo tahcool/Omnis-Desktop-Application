@@ -191,7 +191,7 @@ async function loadOrdersList(force = false) {
                 if (trackRes.ok && trackRes.data) {
                     trackRes.data.forEach(t => {
                         let days_left = 0;
-                        let targetDateStr = t.revised_handover || t.target_handover;
+                        let targetDateStr = t.target_handover; // Strict requirement: use target date, ignore revised
                         if (targetDateStr) {
                             const target = new Date(targetDateStr);
                             target.setHours(0,0,0,0);
@@ -306,8 +306,8 @@ async function loadOrdersList(force = false) {
                 if (!c) return "Unassigned";
                 const cl = c.toLowerCase();
                 // Check more specific term first to avoid misclassification
-                if (cl.includes("machinery exchange") || cl === "machinery") return "Machinery Exchange";
-                if (cl.includes("sinopower")) return "Sinopower";
+                if (cl.includes("machinery exchange") || cl === "machinery" || cl.includes("mxg")) return "Machinery Exchange";
+                if (cl.includes("sinopower") || cl.includes("spz")) return "Sinopower";
                 return "Unassigned";
             };
 
@@ -330,6 +330,20 @@ async function loadOrdersList(force = false) {
             // Filter out deleted orders locally
             ordersList = ordersList.filter(o => o.status !== 'Deleted' && !localStorage.getItem('deleted_order_' + o.report_id));
             
+            // Force recalculate days_left for ALL orders using STRICTLY target_handover
+            ordersList.forEach(o => {
+                let targetDateStr = o.target_handover || (o.frappe_quotation && o.frappe_quotation.target_handover);
+                if (targetDateStr) {
+                    const target = new Date(targetDateStr);
+                    target.setHours(0,0,0,0);
+                    const now = new Date();
+                    now.setHours(0,0,0,0);
+                    o.days_left = Math.ceil((target - now) / (1000 * 60 * 60 * 24));
+                } else {
+                    o.days_left = "-";
+                }
+            });
+
             olOrdersData = ordersList;
 
             window.olOrdersData = olOrdersData; // Expose globally for Aftersales
@@ -884,7 +898,7 @@ function renderOrdersList() {
     container.innerHTML = paginatedRows.map(r => {
         // 1. Determine Risk Level (GSM Style)
         let riskClass = "risk-low";
-        let riskLabel = "STABLE";
+        let riskLabel = "ON TRACK";
         let riskIcon = "fa-check-circle";
         let riskColor = "#10b981";
 
@@ -894,12 +908,12 @@ function renderOrdersList() {
         if (isValidDays) {
             if (daysVal < 0) {
                 riskClass = "risk-high";
-                riskLabel = "HIGH RISK";
+                riskLabel = "LATE";
                 riskIcon = "fa-triangle-exclamation";
                 riskColor = "#ef4444";
             } else if (daysVal <= 5) {
                 riskClass = "risk-medium";
-                riskLabel = "MEDIUM DELAY";
+                riskLabel = "POTENTIAL LATE";
                 riskIcon = "fa-clock";
                 riskColor = "#f59e0b";
             }
@@ -1170,13 +1184,16 @@ if (document.readyState === "loading") {
     bindAiRiskButton();
 }
 
+
+window._cachedDefectsData = [];
+
 window.openDefectsReport = async function() {
     if (!window.salestrack || !window.salestrack.openListModal) {
         alert("Modal functionality not ready.");
         return;
     }
     
-    window.salestrack.openListModal("Defects Report", "<div style='padding:60px;text-align:center;color:#64748b;font-weight:600;'><i class='fas fa-spinner fa-spin' style='margin-right:10px;'></i> Generating active defects report...</div>", "1000px");
+    window.salestrack.openListModal("Defects Report", "<div style='padding:60px;text-align:center;color:#64748b;font-weight:600;'><i class='fas fa-spinner fa-spin' style='margin-right:10px;'></i> Generating active defects report...</div>", "1200px");
 
     let res = await window.electron.invoke('supabase:query', {
         table: 'ft_defect',
@@ -1190,86 +1207,243 @@ window.openDefectsReport = async function() {
     });
 
     if (!res.ok || !res.data) {
-        window.salestrack.openListModal("Defects Report", "<div style='padding:40px;text-align:center;color:#ef4444;'>Failed to load defects from database.</div>", "1000px");
+        window.salestrack.openListModal("Defects Report", "<div style='padding:40px;text-align:center;color:#ef4444;'>Failed to load defects from database.</div>", "1200px");
         return;
     }
 
-    let defects = res.data;
-    
-    // Filter by Company dropdown if active
-    const companyEl = document.getElementById("ol-company");
-    const selectedCompany = companyEl ? companyEl.value : "";
-    if (selectedCompany && selectedCompany.toLowerCase() !== "all" && selectedCompany.trim() !== "") {
-        if (window.olOrdersData) {
-            const validOrderIds = new Set(window.olOrdersData.map(o => o.report_id));
-            defects = defects.filter(d => validOrderIds.has(d.order_id));
-        }
-    }
-    if (defects.length === 0) {
-        window.salestrack.openListModal("Defects Report", "<div style='padding:60px;text-align:center;color:#64748b;font-size:14px;font-style:italic;'>No active defects or missing items currently reported.</div>", "1000px");
-        return;
+    window._cachedDefectsData = res.data;
+
+    // Build the Add Defect Datalist Options
+    let datalistOptions = '';
+    if (window.olOrdersData) {
+        window.olOrdersData.forEach(o => {
+            const customer = escapeHtml(o.customer_name || 'Unknown');
+            if (o.machines && Array.isArray(o.machines)) {
+                o.machines.forEach(m => {
+                    const machine = escapeHtml(m.item_name || m.machine || m.item || '');
+                    const valStr = `${customer} — ${machine}`;
+                    const jsonStr = escapeHtml(JSON.stringify({ report_id: o.report_id, customer: customer, machine: machine }));
+                    datalistOptions += `<option value="${valStr}" data-meta="${jsonStr}"></option>`;
+                });
+            } else {
+                const valStr = `${customer} — Order ${o.report_id}`;
+                const jsonStr = escapeHtml(JSON.stringify({ report_id: o.report_id, customer: customer, machine: 'General' }));
+                datalistOptions += `<option value="${valStr}" data-meta="${jsonStr}"></option>`;
+            }
+        });
     }
 
     let html = `
-    <div style="padding:20px; background:#f8fafc; position:relative;">
-        <button onclick="window.printReportContent('Order Defects Report')" style="position:absolute; right:20px; top:20px; padding:8px 16px; background:#0f172a; color:white; border:none; border-radius:8px; cursor:pointer; font-size:12px; font-weight:700; box-shadow:0 4px 6px -1px rgba(0,0,0,0.1);"><i class="fas fa-print" style="margin-right:6px;"></i> Print PDF</button>
-        <h2 style="margin-top:0; color:#0f172a; font-size:20px; border-bottom:2px solid #e2e8f0; padding-bottom:10px; margin-bottom:20px;">
-            <i class="fas fa-exclamation-triangle" style="color:#ef4444; margin-right:10px;"></i> Order Defects Report
-        </h2>
-        <div style="background:white; border-radius:12px; border:1px solid #e2e8f0; overflow:hidden;">
-            <table style="width:100%; border-collapse:collapse; font-size:13px; text-align:left;">
-                <thead style="background:#f1f5f9; color:#475569; font-weight:700; text-transform:uppercase; font-size:11px; letter-spacing:0.05em;">
-                    <tr>
-                        <th style="padding:16px; border-bottom:1px solid #e2e8f0; width:20%;">Customer / Order</th>
-                        <th style="padding:16px; border-bottom:1px solid #e2e8f0; width:25%;">Machine</th>
-                        <th style="padding:16px; border-bottom:1px solid #e2e8f0;">Defect Description</th>
-                        <th style="padding:16px; border-bottom:1px solid #e2e8f0; width:15%;">Date Logged</th>
-                    </tr>
-                </thead>
-                <tbody>`;
+    <div style="padding:10px; background:#f8fafc; position:relative; display:flex; flex-direction:column; gap:10px; height: 100%;">
+        
+        <!-- Header & Add Defect Search -->
+        <div style="background:white; border-radius:8px; border:1px solid #e2e8f0; padding:12px; box-shadow:0 2px 4px -1px rgba(0,0,0,0.05);">
+            <div style="display:flex; gap:16px; align-items:flex-end;">
+                <div style="flex:1;">
+                    <label style="font-size:11px; font-weight:700; color:#64748b; text-transform:uppercase; margin-bottom:6px; display:block;">Search Active Orders to Add Defect</label>
+                    <div style="position:relative;">
+                        <input type="text" id="add-defect-search" list="active-orders-list" placeholder="Start typing customer or machine..." style="width:100%; padding:10px 10px 10px 36px; border:1px solid #cbd5e1; border-radius:8px; font-size:13px;" onchange="window.handleAddDefectSelect(this)">
+                        <i class="fas fa-search" style="position:absolute; left:12px; top:12px; color:#94a3b8;"></i>
+                        <datalist id="active-orders-list">${datalistOptions}</datalist>
+                    </div>
+                </div>
+                <div style="display:flex; gap:12px; margin-bottom: 2px;">
+                    <button onclick="window.renderDefectsReport()" style="padding:10px 16px; background:#f1f5f9; color:#475569; border:1px solid #cbd5e1; border-radius:8px; cursor:pointer; font-weight:600;"><i class="fas fa-sync-alt" style="margin-right:6px;"></i> Refresh</button>
+                    <button onclick="window.printReportContent('Order Defects Report')" style="padding:10px 16px; background:#0f172a; color:white; border:none; border-radius:8px; cursor:pointer; font-weight:700;"><i class="fas fa-print" style="margin-right:6px;"></i> Print PDF</button>
+                </div>
+            </div>
+        </div>
 
+        <!-- Filter Bar -->
+        <div style="display:flex; gap:12px; align-items:center;">
+            <select id="defects-company-filter" onchange="window.renderDefectsReport()" style="padding:10px; border:1px solid #cbd5e1; border-radius:8px; font-size:13px; font-weight:600; min-width:200px; background:white;">
+                <option value="All">All Companies</option>
+                <option value="Machinery Exchange">Machinery Exchange (MXG)</option>
+                <option value="Sinopower">Sinopower (SPZ)</option>
+            </select>
+            <div style="position:relative; flex:1;">
+                <input type="text" id="defects-text-filter" placeholder="Filter current defects by machine, customer or description..." onkeyup="window.renderDefectsReport()" style="width:100%; padding:10px 10px 10px 36px; border:1px solid #cbd5e1; border-radius:8px; font-size:13px;">
+                <i class="fas fa-filter" style="position:absolute; left:12px; top:12px; color:#94a3b8;"></i>
+            </div>
+        </div>
+
+        <!-- Table Container -->
+        <div id="defects-report-table-container" style="flex:1; overflow-y:auto; background:white; border-radius:12px; border:1px solid #e2e8f0; margin-bottom:20px;">
+            <!-- Rendered by JS -->
+        </div>
+    </div>`;
+
+    window.salestrack.openListModal("Defects Report", html, "1200px");
     
-    // Group defects by customer + machine
-    let grouped = {};
-    for (let d of defects) {
-        let customer = d.customer || d.order_id || 'Unknown';
-        let machine = d.machine || '-';
-        let key = customer + '|||' + machine;
-        if (!grouped[key]) {
-            grouped[key] = { customer: customer, machine: machine, defects: [] };
+    // Fix z-index so it shows over the navbar
+    const backdrop = document.getElementById('ol-list-modal-backdrop');
+    if (backdrop) backdrop.style.zIndex = '999999';
+    
+    // Auto-select company from dashboard context if available
+    const dashboardCompanyEl = document.getElementById("ol-company");
+    if (dashboardCompanyEl) {
+        const dCompany = dashboardCompanyEl.value;
+        const localCompanyEl = document.getElementById("defects-company-filter");
+        if (localCompanyEl && dCompany !== "All") {
+            localCompanyEl.value = dCompany;
         }
-        grouped[key].defects.push(d);
     }
 
-    for (let key in grouped) {
-        let group = grouped[key];
-        
-        let defectsHtml = group.defects.map(d => {
-            let desc = (d.description || d.name || 'No Description').trim().replace(/\n/g, '<br>');
-            let date = d.start_date || (d.created_at ? d.created_at.substring(0, 10) : '-');
-            return `
-                <div style="background:#fef2f2; padding:8px 12px; border-radius:6px; border:1px solid #fecaca; margin-bottom:6px; display:flex; justify-content:space-between; align-items:flex-start; gap:16px;">
-                    <div style="flex:1;">${desc}</div>
-                    <div style="font-size:11px; color:#991b1b; font-weight:700; white-space:nowrap; background:#fee2e2; padding:2px 6px; border-radius:4px;">${date}</div>
-                </div>
-            `;
-        }).join('');
+    setTimeout(() => {
+        window.renderDefectsReport();
+    }, 100);
+};
 
-        html += `
-            <tr style="border-bottom:1px solid #e2e8f0; transition:background 0.2s;" onmouseover="this.style.background='#f8fafc'" onmouseout="this.style.background='white'">
-                <td style="padding:16px; font-weight:700; color:#334155; vertical-align:top;">${group.customer}</td>
-                <td style="padding:16px; font-weight:600; color:#0f172a; vertical-align:top;">${group.machine}</td>
-                <td style="padding:16px; color:#991b1b; font-weight:500; vertical-align:top;" colspan="2">
-                    ${defectsHtml}
+window.handleAddDefectSelect = function(inputEl) {
+    const val = inputEl.value;
+    if (!val) return;
+    
+    const datalist = document.getElementById('active-orders-list');
+    if (!datalist) return;
+    
+    const option = Array.from(datalist.options).find(opt => opt.value === val);
+    if (option && option.dataset.meta) {
+        try {
+            const meta = JSON.parse(option.dataset.meta.replace(/&quot;/g, '"'));
+            if (window.salestrack && window.salestrack.openDefectsModal) {
+                // Open the defects modal!
+                window.salestrack.openDefectsModal(meta.machine, meta.report_id, meta.customer);
+                // Clear input so they can search again later
+                inputEl.value = '';
+            }
+        } catch(e) { console.error("Error parsing defect meta", e) };
+    }
+};
+
+window.triggerEditDefect = function(machine, orderId, customer) {
+    console.log("Trigger edit:", machine, orderId, customer);
+    if (!window.salestrack) {
+        alert("System not ready (salestrack missing)");
+        return;
+    }
+    if (!window.salestrack.openDefectsModal) {
+        alert("openDefectsModal missing from salestrack");
+        return;
+    }
+    
+    // Explicitly unhide the modal overlay just in case!
+    const overlay = document.getElementById('defects-modal-overlay');
+    if (overlay) {
+        overlay.classList.remove('hidden');
+        overlay.style.display = 'flex';
+        // Force high z-index
+        overlay.style.zIndex = '9999999';
+    } else {
+        alert("Error: defects-modal-overlay not found in DOM");
+        return;
+    }
+    
+    window.salestrack.openDefectsModal(machine, orderId, customer);
+};
+
+window.renderDefectsReport = function() {
+    const container = document.getElementById('defects-report-table-container');
+    if (!container) return;
+
+    const companyFilter = document.getElementById('defects-company-filter')?.value || "All";
+    const textFilter = (document.getElementById('defects-text-filter')?.value || "").toLowerCase();
+
+    let data = window._cachedDefectsData || [];
+    
+    // 1. Apply Filters
+    if (companyFilter !== "All") {
+        if (window.olOrdersData) {
+            // Find which orders belong to the selected company
+            const validOrderIds = new Set(window.olOrdersData.filter(o => {
+                const c = o.company || (o.frappe_quotation ? o.frappe_quotation.company : "") || "";
+                return c.toLowerCase().includes(companyFilter.toLowerCase());
+            }).map(o => o.report_id));
+            
+            data = data.filter(d => validOrderIds.has(d.order_id));
+        }
+    }
+    if (textFilter) {
+        data = data.filter(d => {
+            let m = (d.machine || "").toLowerCase();
+            let c = (d.customer || d.order_id || "").toLowerCase();
+            let desc = (d.description || d.name || "").toLowerCase();
+            return m.includes(textFilter) || c.includes(textFilter) || desc.includes(textFilter);
+        });
+    }
+
+    // 2. Group by Customer -> Machine
+    let grouped = {};
+    for (let d of data) {
+        let customer = d.customer || d.order_id || 'Unknown Customer';
+        if (!grouped[customer]) grouped[customer] = {};
+        
+        let machine = d.machine || 'General';
+        if (!grouped[customer][machine]) grouped[customer][machine] = [];
+        
+        grouped[customer][machine].push(d);
+    }
+
+    // 3. Build HTML Table
+    if (Object.keys(grouped).length === 0) {
+        container.innerHTML = `<div style="padding:20px; text-align:center; color:#64748b;">No active defects found.</div>`;
+        return;
+    }
+
+    let tableHtml = `
+    <table style="width:100%; border-collapse:collapse; font-size:13px; text-align:left;">
+        <thead style="background:#f8fafc; border-bottom:2px solid #e2e8f0;">
+            <tr>
+                <th style="padding:10px 12px; color:#475569; font-weight:800; font-size:10px; text-transform:uppercase; letter-spacing:0.5px; width:30%;">Machine</th>
+                <th style="padding:10px 12px; color:#475569; font-weight:800; font-size:10px; text-transform:uppercase; letter-spacing:0.5px; width:50%;">Defect Description</th>
+                <th style="padding:10px 12px; color:#475569; font-weight:800; font-size:10px; text-transform:uppercase; letter-spacing:0.5px; width:20%;">Date / Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+    `;
+
+    for (let customer of Object.keys(grouped).sort()) {
+        // Customer Header Row
+        tableHtml += `
+            <tr style="background:#f1f5f9; border-top:1px solid #cbd5e1; border-bottom:1px solid #cbd5e1;">
+                <td colspan="3" style="padding:10px 12px; font-weight:800; color:#0f172a; text-transform:uppercase; font-size:12px;">
+                    <i class="fas fa-building" style="color:#94a3b8; margin-right:8px;"></i> ${escapeHtml(customer)}
                 </td>
             </tr>
         `;
+
+        let machines = grouped[customer];
+        for (let machine of Object.keys(machines).sort()) {
+            let defs = machines[machine];
+            
+            // Render each defect for this machine
+            for (let d of defs) {
+                let desc = (d.description || d.name || 'No Description').trim().replace(/\n/g, '<br>');
+                let date = d.start_date || (d.created_at ? d.created_at.substring(0, 10) : '-');
+                
+                // Safe JSON encode for arguments to avoid quote hell
+                let encMachine = encodeURIComponent(machine);
+                let encOrder = encodeURIComponent(d.order_id || '');
+                let encCustomer = encodeURIComponent(customer);
+
+                tableHtml += `
+            <tr style="border-bottom:1px solid #e2e8f0; transition:background 0.2s;" onmouseover="this.style.background='#fafaf9'" onmouseout="this.style.background='white'">
+                <td style="padding:8px 12px; font-weight:600; color:#334155; vertical-align:middle; border-right:1px solid #f1f5f9;">${escapeHtml(machine)}</td>
+                <td style="padding:8px 12px; color:#991b1b; vertical-align:middle; font-size:12px;">${desc}</td>
+                <td style="padding:8px 12px; vertical-align:middle;">
+                    <div style="display:flex; flex-direction:row; gap:8px; align-items:center; justify-content:flex-start;">
+                        <span style="font-size:11px; color:#991b1b; font-weight:700; white-space:nowrap; background:#fee2e2; padding:4px 8px; border-radius:4px;"><i class="far fa-calendar-alt" style="margin-right:4px;"></i> ${date}</span>
+                        <button onclick="window.triggerEditDefect(decodeURIComponent('${encMachine}'), decodeURIComponent('${encOrder}'), decodeURIComponent('${encCustomer}'))" style="background:transparent; border:none; padding:4px; font-size:14px; color:#64748b; cursor:pointer; transition:color 0.2s;" onmouseover="this.style.color='#0f172a'" onmouseout="this.style.color='#64748b'" title="Edit Defect"><i class="fas fa-pencil-alt"></i></button>
+                    </div>
+                </td>
+            </tr>
+                `;
+            }
+        }
     }
 
-    html += `</tbody></table></div></div>`;
-    window.salestrack.openListModal("Defects Report", html, "1200px");
+    tableHtml += `</tbody></table>`;
+    container.innerHTML = tableHtml;
 };
-
 window.openTrainingReport = async function() {
     if (!window.salestrack || !window.salestrack.openListModal) {
         alert("Modal functionality not ready.");

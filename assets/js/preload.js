@@ -82,20 +82,31 @@ contextBridge.exposeInMainWorld("supabase", {
       select: (columns = '*', options = {}) => {
         const params = { columns, options };
         const chain = {
-          order: (column, opts) => { params.order = { column, options: opts }; return chain; },
-          range: (from, to) => { params.range = { from, to }; return chain; },
-          or: (val) => { params.or = val; return chain; },
-          // Make it thenable to work with await
-          then: (onSuccess, onError) => {
+          // Equality filter — passed as { col: val } map; main process does .eq() for each
+          eq:      (col, val) => { if (!params.filters) params.filters = {}; params.filters[col] = val; return chain; },
+          // Free-text filters — stored for main process to apply
+          ilike:   (col, pat) => { if (!params.ilike) params.ilike = []; params.ilike.push({ col, pat }); return chain; },
+          gte:     (col, val) => { if (!params.gte)   params.gte   = []; params.gte.push({ col, val });   return chain; },
+          lte:     (col, val) => { if (!params.lte)   params.lte   = []; params.lte.push({ col, val });   return chain; },
+          order:   (column, opts) => { params.order = { column, ...(opts || {}) }; return chain; },
+          range:   (from, to) => { params.range = { from, to }; return chain; },
+          limit:   (n) => { params.limit = n; return chain; },
+          or:      (val) => { params.or = val; return chain; },
+          then:    (onSuccess, onError) => {
             return ipcRenderer.invoke('supabase:query', { table, method: 'select', params })
               .then(onSuccess, onError);
           }
         };
         return chain;
       },
-      upsert: (data) => ipcRenderer.invoke('supabase:query', { table, method: 'upsert', data }),
-      insert: (data) => ipcRenderer.invoke('supabase:query', { table, method: 'insert', data }),
-      delete: (match) => ipcRenderer.invoke('supabase:query', { table, method: 'delete', params: { match } })
+      // Single-record fetch by name or id
+      getOne:  (params) => ipcRenderer.invoke('supabase:query', { table, method: 'getOne', params }),
+      upsert:  (data, options) => ipcRenderer.invoke('supabase:query', { table, method: 'upsert', params: { data, options } }),
+      insert:  (data) => ipcRenderer.invoke('supabase:query', { table, method: 'insert', params: { data } }),
+      update:  (data, params) => ipcRenderer.invoke('supabase:query', { table, method: 'update', params: { data, ...params } }),
+      delete:  (params) => ipcRenderer.invoke('supabase:query', { table, method: 'delete', params })
     };
-  }
+  },
+  // Convenience: rpc call via edge function path
+  rpc: (fn, args) => ipcRenderer.invoke('supabase:query', { table: fn, method: 'rpc', params: args })
 });

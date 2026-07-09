@@ -57,3 +57,6 @@
 \n## 2026-06-25
 - `08769cb` 2026-06-25 [supabase-migration] restore-point: OEM report quotations pipeline fix + data reconciliation
   Files: .mcp/knowledge/_shared/commit_log.md,omnis_dashboard.py,systems/salestrack/dashboard_logic.js,systems/salestrack/index.html,
+\n## 2026-06-26
+- `f437133` 2026-06-26 [supabase-migration] restore-point: Training Library overlay fully working - navbar z-index fix, body.appendChild, dynamic nav height, null guards in training_logic.js
+  Files: .gemini/patch_present_btn.py,.mcp/knowledge/_shared/commit_log.md,check_count.js,landing/index.html,landing/script.js,landing/style.css,systems/salestrack/index.html,systems/salestrack/tmp_marketing.js,systems/salestrack/training_library.js,systems/salestrack/training_logic.js,update_db.js,

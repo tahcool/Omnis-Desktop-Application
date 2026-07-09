@@ -5167,17 +5167,34 @@ def get_omnis_oem_details_v2(oem=None, period="This Year", custom_start=None, cu
         """, sales_params, as_dict=True)
 
         # 3. Fetch Quotation Data (All-time pipeline, no date filter to match dashboard)
-        quotes = frappe.db.sql(f"""
+        all_q = frappe.db.sql(f"""
             SELECT 
                 qi.qty, q.transaction_date as date, qi.item_name as model, i.item_group,
                 q.name, q.customer_name as customer, i.brand, q.owner as person
             FROM `tabQuotation` q
             JOIN `tabQuotation Item` qi ON qi.parent = q.name
-            JOIN `tabItem` i ON i.name = qi.item_code
-            WHERE q.docstatus < 2 
-              AND {oem_cond_quotes} 
+            LEFT JOIN `tabItem` i ON i.name = qi.item_code
+            WHERE q.docstatus = 0
+              AND q.status NOT IN ('Lost', 'Cancelled', 'Ordered')
             ORDER BY q.transaction_date DESC
-        """, quotes_params, as_dict=True)
+        """, as_dict=True)
+        
+        quotes = []
+        for q in all_q:
+            match = False
+            if oem == "Everstar Industries":
+                if (q.brand and (q.brand == oem or "powerstar" in q.brand.lower())):
+                    match = True
+                elif (q.model and "powerstar" in str(q.model).lower()):
+                    match = True
+                elif q.brand == oem:
+                    match = True
+            else:
+                if q.brand == oem:
+                    match = True
+            
+            if match:
+                quotes.append(q)
 
         # 4. Process Trends & Analysis (Hierarchical Structure for Table)
         month_labels = []
@@ -5248,7 +5265,7 @@ def get_omnis_oem_details_v2(oem=None, period="This Year", custom_start=None, cu
 
         # 7. Filtered lists for Breakdown and Tabs (matching the period labels)
         filtered_sales = [s for s in sales if str(s.date) >= str(start_date) and str(s.date) <= str(end_date)]
-        filtered_quotes = [q for q in quotes if str(q.date) >= str(start_date) and str(q.date) <= str(end_date)]
+        filtered_quotes = quotes  # All open pipeline quotes (no date filter — status-based pipeline)
 
         return {
             "ok": True,

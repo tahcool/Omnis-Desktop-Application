@@ -746,6 +746,7 @@
       { key: "engtrack", name: "Engtrack", baseUrl: "https://engtrack.machinery-exchange.com" },
       { key: "powertrack", name: "Powertrack", baseUrl: "https://powertrack.powerstar.co.zw" },
       { key: "spe", name: "SPE", baseUrl: "https://omnis.spareparts-exchange.com" },
+      { key: "medicals", name: "Clinic / Medicals", baseUrl: "https://salestrack.powerstar.co.zw" },
     ];
 
     const LS_REMEMBER = "omnisRemember";
@@ -1070,6 +1071,16 @@
         // Update progress bar
         updateSplash(null, ((i + 1) / total) * 100);
 
+        // 🔐 Restrict Chipo to Medicals ONLY
+        if (usr.toLowerCase() === "chipo@industrial-exchange.group" && sys.key !== "medicals") {
+          if (row) {
+             row.classList.remove('active');
+             row.classList.add('error');
+             row.querySelector('.status-indicator').textContent = 'UNAUTHORIZED';
+          }
+          continue;
+        }
+
         try {
           // 🔐 FLEETRACK: Auth via Supabase (not Frappe)
           if (sys.key === "fleetrack") {
@@ -1089,6 +1100,35 @@
             localStorage.setItem("ft_user_email", res.user.email);
             localStorage.setItem("supabase_access_token", res.access_token);
             localStorage.setItem("supabase_refresh_token", res.refresh_token);
+            if (rememberMe.checked || silentAuto) {
+              localStorage.setItem(LS_REMEMBER, "1");
+              localStorage.setItem(LS_USER, usr);
+              localStorage.setItem(LS_PWD, pwd);
+            }
+
+            successfulLogins.push(sys);
+            continue;
+          }
+
+          // 🔐 MEDICALS: Auth via Supabase (Restricted Access)
+          if (sys.key === "medicals") {
+            if (usr.toLowerCase() !== "chipo@industrial-exchange.group") {
+              throw new Error("UNAUTHORIZED");
+            }
+            if (!window.electron || !window.electron.invoke) throw new Error("Electron bridge not available");
+            const res = await window.electron.invoke('supabase:signIn', { email: usr, password: pwd });
+            if (!res.ok) throw new Error(res.error || "Invalid credentials");
+
+            clearInterval(jargonInterval);
+            if (row) {
+              row.classList.remove('active');
+              row.classList.add('done');
+              row.querySelector('.status-indicator').innerHTML = 'AUTHORIZED';
+            }
+
+            localStorage.setItem("omnisUser", usr);
+            localStorage.setItem("omnisSystemKey", sys.key);
+            localStorage.setItem("supabase_access_token", res.access_token);
             if (rememberMe.checked || silentAuto) {
               localStorage.setItem(LS_REMEMBER, "1");
               localStorage.setItem(LS_USER, usr);
@@ -1189,6 +1229,8 @@
                 url = "systems/fleetrack/index.html";
               } else if (primarySys.key === "salestrack") {
                 url = "systems/salestrack/index.html";
+              } else if (primarySys.key === "medicals") {
+                url = "systems/medicals/index.html";
               } else {
                 url = "systems/group_accounts/index.html";
               }
