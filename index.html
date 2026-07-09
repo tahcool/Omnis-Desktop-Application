@@ -1092,7 +1092,11 @@
         
         setStatus("Admin Login Successful! Loading dashboard...", "success");
         setTimeout(() => {
-           window.location.href = "admin_dashboard.html";
+           if (window.electron && window.electron.invoke) {
+               window.electron.invoke('window:openDashboard', 'admin_dashboard.html');
+           } else {
+               window.location.href = "admin_dashboard.html";
+           }
         }, 800);
         return; 
       }

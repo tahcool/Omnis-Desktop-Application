@@ -1,5 +1,6 @@
 document.addEventListener('DOMContentLoaded', () => {
-  
+
+
   // Tab Switching
   const navItems = document.querySelectorAll('.nav-item');
   const viewPanels = document.querySelectorAll('.view-panel');
@@ -57,8 +58,10 @@ document.addEventListener('DOMContentLoaded', () => {
     localStorage.removeItem("supabase_access_token");
     if (window.electron && window.electron.invoke) {
        await window.electron.invoke('supabase:signOut');
+       await window.electron.invoke('window:openLogin');
+    } else {
+       window.location.href = 'index.html';
     }
-    window.location.href = 'index.html';
   });
 
   // User Management
