@@ -4,7 +4,7 @@ import urllib3
 from supabase import create_client, Client
 
 urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
-supabase: Client = create_client("https://pfqaeewmlwfayxbgmuaq.supabase.co", "sb_secret_QDTpvp_agRT3cuB9nXrfPw_I9fZHEOc")
+supabase: Client = create_client("https://pfqaeewmlwfayxbgmuaq.supabase.co", process.env.SUPABASE_SERVICE_KEY)
 
 print("Fetching valid quotation names from Supabase...")
 # Use limit 5000 to get all of them

@@ -3,7 +3,7 @@ from supabase import create_client, Client
 
 # Supabase Credentials
 SUPABASE_URL = "https://pfqaeewmlwfayxbgmuaq.supabase.co"
-SUPABASE_KEY = "sb_secret_QDTpvp_agRT3cuB9nXrfPw_I9fZHEOc"
+SUPABASE_KEY = process.env.SUPABASE_SERVICE_KEY
 
 def heal_product_relations():
     supabase = create_client(SUPABASE_URL, SUPABASE_KEY)

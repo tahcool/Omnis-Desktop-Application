@@ -13,7 +13,7 @@ const https = require('https');
 
 // Configuration
 const SUPABASE_URL = "https://pfqaeewmlwfayxbgmuaq.supabase.co";
-const SUPABASE_KEY = "sb_secret_QDTpvp_agRT3cuB9nXrfPw_I9fZHEOc"; // Service Role Key
+const SUPABASE_KEY = process.env.SUPABASE_SERVICE_KEY; // Service Role Key
 
 // --- USER ACTION REQUIRED: SET YOUR FRAPPE API KEYS ---
 const FRAPPE_API_KEY = "73624aafe4cc8cc";

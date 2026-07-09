@@ -9,7 +9,7 @@ const https = require('https');
 
 // Try the Supabase Database REST endpoint format
 const PROJECT_REF = 'pfqaeewmlwfayxbgmuaq';
-const SERVICE_KEY = 'sb_secret_QDTpvp_agRT3cuB9nXrfPw_I9fZHEOc';
+const SERVICE_KEY = process.env.SUPABASE_SERVICE_KEY;
 
 const statements = [
   `CREATE TABLE IF NOT EXISTS omnis_email_config (

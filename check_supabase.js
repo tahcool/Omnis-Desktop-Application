@@ -1,5 +1,5 @@
 const { createClient } = require('./omnis-mobile/node_modules/@supabase/supabase-js');
-const supabase = createClient('https://pfqaeewmlwfayxbgmuaq.supabase.co', 'sb_secret_QDTpvp_agRT3cuB9nXrfPw_I9fZHEOc');
+const supabase = createClient('https://pfqaeewmlwfayxbgmuaq.supabase.co', process.env.SUPABASE_SERVICE_KEY);
 
 async function check() {
     console.log('Checking ft_breakdown_log...');

@@ -2,7 +2,7 @@ const { createClient } = require('@supabase/supabase-js');
 
 // Using the same URL and Service Key as the edge functions
 const SUPABASE_URL = "https://pfqaeewmlwfayxbgmuaq.supabase.co";
-const SERVICE_KEY = "sb_secret_QDTpvp_agRT3cuB9nXrfPw_I9fZHEOc";
+const SERVICE_KEY = process.env.SUPABASE_SERVICE_KEY;
 
 const supabase = createClient(SUPABASE_URL, SERVICE_KEY);
 

@@ -5,10 +5,12 @@ const axios = require("axios");
 const https = require("https");
 const dns = require("dns");
 
+require('dotenv').config();
+
 // Supabase Integration
 const { createClient } = require('@supabase/supabase-js');
 const SUPABASE_URL = "https://pfqaeewmlwfayxbgmuaq.supabase.co";
-const SUPABASE_KEY = "sb_" + "secret_QDTpvp_agRT3cuB9nXrfPw_I9fZHEOc";
+const SUPABASE_KEY = process.env.SUPABASE_SERVICE_KEY;
 const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
 
 // Offline Caching - Sync Manager

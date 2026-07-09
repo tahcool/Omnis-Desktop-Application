@@ -7,7 +7,7 @@ const SALESTRACK_IP = '102.207.50.172';
 const SALESTRACK_DOMAIN = 'salestrack.powerstar.co.zw';
 
 const SUPABASE_URL = 'https://pfqaeewmlwfayxbgmuaq.supabase.co';
-const SUPABASE_KEY = 'sb_secret_QDTpvp_agRT3cuB9nXrfPw_I9fZHEOc';
+const SUPABASE_KEY = process.env.SUPABASE_SERVICE_KEY;
 const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
 
 const httpsAgent = new https.Agent({
