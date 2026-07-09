@@ -7639,10 +7639,32 @@ window.OmnisDashboardV6 = class OmnisDashboardV6 {
         };
     }
 
-    loadEmailRecipients() {
+    async loadEmailRecipients() {
         try {
-            const saved = JSON.parse(localStorage.getItem('omnis_email_recipients') || '{}');
             const defs  = this._defaultEmailRecipients();
+            let saved = {};
+            
+            try {
+                const queryFn = window.electron ? window.electron.invoke : null;
+                if (queryFn) {
+                    const res = await queryFn('supabase:query', {
+                        table: 'omnis_app_settings',
+                        method: 'select',
+                        params: { match: { setting_key: 'email_recipients' } }
+                    });
+                    if (res && res.data && res.data.length > 0) saved = res.data[0].setting_value || {};
+                    else saved = JSON.parse(localStorage.getItem('omnis_email_recipients') || '{}');
+                } else if (window.supabase) {
+                    const { data } = await window.supabase.from('omnis_app_settings').select('setting_value').eq('setting_key', 'email_recipients');
+                    if (data && data.length > 0) saved = data[0].setting_value || {};
+                    else saved = JSON.parse(localStorage.getItem('omnis_email_recipients') || '{}');
+                } else {
+                    saved = JSON.parse(localStorage.getItem('omnis_email_recipients') || '{}');
+                }
+            } catch (err) {
+                console.error('Error fetching settings from Supabase, using local:', err);
+                saved = JSON.parse(localStorage.getItem('omnis_email_recipients') || '{}');
+            }
             
             const mxgData = Array.isArray(saved.mxg) ? { cc: saved.mxg, contactName: defs.mxg.contactName, contactTitle: defs.mxg.contactTitle, contactEmail: defs.mxg.contactEmail, contactPhone: defs.mxg.contactPhone } : (saved.mxg || defs.mxg);
             const spzData = Array.isArray(saved.spz) ? { cc: saved.spz, contactName: defs.spz.contactName, contactTitle: defs.spz.contactTitle, contactEmail: defs.spz.contactEmail, contactPhone: defs.spz.contactPhone } : (saved.spz || defs.spz);
@@ -7664,7 +7686,7 @@ window.OmnisDashboardV6 = class OmnisDashboardV6 {
         } catch(e) { console.error('loadEmailRecipients', e); }
     }
 
-    saveEmailRecipients() {
+    async saveEmailRecipients() {
         try {
             const mxgEl = document.getElementById('email-recipients-mxg');
             const spzEl = document.getElementById('email-recipients-spz');
@@ -7685,7 +7707,24 @@ window.OmnisDashboardV6 = class OmnisDashboardV6 {
                 contactPhone: document.getElementById('email-contact-phone-spz') ? document.getElementById('email-contact-phone-spz').value.trim() : ''
             };
             
-            localStorage.setItem('omnis_email_recipients', JSON.stringify({ mxg, spz }));
+            const settingsVal = { mxg, spz };
+            
+            try {
+                const queryFn = window.electron ? window.electron.invoke : null;
+                if (queryFn) {
+                    await queryFn('supabase:query', {
+                        table: 'omnis_app_settings',
+                        method: 'upsert',
+                        data: { setting_key: 'email_recipients', setting_value: settingsVal }
+                    });
+                } else if (window.supabase) {
+                    await window.supabase.from('omnis_app_settings').upsert({ setting_key: 'email_recipients', setting_value: settingsVal });
+                }
+            } catch(e) {
+                console.error('Error saving to Supabase:', e);
+            }
+            
+            localStorage.setItem('omnis_email_recipients', JSON.stringify(settingsVal));
             this.showToast('Email recipients saved', 'success');
         } catch(e) { this.showToast('Failed to save recipients', 'error'); }
     }
