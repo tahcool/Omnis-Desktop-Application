@@ -7098,7 +7098,20 @@ window.OmnisDashboardV6 = class OmnisDashboardV6 {
 
             const payload = res.message || res;
 
-            if (payload.ok) {
+            if (payload.ok || (payload.error && payload.error.includes("Record not found"))) {
+                // Delete the linked tracking order in Supabase
+                if (window.electron) {
+                    try {
+                        await window.electron.invoke('supabase:query', {
+                            table: 'omnis_tracking_orders',
+                            method: 'delete',
+                            params: { match: { linked_sale_name: reportId } }
+                        });
+                    } catch (e) {
+                        console.warn("Failed to delete linked tracking order from Supabase:", e);
+                    }
+                }
+                
                 this.showToast("Order Deleted Permanently", "success");
                 this.closeListModal();
                 // Refresh
@@ -8400,7 +8413,16 @@ window.OmnisDashboardV6 = class OmnisDashboardV6 {
         if (btn) { btn.disabled = true; btn.innerHTML = `<span>&#9203;</span> Sending...`; }
         try {
             const recipientEmails = emailContacts.map(c => c.email).join(',');
-            const greetingName = emailContacts.map(c => c.salutation ? `${c.salutation} ${c.name}` : c.name).join(' and ') || 'Valued Customer';
+            const namesList = emailContacts.map(c => c.salutation ? `${c.salutation} ${c.name}` : c.name);
+            let greetingName = 'Valued Customer';
+            if (namesList.length === 1) {
+                greetingName = namesList[0];
+            } else if (namesList.length === 2) {
+                greetingName = `${namesList[0]} and ${namesList[1]}`;
+            } else if (namesList.length > 2) {
+                const last = namesList.pop();
+                greetingName = `${namesList.join(', ')} and ${last}`;
+            }
             const subject = `Order Status Report \u2014 ${customerName}`;
             const doc = this._currentFullDoc || {};
             const enriched = machines.map(m => {

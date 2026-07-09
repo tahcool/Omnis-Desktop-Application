@@ -7594,7 +7594,39 @@ def delete_group_sale(payload=None, **kwargs):
             return {"ok": True}
         return {"ok": False, "error": "Record not found: " + name}
     except Exception as e:
-        frappe.log_error(frappe.get_traceback(), "delete_group_sale Error")
+        return {"ok": False, "error": str(e)}
+    finally:
+        frappe.set_user(previous_user)
+
+@frappe.whitelist(allow_guest=True)
+def delete_order(payload=None, **kwargs):
+    """Securely deletes an FMB Report (Tracking Order) entry."""
+    params = extract_params(payload=payload, **kwargs)
+    name = (params.get("report_id") or params.get("name") or "").strip()
+    if not name:
+        name = (frappe.form_dict.get("report_id") or frappe.form_dict.get("name") or "").strip()
+    if not name:
+        return {"ok": False, "error": "Missing report_id"}
+
+    previous_user = frappe.session.user
+    frappe.set_user("Administrator")
+    try:
+        deleted = False
+        if frappe.db.exists("FMB Report", name):
+            frappe.delete_doc("FMB Report", name, ignore_permissions=True)
+            deleted = True
+        
+        if frappe.db.exists("Group Sales", name):
+            frappe.delete_doc("Group Sales", name, ignore_permissions=True)
+            deleted = True
+            
+        if deleted:
+            frappe.db.commit()
+            return {"ok": True}
+        
+        return {"ok": False, "error": f"Record not found in Frappe: {name}"}
+    except Exception as e:
+        frappe.log_error(frappe.get_traceback(), "delete_order Error")
         return {"ok": False, "error": str(e)}
     finally:
         frappe.set_user(previous_user)
