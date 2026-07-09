@@ -6799,10 +6799,6 @@
                           style="padding:8px 20px; border:none; border-radius:8px; font-size:12px; font-weight:700; cursor:pointer; transition:all 0.3s; background:white; color:#0f172a; box-shadow:0 2px 4px rgba(0,0,0,0.05); display:flex; align-items:center; gap:8px;">
                           <i class="fab fa-whatsapp"></i> Connectivity
                         </button>
-                        <button onclick="salestrack.setSettingsTab('intelligence')" class="settings-tab-btn" data-tab="intelligence"
-                          style="padding:8px 20px; border:none; border-radius:8px; font-size:12px; font-weight:700; cursor:pointer; transition:all 0.3s; background:transparent; color:#64748b; display:flex; align-items:center; gap:8px;">
-                          <i class="fas fa-brain"></i> Intelligence
-                        </button>
                         <button onclick="salestrack.setSettingsTab('maintenance')" class="settings-tab-btn" data-tab="maintenance"
                           style="padding:8px 20px; border:none; border-radius:8px; font-size:12px; font-weight:700; cursor:pointer; transition:all 0.3s; background:transparent; color:#64748b; display:flex; align-items:center; gap:8px;">
                           <i class="fas fa-sync-alt"></i> Maintenance
@@ -6810,18 +6806,6 @@
                         <button onclick="salestrack.setSettingsTab('security')" class="settings-tab-btn" data-tab="security"
                           style="padding:8px 20px; border:none; border-radius:8px; font-size:12px; font-weight:700; cursor:pointer; transition:all 0.3s; background:transparent; color:#64748b; display:flex; align-items:center; gap:8px;">
                           <i class="fas fa-shield-alt"></i> Security
-                        </button>
-                        <button onclick="salestrack.setSettingsTab('migration')" class="settings-tab-btn" data-tab="migration"
-                          style="padding:8px 20px; border:none; border-radius:8px; font-size:12px; font-weight:700; cursor:pointer; transition:all 0.3s; background:transparent; color:#64748b; display:flex; align-items:center; gap:8px;">
-                          <i class="fas fa-database"></i> Migration
-                        </button>
-                        <button onclick="salestrack.setSettingsTab('email-recipients')" class="settings-tab-btn" data-tab="email-recipients"
-                          style="padding:8px 20px; border:none; border-radius:8px; font-size:12px; font-weight:700; cursor:pointer; transition:all 0.3s; background:transparent; color:#64748b; display:flex; align-items:center; gap:8px;">
-                          <i class="fas fa-envelope"></i> Email Recipients
-                        </button>
-                        <button onclick="salestrack.setSettingsTab('brand-mappings')" class="settings-tab-btn" data-tab="brand-mappings"
-                          style="padding:8px 20px; border:none; border-radius:8px; font-size:12px; font-weight:700; cursor:pointer; transition:all 0.3s; background:transparent; color:#64748b; display:flex; align-items:center; gap:8px;">
-                          <i class="fas fa-tags"></i> Brand Mappings
                         </button>
                         <button onclick="salestrack.setSettingsTab('team')" class="settings-tab-btn" data-tab="team"
                           style="padding:8px 20px; border:none; border-radius:8px; font-size:12px; font-weight:700; cursor:pointer; transition:all 0.3s; background:transparent; color:#64748b; display:flex; align-items:center; gap:8px;">
@@ -6970,76 +6954,6 @@
                           </div>
                       </div>
         
-                      <!-- TAB 5: MIGRATION -->
-                      <div id="settings-tab-migration" class="settings-tab-content hidden">
-                          <div class="dash-card" style="background: #fff; padding: 30px; border-radius: 16px; border: 1px solid #e2e8f0; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);">
-                              <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 25px;">
-                                  <h2 style="font-size: 18px; font-weight: 700; color: #1e293b; margin: 0; display: flex; align-items: center; gap: 10px;">
-                                      <span style="font-size: 20px;">🚀</span> Supabase Data Migration
-                                  </h2>
-                                  <div id="migration-status-pill" style="padding:6px 12px; background:#f1f5f9; color:#475569; border-radius:99px; font-size:11px; font-weight:800; text-transform:uppercase; letter-spacing:0.5px;">Ready</div>
-                              </div>
-        
-                              <div style="background: #0f172a; border-radius: 16px; padding: 30px; color: white; margin-bottom: 25px; position:relative; overflow:hidden;">
-                                  <!-- Decorative Gradient -->
-                                  <div style="position:absolute; top:0; right:0; width:200px; height:200px; background:radial-gradient(circle, rgba(225, 28, 42, 0.15) 0%, transparent 70%); pointer-events:none;"></div>
-                                  
-                                  <div style="display:flex; justify-content:space-between; align-items:flex-end; margin-bottom:15px;">
-                                      <div>
-                                          <div style="font-size: 12px; font-weight: 700; color: rgba(255,255,255,0.5); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 8px;">Migration Progress</div>
-                                          <div style="display:flex; align-items:baseline; gap:8px;">
-                                              <span id="migration-percent" style="font-size: 42px; font-weight: 900; letter-spacing: -1px;">0%</span>
-                                              <span id="migration-batch-label" style="font-size: 14px; font-weight: 600; color: rgba(255,255,255,0.4);">Batch 0 / 0</span>
-                                          </div>
-                                      </div>
-                                      <div style="text-align:right;">
-                                          <div style="font-size: 11px; font-weight: 700; color: rgba(255,255,255,0.4); text-transform: uppercase; margin-bottom: 4px;">Estimated Time</div>
-                                          <div id="migration-eta" style="font-size: 18px; font-weight: 800; color: #34d399;">--:--:--</div>
-                                      </div>
-                                  </div>
-        
-                                  <div style="width: 100%; height: 8px; background: rgba(255,255,255,0.1); border-radius: 99px; overflow: hidden; margin-bottom: 10px;">
-                                      <div id="migration-progress-bar" style="width: 0%; height: 100%; background: linear-gradient(90deg, #e11c2a, #f97316); box-shadow: 0 0 15px rgba(225,28,42,0.5); transition: width 0.5s cubic-bezier(0.4, 0, 0.2, 1);"></div>
-                                  </div>
-                                  
-                                  <div id="migration-detail-text" style="font-size: 12px; color: rgba(255,255,255,0.5); font-style: italic;">Standby... Press Start to begin historical synchronization.</div>
-                              </div>
-        
-                              <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; margin-bottom: 30px;">
-                                  <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; padding: 20px;">
-                                      <div style="font-size: 11px; font-weight: 800; color: #64748b; text-transform: uppercase; margin-bottom: 6px;">Total Records</div>
-                                      <div id="migration-stat-total" style="font-size: 20px; font-weight: 800; color: #0f172a;">---</div>
-                                  </div>
-                                  <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; padding: 20px;">
-                                      <div style="font-size: 11px; font-weight: 800; color: #64748b; text-transform: uppercase; margin-bottom: 6px;">Synced Successfully</div>
-                                      <div id="migration-stat-synced" style="font-size: 20px; font-weight: 800; color: #10b981;">0</div>
-                                  </div>
-                                  <div style="background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; padding: 20px;">
-                                      <div style="font-size: 11px; font-weight: 800; color: #64748b; text-transform: uppercase; margin-bottom: 6px;">Sync Failures</div>
-                                      <div id="migration-stat-failed" style="font-size: 20px; font-weight: 800; color: #ef4444;">0</div>
-                                  </div>
-                              </div>
-        
-                              <div style="display:flex; gap:15px;">
-                                  <button id="btn-start-migration" onclick="salestrack.startFullMigration()" 
-                                      style="flex: 2; background: #0f172a; color: white; border: none; padding: 16px; border-radius: 12px; font-weight: 800; font-size: 14px; cursor: pointer; transition: all 0.3s; display: flex; align-items: center; justify-content: center; gap: 10px; box-shadow: 0 10px 15px -3px rgba(15,23,42,0.2);">
-                                      <i class="fas fa-play"></i> START HISTORICAL SYNC
-                                  </button>
-                                  <button id="btn-pause-migration" onclick="salestrack.pauseMigration()" disabled
-                                      style="flex: 1; background: #f1f5f9; color: #64748b; border: 1px solid #e2e8f0; padding: 16px; border-radius: 12px; font-weight: 700; font-size: 14px; cursor: not-allowed; transition: all 0.3s;">
-                                      <i class="fas fa-pause"></i> PAUSE
-                                  </button>
-                              </div>
-                              
-                              <div style="margin-top: 25px; padding: 15px; border-radius: 12px; background: #fff8f1; border: 1px solid #ffedd5; display: flex; gap: 15px; align-items: flex-start;">
-                                  <i class="fas fa-info-circle" style="color:#f97316; margin-top:3px;"></i>
-                                  <div style="font-size: 12px; color: #9a3412; line-height: 1.6;">
-                                      <b>Safe Sync Active:</b> Migration runs in background "Small Bite" batches of 50 records. This prevents server load and ensures zero disruption to your daily operations. You can continue using Omnis while the sync runs.
-                                  </div>
-                              </div>
-                          </div>
-                      </div>
-        
                       <!-- TAB 2: MAINTENANCE -->
                       <div id="settings-tab-maintenance" class="settings-tab-content hidden">
                           <div class="dash-card" style="background: #fff; padding: 30px; border-radius: 16px; border: 1px solid #e2e8f0; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);">
@@ -7097,42 +7011,6 @@
                           </div>
                       </div>
         
-                      <!-- TAB 3: INTELLIGENCE -->
-                      <div id="settings-tab-intelligence" class="settings-tab-content hidden">
-                          <div class="dash-card" style="background: #fff; padding: 30px; border-radius: 16px; border: 1px solid #e2e8f0; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);">
-                              <h2 style="font-size: 18px; font-weight: 700; color: #1e293b; margin-bottom: 20px; display: flex; align-items: center; gap: 10px;">
-                                  <span style="font-size: 20px;">🤖</span> AI Configuration
-                              </h2>
-                              <div style="margin-bottom: 20px;">
-                                  <label for="settings-openai-key" style="display: block; font-size: 13px; font-weight: 600; color: #475569; margin-bottom: 8px;">Omnis API Key</label>
-                                  <div style="display: flex; gap: 10px;">
-                                      <input type="password" id="settings-openai-key" placeholder="omnis-..." style="flex: 1; padding: 12px 16px; border-radius: 10px; border: 1px solid #cbd5e1; font-size: 14px; outline: none;">
-                                      <button onclick="salestrack.togglePasswordVisibility('settings-openai-key')" style="padding: 0 15px; border-radius: 10px; border: 1px solid #e2e8f0; background: #f8fafc; color: #64748b; cursor: pointer;">👁️</button>
-                                  </div>
-                              </div>
-                              <div style="display: flex; gap: 12px;">
-                                  <button onclick="salestrack.saveSettings()" style="flex:1; background: #0f172a; color: white; border: none; padding: 12px; border-radius: 10px; font-weight: 700; cursor: pointer;">Save Changes</button>
-                                  <button id="btn-test-ai-connection" onclick="salestrack.testAIConnection()" style="flex:1; background: white; color: #1e293b; border: 1px solid #e2e8f0; padding: 12px; border-radius: 10px; font-weight: 700; cursor: pointer;">Test</button>
-                              </div>
-                          </div>
-        
-                          <div class="dash-card" style="background: #fff; padding: 30px; border-radius: 16px; border: 1px solid #e2e8f0; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); margin-top: 25px;">
-                              <h2 style="font-size: 18px; font-weight: 700; color: #1e293b; margin-bottom: 20px; display: flex; align-items: center; gap: 10px;">
-                                  <span style="font-size: 20px;">🛠️</span> Diagnostic Tools
-                              </h2>
-                              <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 15px;">
-                                  <button onclick="salestrack.openLogViewer()" style="background: #f8fafc; border: 1px solid #e2e8f0; padding: 15px; border-radius: 12px; text-align: left; cursor: pointer; transition: all 0.2s;">
-                                      <div style="font-weight: 700; color: #0f172a; margin-bottom: 4px;">System Logs</div>
-                                      <div style="font-size: 12px; color: #64748b;">View real-time event logs and errors.</div>
-                                  </button>
-                                  <button onclick="salestrack.clearAppCache()" style="background: #f8fafc; border: 1px solid #e2e8f0; padding: 15px; border-radius: 12px; text-align: left; cursor: pointer; transition: all 0.2s;">
-                                      <div style="font-weight: 700; color: #0f172a; margin-bottom: 4px;">Clear Cache</div>
-                                      <div style="font-size: 12px; color: #64748b;">Reset local data and force fresh sync.</div>
-                                  </button>
-                              </div>
-                          </div>
-                      </div>
-        
                       <!-- SECURITY TAB -->
                       <div id="settings-tab-security" class="settings-tab-content hidden">
                           <div class="gs-card" style="padding:40px; text-align:center; background: linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);">
@@ -7171,147 +7049,7 @@
                           </div>
                       </div>
         
-                      <!-- TAB: EMAIL RECIPIENTS -->
-                      <div id="settings-tab-email-recipients" class="settings-tab-content hidden">
-                          <div class="gs-card" style="background:#fff; padding:30px; border-radius:16px; border:1px solid #e2e8f0; box-shadow:0 4px 6px -1px rgba(0,0,0,0.05);">
-                              <div style="margin-bottom:20px;">
-                                  <h2 style="font-size:18px; font-weight:700; color:#1e293b; margin:0; display:flex; align-items:center; gap:10px;">
-                                      <i class="fas fa-envelope" style="color:#1d4ed8;"></i> Automated Email CC Recipients
-                                  </h2>
-                                  <p style="color:#64748b; font-size:13px; margin-top:6px;">Configure the internal staff CC'd on Order Tracking and Aftersales Handover emails. Enter one email per line.</p>
-                              </div>
-        
-                              <div style="display:flex; flex-direction:column; gap:24px;">
-                                  <!-- Machinery Exchange -->
-                                  <div style="border:1px solid #e2e8f0; border-radius:12px; padding:20px; background:#fafbfc;">
-                                      <div style="display:flex; align-items:center; gap:14px; margin-bottom:14px;">
-                                          <img src="https://pfqaeewmlwfayxbgmuaq.supabase.co/storage/v1/object/public/public-assets/logos/mxg-logo.png" alt="MXG" style="height:28px; width:auto;">
-                                          <h3 style="margin:0; font-size:14px; color:#1e293b; font-weight:700;">Machinery Exchange &mdash; Email Settings</h3>
-                                      </div>
-                                      
-                                      <div style="display:grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap:12px; margin-bottom:16px;">
-                                          <div>
-                                              <label style="display:block; font-size:12px; font-weight:700; color:#475569; margin-bottom:6px;">Contact Person Name</label>
-                                              <input type="text" id="email-contact-name-mxg" style="width:100%; box-sizing:border-box; border:1px solid #cbd5e1; border-radius:8px; padding:10px; font-size:13px; color:#0f172a;" placeholder="e.g. Chetan Samji">
-                                          </div>
-                                          <div>
-                                              <label style="display:block; font-size:12px; font-weight:700; color:#475569; margin-bottom:6px;">Job Title</label>
-                                              <input type="text" id="email-contact-title-mxg" style="width:100%; box-sizing:border-box; border:1px solid #cbd5e1; border-radius:8px; padding:10px; font-size:13px; color:#0f172a;" placeholder="e.g. Commercial Manager">
-                                          </div>
-                                          <div>
-                                              <label style="display:block; font-size:12px; font-weight:700; color:#475569; margin-bottom:6px;">Email Address</label>
-                                              <input type="email" id="email-contact-email-mxg" style="width:100%; box-sizing:border-box; border:1px solid #cbd5e1; border-radius:8px; padding:10px; font-size:13px; color:#0f172a;" placeholder="e.g. chetan@example.com">
-                                          </div>
-                                          <div>
-                                              <label style="display:block; font-size:12px; font-weight:700; color:#475569; margin-bottom:6px;">WhatsApp Number</label>
-                                              <input type="text" id="email-contact-phone-mxg" style="width:100%; box-sizing:border-box; border:1px solid #cbd5e1; border-radius:8px; padding:10px; font-size:13px; color:#0f172a;" placeholder="e.g. +263772949515">
-                                          </div>
-                                      </div>
-
-                                      <label style="display:block; font-size:12px; font-weight:700; color:#475569; margin-bottom:6px;">CC Recipients (One per line)</label>
-                                      <textarea id="email-recipients-mxg" rows="4" style="width:100%; box-sizing:border-box; border:1px solid #cbd5e1; border-radius:8px; padding:12px; font-size:12.5px; font-family:monospace; resize:vertical; color:#0f172a;" placeholder="one@email.com&#10;another@email.com"></textarea>
-                                  </div>
-        
-                                  <!-- Sinopower -->
-                                  <div style="border:1px solid #e2e8f0; border-radius:12px; padding:20px; background:#fafbfc;">
-                                      <div style="display:flex; align-items:center; gap:14px; margin-bottom:14px;">
-                                          <div style="background:#7b1515; padding:6px 10px; border-radius:7px; display:inline-flex; align-items:center;">
-                                              <img src="https://pfqaeewmlwfayxbgmuaq.supabase.co/storage/v1/object/public/public-assets/logos/spz-logo.png" alt="SPZ" style="height:22px; width:auto;">
-                                          </div>
-                                          <h3 style="margin:0; font-size:14px; color:#1e293b; font-weight:700;">Sinopower &mdash; Email Settings</h3>
-                                      </div>
-                                      
-                                      <div style="display:grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap:12px; margin-bottom:16px;">
-                                          <div>
-                                              <label style="display:block; font-size:12px; font-weight:700; color:#475569; margin-bottom:6px;">Contact Person Name</label>
-                                              <input type="text" id="email-contact-name-spz" style="width:100%; box-sizing:border-box; border:1px solid #cbd5e1; border-radius:8px; padding:10px; font-size:13px; color:#0f172a;" placeholder="e.g. Brett Berry">
-                                          </div>
-                                          <div>
-                                              <label style="display:block; font-size:12px; font-weight:700; color:#475569; margin-bottom:6px;">Job Title</label>
-                                              <input type="text" id="email-contact-title-spz" style="width:100%; box-sizing:border-box; border:1px solid #cbd5e1; border-radius:8px; padding:10px; font-size:13px; color:#0f172a;" placeholder="e.g. Commercial Manager">
-                                          </div>
-                                          <div>
-                                              <label style="display:block; font-size:12px; font-weight:700; color:#475569; margin-bottom:6px;">Email Address</label>
-                                              <input type="email" id="email-contact-email-spz" style="width:100%; box-sizing:border-box; border:1px solid #cbd5e1; border-radius:8px; padding:10px; font-size:13px; color:#0f172a;" placeholder="e.g. brett@sinopower.co.zw">
-                                          </div>
-                                          <div>
-                                              <label style="display:block; font-size:12px; font-weight:700; color:#475569; margin-bottom:6px;">WhatsApp Number</label>
-                                              <input type="text" id="email-contact-phone-spz" style="width:100%; box-sizing:border-box; border:1px solid #cbd5e1; border-radius:8px; padding:10px; font-size:13px; color:#0f172a;" placeholder="e.g. +263775553862">
-                                          </div>
-                                      </div>
-
-                                      <label style="display:block; font-size:12px; font-weight:700; color:#475569; margin-bottom:6px;">CC Recipients (One per line)</label>
-                                      <textarea id="email-recipients-spz" rows="4" style="width:100%; box-sizing:border-box; border:1px solid #cbd5e1; border-radius:8px; padding:12px; font-size:12.5px; font-family:monospace; resize:vertical; color:#0f172a;" placeholder="one@email.com&#10;another@email.com"></textarea>
-                                  </div>
-                              </div>
-        
-                              <div style="margin-top:24px; display:flex; justify-content:flex-end; gap:10px; border-top:1px solid #f1f5f9; padding-top:20px;">
-                                  <button onclick="salestrack.resetEmailRecipients()" style="padding:10px 22px; border:1px solid #cbd5e1; border-radius:8px; background:white; color:#475569; font-size:13px; font-weight:600; cursor:pointer;">Reset to Defaults</button>
-                                  <button onclick="salestrack.saveEmailRecipients()" style="padding:10px 22px; border:none; border-radius:8px; background:#1d4ed8; color:white; font-size:13px; font-weight:600; cursor:pointer;">&#10003; Save Recipients</button>
-                              </div>
-                          </div>
-                      </div>
-        
-                      <!-- TAB: BRAND MAPPINGS -->
-                      <div id="settings-tab-brand-mappings" class="settings-tab-content hidden">
-                          <div class="dash-card" style="background:#fff; padding:30px; border-radius:16px; border:1px solid #e2e8f0; box-shadow:0 4px 6px -1px rgba(0,0,0,0.05);">
-                              <div style="margin-bottom:20px;">
-                                  <h2 style="font-size:18px; font-weight:700; color:#1e293b; margin:0; display:flex; align-items:center; gap:10px;">
-                                      <i class="fas fa-tags" style="color:#10b981;"></i> OEM & Brand Mappings
-                                  </h2>
-                                  <p style="color:#64748b; font-size:13px; margin-top:6px;">Assign Brands/OEMs to specific companies. This controls how the stock inventory is filtered by company.</p>
-                              </div>
-
-                              <!-- Add New Mapping -->
-                              <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:12px; padding:20px; margin-bottom:24px;">
-                                  <h3 style="margin:0 0 16px 0; font-size:14px; font-weight:700; color:#0f172a;">Add New Mapping</h3>
-                                  <div style="display:flex; gap:16px; align-items:flex-end;">
-                                      <div style="flex:1;">
-                                          <label style="display:block; font-size:12px; font-weight:700; color:#475569; margin-bottom:6px;">Brand / OEM Name <span style="color:#ef4444">*</span></label>
-                                          <input type="text" id="new-stock-brand" style="width:100%; box-sizing:border-box; border:1px solid #cbd5e1; border-radius:8px; padding:10px; font-size:13px; outline:none;" placeholder="e.g. Caterpillar">
-                                      </div>
-                                      <div style="flex:1;">
-                                          <label style="display:block; font-size:12px; font-weight:700; color:#475569; margin-bottom:6px;">Upload Logo</label>
-                                          <div style="display:flex; gap:8px;">
-                                              <input type="file" id="new-stock-logo-upload" accept="image/*" style="flex:1; box-sizing:border-box; border:1px solid #cbd5e1; border-radius:8px; padding:7px; font-size:13px; outline:none; background:white;" onchange="if(this.files && this.files[0]) { const r = new FileReader(); r.onload = e => { const img = document.getElementById('new-stock-logo-preview'); img.src = e.target.result; img.style.display = 'block'; document.getElementById('new-stock-logo').value = e.target.result; }; r.readAsDataURL(this.files[0]); }">
-                                              <input type="hidden" id="new-stock-logo">
-                                              <img id="new-stock-logo-preview" style="height:36px; max-width:60px; object-fit:contain; border-radius:4px; display:none; background:#f8fafc; border:1px solid #e2e8f0;">
-                                          </div>
-                                      </div>
-                                      <div style="flex:1;">
-                                          <label style="display:block; font-size:12px; font-weight:700; color:#475569; margin-bottom:6px;">Assign Company <span style="color:#ef4444">*</span></label>
-                                          <select id="new-stock-company" style="width:100%; box-sizing:border-box; border:1px solid #cbd5e1; border-radius:8px; padding:10px; font-size:13px; outline:none; background:white;">
-                                              <option value="Machinery Exchange">Machinery Exchange</option>
-                                              <option value="Sinopower">Sinopower</option>
-                                          </select>
-                                      </div>
-                                      <div>
-                                          <button onclick="salestrack.addStockMapping()" style="padding:10px 24px; background:#10b981; color:white; border:none; border-radius:8px; font-size:13px; font-weight:700; cursor:pointer; box-shadow:0 4px 6px -1px rgba(16, 185, 129, 0.2);"><i class="fas fa-plus"></i> Add Mapping</button>
-                                      </div>
-                                  </div>
-                              </div>
-
-                              <!-- Mappings List -->
-                              <div>
-                                  <h3 style="margin:0 0 16px 0; font-size:14px; font-weight:700; color:#0f172a;">Current Mappings</h3>
-                                  <div style="border:1px solid #e2e8f0; border-radius:12px; overflow:hidden;">
-                                      <table style="width:100%; border-collapse:collapse; text-align:left;">
-                                          <thead style="background:#f1f5f9; border-bottom:1px solid #e2e8f0;">
-                                              <tr>
-                                                  <th style="padding:12px 20px; font-size:12px; font-weight:800; color:#475569; text-transform:uppercase;">Brand / OEM</th>
-                                                  <th style="padding:12px 20px; font-size:12px; font-weight:800; color:#475569; text-transform:uppercase;">Assigned Company</th>
-                                                  <th style="padding:12px 20px; font-size:12px; font-weight:800; color:#475569; text-transform:uppercase; text-align:center;">Logo</th>
-                                                  <th style="padding:12px 20px; font-size:12px; font-weight:800; color:#475569; text-transform:uppercase; text-align:right;">Actions</th>
-                                              </tr>
-                                          </thead>
-                                          <tbody id="stock-mappings-tbody">
-                                              <!-- Mappings populated dynamically -->
-                                              <tr><td colspan="4" style="text-align:center; padding:30px; color:#94a3b8; font-style:italic; font-size:13px;">Loading mappings...</td></tr>
-                                          </tbody>
-                                      </table>
-                                  </div>
-                              </div>
-                          </div>
+                      
                       </div>
         
                       <div id="settings-status-msg"
