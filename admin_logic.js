@@ -29,6 +29,23 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   });
 
+  // Inner Tab Switching (for Salestrack settings)
+  const innerTabs = document.querySelectorAll('.inner-tab');
+  const innerPanels = document.querySelectorAll('.inner-panel');
+
+  innerTabs.forEach(tab => {
+    tab.addEventListener('click', () => {
+      // Deactivate all
+      innerTabs.forEach(t => t.classList.remove('active'));
+      innerPanels.forEach(p => p.classList.remove('active'));
+      
+      // Activate clicked
+      tab.classList.add('active');
+      const targetPanel = document.getElementById(tab.dataset.subtarget);
+      if (targetPanel) targetPanel.classList.add('active');
+    });
+  });
+
   // System Switcher
   const sysSwitcher = document.getElementById('sys-switcher');
   const btnCloseSystem = document.getElementById('btn-close-system');

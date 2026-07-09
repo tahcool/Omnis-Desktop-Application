@@ -81,6 +81,14 @@
     
     .pill { display: inline-block; padding: 4px 8px; border-radius: 12px; font-size: 11px; font-weight: 700; background: #e2e8f0; color: #475569; margin-right: 4px; margin-bottom: 4px; }
     .pill.admin { background: #fee2e2; color: #ef4444; }
+    
+    /* Inner Tabs */
+    .tabs-header { display: flex; border-bottom: 1px solid var(--border); margin-bottom: 24px; gap: 24px; }
+    .inner-tab { padding: 12px 4px; font-size: 13px; font-weight: 600; color: var(--text-muted); cursor: pointer; border-bottom: 2px solid transparent; transition: all 0.2s; }
+    .inner-tab:hover { color: var(--text); }
+    .inner-tab.active { color: var(--primary); border-bottom-color: var(--primary); }
+    .inner-panel { display: none; }
+    .inner-panel.active { display: block; }
   </style>
 </head>
 <body>
@@ -93,21 +101,31 @@
     </div>
     
     <div class="nav-group">
-      <div class="nav-label">Settings</div>
+      <div class="nav-label">Global Settings</div>
       <div class="nav-item active" data-target="panel-team">
         <i class="fas fa-users-cog"></i> Team / Users
       </div>
-      <div class="nav-item" data-target="panel-brand">
-        <i class="fas fa-paint-roller"></i> Brand Mapping
+    </div>
+
+    <div class="nav-group">
+      <div class="nav-label">System Modules</div>
+      <div class="nav-item" data-target="panel-salestrack">
+        <i class="fas fa-chart-line"></i> Salestrack
       </div>
-      <div class="nav-item" data-target="panel-email">
-        <i class="fas fa-envelope-open-text"></i> Email Recipients
+      <div class="nav-item" data-target="panel-fleetrack">
+        <i class="fas fa-truck"></i> Fleetrack
       </div>
-      <div class="nav-item" data-target="panel-migration">
-        <i class="fas fa-database"></i> Migration
+      <div class="nav-item" data-target="panel-powertrack">
+        <i class="fas fa-bolt"></i> Powertrack
       </div>
-      <div class="nav-item" data-target="panel-intel">
-        <i class="fas fa-brain"></i> Intelligence
+      <div class="nav-item" data-target="panel-engtrack">
+        <i class="fas fa-cogs"></i> Engtrack
+      </div>
+      <div class="nav-item" data-target="panel-spe">
+        <i class="fas fa-box-open"></i> SPE
+      </div>
+      <div class="nav-item" data-target="panel-medicals">
+        <i class="fas fa-notes-medical"></i> Clinic / Medicals
       </div>
     </div>
   </aside>
@@ -149,7 +167,7 @@
       
       <!-- Panel: Team -->
       <div id="panel-team" class="view-panel active">
-        <h2 class="panel-title">Team Management</h2>
+        <h2 class="panel-title">Team Management (Global)</h2>
         
         <div class="card">
           <div class="card-header">Create New User</div>
@@ -212,28 +230,62 @@
         </div>
       </div>
       
-      <!-- Panel: Brand -->
-      <div id="panel-brand" class="view-panel">
-        <h2 class="panel-title">Brand Mapping</h2>
-        <div class="card"><div class="card-body">Placeholder for Brand Mapping settings.</div></div>
+      <!-- Panel: Salestrack -->
+      <div id="panel-salestrack" class="view-panel">
+        <h2 class="panel-title">Salestrack Settings</h2>
+        
+        <div class="tabs-header">
+            <div class="inner-tab active" data-subtarget="st-brand">Brand Mapping</div>
+            <div class="inner-tab" data-subtarget="st-email">Email Recipients</div>
+            <div class="inner-tab" data-subtarget="st-migration">Migration</div>
+            <div class="inner-tab" data-subtarget="st-intel">Intelligence</div>
+        </div>
+        
+        <div id="st-brand" class="inner-panel active">
+            <div class="card"><div class="card-body">Placeholder for Salestrack Brand Mapping settings.</div></div>
+        </div>
+        
+        <div id="st-email" class="inner-panel">
+            <div class="card"><div class="card-body">Placeholder for Salestrack Email Recipient configuration.</div></div>
+        </div>
+        
+        <div id="st-migration" class="inner-panel">
+            <div class="card"><div class="card-body">Placeholder for Salestrack Data Migration controls.</div></div>
+        </div>
+        
+        <div id="st-intel" class="inner-panel">
+            <div class="card"><div class="card-body">Placeholder for Salestrack AI & Analytics parameters.</div></div>
+        </div>
       </div>
-      
-      <!-- Panel: Email -->
-      <div id="panel-email" class="view-panel">
-        <h2 class="panel-title">Email Recipients</h2>
-        <div class="card"><div class="card-body">Placeholder for Email Recipient configuration.</div></div>
+
+      <!-- Panel: Fleetrack -->
+      <div id="panel-fleetrack" class="view-panel">
+        <h2 class="panel-title">Fleetrack Settings</h2>
+        <div class="card"><div class="card-body">Placeholder for Fleetrack-specific configuration.</div></div>
       </div>
-      
-      <!-- Panel: Migration -->
-      <div id="panel-migration" class="view-panel">
-        <h2 class="panel-title">Migration Settings</h2>
-        <div class="card"><div class="card-body">Placeholder for Data Migration controls.</div></div>
+
+      <!-- Panel: Powertrack -->
+      <div id="panel-powertrack" class="view-panel">
+        <h2 class="panel-title">Powertrack Settings</h2>
+        <div class="card"><div class="card-body">Placeholder for Powertrack-specific configuration.</div></div>
       </div>
-      
-      <!-- Panel: Intelligence -->
-      <div id="panel-intel" class="view-panel">
-        <h2 class="panel-title">Omnis Intelligence</h2>
-        <div class="card"><div class="card-body">Placeholder for AI & Analytics parameters.</div></div>
+
+      <!-- Panel: Engtrack -->
+      <div id="panel-engtrack" class="view-panel">
+        <h2 class="panel-title">Engtrack Settings</h2>
+        <div class="card"><div class="card-body">Placeholder for Engtrack-specific configuration.</div></div>
+      </div>
+
+      <!-- Panel: SPE -->
+      <div id="panel-spe" class="view-panel">
+        <h2 class="panel-title">SPE Settings</h2>
+        <div class="card"><div class="card-body">Placeholder for SPE-specific configuration.</div></div>
+      </div>
+
+      <!-- Panel: Medicals -->
+      <div id="panel-medicals" class="view-panel">
+        <h2 class="panel-title">Clinic / Medicals Settings</h2>
+        <div class="card"><div class="card-body">Placeholder for Medicals-specific configuration.</div></div>
       </div>
       
     </section>
