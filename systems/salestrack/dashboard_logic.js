@@ -4095,7 +4095,7 @@ window.OmnisDashboardV6 = class OmnisDashboardV6 {
             // Remove the top generic title bar entirely as requested by user
             const titleEl = document.getElementById('dash-generic-title');
             if (titleEl) {
-                const modalHeader = titleEl.closest('.modal-header');
+                const modalHeader = titleEl.parentElement;
                 if (modalHeader) modalHeader.style.display = 'none';
             }
 
@@ -5903,6 +5903,7 @@ window.OmnisDashboardV6 = class OmnisDashboardV6 {
         // Reset Styles (Default)
         const header = modal.querySelector('div[style*="border-bottom"]');
         if (header) {
+            header.style.display = 'flex';
             header.style.background = 'white';
             header.style.borderBottom = '1px solid #e2e8f0';
             header.style.borderRadius = '16px 16px 0 0';
