@@ -4760,7 +4760,7 @@ def get_dashboard_charts(period="This Year", payload=None):
             SELECT q.company, SUM(qi.qty) as total_qty
             FROM `tabQuotation` q
             JOIN `tabQuotation Item` qi ON qi.parent = q.name
-            WHERE q.docstatus < 2
+            WHERE q.docstatus < 2 AND q.status IN ('Open', 'Draft')
             GROUP BY q.company
         """, as_dict=True)
         
@@ -4789,7 +4789,9 @@ def get_dashboard_charts(period="This Year", payload=None):
             FROM `tabQuotation` q
             JOIN `tabQuotation Item` qi ON qi.parent = q.name
             JOIN `tabItem` i ON i.name = qi.item_code
-            WHERE q.docstatus < 2 AND q.transaction_date >= %s AND q.transaction_date <= %s
+            WHERE q.docstatus < 2 
+              AND q.status IN ('Open', 'Draft')
+              AND q.transaction_date >= %s AND q.transaction_date <= %s
         """, (start_date, end_date), as_dict=True)
 
         for r in sales_rows:
@@ -5108,37 +5110,50 @@ def get_omnis_oem_details_v2(oem=None, period="This Year", custom_start=None, cu
         start_date = f"{today_dt.year}-01-01"
         end_date = nowdate()
         period_label = f"YTD {today_dt.year}"
+        strict_start = start_date
+        strict_end = end_date
 
         if period == "This Week":
             import datetime
             start_date = today_dt - datetime.timedelta(days=today_dt.weekday())
             period_label = "This Week"
+            strict_start = start_date
         elif period == "Last Week":
             import datetime
             end_date = today_dt - datetime.timedelta(days=today_dt.weekday() + 1)
             start_date = end_date - datetime.timedelta(days=6)
             period_label = "Last Week"
+            strict_start = start_date
+            strict_end = end_date
         elif period == "This Month":
             start_date = get_first_day(today_dt)
             period_label = today_dt.strftime("%B %Y")
+            strict_start = start_date
         elif period == "Last Month":
             lm = add_months(today_dt, -1)          # most recent completed month
             lm3 = add_months(today_dt, -3)         # 3 months back
             start_date = get_first_day(lm3)
             end_date   = get_last_day(lm)
             period_label = f"{get_first_day(lm3).strftime('%b')} \u2013 {lm.strftime('%b %Y')}"
+            strict_start = get_first_day(lm)
+            strict_end = get_last_day(lm)
         elif period == "This Quarter":
             month = (today_dt.month - 1) // 3 * 3 + 1
             start_date = f"{today_dt.year}-{month:02d}-01"
             period_label = f"Q{((today_dt.month-1)//3)+1} {today_dt.year}"
+            strict_start = start_date
         elif period == "Last Year":
             start_date = f"{today_dt.year-1}-01-01"
             end_date = f"{today_dt.year-1}-12-31"
             period_label = str(today_dt.year - 1)
+            strict_start = start_date
+            strict_end = end_date
         elif period == "Custom" and custom_start and custom_end:
             start_date = custom_start
             end_date = custom_end
             period_label = f"{getdate(start_date).strftime('%d %b')} - {getdate(end_date).strftime('%d %b %y')}"
+            strict_start = start_date
+            strict_end = end_date
 
         # 2. Fetch Sales Data (Group Sales)
         # We fetch FULL YTD regardless of period for consistent YTD columns
@@ -5183,8 +5198,8 @@ def get_omnis_oem_details_v2(oem=None, period="This Year", custom_start=None, cu
             FROM `tabQuotation` q
             JOIN `tabQuotation Item` qi ON qi.parent = q.name
             LEFT JOIN `tabItem` i ON i.name = qi.item_code
-            WHERE q.docstatus = 0
-              AND q.status NOT IN ('Lost', 'Cancelled', 'Ordered')
+            WHERE q.docstatus < 2
+              AND q.status IN ('Open', 'Draft')
             ORDER BY q.transaction_date DESC
         """, as_dict=True)
         
@@ -5246,12 +5261,16 @@ def get_omnis_oem_details_v2(oem=None, period="This Year", custom_start=None, cu
                 if m_label in trend_data[cat]["months"]:
                     trend_data[cat]["months"][m_label]["quotes"] += q_val
 
-        # 5. Customer Analysis (New vs Existing)
+        # 5. Filtered lists for Breakdown and Tabs (matching the period labels)
+        filtered_sales = [s for s in sales if str(s.date) >= str(strict_start) and str(s.date) <= str(strict_end)]
+        filtered_quotes = [q for q in quotes if str(q.date) >= str(strict_start) and str(q.date) <= str(strict_end)]
+
+        # 6. Customer Analysis (New vs Existing)
         cust_analysis = {"New": {"qty": 0, "pct": 0}, "Existing": {"qty": 0, "pct": 0}, "Total": 0}
         unique_customers = set()
         
         y_start = getdate(f"{getdate(start_date).year}-01-01")
-        for s in sales:
+        for s in filtered_sales:
             cust_analysis["Total"] += float(s.qty or 0)
             c_creation = getdate(s.customer_creation) if s.customer_creation else None
             
@@ -5264,17 +5283,13 @@ def get_omnis_oem_details_v2(oem=None, period="This Year", custom_start=None, cu
             cust_analysis["New"]["pct"] = round((cust_analysis["New"]["qty"] / cust_analysis["Total"]) * 100, 1)
             cust_analysis["Existing"]["pct"] = round((cust_analysis["Existing"]["qty"] / cust_analysis["Total"]) * 100, 1)
 
-        # 6. Top Content / Note
+        # 7. Top Content / Note
         most_quoted = "N/A"
         if quotes:
             from collections import Counter
             models = Counter([q.model for q in quotes if q.model])
             if models:
                 most_quoted = models.most_common(1)[0][0]
-
-        # 7. Filtered lists for Breakdown and Tabs (matching the period labels)
-        filtered_sales = [s for s in sales if str(s.date) >= str(start_date) and str(s.date) <= str(end_date)]
-        filtered_quotes = quotes  # All open pipeline quotes (no date filter — status-based pipeline)
 
         return {
             "ok": True,
