@@ -1760,7 +1760,46 @@ window.OmnisDashboardV6 = class OmnisDashboardV6 {
             this.oemCycleInterval = null;
         }
 
-        const oemData = this.data.oem_sales || [];
+        let oemData = this.data.oem_sales || [];
+
+        // --- INTERCEPT & MERGE POWERSTAR → EVERSTAR INDUSTRIES ---
+        if (Array.isArray(oemData)) {
+            const powerstarRows = oemData.filter(d =>
+                (d.oem || '').toLowerCase().includes('powerstar') ||
+                (d.oem || '').toLowerCase().includes('power star')
+            );
+            if (powerstarRows.length > 0) {
+                let everstarRow = oemData.find(d => (d.oem || '').toLowerCase().includes('everstar'));
+                if (!everstarRow) {
+                    everstarRow = { oem: 'Everstar Industries', models: [], sales: 0, total_qty: 0, quotes: 0, monthly_velocity: 0, suggested_order: 0 };
+                    oemData.push(everstarRow);
+                }
+                if (!everstarRow.models) everstarRow.models = [];
+                powerstarRows.forEach(psRow => {
+                    (psRow.models || []).forEach(m => {
+                        if (!everstarRow.models.includes(m)) everstarRow.models.push(m);
+                    });
+                    const idx = oemData.indexOf(psRow);
+                    if (idx > -1) oemData.splice(idx, 1);
+                });
+                // Recalculate Everstar totals based on models if present, else fallback
+                if (everstarRow.models.length > 0) {
+                    everstarRow.sales = everstarRow.models.reduce((s, m) => s + (m.sales || m.total_qty || 0), 0);
+                    everstarRow.total_qty = everstarRow.sales;
+                    everstarRow.quotes = everstarRow.models.reduce((s, m) => s + (m.quotes || 0), 0);
+                    everstarRow.monthly_velocity = parseFloat(everstarRow.models.reduce((s, m) => s + (m.monthly_velocity || 0), 0).toFixed(1));
+                    everstarRow.suggested_order = everstarRow.models.reduce((s, m) => s + (m.suggested_order || 0), 0);
+                } else {
+                    // If no models array existed (e.g. basic list), just sum the raw numbers
+                    let addedSales = 0, addedQuotes = 0;
+                    powerstarRows.forEach(r => { addedSales += (r.sales || r.total_qty || 0); addedQuotes += (r.quotes || 0); });
+                    everstarRow.sales = (everstarRow.sales || everstarRow.total_qty || 0) + addedSales;
+                    everstarRow.total_qty = everstarRow.sales;
+                    everstarRow.quotes = (everstarRow.quotes || 0) + addedQuotes;
+                }
+            }
+        }
+        // ---------------------------------------------------------
 
         if (oemData.length === 0) {
             container.innerHTML = `<div style="color:#cbd5e1; font-size:12px; display:flex; align-items:center; justify-content:center; height:100%;">No OEM data available</div>`;
@@ -1793,11 +1832,27 @@ window.OmnisDashboardV6 = class OmnisDashboardV6 {
                         // ✏ Only open the modal if the selection was a REAL user click
                         if (!event) return;
                         const oemName = labels[config.dataPointIndex];
-                        if (oemName) this.openOEMBreakdownModal(oemName);
+                        const rowData = oemData[config.dataPointIndex];
+                        let dashboardTotals = null;
+                        if (rowData) {
+                            dashboardTotals = {
+                                ytdSales: rowData.total_qty || rowData.sales || 0,
+                                ytdQuotes: rowData.quotes || 0
+                            };
+                        }
+                        if (oemName) this.openOEMBreakdownModal(oemName, null, null, null, dashboardTotals);
                     },
                     legendClick: (chartContext, seriesIndex) => {
                         const oemName = labels[seriesIndex];
-                        if (oemName) this.openOEMBreakdownModal(oemName);
+                        const rowData = oemData[seriesIndex];
+                        let dashboardTotals = null;
+                        if (rowData) {
+                            dashboardTotals = {
+                                ytdSales: rowData.total_qty || rowData.sales || 0,
+                                ytdQuotes: rowData.quotes || 0
+                            };
+                        }
+                        if (oemName) this.openOEMBreakdownModal(oemName, null, null, null, dashboardTotals);
                     }
                 }
             },
@@ -3890,7 +3945,8 @@ window.OmnisDashboardV6 = class OmnisDashboardV6 {
         }
 
         try {
-            const period = selectedPeriod || document.getElementById('dash-period-select')?.value || "This Year";
+            const globalPeriod = document.getElementById('dash-period-select')?.value || "This Year";
+            const period = selectedPeriod || globalPeriod;
             const reqData = {
                 oem: oemName,
                 period: period
@@ -3898,6 +3954,18 @@ window.OmnisDashboardV6 = class OmnisDashboardV6 {
             if (period === 'Custom' && customStart && customEnd) {
                 reqData.custom_start = customStart;
                 reqData.custom_end = customEnd;
+            }
+
+            // Fallback: If dashboardTotals wasn't passed (e.g. clicked from main dashboard OEM banner), 
+            // attempt to grab it from our pre-merged cache, BUT ONLY if the modal's period matches the dashboard's period.
+            if (!dashboardTotals && period === globalPeriod && this.data && this.data.oem_sales) {
+                const cachedRow = this.data.oem_sales.find(d => d.oem === oemName);
+                if (cachedRow) {
+                    dashboardTotals = {
+                        ytdSales: cachedRow.total_qty || cachedRow.sales || 0,
+                        ytdQuotes: cachedRow.quotes || 0
+                    };
+                }
             }
             const res = await window.callFrappeSequenced(this.sys.baseUrl, "powerstar_salestrack.omnis_dashboard.get_omnis_oem_details_v2", reqData);
             const payload = res.message || res;
@@ -3927,17 +3995,63 @@ window.OmnisDashboardV6 = class OmnisDashboardV6 {
                 const scaleQ = apiQuotes > 0 ? authorQuotes / apiQuotes : 1;
 
                 let remainingQuotes = authorQuotes;
+                let remainingSales = authorSales;
 
                 trendValues.forEach((d, i) => {
-                    // Reconcile Sales
-                    d.ytd.sales = Math.round((d.ytd.sales || 0) * scaleS);
+                    // 1. Reconcile Sales (YTD)
+                    let allocatedSales = i === trendValues.length - 1 
+                        ? remainingSales 
+                        : Math.round((d.ytd.sales || 0) * scaleS);
+                    d.ytd.sales = allocatedSales;
+                    remainingSales -= allocatedSales;
+                    
+                    // 2. Reconcile Sales (Monthly)
+                    if (d.months) {
+                        const mKeys = Object.keys(d.months);
+                        let sumSales = 0;
+                        mKeys.forEach(m => {
+                            d.months[m].sales = Math.round((d.months[m].sales || 0) * scaleS);
+                            sumSales += d.months[m].sales;
+                        });
+                        
+                        let diffSales = d.ytd.sales - sumSales;
+                        if (diffSales !== 0) {
+                            let maxMonth = mKeys[0];
+                            mKeys.forEach(m => {
+                                if ((d.months[m].sales || 0) >= (d.months[maxMonth].sales || 0)) { maxMonth = m; }
+                            });
+                            if(maxMonth) d.months[maxMonth].sales = Math.max(0, (d.months[maxMonth].sales || 0) + diffSales);
+                        }
+                    }
 
-                    // Reconcile Quotes
+                    // 3. Reconcile Quotes (YTD)
                     if (apiQuotes > 0) {
-                        d.ytd.quotes = Math.round((d.ytd.quotes || 0) * scaleQ);
+                        let allocatedQuotes = i === trendValues.length - 1 
+                            ? remainingQuotes 
+                            : Math.round((d.ytd.quotes || 0) * scaleQ);
+                        d.ytd.quotes = allocatedQuotes;
+                        remainingQuotes -= allocatedQuotes;
+
+                        // 4a. Reconcile Quotes (Monthly - Scaled)
+                        if (d.months) {
+                            const mKeys = Object.keys(d.months);
+                            let sumQuotes = 0;
+                            mKeys.forEach(m => {
+                                d.months[m].quotes = Math.round((d.months[m].quotes || 0) * scaleQ);
+                                sumQuotes += d.months[m].quotes;
+                            });
+                            
+                            let diffQuotes = d.ytd.quotes - sumQuotes;
+                            if (diffQuotes !== 0) {
+                                let maxMonth = mKeys[0];
+                                mKeys.forEach(m => {
+                                    if ((d.months[m].quotes || 0) >= (d.months[maxMonth].quotes || 0)) { maxMonth = m; }
+                                });
+                                if(maxMonth) d.months[maxMonth].quotes = Math.max(0, (d.months[maxMonth].quotes || 0) + diffQuotes);
+                            }
+                        }
                     } else if (authorQuotes > 0) {
-                        // If API returned 0 quotes, distribute authorQuotes proportionally by sales,
-                        // or evenly if no sales.
+                        // If API returned 0 quotes, distribute authorQuotes proportionally by sales
                         const share = apiSales > 0 
                             ? ((d.ytd.sales || 0) / Math.max(1, authorSales)) 
                             : (1 / trendValues.length);
@@ -3948,59 +4062,42 @@ window.OmnisDashboardV6 = class OmnisDashboardV6 {
                         
                         d.ytd.quotes = allocated;
                         remainingQuotes -= allocated;
+
+                        // 4b. Reconcile Quotes (Monthly - Distributed)
+                        if (d.months) {
+                            const mKeys = Object.keys(d.months);
+                            const rowMonthlySales = mKeys.reduce((acc, m) => acc + (d.months[m].sales || 0), 0);
+                            let sumQuotes = 0;
+                            mKeys.forEach(m => {
+                                let shareM = rowMonthlySales > 0 
+                                    ? ((d.months[m].sales || 0) / rowMonthlySales)
+                                    : (1 / mKeys.length);
+                                let allocM = Math.round(allocated * shareM);
+                                d.months[m].quotes = allocM;
+                                sumQuotes += allocM;
+                            });
+                            
+                            let diffQuotes = allocated - sumQuotes;
+                            if (diffQuotes !== 0) {
+                                let maxMonth = mKeys[0];
+                                mKeys.forEach(m => {
+                                    if ((d.months[m].quotes || 0) >= (d.months[maxMonth].quotes || 0)) { maxMonth = m; }
+                                });
+                                if(maxMonth) d.months[maxMonth].quotes = Math.max(0, (d.months[maxMonth].quotes || 0) + diffQuotes);
+                            }
+                        }
                     }
                 });
             }
 
             const today = new Date().toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
 
-            // Add Title with Period Filter and Print Button
+            // Remove the top generic title bar entirely as requested by user
             const titleEl = document.getElementById('dash-generic-title');
             if (titleEl) {
-                titleEl.innerHTML = `
-                    <div style="display:flex; align-items:center; width:100%; gap:12px;">
-                        <!-- Left: Title only -->
-                        <span style="font-size:14px; font-weight:700; white-space:nowrap; flex-shrink:0;">Management Report: ${oemName}</span>
-
-                        <!-- Centre: Tabs -->
-                        <div class="oem-tabs no-print" style="margin-bottom:0; border-bottom:none; flex:1; justify-content:center; padding:0;">
-                            <button class="oem-tab active" data-tab="summary">&#x1F4C8; Executive Summary</button>
-                            <button class="oem-tab" data-tab="sales">&#x1F4E6; Sales Details (${payload.period_label})</button>
-                            <button class="oem-tab" data-tab="quotes">&#x1F4BC; Quotations Details (Open Pipeline)</button>
-                        </div>
-
-                        <!-- Right: Period filter + Export — pushed to far right -->
-                        <div class="no-print" style="display:flex; align-items:center; gap:8px; flex-shrink:0; margin-left:auto;">
-                            <label style="font-size:11px; font-weight:600; color:#64748b; white-space:nowrap;">Period:</label>
-                            <select id="oem-period-filter" style="
-                                padding:5px 10px; border:1px solid #e2e8f0; border-radius:6px;
-                                font-size:11px; font-weight:500; color:#1e293b; cursor:pointer;
-                                background:white;
-                            ">
-                                <option value="This Month" ${period === 'This Month' ? 'selected' : ''}>This Month</option>
-                                <option value="Last Month" ${period === 'Last Month' ? 'selected' : ''}>Last Month</option>
-                                <option value="This Quarter" ${period === 'This Quarter' ? 'selected' : ''}>This Quarter</option>
-                                <option value="This Year" ${period === 'This Year' ? 'selected' : ''}>This Year</option>
-                                <option value="Last Year" ${period === 'Last Year' ? 'selected' : ''}>Last Year</option>
-                                <option value="Custom" ${period === 'Custom' ? 'selected' : ''}>Custom Date Range</option>
-                            </select>
-                            <div id="oem-custom-date-group" style="display:${period === 'Custom' ? 'flex' : 'none'}; align-items:center; gap:6px;">
-                                <input type="date" id="oem-custom-start" value="${customStart || ''}" style="padding:4px; border:1px solid #e2e8f0; border-radius:4px; font-size:10px;">
-                                <span style="font-size:10px; color:#64748b;">to</span>
-                                <input type="date" id="oem-custom-end" value="${customEnd || ''}" style="padding:4px; border:1px solid #e2e8f0; border-radius:4px; font-size:10px;">
-                                <button id="oem-custom-apply" style="padding:4px 8px; background:#800000; color:white; border:none; border-radius:4px; font-size:10px; cursor:pointer;">Apply</button>
-                            </div>
-                            <button id="btn-export-oem-pdf" style="
-                                padding:5px 12px; background:#ef4444; color:white; border:none;
-                                border-radius:6px; font-size:11px; font-weight:600; cursor:pointer;
-                                display:flex; align-items:center; gap:5px; white-space:nowrap;
-                            " class="report-btn-print">
-                                <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M6 9V2h12v7M6 18H4a2 2 0 01-2-2v-5a2 2 0 012-2h16a2 2 0 012 2v5a2 2 0 012 2h-2m-2 0v5H6v-5"></path></svg>
-                                Export / Print PDF
-                            </button>
-                        </div>
-                    </div>
-                `;
+                const modalHeader = titleEl.closest('.modal-header');
+                if (modalHeader) modalHeader.style.display = 'none';
+            }
 
                 setTimeout(() => {
                     const btnExport = document.getElementById('btn-export-oem-pdf');
@@ -4034,7 +4131,6 @@ window.OmnisDashboardV6 = class OmnisDashboardV6 {
                         });
                     }
                 }, 100);
-            }
 
             if (!document.getElementById('dash-report-print-style-v2')) {
                 const style = document.createElement('style');
@@ -4233,14 +4329,11 @@ window.OmnisDashboardV6 = class OmnisDashboardV6 {
             let html = `
                 <div id="pdf-content-wrapper" style="display:flex; flex-direction:column; gap:8px; font-family:'Inter', sans-serif; background:white; padding:6px 10px 10px;">
 
-                    <!-- TAB 1: EXECUTIVE SUMMARY -->
-                    <div class="oem-tab-content active" data-tab-content="summary">
-
-                        <!-- Outer wrapper: one shared rounded border for brand header + table -->
-                        <div style="border-radius:12px; overflow:hidden; box-shadow:0 2px 8px rgba(0,0,0,0.10);">
-
-                        <!-- Premium Brand Header -->
-                        <div style="background:linear-gradient(135deg, ${oemColor1} 0%, ${oemColor2} 100%); color:${oemTextColor}; border-radius:0; padding:20px 28px; display:flex; justify-content:space-between; align-items:center; margin-bottom:0;">
+                    <!-- Global Premium Brand Header & Controls (Visible on all tabs) -->
+                    <div style="border-radius:12px; overflow:hidden; box-shadow:0 2px 8px rgba(0,0,0,0.10); margin-bottom:10px; border:1px solid #cbd5e1;">
+                        
+                        <!-- Top Blue Header -->
+                        <div style="background:linear-gradient(135deg, ${oemColor1} 0%, ${oemColor2} 100%); color:${oemTextColor}; border-radius:0; padding:20px 28px; display:flex; justify-content:space-between; align-items:center; position:relative;">
                             <div style="display:flex; align-items:center; gap:16px;">
                                 ${oemLogoPath
                                     ? `<img src="${oemLogoPath}" style="height:60px; object-fit:contain; filter:drop-shadow(0 2px 6px rgba(0,0,0,0.3));" onerror="this.style.display='none'">`
@@ -4250,8 +4343,49 @@ window.OmnisDashboardV6 = class OmnisDashboardV6 {
                             <div style="display:flex; align-items:center; gap:24px;">
                                 <div style="text-align:right; font-size:11px; opacity:0.75; font-weight:600;">Generated: ${today}<br>Report Year: ${payload.report_year}</div>
                                 <img src="file:///C:/Users/Administrator/omnis/assets/images/omnis-logo.png" loading="lazy" style="height:36px; width:auto; object-fit:contain; opacity:0.9; filter:brightness(0) invert(1);" alt="Omnis" onerror="this.style.display='none'">
+                                <button onclick="const m = document.getElementById('dash-generic-modal'); if(m) m.style.display='none';" style="margin-left:15px; background:transparent; border:none; color:white; font-size:28px; cursor:pointer; opacity:0.6; line-height:1;" onmouseover="this.style.opacity='1'" onmouseout="this.style.opacity='0.6'">&times;</button>
                             </div>
                         </div>
+
+                        <!-- Controls Bar (Tabs, Filter, Print) -->
+                        <div class="no-print" style="background:#f8fafc; padding:10px 20px; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">
+                            <!-- Tabs -->
+                            <div class="oem-tabs" style="margin-bottom:0; border-bottom:none; display:flex; gap:10px; padding:0;">
+                                <button class="oem-tab active" data-tab="summary">&#x1F4C8; Executive Summary</button>
+                                <button class="oem-tab" data-tab="sales">&#x1F4E6; Sales Details (${payload.period_label})</button>
+                                <button class="oem-tab" data-tab="quotes">&#x1F4BC; Quotations Details (Open Pipeline)</button>
+                            </div>
+
+                            <!-- Filter & Export -->
+                            <div style="display:flex; align-items:center; gap:8px;">
+                                <label style="font-size:11px; font-weight:600; color:#64748b; white-space:nowrap;">Period:</label>
+                                <select id="oem-period-filter" style="padding:5px 10px; border:1px solid #cbd5e1; border-radius:6px; font-size:11px; font-weight:500; cursor:pointer; background:white;">
+                                    <option value="This Month" ${period === 'This Month' ? 'selected' : ''}>This Month</option>
+                                    <option value="Last Month" ${period === 'Last Month' ? 'selected' : ''}>Last Month</option>
+                                    <option value="This Quarter" ${period === 'This Quarter' ? 'selected' : ''}>This Quarter</option>
+                                    <option value="This Year" ${period === 'This Year' ? 'selected' : ''}>This Year</option>
+                                    <option value="Last Year" ${period === 'Last Year' ? 'selected' : ''}>Last Year</option>
+                                    <option value="Custom" ${period === 'Custom' ? 'selected' : ''}>Custom Date Range</option>
+                                </select>
+                                <div id="oem-custom-date-group" style="display:${period === 'Custom' ? 'flex' : 'none'}; align-items:center; gap:6px;">
+                                    <input type="date" id="oem-custom-start" value="${customStart || ''}" style="padding:4px; border:1px solid #cbd5e1; border-radius:4px; font-size:10px;">
+                                    <span style="font-size:10px; color:#64748b;">to</span>
+                                    <input type="date" id="oem-custom-end" value="${customEnd || ''}" style="padding:4px; border:1px solid #cbd5e1; border-radius:4px; font-size:10px;">
+                                    <button id="oem-custom-apply" style="padding:4px 8px; background:#0f172a; color:white; border:none; border-radius:4px; font-size:10px; cursor:pointer;">Apply</button>
+                                </div>
+                                <button id="btn-export-oem-pdf" class="report-btn-print" style="padding:5px 12px; background:#ef4444; color:white; border:none; border-radius:6px; font-size:11px; font-weight:600; cursor:pointer; display:flex; align-items:center; gap:5px; margin-left:10px;">
+                                    <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M6 9V2h12v7M6 18H4a2 2 0 01-2-2v-5a2 2 0 012-2h16a2 2 0 012 2v5a2 2 0 012 2h-2m-2 0v5H6v-5"></path></svg>
+                                    Export / Print PDF
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- TAB 1: EXECUTIVE SUMMARY -->
+                    <div class="oem-tab-content active" data-tab-content="summary">
+
+                        <!-- Outer wrapper: one shared rounded border for table -->
+                        <div style="border-radius:12px; overflow:hidden; box-shadow:0 2px 8px rgba(0,0,0,0.10);">
 
                         <div class="report-table-wrap">
                         <div class="sub-section-title" style="border-radius:0; margin-top:0;">${(oemName || 'OEM').toUpperCase()} QUOTES AND SALES - MONTHLY REPORT (${(payload.period_label || 'YTD').toUpperCase()})</div>
@@ -8588,6 +8722,8 @@ window._renderOEMProcurementTable = function (container, oemData, period) {
         return `
             <tr class="oem-perf-row"
                 data-oem="${d.oem.replace(/"/g, '&quot;')}"
+                data-sales="${sales}"
+                data-quotes="${quotes}"
                 onmouseout="this.style.background=''"
                 onmouseover="this.style.background='#f8fafc'"
                 onclick="window._oemRowClick(this)"
@@ -8607,6 +8743,8 @@ window._renderOEMProcurementTable = function (container, oemData, period) {
                 <td style="padding:10px 14px; text-align:center;">
                     <button class="oem-view-btn"
                             data-oem="${d.oem.replace(/"/g, '&quot;')}"
+                            data-sales="${sales}"
+                            data-quotes="${quotes}"
                             onclick="event.stopPropagation(); window._oemRowClick(this)"
                             style="padding:4px 10px; background:#8b2219; color:#fff; border:none; border-radius:6px;
                                    font-size:11px; font-weight:700; cursor:pointer; white-space:nowrap;"
@@ -8667,10 +8805,21 @@ window._renderOEMProcurementTable = function (container, oemData, period) {
 window._oemRowClick = function (el) {
     const row = el.closest('[data-oem]') || el;
     const oem = row.getAttribute('data-oem');
+    const salesStr = row.getAttribute('data-sales');
+    const quotesStr = row.getAttribute('data-quotes');
+    
+    let dashboardTotals = null;
+    if (salesStr !== null && quotesStr !== null) {
+        dashboardTotals = {
+            ytdSales: Number(salesStr) || 0,
+            ytdQuotes: Number(quotesStr) || 0
+        };
+    }
+
     if (oem && window.salestrack && window.salestrack.openOEMBreakdownModal) {
-        window.salestrack.openOEMBreakdownModal(oem);
+        window.salestrack.openOEMBreakdownModal(oem, null, null, null, dashboardTotals);
     } else if (oem && window.omnisDashboard && window.omnisDashboard.openOEMBreakdownModal) {
-        window.omnisDashboard.openOEMBreakdownModal(oem);
+        window.omnisDashboard.openOEMBreakdownModal(oem, null, null, null, dashboardTotals);
     }
 };
 

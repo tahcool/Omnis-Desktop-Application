@@ -5131,12 +5131,11 @@ def get_omnis_oem_details_v2(oem=None, period="This Year", custom_start=None, cu
             strict_start = start_date
         elif period == "Last Month":
             lm = add_months(today_dt, -1)          # most recent completed month
-            lm3 = add_months(today_dt, -3)         # 3 months back
-            start_date = get_first_day(lm3)
+            start_date = get_first_day(lm)
             end_date   = get_last_day(lm)
-            period_label = f"{get_first_day(lm3).strftime('%b')} \u2013 {lm.strftime('%b %Y')}"
-            strict_start = get_first_day(lm)
-            strict_end = get_last_day(lm)
+            period_label = f"{lm.strftime('%b %Y')}"
+            strict_start = start_date
+            strict_end = end_date
         elif period == "This Quarter":
             month = (today_dt.month - 1) // 3 * 3 + 1
             start_date = f"{today_dt.year}-{month:02d}-01"
