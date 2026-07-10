@@ -4146,10 +4146,10 @@ window.OmnisDashboardV6 = class OmnisDashboardV6 {
                     #dash-generic-body { overflow-y: auto !important; height: 100% !important; scrollbar-width: none; }
                     #dash-generic-body::-webkit-scrollbar { display: none; }
 
-                    .oem-tabs { display: flex; gap: 4px; border-bottom: 2px solid #e2e8f0; margin-bottom: 20px; padding: 0 4px; }
-                    .oem-tab { padding: 11px 22px; border: none; background: transparent; cursor: pointer; font-weight: 600; font-size: 13px; color: #64748b; border-bottom: 3px solid transparent; transition: all 0.2s; position: relative; top: 2px; border-radius: 8px 8px 0 0; }
-                    .oem-tab:hover { color: #800000; background: #fff5f5; }
-                    .oem-tab.active { color: #800000; border-bottom-color: #800000; background: #fff5f5; font-weight: 800; }
+                    .oem-tabs { display: flex; gap: 24px; border-bottom: 1px solid #e2e8f0; margin-bottom: 24px; padding: 0 8px; }
+                    .oem-tab { padding: 12px 4px; border: none; background: transparent; cursor: pointer; font-weight: 500; font-size: 14px; color: #64748b; border-bottom: 2px solid transparent; transition: all 0.2s ease; position: relative; top: 1px; }
+                    .oem-tab:hover { color: #800000; border-bottom-color: #cbd5e1; }
+                    .oem-tab.active { color: #800000; border-bottom-color: #800000; font-weight: 700; }
                     .oem-tab-content { display: none; }
                     .oem-tab-content.active { display: block; }
 
@@ -4350,10 +4350,10 @@ window.OmnisDashboardV6 = class OmnisDashboardV6 {
                         <!-- Controls Bar (Tabs, Filter, Print) -->
                         <div class="no-print" style="background:#f8fafc; padding:10px 20px; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px;">
                             <!-- Tabs -->
-                            <div class="oem-tabs" style="margin-bottom:0; border-bottom:none; display:flex; gap:10px; padding:0;">
-                                <button class="oem-tab active" data-tab="summary">&#x1F4C8; Executive Summary</button>
-                                <button class="oem-tab" data-tab="sales">&#x1F4E6; Sales Details (${payload.period_label})</button>
-                                <button class="oem-tab" data-tab="quotes">&#x1F4BC; Quotations Details (Open Pipeline)</button>
+                            <div class="oem-tabs" style="margin-bottom:0; border-bottom:none; display:flex; gap:24px; padding:0;">
+                                <button class="oem-tab active" data-tab="summary">Executive Summary</button>
+                                <button class="oem-tab" data-tab="sales">Sales Details (${payload.period_label})</button>
+                                <button class="oem-tab" data-tab="quotes">Quotations Details (Open Pipeline)</button>
                             </div>
 
                             <!-- Filter & Export -->
@@ -4568,27 +4568,27 @@ window.OmnisDashboardV6 = class OmnisDashboardV6 {
                     <!-- TAB 2: SALES DETAILS (YTD) -->
                     <div class="oem-tab-content" data-tab-content="sales">
                         <div class="sub-section-title">ALL SALES YEAR TO DATE (${today.split(' ').pop()})</div>
-                        <div style="border:1px solid #e2e8f0; border-radius:10px; overflow:hidden; max-height:600px; overflow-y:auto;">
+                        <div style="border:1px solid #e2e8f0; border-radius:10px; overflow:hidden; height:calc(90vh - 240px); min-height:400px; overflow-y:auto;">
                             <table class="report-table" style="text-align:left;">
                                 <thead style="position:sticky; top:0; z-index:1;">
                                     <tr>
-                                        <th>Model / Unit</th>
+                                        <th style="width: 40px; text-align:center;">#</th>
                                         <th>Customer</th>
-                                        <th>Salesperson</th>
+                                        <th>Model / Unit</th>
                                         <th style="text-align:center;">Qty</th>
                                         <th style="text-align:right;">Date</th>
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    ${salesYtd.map((s, i) => `
+                                    ${salesYtd.length > 0 ? salesYtd.map((s, i) => `
                                         <tr>
-                                            <td style="text-align:left; font-weight:600;">${s.model || '-'}</td>
-                                            <td style="text-align:left;">${s.customer || '-'}</td>
-                                            <td style="text-align:left;">${s.salesperson || '-'}</td>
+                                            <td style="text-align:center; font-weight:600; color:#64748b;">${i + 1}</td>
+                                            <td style="text-align:left; font-weight:700; color:#0f172a;">${s.customer || '-'}</td>
+                                            <td style="text-align:left; font-weight:600; color:#475569;">${s.model || '-'}</td>
                                             <td style="text-align:center; font-weight:700; color:#166534;">${s.qty || 0}</td>
-                                            <td style="text-align:right;">${s.date || s.order_date || '-'}</td>
+                                            <td style="text-align:right; color:#64748b;">${s.date || s.order_date || '-'}</td>
                                         </tr>
-                                    `).join('')}
+                                    `).join('') : `<tr><td colspan="5" style="text-align:center; color:#94a3b8; padding:24px;">No sales found for this OEM.</td></tr>`}
                                 </tbody>
                             </table>
                         </div>
@@ -4596,30 +4596,81 @@ window.OmnisDashboardV6 = class OmnisDashboardV6 {
 
                     <!-- TAB 3: QUOTATIONS DETAILS (OPEN PIPELINE) -->
                     <div class="oem-tab-content" data-tab-content="quotes">
-                        <div class="sub-section-title">ALL QUOTATIONS — OPEN PIPELINE</div>
-                        <div style="border:1px solid #e2e8f0; border-radius:10px; overflow:hidden; max-height:600px; overflow-y:auto;">
+                        <div class="sub-section-title" style="margin-bottom:0; border-bottom:none; border-radius: 8px 8px 0 0;">ALL QUOTATIONS — OPEN PIPELINE</div>
+                        <div style="display: flex; gap: 16px; padding: 16px; background: #f8fafc; border-left: 1px solid #e2e8f0; border-right: 1px solid #e2e8f0; border-bottom: 1px solid #e2e8f0;">
+                            ${(() => {
+                                let hqCount = 0;
+                                let hqSet = new Set();
+                                try { hqSet = new Set(JSON.parse(localStorage.getItem('omnis_hot_quotes') || '[]')); } catch(e){}
+                                
+                                const modelCounts = {};
+                                let maxModel = '-';
+                                let maxCount = 0;
+
+                                quotesYtd.forEach(q => {
+                                    if (hqSet.has(q.name)) hqCount++;
+                                    if (q.model) {
+                                        modelCounts[q.model] = (modelCounts[q.model] || 0) + 1;
+                                        if (modelCounts[q.model] > maxCount) {
+                                            maxCount = modelCounts[q.model];
+                                            maxModel = q.model;
+                                        }
+                                    }
+                                });
+
+                                return `
+                                    <div style="flex:1; background:white; border:1px solid #e2e8f0; border-radius:8px; padding:12px 16px; box-shadow:0 1px 2px rgba(0,0,0,0.05); display:flex; flex-direction:column; justify-content:center;">
+                                        <div style="color:#64748b; font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:0.5px; margin-bottom:4px;">Total Quotes</div>
+                                        <div style="font-size:24px; font-weight:800; color:#0f172a; line-height:1;">${quotesYtd.length}</div>
+                                    </div>
+                                    <div style="flex:1; background:white; border:1px solid #e2e8f0; border-radius:8px; padding:12px 16px; box-shadow:0 1px 2px rgba(0,0,0,0.05); display:flex; flex-direction:column; justify-content:center;">
+                                        <div style="color:#64748b; font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:0.5px; margin-bottom:4px;">Hot Leads</div>
+                                        <div style="font-size:24px; font-weight:800; color:#f97316; line-height:1; display:flex; align-items:center; gap:8px;">
+                                            ${hqCount} <i class="fas fa-fire" style="font-size:18px;"></i>
+                                        </div>
+                                    </div>
+                                    <div style="flex:1; background:white; border:1px solid #e2e8f0; border-radius:8px; padding:12px 16px; box-shadow:0 1px 2px rgba(0,0,0,0.05); display:flex; flex-direction:column; justify-content:center; min-width:0;">
+                                        <div style="color:#64748b; font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:0.5px; margin-bottom:4px;">Most Quoted Item</div>
+                                        <div style="font-size:14px; font-weight:700; color:#0f172a; line-height:1.2; display:flex; align-items:center; justify-content:space-between; gap:8px;">
+                                            <span style="white-space:nowrap; overflow:hidden; text-overflow:ellipsis; flex:1;" title="${maxModel}">${maxModel}</span>
+                                            <span style="font-size:12px; font-weight:600; color:#64748b; background:#f1f5f9; padding:2px 8px; border-radius:12px; flex-shrink:0;">${maxCount}</span>
+                                        </div>
+                                    </div>
+                                `;
+                            })()}
+                        </div>
+                        <div style="border:1px solid #e2e8f0; border-radius:0 0 10px 10px; border-top:none; overflow:hidden; height:calc(90vh - 350px); min-height:300px; overflow-y:auto;">
                             <table class="report-table" style="text-align:left;">
                                 <thead style="position:sticky; top:0; z-index:1;">
                                     <tr>
-                                        <th>Ref #</th>
-                                        <th>Model / Item</th>
+                                        <th style="width: 40px; text-align:center;">#</th>
+                                        <th style="width: 40px; text-align:center;" title="Hot Quote"><i class="fas fa-fire"></i></th>
                                         <th>Customer</th>
-                                        <th>Salesperson</th>
+                                        <th>Model / Item</th>
                                         <th style="text-align:center;">Qty</th>
                                         <th style="text-align:right;">Date</th>
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    ${quotesYtd.length > 0 ? quotesYtd.map((q, i) => `
-                                        <tr>
-                                            <td style="text-align:left; font-weight:700; color:#3b82f6;">${q.name || '-'}</td>
-                                            <td style="text-align:left; font-weight:600;">${q.model || '-'}</td>
-                                            <td style="text-align:left;">${q.customer || q.customer_name || '-'}</td>
-                                            <td style="text-align:left;">${q.person || '-'}</td>
-                                            <td style="text-align:center; font-weight:700; color:#0369a1;">${q.qty || 0}</td>
-                                            <td style="text-align:right;">${q.date || '-'}</td>
-                                        </tr>
-                                    `).join('') : `<tr><td colspan="6" style="text-align:center; color:#94a3b8; padding:24px;">No open quotations found for this OEM.</td></tr>`}
+                                    ${(() => {
+                                        let hq = [];
+                                        try { hq = JSON.parse(localStorage.getItem('omnis_hot_quotes') || '[]'); } catch(e){}
+                                        return quotesYtd.length > 0 ? quotesYtd.map((q, i) => {
+                                            const isHot = hq.includes(q.name);
+                                            return `
+                                                <tr style="background: ${isHot ? '#ffedd5' : 'transparent'}; transition: background 0.3s ease;">
+                                                    <td style="text-align:center; font-weight:600; color:#64748b;">${i + 1}</td>
+                                                    <td style="text-align:center; cursor:pointer;" onclick="salestrack.toggleHotQuote('${q.name}', this)">
+                                                        <i class="fas fa-fire" style="color: ${isHot ? '#f97316' : '#cbd5e1'}; font-size: 16px; transition: all 0.2s ease;" title="Mark as Hot"></i>
+                                                    </td>
+                                                    <td style="text-align:left; font-weight:700; color:#0f172a;">${q.customer || q.customer_name || '-'}</td>
+                                                    <td style="text-align:left; font-weight:600; color:#475569;">${q.model || '-'}</td>
+                                                    <td style="text-align:center; font-weight:700; color:#0369a1;">${q.qty || 0}</td>
+                                                    <td style="text-align:right; color:#64748b;">${q.date || '-'}</td>
+                                                </tr>
+                                            `;
+                                        }).join('') : `<tr><td colspan="6" style="text-align:center; color:#94a3b8; padding:24px;">No open quotations found for this OEM.</td></tr>`;
+                                    })()}
                                 </tbody>
                             </table>
                         </div>
@@ -5935,6 +5986,38 @@ window.OmnisDashboardV6 = class OmnisDashboardV6 {
         // Remove print styles if any
         const printStyle = document.getElementById('dash-report-print-style');
         if (printStyle) printStyle.remove();
+    }
+
+    toggleHotQuote(quoteId, btnEl) {
+        if (!quoteId) return;
+        let hotQuotes = [];
+        try {
+            hotQuotes = JSON.parse(localStorage.getItem('omnis_hot_quotes') || '[]');
+        } catch (e) { hotQuotes = []; }
+        
+        const idx = hotQuotes.indexOf(quoteId);
+        const icon = btnEl.querySelector('i');
+        const row = btnEl.closest('tr');
+        
+        if (idx > -1) {
+            hotQuotes.splice(idx, 1);
+            if (icon) {
+                icon.style.color = '#cbd5e1';
+                icon.style.transform = 'scale(1)';
+            }
+            if (row) row.style.background = 'transparent';
+        } else {
+            hotQuotes.push(quoteId);
+            if (icon) {
+                icon.style.color = '#f97316';
+                icon.style.transform = 'scale(1.2)';
+            }
+            if (row) row.style.background = '#ffedd5';
+            setTimeout(() => {
+                if (icon) icon.style.transform = 'scale(1)';
+            }, 200);
+        }
+        localStorage.setItem('omnis_hot_quotes', JSON.stringify(hotQuotes));
     }
 
     async openOrderModal(reportId, machineId) {
