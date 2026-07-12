@@ -7520,6 +7520,8 @@ def save_stock_pipeline(payload=None, **kwargs):
         doc.update({
             "oem": params.get("oem"),
             "model": params.get("model"),
+            "contract": params.get("contract_name"),
+            "contract_number": params.get("contract_name"),
             "proposed_order": frappe.utils.cint(params.get("proposed_order") or 0),
             "proposed_order_quantity": frappe.utils.cint(params.get("proposed_order") or 0),
             "quantity": frappe.utils.cint(params.get("quantity") or 0),

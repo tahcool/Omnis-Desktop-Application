@@ -16185,6 +16185,10 @@ thead th { padding:11px 12px; font-size:10px; font-weight:800; color:#fff; text-
     };
 
     window.showStockPipelineForm = function (inputData = null) {
+      try {
+        console.log("---- OMNIS: NEW CODE EXECUTING ----");
+        console.log("[Stock] showStockPipelineForm invoked with data:", inputData);
+        if (inputData instanceof Event) inputData = null;
       const overlay = document.getElementById('sp-form-overlay');
       const titleEl = overlay ? overlay.querySelector('h2') : null;
 
@@ -16212,6 +16216,7 @@ thead th { padding:11px 12px; font-size:10px; font-weight:800; color:#fff; text-
         }
 
         // Fill fields
+        try { document.getElementById('sp-doc-id').value = id || ""; } catch(e) {}
         document.getElementById('sp-oem').value = data ? (data.oem || "") : "";
         document.getElementById('sp-model-input').value = data ? (data.model || "") : "";
         document.getElementById('sp-contract').value = data ? (data.contract || data.contract_number || "") : "";
@@ -16253,14 +16258,35 @@ thead th { padding:11px 12px; font-size:10px; font-weight:800; color:#fff; text-
           });
 
           // Customer search for earmarks
-          setupSuggestions(document.getElementById('sp-customer-search'), document.getElementById('sp-cust-suggest'), "search_customer_for_omnis", (selected) => {
+          window.setupSuggestions(document.getElementById('sp-customer-search'), document.getElementById('sp-cust-suggest'), "search_customer_for_omnis", (selected) => {
             window.addSPPotentialCustomer(selected.description || selected.value, selected.phone || "");
           });
 
           spFormInited = true;
         }
-        overlay.style.display = "flex";
-      }
+        console.log("Forcing overlay to display flex (BRUTE FORCE V2)");
+        document.querySelectorAll('#sp-form-overlay').forEach(o => {
+          try { document.body.appendChild(o); } catch(e) {}
+          o.style.setProperty('display', 'flex', 'important');
+          o.style.setProperty('position', 'fixed', 'important');
+          o.style.setProperty('top', '0', 'important');
+          o.style.setProperty('left', '0', 'important');
+          o.style.setProperty('width', '100vw', 'important');
+          o.style.setProperty('height', '100vh', 'important');
+          o.style.setProperty('z-index', '2147483647', 'important');
+          o.style.setProperty('visibility', 'visible', 'important');
+          o.style.setProperty('opacity', '1', 'important');
+          o.style.setProperty('background', 'rgba(15, 23, 42, 0.8)', 'important');
+          o.classList.remove('hidden');
+        });
+        document.querySelectorAll('.gs-form-modal').forEach(m => {
+          m.style.setProperty('display', 'flex', 'important');
+          m.style.setProperty('visibility', 'visible', 'important');
+          m.style.setProperty('opacity', '1', 'important');
+          m.style.setProperty('z-index', '2147483647', 'important');
+        });
+      } // closes if (overlay)
+      } catch(err) { console.error("ERROR in showStockPipelineForm:", err); alert("Error opening form: " + err.message); }
     };
 
     window.closeStockPipelineForm = function () {
@@ -20647,7 +20673,7 @@ thead th { padding:11px 12px; font-size:10px; font-weight:800; color:#fff; text-
           <div class="gs-grid">
             <div class="gs-field">
               <label class="gs-label">OEM / Brand</label>
-              <input type="text" id="sp-oem" class="gs-input" placeholder="Auto-filled from Model..." readonly>
+              <input type="text" id="sp-oem" class="gs-input" placeholder="Select or type OEM...">
               <div id="sp-oem-suggest" class="suggest-list hidden"></div>
             </div>
             <div class="gs-field">
