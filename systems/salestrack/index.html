@@ -5711,7 +5711,17 @@
 
 <body>
   <!-- SPLASH OVERLAY -->
-  <!-- PURGED SPLASH OVERLAY -->
+  <div id="splash-overlay" style="position:fixed; top:0; left:0; width:100vw; height:100vh; background: var(--accent-gradient, linear-gradient(135deg, #8b2219 0%, #4c110d 100%)); z-index: 9999999; display: flex; align-items: center; justify-content: center; flex-direction: column; transition: opacity 0.5s ease, visibility 0.5s ease;">
+      <div class="splash-inner" style="text-align: center;">
+          <div class="splash-logo" style="margin-bottom: 30px;">
+              <img src="../../assets/images/omnis-logo-white.png" alt="Omnis Logo" style="height: 50px; filter: drop-shadow(0px 4px 10px rgba(0,0,0,0.3));" />
+          </div>
+          <div style="width: 200px; height: 4px; background: rgba(255,255,255,0.2); border-radius: 4px; overflow: hidden; margin: 0 auto 15px auto;">
+              <div id="splash-bar-inner" style="height: 100%; width: 0%; background: #ffffff; border-radius: 4px; transition: width 0.3s ease;"></div>
+          </div>
+          <div id="splash-text" class="splash-text" style="color: rgba(255,255,255,0.9); font-size: 13px; font-weight: 500; letter-spacing: 0.5px;">Initializing System...</div>
+      </div>
+  </div>
 
   <!-- PREMIUM TOP NAV (MOVED TO BODY ROOT) -->
   <nav class="omnis-top-nav">
@@ -13010,6 +13020,57 @@
       }
     }
 
+    window.toggleGlobalHotLead = async function(quoteId, btnEl) {
+      if (!quoteId) return;
+      let hotQuotes = [];
+      try {
+        hotQuotes = JSON.parse(localStorage.getItem('omnis_hot_quotes') || '[]');
+      } catch (e) { hotQuotes = []; }
+
+      const idx = hotQuotes.indexOf(quoteId);
+      const icon = btnEl.querySelector('i');
+      const isHot = idx === -1; // If it was NOT in the list, we are making it Hot
+      
+      if (!isHot) {
+        hotQuotes.splice(idx, 1);
+        if (icon) {
+          icon.style.color = '#cbd5e1';
+          icon.style.transform = 'scale(1)';
+        }
+        if (btnEl) {
+          btnEl.style.background = 'transparent';
+          btnEl.style.border = '1px solid transparent';
+        }
+      } else {
+        hotQuotes.push(quoteId);
+        if (icon) {
+          icon.style.color = '#f97316';
+          icon.style.transform = 'scale(1.2)';
+        }
+        if (btnEl) {
+          btnEl.style.background = '#fff7ed';
+          btnEl.style.border = '1px solid #ffedd5';
+        }
+        setTimeout(() => {
+          if (icon) icon.style.transform = 'scale(1)';
+        }, 200);
+      }
+      localStorage.setItem('omnis_hot_quotes', JSON.stringify(hotQuotes));
+
+      // Also save to Supabase so it appears in QLA and other places
+      try {
+        if (window.electron) {
+          await window.electron.invoke('supabase:query', {
+            method: 'upsert',
+            table: 'omnis_quote_lifecycle',
+            data: { quote_name: quoteId, is_hot_lead: isHot }
+          });
+        }
+      } catch(e) {
+        console.error("Failed to sync hot lead status to Supabase", e);
+      }
+    };
+
     function renderQuotationsTable(data) {
       if (!qListBody) return;
       qListBody.innerHTML = "";
@@ -13019,6 +13080,14 @@
       }
       const base = CURRENT_SYSTEM ? CURRENT_SYSTEM.baseUrl.replace(/\/$/, "") : "";
       data.forEach(row => {
+        let isHot = false;
+        try {
+          const hqSet = new Set(JSON.parse(localStorage.getItem('omnis_hot_quotes') || '[]'));
+          isHot = hqSet.has(row.name);
+        } catch(e) {}
+        const fireColor = isHot ? "#f97316" : "#cbd5e1";
+        const fireBg = isHot ? "#fff7ed" : "transparent";
+
         const item = document.createElement("div");
         item.className = "ai-order-row ai-quotations-grid";
         item.style.borderRadius = "12px";
@@ -16298,9 +16367,12 @@ thead th { padding:11px 12px; font-size:10px; font-weight:800; color:#fff; text-
       const btn = document.getElementById('btn-save-stock-pipeline');
       const originalText = btn.textContent;
 
+      const rawId = window._editingStockId || "";
+      const isZombie = rawId.startsWith("omnis-");
+      
       const payload = {
-        name: window._editingStockId || "",
-        report_id: window._editingStockId || "", // Redundant for extract_params robustness
+        name: isZombie ? "" : rawId,
+        report_id: isZombie ? "" : rawId, // Redundant for extract_params robustness
         oem: document.getElementById('sp-oem').value,
         model: document.getElementById('sp-model-input').value,
         contract_name: document.getElementById('sp-contract').value,
@@ -16334,62 +16406,111 @@ thead th { padding:11px 12px; font-size:10px; font-weight:800; color:#fff; text-
           
           // --- Supabase Real-time Sync ---
           try {
-             if (window.salestrack && window.salestrack.supabase) {
-                const stockId = response.name;
-                const sp = window.salestrack.supabase;
-                
-                // Intelligent Company Mapping
-                // Stock doesn't have an owner field in the payload, but we can check CURRENT_SYSTEM or brand
-                let companyTag = "Sinopower"; // Default
-                const oem = (payload.oem || "").toLowerCase();
-                if (oem.includes("machinery") || oem.includes("bobcat") || oem.includes("hitachi") || oem.includes("shantui")) {
-                    // These brands are usually Machinery Exchange
-                    companyTag = "Machinery Exchange";
-                }
+             let sData = null;
+             let sErr = null;
+             const stockId = response.name;
+             
+             // Intelligent Company Mapping
+             let companyTag = "Sinopower"; // Default
+             const oem = (payload.oem || "").toLowerCase();
+             if (oem.includes("machinery") || oem.includes("bobcat") || oem.includes("hitachi") || oem.includes("shantui") || oem.includes("foton") || oem.includes("faw") || oem.includes("xcmg")) {
+                 companyTag = "Machinery Exchange";
+             }
+             
+             const upsertPayload = {
+                 frappe_id: stockId,
+                 company: companyTag,
+                 brand: payload.oem,
+                 model: payload.model,
+                 contract_name: payload.contract_name || null,
+                 proposed_qty: parseInt(payload.proposed_order) || 0,
+                 actual_qty: parseInt(payload.quantity) || 0,
+                 prod_date: payload.production_completion || null,
+                 ship_date: payload.shipping_date || null,
+                 eta_durban: payload.eta_durban || null,
+                 eta_beira: payload.ted || payload.eta_beira || null,
+                 eta_harare: payload.eta_harare || null
+             };
 
-                const { data: sData, error: sErr } = await sp.from('stock_inventory').upsert({
-                    frappe_id: stockId,
-                    company: companyTag,
-                    brand: payload.oem,
-                    model: payload.model,
-                    contract_name: payload.contract_name || null,
-                    proposed_qty: parseInt(payload.proposed_order) || 0,
-                    actual_qty: parseInt(payload.quantity) || 0,
-                    prod_date: payload.production_completion || null,
-                    ship_date: payload.shipping_date || null,
-                    eta_durban: payload.eta_durban || null,
-                    eta_beira: payload.ted || payload.eta_beira || null,
-                    eta_harare: payload.eta_harare || null
-                }, { onConflict: 'frappe_id' }).select();
+             if (window.electron && window.electron.invoke) {
+                 console.log("[Stock] Supabase Sync via Electron IPC...");
+                 if (isZombie && stockId !== rawId) {
+                     const fetchRes = await window.electron.invoke('supabase:query', {
+                         table: 'stock_inventory', method: 'select', params: { columns: 'id', match: { frappe_id: rawId } }
+                     });
+                     if (fetchRes && fetchRes.ok && fetchRes.data && fetchRes.data.length > 0) {
+                         for (let z of fetchRes.data) {
+                             await window.electron.invoke('supabase:query', { table: 'stock_potential_customers', method: 'delete', params: { match: { stock_id: z.id } } });
+                         }
+                     }
+                     await window.electron.invoke('supabase:query', { table: 'stock_inventory', method: 'delete', params: { match: { frappe_id: rawId } } });
+                 }
 
-                if (!sErr && sData && sData.length > 0) {
-                    const stockUuid = sData[0].id;
-                    // Sync Potential Customers
-                    let pcs = [];
-                    try { pcs = JSON.parse(payload.potential_customers); } catch(e) {}
-                    
-                    if (Array.isArray(pcs)) {
-                        await sp.from('stock_potential_customers').delete().eq('stock_id', stockUuid);
-                        if (pcs.length > 0) {
-                            const custPayloads = pcs.map(p => ({
-                                stock_id: stockUuid,
-                                customer_name: p.customer_name || p.customer || p.name || ""
-                            })).filter(p => p.customer_name);
-                            if (custPayloads.length > 0) {
-                                await sp.from('stock_potential_customers').insert(custPayloads);
-                            }
-                        }
-                    }
-                    console.log("[Supabase] Stock Sync Successful:", stockId);
-                } else if (sErr) {
-                    console.error("[Supabase] Stock Sync Error:", sErr);
-                }
+                 const upRes = await window.electron.invoke('supabase:query', {
+                     table: 'stock_inventory', method: 'upsert',
+                     data: upsertPayload,
+                     params: { onConflict: 'frappe_id' }
+                 });
+                 if (upRes && upRes.ok) sData = upRes.data; else sErr = upRes ? upRes.error : "Unknown IPC error";
+                 
+                 if (!sErr && sData && sData.length > 0) {
+                     const stockUuid = sData[0].id;
+                     let pcs = [];
+                     try { pcs = JSON.parse(payload.potential_customers); } catch(e) {}
+                     if (Array.isArray(pcs)) {
+                         await window.electron.invoke('supabase:query', { table: 'stock_potential_customers', method: 'delete', params: { match: { stock_id: stockUuid } } });
+                         if (pcs.length > 0) {
+                             const custPayloads = pcs.map(p => ({ stock_id: stockUuid, customer_name: p.customer_name || p.customer || p.name || "" })).filter(p => p.customer_name);
+                             if (custPayloads.length > 0) {
+                                 await window.electron.invoke('supabase:query', { table: 'stock_potential_customers', method: 'insert', data: custPayloads });
+                             }
+                         }
+                     }
+                 }
+             } else if (window.salestrack && window.salestrack.supabase) {
+                 console.log("[Stock] Supabase Sync via direct client...");
+                 const sp = window.salestrack.supabase;
+                 
+                 if (isZombie && stockId !== rawId) {
+                     const { data: zData } = await sp.from('stock_inventory').select('id').eq('frappe_id', rawId);
+                     if (zData && zData.length > 0) {
+                         for (let z of zData) {
+                             await sp.from('stock_potential_customers').delete().eq('stock_id', z.id);
+                         }
+                     }
+                     await sp.from('stock_inventory').delete().eq('frappe_id', rawId);
+                 }
+
+                 const { data, error } = await sp.from('stock_inventory').upsert(upsertPayload, { onConflict: 'frappe_id' }).select();
+                 sData = data; sErr = error;
+
+                 if (!sErr && sData && sData.length > 0) {
+                     const stockUuid = sData[0].id;
+                     let pcs = [];
+                     try { pcs = JSON.parse(payload.potential_customers); } catch(e) {}
+                     if (Array.isArray(pcs)) {
+                         await sp.from('stock_potential_customers').delete().eq('stock_id', stockUuid);
+                         if (pcs.length > 0) {
+                             const custPayloads = pcs.map(p => ({ stock_id: stockUuid, customer_name: p.customer_name || p.customer || p.name || "" })).filter(p => p.customer_name);
+                             if (custPayloads.length > 0) {
+                                 await sp.from('stock_potential_customers').insert(custPayloads);
+                             }
+                         }
+                     }
+                 }
+             }
+
+             if (!sErr && sData) {
+                 console.log("[Supabase] Stock Sync Successful:", stockId);
+             } else if (sErr) {
+                 console.error("[Supabase] Stock Sync Error:", sErr);
              }
           } catch(syncErr) {
              console.error("[Supabase] Sync Logic Error:", syncErr);
           }
 
           // Bust the local cache so the next render fetches fresh data
+          localStorage.removeItem('mxg_stock_pipeline_cache');
           if (CURRENT_SYSTEM) {
             localStorage.removeItem("mxg_stock_data_" + CURRENT_SYSTEM.id);
           }
@@ -16492,11 +16613,37 @@ thead th { padding:11px 12px; font-size:10px; font-weight:800; color:#fff; text-
         const res = await window.callFrappeSequenced(base, "powerstar_salestrack.omnis_dashboard.delete_stock_pipeline", { name: id });
         const response = res.message || res; // Fix: Robust response parsing
 
-        if (response && response.ok) {
+        const isAlreadyDeleted = response && response.error && response.error.includes("not found");
+        if ((response && response.ok) || isAlreadyDeleted) {
           // --- Supabase Delete Sync ---
           try {
-             if (window.salestrack && window.salestrack.supabase) {
-                await window.salestrack.supabase.from('stock_inventory').delete().eq('frappe_id', id);
+             if (window.electron && window.electron.invoke) {
+                 const fetchRes = await window.electron.invoke('supabase:query', {
+                     table: 'stock_inventory',
+                     method: 'select',
+                     params: { columns: 'id', match: { frappe_id: id } }
+                 });
+                 if (fetchRes && fetchRes.ok && fetchRes.data && fetchRes.data.length > 0) {
+                     const stockUuid = fetchRes.data[0].id;
+                     await window.electron.invoke('supabase:query', {
+                         table: 'stock_potential_customers',
+                         method: 'delete',
+                         params: { match: { stock_id: stockUuid } }
+                     });
+                 }
+                 await window.electron.invoke('supabase:query', {
+                     table: 'stock_inventory',
+                     method: 'delete',
+                     params: { match: { frappe_id: id } }
+                 });
+                 console.log("[Supabase-Electron] Stock Delete Successful:", id);
+             } else if (window.salestrack && window.salestrack.supabase) {
+                const sp = window.salestrack.supabase;
+                const { data: fetchDel } = await sp.from('stock_inventory').select('id').eq('frappe_id', id);
+                if (fetchDel && fetchDel.length > 0) {
+                    await sp.from('stock_potential_customers').delete().eq('stock_id', fetchDel[0].id);
+                }
+                await sp.from('stock_inventory').delete().eq('frappe_id', id);
                 console.log("[Supabase] Stock Delete Successful:", id);
              }
           } catch(e) { console.error("[Supabase] Delete Sync Error:", e); }
@@ -16504,6 +16651,7 @@ thead th { padding:11px 12px; font-size:10px; font-weight:800; color:#fff; text-
           window.showToast?.('Record Deleted Successfully', 'success');
           window.closeStockPipelineForm();
           // Bust the local cache so the next render fetches fresh data
+          localStorage.removeItem('mxg_stock_pipeline_cache');
           if (CURRENT_SYSTEM) {
             localStorage.removeItem("mxg_stock_data_" + CURRENT_SYSTEM.id);
           }
@@ -25514,14 +25662,16 @@ Commercial Team`);
     };
 
     // Initialize CDV when the view is opened
-    document.querySelector('.top-nav-dropdown-item[data-view="view-cdv"]').addEventListener('click', () => {
-        window.loadCdvAssigned();
-    });
+    const cdvNav = document.querySelector('.top-nav-dropdown-item[data-view="view-cdv"]');
+    if (cdvNav) {
+      cdvNav.addEventListener('click', () => { window.loadCdvAssigned(); });
+    }
 
     // Hook into dashboard load
-    document.querySelector('.sidebar-item[data-view="view-dashboard"]').addEventListener('click', () => {
-        window.updateWeeklyTargets();
-    });
+    const dashNav = document.querySelector('.sidebar-item[data-view="view-dashboard"]') || document.querySelector('.nav-item[data-view="view-dashboard"]');
+    if (dashNav) {
+      dashNav.addEventListener('click', () => { window.updateWeeklyTargets(); });
+    }
 
 </script>
 

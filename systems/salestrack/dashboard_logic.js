@@ -2718,12 +2718,9 @@ window.OmnisDashboardV6 = class OmnisDashboardV6 {
     async toggleQuoteHotLead(quoteName, isHot) {
         try {
             await window.electron.invoke('supabase:query', {
-                method: 'update',
+                method: 'upsert',
                 table: 'omnis_quote_lifecycle',
-                params: {
-                    values: { is_hot_lead: isHot },
-                    filters: { quote_name: quoteName }
-                }
+                data: { quote_name: quoteName, is_hot_lead: isHot }
             });
             this.showToast("Hot Lead status updated successfully.", "success");
             // refresh data in background
@@ -2825,8 +2822,48 @@ window.OmnisDashboardV6 = class OmnisDashboardV6 {
         }
     }
 
-    openRepProfile(repName) {
+    async fetchAndRenderItems(quoteNames) {
+        if (!quoteNames || quoteNames.length === 0) return;
+        for (let i = 0; i < quoteNames.length; i += 30) {
+            let chunk = quoteNames.slice(i, i + 30);
+            let orQuery = chunk.map(name => `parent.eq.${name}`).join(',');
+            try {
+                const itemsRes = await window.electron.invoke('supabase:query', {
+                    method: 'select',
+                    table: 'quotation_items',
+                    params: {
+                        columns: 'parent, item_code, item_name, qty',
+                        or: orQuery
+                    }
+                });
+                if (itemsRes && itemsRes.data) {
+                    let itemsByParent = {};
+                    itemsRes.data.forEach(item => {
+                        if (!itemsByParent[item.parent]) itemsByParent[item.parent] = [];
+                        itemsByParent[item.parent].push(`${item.qty}x ${item.item_name || item.item_code}`);
+                    });
+                    
+                    chunk.forEach(quoteName => {
+                        let elements = document.querySelectorAll(`.items-cell-${quoteName}`);
+                        if (elements.length > 0) {
+                            let text = itemsByParent[quoteName] ? itemsByParent[quoteName].join(', ') : '-';
+                            elements.forEach(el => {
+                                el.innerText = text;
+                                el.title = text;
+                            });
+                        }
+                    });
+                }
+            } catch (e) { console.error('Failed to fetch items chunk', e); }
+        }
+    }
+
+    async openRepProfile(repName, period = 'This Year') {
         if (!this.cachedCommandCenterData) return;
+
+        // Show loading state first
+        this.openListModal(`Rep Profile: ${repName}`, `<div style="padding:40px; text-align:center;"><i class="fas fa-spinner fa-spin" style="font-size:32px; color:#4f46e5;"></i><div style="margin-top:10px; color:#64748b;">Loading Performance Analytics...</div></div>`, "1200px");
+
         const quotes = this.cachedCommandCenterData.quotes || [];
         const dueQuotes = this.cachedCommandCenterData.dueQuotes || [];
         
@@ -2839,6 +2876,18 @@ window.OmnisDashboardV6 = class OmnisDashboardV6 {
         let rate = total > 0 ? Math.round((logged / total) * 100) : 0;
         
         let color = rate >= 80 ? '#10b981' : (rate >= 50 ? '#f59e0b' : '#ef4444');
+
+        let stats = {
+            sales_value: 0, sales_count: 0, open_quotes_value: 0, open_quotes_count: 0, handovers_count: 0, new_customers_count: 0, period: "This Year"
+        };
+        try {
+            const res = await window.callFrappeSequenced(this.sys.baseUrl || "https://salestrack.powerstar.co.zw", "powerstar_salestrack.omnis_dashboard.get_sales_rep_report_card", { rep_name: repName, period: period });
+            if (res && res.message && res.message.ok) {
+                stats = res.message.data;
+            }
+        } catch (e) { console.error("Failed to fetch rep stats", e); }
+
+        const formatCurrency = (val) => new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', maximumFractionDigits: 0 }).format(val);
         
         let dueHtml = `<div style="color:#64748b; font-size:14px; text-align:center; padding:20px;">No quotes are currently past due for this representative.</div>`;
         
@@ -2848,6 +2897,7 @@ window.OmnisDashboardV6 = class OmnisDashboardV6 {
                     <tr style="border-bottom:2px solid #e2e8f0; color:#475569; text-transform:uppercase; font-size:11px;">
                         <th style="padding:10px; text-align:left;">Quote</th>
                         <th style="padding:10px; text-align:left;">Customer</th>
+                        <th style="padding:10px; text-align:left;">Items</th>
                         <th style="padding:10px; text-align:left;">Stage</th>
                         <th style="padding:10px; text-align:left;">Due Date</th>
                     </tr>
@@ -2858,6 +2908,7 @@ window.OmnisDashboardV6 = class OmnisDashboardV6 {
                         return `<tr style="border-bottom:1px solid #f1f5f9; cursor:pointer;" onclick="window.salestrack.openQuoteLifecycleModal('${q.quote_name}')" onmouseover="this.style.backgroundColor='#f8fafc'" onmouseout="this.style.backgroundColor='transparent'">
                             <td style="padding:12px 10px; color:#2563eb; font-weight:600;">${q.quote_name}</td>
                             <td style="padding:12px 10px; color:#334155;">${q.frappe_quotation ? q.frappe_quotation.customer_name : '-'}</td>
+                            <td class="items-cell-${q.quote_name}" style="padding:12px 10px; color:#64748b; font-size:11px; max-width:150px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;" title="${(q.items_summary || '').replace(/\"/g, '&quot;')}">${q.items_summary || 'Loading...'}</td>
                             <td style="padding:12px 10px; color:#0f172a; font-weight:600;">Stage ${q.current_stage}</td>
                             <td style="padding:12px 10px; color:#ef4444; font-weight:700;">${dueStr}</td>
                         </tr>`;
@@ -2867,31 +2918,82 @@ window.OmnisDashboardV6 = class OmnisDashboardV6 {
         }
 
         const html = `
-            <div style="padding:20px 30px; font-family:'Inter', sans-serif;">
-                <div style="display:flex; align-items:center; gap:20px; margin-bottom:30px; padding-bottom:20px; border-bottom:1px solid #e2e8f0;">
+            <div style="padding:20px 30px; font-family:'Inter', sans-serif; background:#f8fafc; min-height:100%;">
+                <div style="display:flex; align-items:center; gap:20px; margin-bottom:20px; padding:20px; background:#fff; border-radius:16px; border:1px solid #e2e8f0; box-shadow:0 1px 3px rgba(0,0,0,0.05);">
                     <div style="width:80px; height:80px; border-radius:50%; background:${color}15; color:${color}; display:flex; align-items:center; justify-content:center; font-size:32px; font-weight:800;">
                         ${repName.charAt(0).toUpperCase()}
                     </div>
                     <div>
                         <div style="font-size:24px; font-weight:800; color:#0f172a;">${repName}</div>
-                        <div style="font-size:14px; color:#64748b; margin-top:4px;">Sales Representative Profile</div>
+                        <div style="font-size:14px; color:#64748b; margin-top:4px;">Sales Representative Performance Report</div>
+                        <div style="margin-top:8px;">
+                            <select onchange="window.salestrack.openRepProfile('${repName}', this.value)" style="background:#f1f5f9; color:#475569; padding:6px 12px; border-radius:8px; font-size:12px; font-weight:700; border:1px solid #cbd5e1; outline:none; cursor:pointer;">
+                                <option value="This Year" ${stats.period === 'This Year' ? 'selected' : ''}>THIS YEAR</option>
+                                <option value="This Month" ${stats.period === 'This Month' ? 'selected' : ''}>THIS MONTH</option>
+                                <option value="Last 30 Days" ${stats.period === 'Last 30 Days' ? 'selected' : ''}>LAST 30 DAYS</option>
+                            </select>
+                        </div>
                     </div>
                     <div style="margin-left:auto; text-align:right;">
-                        <div style="font-size:32px; font-weight:900; color:${color};">${rate}%</div>
+                        <div style="font-size:36px; font-weight:900; color:${color};">${rate}%</div>
                         <div style="font-size:12px; font-weight:700; color:#64748b; text-transform:uppercase;">Compliance Rate</div>
+                    </div>
+                </div>
+                
+                <div style="display:grid; grid-template-columns:repeat(5, 1fr); gap:15px; margin-bottom:25px;">
+                    <!-- Sales -->
+                    <div style="background:#fff; border:1px solid #e2e8f0; border-radius:12px; padding:15px; text-align:center; box-shadow:0 1px 2px rgba(0,0,0,0.02);">
+                        <div style="color:#10b981; font-size:20px; margin-bottom:8px;"><i class="fas fa-chart-line"></i></div>
+                        <div style="font-size:24px; font-weight:800; color:#0f172a;">${stats.sales_count}</div>
+                        <div style="font-size:11px; font-weight:700; color:#64748b; text-transform:uppercase; margin-top:4px;">Closed Sales</div>
+                    </div>
+                    
+                    <!-- Handovers -->
+                    <div style="background:#fff; border:1px solid #e2e8f0; border-radius:12px; padding:15px; text-align:center; box-shadow:0 1px 2px rgba(0,0,0,0.02);">
+                        <div style="color:#8b5cf6; font-size:20px; margin-bottom:8px;"><i class="fas fa-handshake"></i></div>
+                        <div style="font-size:24px; font-weight:800; color:#0f172a;">${stats.handovers_count}</div>
+                        <div style="font-size:11px; font-weight:700; color:#64748b; text-transform:uppercase; margin-top:4px;">Handovers</div>
+                    </div>
+                    
+                    <!-- Open Quotes -->
+                    <div style="background:#fff; border:1px solid #e2e8f0; border-radius:12px; padding:15px; text-align:center; box-shadow:0 1px 2px rgba(0,0,0,0.02);">
+                        <div style="color:#3b82f6; font-size:20px; margin-bottom:8px;"><i class="fas fa-file-invoice-dollar"></i></div>
+                        <div style="font-size:24px; font-weight:800; color:#0f172a;">${stats.open_quotes_count}</div>
+                        <div style="font-size:11px; font-weight:700; color:#64748b; text-transform:uppercase; margin-top:4px;">Open Quotes</div>
+                    </div>
+                    
+                    <!-- Quotes Followed Up -->
+                    <div style="background:#fff; border:1px solid #e2e8f0; border-radius:12px; padding:15px; text-align:center; box-shadow:0 1px 2px rgba(0,0,0,0.02);">
+                        <div style="color:#f59e0b; font-size:20px; margin-bottom:8px;"><i class="fas fa-tasks"></i></div>
+                        <div style="font-size:24px; font-weight:800; color:#0f172a;">${logged} / ${total}</div>
+                        <div style="font-size:11px; font-weight:700; color:#64748b; text-transform:uppercase; margin-top:4px;">Quotes Followed Up</div>
+                    </div>
+                    
+                    <!-- New Customers -->
+                    <div style="background:#fff; border:1px solid #e2e8f0; border-radius:12px; padding:15px; text-align:center; box-shadow:0 1px 2px rgba(0,0,0,0.02);">
+                        <div style="color:#ec4899; font-size:20px; margin-bottom:8px;"><i class="fas fa-user-plus"></i></div>
+                        <div style="font-size:24px; font-weight:800; color:#0f172a;">${stats.new_customers_count}</div>
+                        <div style="font-size:11px; font-weight:700; color:#64748b; text-transform:uppercase; margin-top:4px;">New Customers</div>
                     </div>
                 </div>
                 
                 <h3 style="font-size:16px; font-weight:800; color:#0f172a; margin-bottom:15px; display:flex; align-items:center; gap:8px;">
                     <i class="fas fa-clock" style="color:#f59e0b;"></i> Due for Follow-Up (${repDue.length})
                 </h3>
-                <div style="background:#fff; border:1px solid #e2e8f0; border-radius:12px; overflow:hidden;">
+                <div style="background:#fff; border:1px solid #e2e8f0; border-radius:12px; overflow:hidden; box-shadow:0 1px 3px rgba(0,0,0,0.05);">
                     ${dueHtml}
                 </div>
             </div>
         `;
         
-        this.openListModal(`Rep Profile: ${repName}`, html, "800px");
+        // Target the existing modal if it's open, else it will open a new one but since we already called openListModal, we update its content directly
+        const modalBody = document.getElementById('list-modal-body');
+        if (modalBody) {
+            modalBody.innerHTML = html;
+        } else {
+            this.openListModal(`Rep Profile: ${repName}`, html, "1200px");
+        }
+        setTimeout(() => this.fetchAndRenderItems(repDue.map(q => q.quote_name)), 50);
     }
 
     async openCommandCenter(isFullView = false) {
@@ -3177,9 +3279,10 @@ window.OmnisDashboardV6 = class OmnisDashboardV6 {
                     <table style="width:100%; border-collapse:separate; border-spacing:0; font-size:13px;">
                         <thead>
                             <tr style="background:#991b1b; color:white; font-size:11px; text-transform:uppercase;">
-                                <th style="padding:12px 16px; color:white; text-align:left; font-weight:800; border-top-left-radius:6px; border-bottom-left-radius:6px; width:30%;">Quote Name</th>
-                                <th style="padding:12px 16px; color:white; text-align:left; font-weight:800; width:30%;">Sales Person</th>
-                                <th style="padding:12px 16px; color:white; text-align:left; font-weight:800; width:20%;">Stage</th>
+                                <th style="padding:12px 16px; color:white; text-align:left; font-weight:800; border-top-left-radius:6px; border-bottom-left-radius:6px; width:20%;">Quote Name</th>
+                                <th style="padding:12px 16px; color:white; text-align:left; font-weight:800; width:20%;">Sales Person</th>
+                                <th style="padding:12px 16px; color:white; text-align:left; font-weight:800; width:25%;">Items</th>
+                                <th style="padding:12px 16px; color:white; text-align:left; font-weight:800; width:15%;">Stage</th>
                                 <th style="padding:12px 16px; color:white; text-align:right; font-weight:800; border-top-right-radius:6px; border-bottom-right-radius:6px; width:20%;">Due Date</th>
                             </tr>
                         </thead>
@@ -3203,9 +3306,10 @@ window.OmnisDashboardV6 = class OmnisDashboardV6 {
                                 }
 
                                 return `<tr style="border-bottom:1px solid #f1f5f9; cursor:pointer;" onclick="window.salestrack.openQuoteLifecycleModal('${q.quote_name}')" onmouseover="this.style.backgroundColor='#f8fafc'" onmouseout="this.style.backgroundColor='transparent'">
-                                    <td style="padding:10px 16px; color:#2563eb; font-weight:600; width:30%;">${q.quote_name}</td>
-                                    <td style="padding:10px 16px; color:#334155; font-weight:500; width:30%;">${q.frappe_quotation.custom_sales_person || '-'}</td>
-                                    <td style="padding:10px 16px; color:#0f172a; font-weight:600; width:20%;">Stage ${q.current_stage}</td>
+                                    <td style="padding:10px 16px; color:#2563eb; font-weight:600; width:20%;">${q.quote_name}</td>
+                                    <td style="padding:10px 16px; color:#334155; font-weight:500; width:20%;">${q.frappe_quotation.custom_sales_person || '-'}</td>
+                                    <td class="items-cell-${q.quote_name}" style="padding:10px 16px; color:#64748b; font-size:11px; max-width:150px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; width:25%;" title="${(q.items_summary || '').replace(/\"/g, '&quot;')}">${q.items_summary || 'Loading...'}</td>
+                                    <td style="padding:10px 16px; color:#0f172a; font-weight:600; width:15%;">Stage ${q.current_stage}</td>
                                     <td style="padding:10px 16px; width:20%; text-align:right;">
                                         <span style="background:${bg}; color:${color}; padding:4px 8px; border-radius:12px; font-size:11px; font-weight:800; display:inline-flex; align-items:center;">
                                             ${icon} ${due}
@@ -3324,11 +3428,48 @@ window.OmnisDashboardV6 = class OmnisDashboardV6 {
         const totalActive = quotes.length;
         const totalDue = dueQuotes.length;
         const pendingCount = pendingApprovals ? pendingApprovals.length : 0;
+        const totalHotLeads = quotes.filter(q => q.is_hot_lead && !q.is_closed).length;
         
-        let stage1Count = quotes.filter(q => q.current_stage === 1 && !q.is_closed).length;
-        let stage2Count = quotes.filter(q => q.current_stage === 2 && !q.is_closed).length;
-        let stage3Count = quotes.filter(q => q.current_stage === 3 && !q.is_closed).length;
+        const today = new Date();
+        const todayStr = today.toISOString().split('T')[0];
+
+        let p1OnTrack = 0, p1Overdue = 0;
+        let p2OnTrack = 0, p2Overdue = 0;
+        let p3OnTrack = 0, p3Overdue = 0;
+
+        quotes.forEach(q => {
+            if (q.is_closed) return;
+            let createdDateStr = q.created_on ? q.created_on.split('T')[0] : (q.frappe_quotation ? q.frappe_quotation.transaction_date : todayStr);
+            let daysOld = Math.floor((today - new Date(createdDateStr)) / (1000 * 60 * 60 * 24));
+
+            if (daysOld <= 3) {
+                if (q.current_stage === 1 && q.stage_1_due && q.stage_1_due < todayStr) p1Overdue++;
+                else p1OnTrack++;
+            } else if (daysOld <= 7) {
+                if (q.current_stage === 1) p2Overdue++;
+                else if (q.current_stage === 2 && q.stage_2_due && q.stage_2_due < todayStr) p2Overdue++;
+                else p2OnTrack++;
+            } else {
+                if (q.current_stage < 3) p3Overdue++;
+                else if (q.current_stage === 3 && q.stage_3_due && q.stage_3_due < todayStr) p3Overdue++;
+                else p3OnTrack++;
+            }
+        });
+
+        let s1Eligible = quotes.filter(q => q.current_stage > 1 || q.is_closed || Math.floor((today - new Date(q.created_on ? q.created_on.split('T')[0] : todayStr)) / 86400000) >= 3);
+        let s1Compliant = s1Eligible.filter(q => q.current_stage > 1 || q.is_closed);
+        let s1Rate = s1Eligible.length > 0 ? Math.round((s1Compliant.length / s1Eligible.length) * 100) : 0;
+
+        let s2Eligible = quotes.filter(q => q.current_stage > 2 || (q.is_closed && q.current_stage > 1) || Math.floor((today - new Date(q.created_on ? q.created_on.split('T')[0] : todayStr)) / 86400000) >= 7);
+        let s2Compliant = s2Eligible.filter(q => q.current_stage > 2 || (q.is_closed && q.current_stage > 1));
+        let s2Rate = s2Eligible.length > 0 ? Math.round((s2Compliant.length / s2Eligible.length) * 100) : 0;
+
+        let s3Eligible = quotes.filter(q => q.current_stage > 3 || (q.is_closed && q.current_stage > 2) || Math.floor((today - new Date(q.created_on ? q.created_on.split('T')[0] : todayStr)) / 86400000) >= 21);
+        let s3Compliant = s3Eligible.filter(q => q.current_stage > 3 || (q.is_closed && q.current_stage > 2));
+        let s3Rate = s3Eligible.length > 0 ? Math.round((s3Compliant.length / s3Eligible.length) * 100) : 0;
         
+        complianceRate = (s1Eligible.length + s2Eligible.length + s3Eligible.length) > 0 ? 
+            Math.round(((s1Compliant.length + s2Compliant.length + s3Compliant.length) / (s1Eligible.length + s2Eligible.length + s3Eligible.length)) * 100) : 0;
         let complianceColor = complianceRate >= 80 ? '#10b981' : (complianceRate >= 50 ? '#f59e0b' : '#ef4444');
 
         const html = `
@@ -3366,35 +3507,41 @@ window.OmnisDashboardV6 = class OmnisDashboardV6 {
                 <!-- OVERVIEW TAB -->
                 <div id="cc_tab_overview" style="display:block;">
                     <!-- KPI Cards Row -->
-                    <div style="display:grid; grid-template-columns: repeat(3, 1fr); gap:20px; margin-bottom:24px;">
-                        <div style="background:rgba(255,255,255,0.8); backdrop-filter:blur(10px); border:1px solid #e2e8f0; border-radius:16px; padding:20px; box-shadow:0 4px 6px -1px rgba(0,0,0,0.02); display:flex; align-items:center; gap:16px;">
-                            <div style="width:56px; height:56px; border-radius:12px; background:#eff6ff; color:#3b82f6; display:flex; align-items:center; justify-content:center; font-size:24px;">
+                    <div style="display:grid; grid-template-columns: repeat(4, 1fr); gap:16px; margin-bottom:28px;">
+                        <div class="mxg-kpi-card">
+                            <div style="position: absolute; right: -5px; bottom: -15px; opacity: 0.12; font-size: 85px; color: rgba(139, 34, 25, 1); transform: rotate(-10deg); pointer-events: none;">
                                 <i class="fas fa-file-invoice-dollar"></i>
                             </div>
-                            <div>
-                                <div style="font-size:12px; font-weight:700; color:#64748b; text-transform:uppercase; letter-spacing:0.5px;">Total Active Quotes</div>
-                                <div style="font-size:28px; font-weight:800; color:#0f172a; margin-top:2px;">${totalActive}</div>
-                            </div>
-                        </div>
-                        
-                        <div style="background:rgba(255,255,255,0.8); backdrop-filter:blur(10px); border:1px solid #e2e8f0; border-radius:16px; padding:20px; box-shadow:0 4px 6px -1px rgba(0,0,0,0.02); display:flex; align-items:center; gap:16px;">
-                            <div style="width:56px; height:56px; border-radius:12px; background:#fef2f2; color:#ef4444; display:flex; align-items:center; justify-content:center; font-size:24px;">
-                                <i class="fas fa-clock"></i>
-                            </div>
-                            <div>
-                                <div style="font-size:12px; font-weight:700; color:#64748b; text-transform:uppercase; letter-spacing:0.5px;">Due For Follow-Up</div>
-                                <div style="font-size:28px; font-weight:800; color:#ef4444; margin-top:2px;">${totalDue}</div>
-                            </div>
+                            <div class="mxg-kpi-label" style="position: relative; z-index: 1;">TOTAL ACTIVE QUOTES</div>
+                            <div class="mxg-kpi-value" style="position: relative; z-index: 1;">${totalActive}</div>
+                            <div class="mxg-kpi-sub" style="position: relative; z-index: 1;">Quotes in lifecycle</div>
                         </div>
 
-                        <div style="background:rgba(255,255,255,0.8); backdrop-filter:blur(10px); border:1px solid #e2e8f0; border-radius:16px; padding:20px; box-shadow:0 4px 6px -1px rgba(0,0,0,0.02); display:flex; align-items:center; gap:16px;">
-                            <div style="width:56px; height:56px; border-radius:12px; background:#fff7ed; color:#f97316; display:flex; align-items:center; justify-content:center; font-size:24px;">
+                        <div class="mxg-kpi-card">
+                            <div style="position: absolute; right: -5px; bottom: -15px; opacity: 0.12; font-size: 85px; color: rgba(139, 34, 25, 1); transform: rotate(-10deg); pointer-events: none;">
+                                <i class="fas fa-clock"></i>
+                            </div>
+                            <div class="mxg-kpi-label" style="position: relative; z-index: 1;">DUE FOR FOLLOW-UP</div>
+                            <div class="mxg-kpi-value" style="position: relative; z-index: 1; color:#ef4444;">${totalDue}</div>
+                            <div class="mxg-kpi-sub" style="position: relative; z-index: 1;">Requires action today</div>
+                        </div>
+
+                        <div class="mxg-kpi-card">
+                            <div style="position: absolute; right: -5px; bottom: -15px; opacity: 0.12; font-size: 85px; color: rgba(139, 34, 25, 1); transform: rotate(-10deg); pointer-events: none;">
                                 <i class="fas fa-user-shield"></i>
                             </div>
-                            <div>
-                                <div style="font-size:12px; font-weight:700; color:#64748b; text-transform:uppercase; letter-spacing:0.5px;">Pending Sign-offs</div>
-                                <div style="font-size:28px; font-weight:800; color:#c2410c; margin-top:2px;">${pendingCount}</div>
+                            <div class="mxg-kpi-label" style="position: relative; z-index: 1;">PENDING SIGN-OFFS</div>
+                            <div class="mxg-kpi-value" style="position: relative; z-index: 1;">${pendingCount}</div>
+                            <div class="mxg-kpi-sub" style="position: relative; z-index: 1;">Manager approval needed</div>
+                        </div>
+
+                        <div class="mxg-kpi-card">
+                            <div style="position: absolute; right: -5px; bottom: -15px; opacity: 0.12; font-size: 85px; color: rgba(139, 34, 25, 1); transform: rotate(-10deg); pointer-events: none;">
+                                <i class="fas fa-fire"></i>
                             </div>
+                            <div class="mxg-kpi-label" style="position: relative; z-index: 1;">HOT LEADS</div>
+                            <div class="mxg-kpi-value" style="position: relative; z-index: 1; color:#ea580c;">${totalHotLeads}</div>
+                            <div class="mxg-kpi-sub" style="position: relative; z-index: 1;">High priority targets</div>
                         </div>
                     </div>
 
@@ -3492,34 +3639,45 @@ window.OmnisDashboardV6 = class OmnisDashboardV6 {
         
         setTimeout(() => {
             if (window.ApexCharts) {
-                const donutOptions = {
-                    series: [complianceRate, 100 - complianceRate],
-                    labels: ['Logged', 'Unlogged'],
-                    chart: { type: 'donut', height: 250 },
-                    colors: [complianceColor, '#e2e8f0'],
+                const radialOptions = {
+                    series: [s1Rate, s2Rate, s3Rate],
+                    chart: { type: 'radialBar', height: 260 },
                     plotOptions: {
-                        pie: { donut: { size: '75%', labels: { show: true, name: { show: false }, value: { show: true, fontSize: '24px', fontWeight: 800, color: '#0f172a', formatter: function (val) { return val + "%" } } } } }
+                        radialBar: {
+                            hollow: { size: '40%' },
+                            dataLabels: {
+                                name: { fontSize: '13px', fontWeight: 700, color: '#475569', offsetY: -10 },
+                                value: { fontSize: '24px', fontWeight: 800, color: '#0f172a', formatter: function(val) { return val + "%" } },
+                                total: {
+                                    show: true,
+                                    label: 'Overall',
+                                    fontWeight: 800,
+                                    color: '#0f172a',
+                                    formatter: function (w) {
+                                        return complianceRate + "%"
+                                    }
+                                }
+                            }
+                        }
                     },
-                    dataLabels: { enabled: false },
-                    legend: { show: false },
-                    stroke: { width: 0 }
+                    colors: ['#3b82f6', '#f59e0b', '#ef4444'],
+                    labels: ['Stage 1', 'Stage 2', 'Stage 3']
                 };
-                new window.ApexCharts(document.querySelector("#lifecycle_compliance_chart"), donutOptions).render();
+                new window.ApexCharts(document.querySelector("#lifecycle_compliance_chart"), radialOptions).render();
                 
                 const barOptions = {
-                    series: [{ name: 'Active Quotes', data: [stage1Count, stage2Count, stage3Count] }],
-                    chart: { type: 'bar', height: 220, toolbar: { show: false }, dropShadow: { enabled: true, top: 4, left: 0, blur: 4, opacity: 0.1 } },
-                    plotOptions: { bar: { borderRadius: 8, horizontal: true, distributed: true, barHeight: '55%', dataLabels: { position: 'right' } } },
-                    colors: ['#3b82f6', '#f59e0b', '#ef4444'],
-                    fill: {
-                        type: 'gradient',
-                        gradient: { shade: 'dark', type: "horizontal", shadeIntensity: 0.5, gradientToColors: ['#60a5fa', '#fbbf24', '#f87171'], inverseColors: true, opacityFrom: 1, opacityTo: 1, stops: [0, 100] }
-                    },
-                    dataLabels: { enabled: true, textAnchor: 'start', style: { colors: ['#0f172a'], fontSize: '13px', fontWeight: 800 }, formatter: function (val) { return val + (val === 1 ? ' Quote' : ' Quotes') }, offsetX: 10 },
-                    xaxis: { categories: ['Stage 1 (3-Day)', 'Stage 2 (7-Day)', 'Stage 3 (21-Day)'], labels: { show: false }, axisBorder: { show: false }, axisTicks: { show: false } },
+                    series: [
+                        { name: 'On Track', data: [p1OnTrack, p2OnTrack, p3OnTrack] },
+                        { name: 'Overdue', data: [p1Overdue, p2Overdue, p3Overdue] }
+                    ],
+                    chart: { type: 'bar', height: 220, stacked: true, toolbar: { show: false }, dropShadow: { enabled: true, top: 4, left: 0, blur: 4, opacity: 0.1 } },
+                    plotOptions: { bar: { borderRadius: 4, horizontal: true, barHeight: '55%', dataLabels: { position: 'center' } } },
+                    colors: ['#10b981', '#ef4444'],
+                    dataLabels: { enabled: true, textAnchor: 'middle', style: { colors: ['#ffffff'], fontSize: '12px', fontWeight: 700 } },
+                    xaxis: { categories: ['Phase 1 (0-3 Days)', 'Phase 2 (4-7 Days)', 'Phase 3 (8+ Days)'], labels: { show: false }, axisBorder: { show: false }, axisTicks: { show: false } },
                     yaxis: { labels: { style: { fontSize: '12px', fontWeight: 700, colors: '#475569' } } },
                     grid: { show: true, borderColor: '#f1f5f9', strokeDashArray: 4, position: 'back', xaxis: { lines: { show: true } }, yaxis: { lines: { show: false } } },
-                    legend: { show: false }
+                    legend: { show: true, position: 'top', horizontalAlign: 'right', markers: { radius: 12 } }
                 };
                 new window.ApexCharts(document.querySelector("#lifecycle_stages_chart"), barOptions).render();
             }
@@ -3530,6 +3688,8 @@ window.OmnisDashboardV6 = class OmnisDashboardV6 {
             const fullCont = document.getElementById('command-center-full-container');
             if (fullCont) fullCont.innerHTML = html;
         }
+
+        setTimeout(() => this.fetchAndRenderItems(filteredDue.map(q => q.quote_name)), 50);
     }
         previewManualFollowup(q, event) {
         const stage = q.followup_stage || 1;
@@ -8359,8 +8519,8 @@ window.OmnisDashboardV6 = class OmnisDashboardV6 {
         // Logout at 15 minutes
         this.idleTimer = setTimeout(() => {
             console.log("Forced logout due to inactivity.");
-            if (window.frappeAPI && window.frappeAPI.logout) {
-                window.frappeAPI.logout();
+            if (window.frappeAPI && window.frappeAPI.openLogin) {
+                window.frappeAPI.openLogin();
             } else {
                 window.location.href = "../../index.html"; // Redirect to login
             }

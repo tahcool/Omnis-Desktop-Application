@@ -91,3 +91,31 @@
   Files: .mcp/knowledge/_shared/commit_log.md,admin_dashboard.html,admin_logic.js,index.html,main.js,supabase/Supabase_Phase11_Admin_RBAC.sql,
 - `b46bfaa` 2026-07-09 [supabase-migration] Restore point: Before adding Admin Accounts and RBAC (Squashed)
   Files: .agents/AGENTS.md,.gitignore,.mcp/knowledge/_shared/commit_log.md,add_kanban_filter.py,admin_dashboard.html,admin_logic.js,fix_init_email.js,fix_scripts.py,index.html,kanban_toggle.py,kanban_toggle_regex.py,landing/index.html,landing/script.js,main.js,omnis-web-deploy/index.html,omnis-web-deploy/supabase-min.js,omnis-web-deploy/systems/SPE/index.html,omnis-web-deploy/systems/fleetrack/index.html,omnis-web-deploy/systems/group_accounts/index.html,omnis-web-deploy/systems/powertrack/dashboard.html,
+- `50b9fec` 2026-07-09 [supabase-migration] feat(admin): Implement Admin console with Supabase RBAC, Team management, and seamless System Switcher
+  Files: .env,.mcp/knowledge/_shared/commit_log.md,
+- `b07eccd` 2026-07-09 [supabase-migration] feat(admin): Implement Admin console with Supabase RBAC, Team management, and seamless System Switcher
+  Files: .mcp/knowledge/_shared/commit_log.md,
+- `25cff7b` 2026-07-09 [supabase-migration] fix(admin): resolve RLS infinite recursion with SECURITY DEFINER function
+  Files: supabase/Supabase_Phase11_Admin_RBAC.sql,
+- `bb746f5` 2026-07-09 [supabase-migration] fix(admin): use window:openDashboard to load admin console in full-scale window
+  Files: admin_logic.js,index.html,
+- `612aec6` 2026-07-09 [supabase-migration] style(admin): replace shield icon with omnis logo
+  Files: admin_dashboard.html,
+- `e322feb` 2026-07-09 [supabase-migration] feat(admin): reorganize UI for system-specific settings architecture
+  Files: admin_dashboard.html,admin_logic.js,
+- `b425841` 2026-07-09 [supabase-migration] feat(admin): completely migrate salestrack specific settings to admin console
+  Files: admin_dashboard.html,admin_salestrack_settings.js,systems/salestrack/index.html,
+\n## 2026-07-10
+- `9f9e1c9` 2026-07-10 [supabase-migration] Fix OEM dashboard pipeline quote discrepancy and strict period filtering
+  Files: omnis_dashboard.py,
+- `f9cd9e2` 2026-07-10 [supabase-migration] Update OEM breakdown UI and strictly filter Last Month
+  Files: omnis_dashboard.py,systems/salestrack/dashboard_logic.js,
+- `e09758b` 2026-07-10 [supabase-migration] Fix generic title bar hiding and resetting in modal logic
+  Files: systems/salestrack/dashboard_logic.js,
+- `8e0ca2e` 2026-07-10 [supabase-migration] Enhance quotations tab with KPI cards and improved UI
+  Files: systems/salestrack/dashboard_logic.js,
+- `d893968` 2026-07-10 [supabase-migration] Bump version to v4.2.6 for release
+  Files: package.json,
+\n## 2026-07-13
+- `2dd4ff7` 2026-07-13 [supabase-migration] Bump version to 4.2.7 and fix stock pipeline form issues
+  Files: omnis-web-deploy/systems/salestrack/index.html,omnis_dashboard.py,package.json,systems/salestrack/index.html,

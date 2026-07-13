@@ -170,23 +170,23 @@ window.DashboardTimeline = (function() {
         endOfNextWeek.setDate(endOfNextWeek.getDate() + 14);
         endOfNextWeek.setHours(23,59,59,999);
 
-        let counts = { overdue: 0, thisWeek: 0, nextWeek: 0, later: 0 };
+        let eventsByCol = { overdue: [], thisWeek: [], nextWeek: [], later: [] };
 
         _events.forEach(e => {
             if (hiddenCategories.has(e.type)) return;
-            
+
             if (currentCompanyFilter !== "ALL") {
                 const rawStr = JSON.stringify(e.raw).toLowerCase();
                 const isSino = rawStr.includes("sinopower") || rawStr.includes("spz") || rawStr.includes("sino power");
                 const isMxg = rawStr.includes("machinery exchange") || rawStr.includes("mxg") || rawStr.includes("machinery");
-                
+
                 if (currentCompanyFilter === "SinoPower" && !isSino) return;
                 if (currentCompanyFilter === "Machinery Exchange" && !isMxg) return;
             }
 
             const eDate = new Date(e.date);
             eDate.setHours(0,0,0,0);
-            
+
             let colId = '';
             if (eDate < now) {
                 colId = 'overdue';
@@ -198,24 +198,49 @@ window.DashboardTimeline = (function() {
                 colId = 'later';
             }
 
-            counts[colId]++;
-            columns[colId].innerHTML += createCardHtml(e);
+            eventsByCol[colId].push(e);
         });
 
         // Update headers with counts
-        document.getElementById('dash-kb-overdue-count').textContent = counts.overdue;
-        document.getElementById('dash-kb-this-week-count').textContent = counts.thisWeek;
-        document.getElementById('dash-kb-next-week-count').textContent = counts.nextWeek;
-        document.getElementById('dash-kb-later-count').textContent = counts.later;
+        document.getElementById('dash-kb-overdue-count').textContent = eventsByCol.overdue.length;
+        document.getElementById('dash-kb-this-week-count').textContent = eventsByCol.thisWeek.length;
+        document.getElementById('dash-kb-next-week-count').textContent = eventsByCol.nextWeek.length;
+        document.getElementById('dash-kb-later-count').textContent = eventsByCol.later.length;
 
-        // Fill empty states
+        // Fill empty states or render cards
         for(let key in columns) {
-            if(counts[key] === 0) {
+            const colEvents = eventsByCol[key];
+            const total = colEvents.length;
+
+            if(total === 0) {
                 columns[key].innerHTML = `
-                <div style="padding:20px; text-align:center; border:2px dashed #f1f5f9; border-radius:12px; margin-top:8px;">
+                <div style="padding:20px; text-align:center; border:2px dashed #f1f5f9; border-radius:12px; margin-top:10px;">
                     <i class="fas fa-check-circle" style="color:#cbd5e1; font-size:20px; margin-bottom:8px;"></i>
                     <div style="font-size:11px; font-weight:700; color:#94a3b8;">All caught up!</div>
                 </div>`;
+            } else {
+                let html = '';
+                const initialCount = 3;
+                const initialEvents = colEvents.slice(0, initialCount);
+                const hiddenEvents = colEvents.slice(initialCount);
+
+                initialEvents.forEach(e => {
+                    html += createCardHtml(e);
+                });
+
+                if (hiddenEvents.length > 0) {
+                    const hiddenId = 'kb-hidden-' + key + '-' + Date.now();
+                    html += `<div id="${hiddenId}" style="display:none; margin-top: 10px;">`;
+                    hiddenEvents.forEach(e => {
+                        html += createCardHtml(e);
+                    });
+                    html += `</div>`;
+                    html += `<button onclick="document.getElementById('${hiddenId}').style.display='block'; this.style.display='none';" style="width:100%; padding:10px; margin-top:10px; background:#f8fafc; border:1px dashed #cbd5e1; border-radius:8px; color:#64748b; font-size:11px; font-weight:600; cursor:pointer; transition:all 0.2s; display:flex; justify-content:center; align-items:center; gap:6px;" onmouseover="this.style.background='#f1f5f9'; this.style.color='#475569';" onmouseout="this.style.background='#f8fafc'; this.style.color='#64748b';">
+                        <i class="fas fa-chevron-down"></i> View ${hiddenEvents.length} more
+                    </button>`;
+                }
+
+                columns[key].innerHTML = html;
             }
         }
     }

@@ -865,19 +865,26 @@
     let pendingUrl = null;
     
     // ✅ AUTO-UPDATER LISTENER
+    let isDownloadingUpdate = false;
     if (window.electron && window.electron.on) {
       window.electron.on('update-message', (event, data) => {
         const txt = document.getElementById('inline-update-text');
         const bar = document.getElementById('inline-update-progress-bar');
         const container = document.getElementById('inline-update-progress-container');
+        const loginBtn = document.getElementById('login-submit');
 
         if (!txt) return;
 
-        if (data.text) {
+        if (data.text && data.type !== 'progress') {
             txt.innerText = data.text;
         }
 
         if (data.type === 'progress') {
+          isDownloadingUpdate = true;
+          if (loginBtn) {
+              loginBtn.disabled = true;
+              loginBtn.innerText = "Downloading Update...";
+          }
           container.style.display = 'block';
           if (data.progress) {
              let downloadedMB = (data.progress.transferred / 1048576).toFixed(2);
@@ -894,14 +901,24 @@
              bar.style.width = data.progress.percent + '%';
           }
         } else if (data.type === 'downloaded') {
+          isDownloadingUpdate = true; // Keep it blocked
           container.style.display = 'none';
           txt.style.color = '#34d399';
           txt.innerText = "Update Downloaded. Restarting...";
+          if (loginBtn) {
+              loginBtn.disabled = true;
+              loginBtn.innerText = "Restarting to Update...";
+          }
         } else if (data.type === 'uptodate' || data.type === 'error') {
+          isDownloadingUpdate = false;
+          if (loginBtn && loginBtn.innerText.includes("Update")) {
+              loginBtn.disabled = false;
+              loginBtn.innerText = "Sign in";
+          }
           txt.innerText = data.type === 'uptodate' ? "System is up to date" : "Update check complete";
           setTimeout(() => {
               const updaterUI = document.getElementById('inline-updater');
-              if (updaterUI) {
+              if (updaterUI && !isDownloadingUpdate) {
                   updaterUI.style.transition = 'opacity 0.5s ease';
                   updaterUI.style.opacity = '0';
                   setTimeout(() => {
@@ -909,11 +926,14 @@
                   }, 500);
               }
           }, 2500);
+        } else if (data.type === 'checking-for-update' || data.type === 'update-available') {
+            isDownloadingUpdate = true; // Prevent the 5s safety from hiding it just yet
         }
       });
 
-      // SAFETY: Hide update text after 5s regardless of auto-updater status
+      // SAFETY: Hide update text after 5s ONLY if we are not actively downloading
       setTimeout(() => {
+          if (isDownloadingUpdate) return;
           const updaterUI = document.getElementById('inline-updater');
           if (updaterUI && updaterUI.style.display !== 'none') {
               updaterUI.style.transition = 'opacity 0.5s ease';

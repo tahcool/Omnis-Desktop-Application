@@ -7509,7 +7509,7 @@ def save_stock_pipeline(payload=None, **kwargs):
                 is_new = False
                 log_debug(f"Stock Pipeline [Update]: {doc_id}")
             else:
-                return {"ok": False, "error": f"Record {doc_id} not found."}
+                return {"ok": False, "error": f"Record {doc_id} is out of sync (not found). Please delete this record from the dashboard and recreate it."}
         else:
             doc = frappe.new_doc("Stock Pipeline")
             log_debug("Stock Pipeline [Insert]: New Record")
@@ -7582,7 +7582,8 @@ def delete_stock_pipeline(payload=None, **kwargs):
             log_debug(f"Stock Pipeline [Delete]: {doc_id}")
             return {"ok": True}
         else:
-            return {"ok": False, "error": f"Record {doc_id} not found."}
+            log_debug(f"Stock Pipeline [Delete]: {doc_id} not found, assuming already deleted.")
+            return {"ok": True, "message": f"Record {doc_id} not found in Frappe, assuming already deleted."}
     except Exception as e:
         frappe.log_error(frappe.get_traceback(), "Delete Stock Pipeline Error")
         return {"ok": False, "error": str(e)}
@@ -8109,3 +8110,92 @@ def get_oem_summary(period="This Year", payload=None, **kwargs):
 # Called by dashboard_logic.js ? loadStage()
 # Each returns { "ok": True, "data": { ... } }
 # -------------------------------------------------------------------------------
+
+
+@frappe.whitelist(allow_guest=True)
+def get_sales_rep_report_card(rep_name=None, period="This Year", payload=None, **kwargs):
+    try:
+        if payload and isinstance(payload, str):
+            import json
+            try:
+                payload = json.loads(payload)
+                if 'rep_name' in payload: rep_name = payload['rep_name']
+                if 'period' in payload: period = payload['period']
+            except: pass
+            
+        rep_name = rep_name or frappe.form_dict.get('rep_name')
+        period = period or frappe.form_dict.get('period') or "This Year"
+        
+        if not rep_name:
+            return {"ok": False, "error": "Missing rep_name"}
+            
+        # Get period dates
+        from frappe.utils import today, add_days, getdate, get_first_day, get_last_day
+        end_date = today()
+        start_date = "2000-01-01"
+        
+        if period == "This Year":
+            start_date = f"{getdate().year}-01-01"
+        elif period == "This Month":
+            start_date = get_first_day(today())
+        elif period == "Last 30 Days":
+            start_date = add_days(today(), -30)
+            
+        # 1. Sales
+        sales_orders = frappe.get_all("Sales Order", filters={
+            "custom_sales_person": rep_name,
+            "docstatus": 1,
+            "transaction_date": [">=", start_date]
+        }, fields=["base_grand_total"])
+        
+        total_sales_value = sum([so.base_grand_total for so in sales_orders])
+        total_sales_count = len(sales_orders)
+        
+        # 2. Open Quotes
+        open_quotes = frappe.get_all("Quotation", filters={
+            "custom_sales_person": rep_name,
+            "docstatus": 0,
+            "transaction_date": [">=", start_date]
+        }, fields=["base_grand_total", "status"])
+        
+        open_quotes = [q for q in open_quotes if q.status in ["Draft", "Open"]]
+        total_open_value = sum([q.base_grand_total for q in open_quotes])
+        total_open_count = len(open_quotes)
+        
+        # 3. Handovers
+        # Handovers are tracked in FMB Report
+        handovers_sql = '''
+            SELECT COUNT(*) as count 
+            FROM `tabFMB Report` f
+            JOIN `tabFMB Report Machine` m ON m.parent = f.name
+            WHERE f.docstatus = 1 
+            AND f.owner LIKE %s
+            AND m.actual_handover_date IS NOT NULL
+            AND m.actual_handover_date >= %s
+        '''
+        handovers = frappe.db.sql(handovers_sql, (f"%%{rep_name}%%", start_date), as_dict=True)
+        total_handovers = handovers[0].count if handovers else 0
+        
+        # 4. New Customers
+        customers = frappe.get_all("Customer", filters={
+            "custom_sales_person": rep_name,
+            "creation": [">=", start_date]
+        })
+        total_customers = len(customers)
+        
+        return {
+            "ok": True,
+            "data": {
+                "sales_value": total_sales_value,
+                "sales_count": total_sales_count,
+                "open_quotes_value": total_open_value,
+                "open_quotes_count": total_open_count,
+                "handovers_count": total_handovers,
+                "new_customers_count": total_customers,
+                "period": period
+            }
+        }
+    except Exception as e:
+        frappe.log_error(frappe.get_traceback(), "get_sales_rep_report_card failed")
+        return {"ok": False, "error": str(e)}
+

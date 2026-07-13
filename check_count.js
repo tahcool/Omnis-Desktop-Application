@@ -1,8 +1,4 @@
-const { createClient } = require('@supabase/supabase-js');
-const supabase = createClient('https://pfqaeewmlwfayxbgmuaq.supabase.co', process.env.SUPABASE_SERVICE_KEY);
-async function check() {
-    const res = await supabase.from('newsletters').select('*').order('created_at', { ascending: false });
-    console.log("newsletters data:", res.data ? res.data.length : null);
-    console.log("newsletters error:", res.error);
-}
-check();
+const fs = require('fs');
+let html = fs.readFileSync('c:\\Users\\Administrator\\omnis\\systems\\salestrack\\index.html', 'utf-8');
+console.log('Count of sp-form-overlay (id):', html.split('id="sp-form-overlay"').length - 1);
+console.log('Count of sp-form-overlay (general):', html.split('sp-form-overlay').length - 1);
