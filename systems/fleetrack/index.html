@@ -3481,70 +3481,132 @@
 
       <!-- DASHBOARD VIEW -->
         <!-- OMNIS COMMAND CENTER - ANALYTICS -->
-        <div id="kpi-grid-main" style="display:grid; grid-template-columns: repeat(5, 175px) 1px 1fr 1fr; gap: 12px; margin-bottom: 24px; align-items: stretch;">
-          <div id="kpi-card-urgent" class="stat-card" style="border-left: 4px solid #8b2219; background: #fff;">
-              <div class="stat-label" style="display: flex; justify-content: space-between; align-items: center; white-space: nowrap; overflow: hidden;">
-                <span>Critical Overdue</span>
-              </div>
-              <div class="stat-value" id="kpi-urgent-breakdowns" style="color: #8b2219; font-size: 28px;">–</div>
-              <div class="stat-sub">Requires immediate dispatch</div>
-          </div>
-          <div class="stat-card" style="background: #fff;">
-              <div class="stat-label">Active Machines</div>
-              <div class="stat-value" id="kpi-active-machines" style="font-size: 28px;">–</div>
-              <div class="stat-sub">Currently in operation</div>
-          </div>
-          <div class="stat-card" style="background: #fff; border-left: 4px solid #f59e0b;">
-              <div class="stat-label">Machines w/ Defects</div>
-              <div class="stat-value" id="kpi-machines-defects" style="color: #b45309; font-size: 28px;">–</div>
-              <div class="stat-sub">Maintenance required</div>
-          </div>
-          <div class="stat-card" style="background: #fff;">
-              <div class="stat-label">Open Breakdowns</div>
-              <div class="stat-value" id="kpi-open-breakdowns" style="font-size: 28px;">–</div>
-              <div class="stat-sub" id="sub-open-breakdowns">Total open items</div>
-          </div>
-          <div class="stat-card" style="background: #fff; border-left: 4px solid #2563eb;">
-              <div class="stat-label">Field Jobs Today</div>
-              <div class="stat-value" id="kpi-field-jobs-today" style="color: #1d4ed8; font-size: 28px;">–</div>
-              <div class="stat-sub">Technicians on site</div>
+        <div id="kpi-grid-main" style="display:grid; grid-template-columns: repeat(5, 1fr) 2px 1fr 1fr; gap: 12px; margin-bottom: 24px; align-items: stretch;">
+
+          <!-- Critical Overdue -->
+          <div id="kpi-card-urgent" class="stat-card"
+            style="background:linear-gradient(135deg,rgba(139,34,25,0.09) 0%,rgba(139,34,25,0.02) 100%);border:1px solid rgba(139,34,25,0.18);border-radius:18px;box-shadow:0 4px 16px rgba(139,34,25,0.06),inset 0 1px 0 rgba(255,255,255,0.65);position:relative;overflow:hidden;transition:all .3s cubic-bezier(.4,0,.2,1);"
+            onmouseover="this.style.transform='translateY(-2px)';this.style.boxShadow='0 12px 24px rgba(139,34,25,0.1),inset 0 1px 0 rgba(255,255,255,0.65)';"
+            onmouseout="this.style.transform='';this.style.boxShadow='0 4px 16px rgba(139,34,25,0.06),inset 0 1px 0 rgba(255,255,255,0.65)';">
+            <div style="position:absolute;right:-8px;bottom:-14px;opacity:0.1;font-size:82px;color:#8b2219;transform:rotate(-10deg);pointer-events:none;line-height:1;">⚠</div>
+            <div class="stat-label" style="font-size:10px;font-weight:850;color:#8b2219;text-transform:uppercase;letter-spacing:.08em;margin-bottom:8px;position:relative;z-index:1;opacity:.85;">Critical Overdue</div>
+            <div class="stat-value" id="kpi-urgent-breakdowns" style="color:#8b2219;font-size:28px;font-weight:850;letter-spacing:-.02em;position:relative;z-index:1;">–</div>
+            <div class="stat-sub" style="font-size:11px;color:#64748b;margin-top:5px;position:relative;z-index:1;">Requires immediate dispatch</div>
           </div>
 
-          <!-- Thin vertical divider between fleet-ops and sales cards -->
-          <div style="background:#e2e8f0; border-radius:1px; align-self:stretch; margin: 4px 0;"></div>
+          <!-- Active Machines -->
+          <div class="stat-card"
+            style="background:linear-gradient(135deg,rgba(15,23,42,0.07) 0%,rgba(15,23,42,0.02) 100%);border:1px solid rgba(15,23,42,0.12);border-radius:18px;box-shadow:0 4px 16px rgba(0,0,0,0.05),inset 0 1px 0 rgba(255,255,255,0.65);position:relative;overflow:hidden;transition:all .3s cubic-bezier(.4,0,.2,1);"
+            onmouseover="this.style.transform='translateY(-2px)';this.style.boxShadow='0 12px 24px rgba(0,0,0,0.08)';"
+            onmouseout="this.style.transform='';this.style.boxShadow='0 4px 16px rgba(0,0,0,0.05),inset 0 1px 0 rgba(255,255,255,0.65)';">
+            <div style="position:absolute;right:-8px;bottom:-14px;opacity:0.09;font-size:82px;color:#0f172a;transform:rotate(-10deg);pointer-events:none;line-height:1;">⚙</div>
+            <div class="stat-label" style="font-size:10px;font-weight:850;color:#64748b;text-transform:uppercase;letter-spacing:.08em;margin-bottom:8px;position:relative;z-index:1;opacity:.85;">Active Machines</div>
+            <div class="stat-value" id="kpi-active-machines" style="font-size:28px;font-weight:850;letter-spacing:-.02em;color:#0f172a;position:relative;z-index:1;">–</div>
+            <div class="stat-sub" style="font-size:11px;color:#64748b;margin-top:5px;position:relative;z-index:1;">Currently in operation</div>
+          </div>
 
-          <!-- PSV/CDV Reviews — Sales & Rental Division -->
+          <!-- Machines w/ Defects -->
+          <div class="stat-card"
+            style="background:linear-gradient(135deg,rgba(217,119,6,0.09) 0%,rgba(217,119,6,0.02) 100%);border:1px solid rgba(217,119,6,0.18);border-radius:18px;box-shadow:0 4px 16px rgba(217,119,6,0.06),inset 0 1px 0 rgba(255,255,255,0.65);position:relative;overflow:hidden;transition:all .3s cubic-bezier(.4,0,.2,1);"
+            onmouseover="this.style.transform='translateY(-2px)';this.style.boxShadow='0 12px 24px rgba(217,119,6,0.1)';"
+            onmouseout="this.style.transform='';this.style.boxShadow='0 4px 16px rgba(217,119,6,0.06),inset 0 1px 0 rgba(255,255,255,0.65)';">
+            <div style="position:absolute;right:-8px;bottom:-14px;opacity:0.1;font-size:82px;color:#d97706;transform:rotate(-10deg);pointer-events:none;line-height:1;">🔧</div>
+            <div class="stat-label" style="font-size:10px;font-weight:850;color:#b45309;text-transform:uppercase;letter-spacing:.08em;margin-bottom:8px;position:relative;z-index:1;opacity:.85;">Machines w/ Defects</div>
+            <div class="stat-value" id="kpi-machines-defects" style="color:#b45309;font-size:28px;font-weight:850;letter-spacing:-.02em;position:relative;z-index:1;">–</div>
+            <div class="stat-sub" style="font-size:11px;color:#64748b;margin-top:5px;position:relative;z-index:1;">Maintenance required</div>
+          </div>
+
+          <!-- Open Breakdowns -->
+          <div class="stat-card"
+            style="background:linear-gradient(135deg,rgba(15,23,42,0.07) 0%,rgba(15,23,42,0.02) 100%);border:1px solid rgba(15,23,42,0.12);border-radius:18px;box-shadow:0 4px 16px rgba(0,0,0,0.05),inset 0 1px 0 rgba(255,255,255,0.65);position:relative;overflow:hidden;transition:all .3s cubic-bezier(.4,0,.2,1);"
+            onmouseover="this.style.transform='translateY(-2px)';this.style.boxShadow='0 12px 24px rgba(0,0,0,0.08)';"
+            onmouseout="this.style.transform='';this.style.boxShadow='0 4px 16px rgba(0,0,0,0.05),inset 0 1px 0 rgba(255,255,255,0.65)';">
+            <div style="position:absolute;right:-8px;bottom:-14px;opacity:0.09;font-size:82px;color:#0f172a;transform:rotate(-10deg);pointer-events:none;line-height:1;">📋</div>
+            <div class="stat-label" style="font-size:10px;font-weight:850;color:#64748b;text-transform:uppercase;letter-spacing:.08em;margin-bottom:8px;position:relative;z-index:1;opacity:.85;">Open Breakdowns</div>
+            <div class="stat-value" id="kpi-open-breakdowns" style="font-size:28px;font-weight:850;letter-spacing:-.02em;color:#0f172a;position:relative;z-index:1;">–</div>
+            <div class="stat-sub" id="sub-open-breakdowns" style="font-size:11px;color:#64748b;margin-top:5px;position:relative;z-index:1;">Total open items</div>
+          </div>
+
+          <!-- Field Jobs Today -->
+          <div class="stat-card"
+            style="background:linear-gradient(135deg,rgba(37,99,235,0.09) 0%,rgba(37,99,235,0.02) 100%);border:1px solid rgba(37,99,235,0.18);border-radius:18px;box-shadow:0 4px 16px rgba(37,99,235,0.06),inset 0 1px 0 rgba(255,255,255,0.65);position:relative;overflow:hidden;transition:all .3s cubic-bezier(.4,0,.2,1);"
+            onmouseover="this.style.transform='translateY(-2px)';this.style.boxShadow='0 12px 24px rgba(37,99,235,0.1)';"
+            onmouseout="this.style.transform='';this.style.boxShadow='0 4px 16px rgba(37,99,235,0.06),inset 0 1px 0 rgba(255,255,255,0.65)';">
+            <div style="position:absolute;right:-8px;bottom:-14px;opacity:0.1;font-size:82px;color:#2563eb;transform:rotate(-10deg);pointer-events:none;line-height:1;">👷</div>
+            <div class="stat-label" style="font-size:10px;font-weight:850;color:#1d4ed8;text-transform:uppercase;letter-spacing:.08em;margin-bottom:8px;position:relative;z-index:1;opacity:.85;">Field Jobs Today</div>
+            <div class="stat-value" id="kpi-field-jobs-today" style="color:#1d4ed8;font-size:28px;font-weight:850;letter-spacing:-.02em;position:relative;z-index:1;">–</div>
+            <div class="stat-sub" style="font-size:11px;color:#64748b;margin-top:5px;position:relative;z-index:1;">Technicians on site</div>
+          </div>
+
+          <!-- Thin divider -->
+          <div style="background:#e2e8f0;border-radius:1px;align-self:stretch;margin:4px 0;"></div>
+
+          <!-- PSV/CDV Reviews -->
           <div id="kpi-card-psv-queue" class="stat-card"
             onclick="showView('view-ft-psv-queue');window.ftq2Load();"
-            style="background:#fff; border-left:3px solid #c0392b; cursor:pointer; transition:all 0.2s; position:relative; overflow:hidden;"
-            onmouseover="this.style.boxShadow='0 4px 16px rgba(192,57,43,0.14)'; this.style.transform='translateY(-1px)';"
-            onmouseout="this.style.boxShadow=''; this.style.transform='';">
-              <div id="kpi-psv-stripe" style="display:none; position:absolute; inset:0; background:repeating-linear-gradient(-45deg,rgba(192,57,43,0.04),rgba(192,57,43,0.04) 8px,transparent 8px,transparent 16px); pointer-events:none;"></div>
-              <div class="stat-label" style="display:flex; justify-content:space-between; align-items:center; white-space:nowrap; overflow:hidden;">
-                <span>PSV/CDV Reviews</span>
-                <svg width="13" height="13" viewBox="0 0 24 24" fill="#cbd5e1"><path d="M14.7 6.3a1 1 0 000 1.4l1.6 1.6a1 1 0 001.4 0l3.77-3.77a6 6 0 01-7.94 7.94l-6.91 6.91a2.12 2.12 0 01-3-3l6.91-6.91a6 6 0 017.94-7.94l-3.76 3.76z"/></svg>
-              </div>
-              <div class="stat-value" id="kpi-psv-queue-count" style="color:#c0392b; font-size:28px;">–</div>
-              <div class="stat-sub" id="kpi-psv-queue-sub">Loading…</div>
+            style="background:linear-gradient(135deg,rgba(192,57,43,0.09) 0%,rgba(192,57,43,0.02) 100%);border:1px solid rgba(192,57,43,0.18);border-radius:18px;box-shadow:0 4px 16px rgba(192,57,43,0.06),inset 0 1px 0 rgba(255,255,255,0.65);position:relative;overflow:hidden;cursor:pointer;transition:all .3s cubic-bezier(.4,0,.2,1);"
+            onmouseover="this.style.transform='translateY(-2px)';this.style.boxShadow='0 12px 24px rgba(192,57,43,0.12)';"
+            onmouseout="this.style.transform='';this.style.boxShadow='0 4px 16px rgba(192,57,43,0.06),inset 0 1px 0 rgba(255,255,255,0.65)';">
+            <div id="kpi-psv-stripe" style="display:none;position:absolute;inset:0;background:repeating-linear-gradient(-45deg,rgba(192,57,43,0.04),rgba(192,57,43,0.04) 8px,transparent 8px,transparent 16px);pointer-events:none;"></div>
+            <div style="position:absolute;right:-8px;bottom:-14px;opacity:0.1;font-size:82px;color:#c0392b;transform:rotate(-10deg);pointer-events:none;line-height:1;">✅</div>
+            <div class="stat-label" style="font-size:10px;font-weight:850;color:#c0392b;text-transform:uppercase;letter-spacing:.08em;margin-bottom:8px;position:relative;z-index:1;display:flex;justify-content:space-between;align-items:center;">
+              <span>PSV/CDV Reviews</span>
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="#c0392b" style="opacity:.5;"><path d="M14.7 6.3a1 1 0 000 1.4l1.6 1.6a1 1 0 001.4 0l3.77-3.77a6 6 0 01-7.94 7.94l-6.91 6.91a2.12 2.12 0 01-3-3l6.91-6.91a6 6 0 017.94-7.94l-3.76 3.76z"/></svg>
+            </div>
+            <div class="stat-value" id="kpi-psv-queue-count" style="color:#c0392b;font-size:28px;font-weight:850;letter-spacing:-.02em;position:relative;z-index:1;">–</div>
+            <div class="stat-sub" id="kpi-psv-queue-sub" style="font-size:11px;color:#64748b;margin-top:5px;position:relative;z-index:1;">Loading…</div>
           </div>
 
-          <!-- After-Sales — Sales & Rental Division -->
+          <!-- After-Sales -->
           <div id="kpi-card-aftersales" class="stat-card"
             onclick="showView('view-aftersales-hub');if(window.ftAsLoad)window.ftAsLoad();"
-            style="background:#fff; border-left:3px solid #f59e0b; cursor:pointer; transition:all 0.2s; position:relative; overflow:hidden;"
-            onmouseover="this.style.boxShadow='0 4px 16px rgba(245,158,11,0.16)'; this.style.transform='translateY(-1px)';"
-            onmouseout="this.style.boxShadow=''; this.style.transform='';">
-              <div id="kpi-aftersales-stripe" style="display:none; position:absolute; inset:0; background:repeating-linear-gradient(-45deg,rgba(245,158,11,0.05),rgba(245,158,11,0.05) 8px,transparent 8px,transparent 16px); pointer-events:none;"></div>
-              <div class="stat-label" style="display:flex; justify-content:space-between; align-items:center; white-space:nowrap; overflow:hidden;">
-                <span>After-Sales</span>
-                <svg width="13" height="13" viewBox="0 0 24 24" fill="#cbd5e1"><path d="M20 6h-2.18c.07-.44.18-.88.18-1.33C18 2.09 15.91 0 13.33 0c-1.4 0-2.54.65-3.33 1.67L9 3l-1-1.33C7.21.65 6.07 0 4.67 0 2.09 0 0 2.09 0 4.67c0 .45.11.89.18 1.33H0v2h20V6zM4.67 2c1.11 0 2.03.84 2.29 2H2.38C2.64 2.84 3.56 2 4.67 2zm8.66 0c1.11 0 2.03.84 2.29 2h-4.58c.26-1.16 1.18-2 2.29-2zM2 22a2 2 0 002 2h16a2 2 0 002-2V10H2v12zm11-7h3v2h-3v3h-2v-3H8v-2h3v-3h2v3z"/></svg>
-              </div>
-              <div class="stat-value" id="kpi-aftersales-count" style="color:#b45309; font-size:28px;">-</div>
-              <div class="stat-sub" id="kpi-aftersales-sub">Pending handovers</div>
+            style="background:linear-gradient(135deg,rgba(245,158,11,0.09) 0%,rgba(245,158,11,0.02) 100%);border:1px solid rgba(245,158,11,0.2);border-radius:18px;box-shadow:0 4px 16px rgba(245,158,11,0.07),inset 0 1px 0 rgba(255,255,255,0.65);position:relative;overflow:hidden;cursor:pointer;transition:all .3s cubic-bezier(.4,0,.2,1);"
+            onmouseover="this.style.transform='translateY(-2px)';this.style.boxShadow='0 12px 24px rgba(245,158,11,0.12)';"
+            onmouseout="this.style.transform='';this.style.boxShadow='0 4px 16px rgba(245,158,11,0.07),inset 0 1px 0 rgba(255,255,255,0.65)';">
+            <div id="kpi-aftersales-stripe" style="display:none;position:absolute;inset:0;background:repeating-linear-gradient(-45deg,rgba(245,158,11,0.05),rgba(245,158,11,0.05) 8px,transparent 8px,transparent 16px);pointer-events:none;"></div>
+            <div style="position:absolute;right:-8px;bottom:-14px;opacity:0.1;font-size:82px;color:#d97706;transform:rotate(-10deg);pointer-events:none;line-height:1;">🎁</div>
+            <div class="stat-label" style="font-size:10px;font-weight:850;color:#b45309;text-transform:uppercase;letter-spacing:.08em;margin-bottom:8px;position:relative;z-index:1;display:flex;justify-content:space-between;align-items:center;">
+              <span>After-Sales</span>
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="#b45309" style="opacity:.5;"><path d="M20 6h-2.18c.07-.44.18-.88.18-1.33C18 2.09 15.91 0 13.33 0c-1.4 0-2.54.65-3.33 1.67L9 3l-1-1.33C7.21.65 6.07 0 4.67 0 2.09 0 0 2.09 0 4.67c0 .45.11.89.18 1.33H0v2h20V6zM4.67 2c1.11 0 2.03.84 2.29 2H2.38C2.64 2.84 3.56 2 4.67 2zm8.66 0c1.11 0 2.03.84 2.29 2h-4.58c.26-1.16 1.18-2 2.29-2zM2 22a2 2 0 002 2h16a2 2 0 002-2V10H2v12zm11-7h3v2h-3v3h-2v-3H8v-2h3v-3h2v3z"/></svg>
+            </div>
+            <div class="stat-value" id="kpi-aftersales-count" style="color:#b45309;font-size:28px;font-weight:850;letter-spacing:-.02em;position:relative;z-index:1;">-</div>
+            <div class="stat-sub" id="kpi-aftersales-sub" style="font-size:11px;color:#64748b;margin-top:5px;position:relative;z-index:1;">Pending handovers</div>
           </div>
 
         </div>
 
+
+        <!-- ══ QUICK-ACTION STRIP ══ -->
+        <div style="display:flex;gap:14px;align-items:stretch;margin-bottom:20px;justify-content:flex-start;">
+
+          <!-- Log Defect — red -->
+          <button onclick="openDefectModal(null)"
+            style="display:flex;align-items:center;justify-content:center;gap:10px;padding:14px 28px;background:#b91c1c;color:#fff;border:none;border-radius:10px;font-size:13px;font-weight:700;cursor:pointer;box-shadow:0 2px 8px rgba(185,28,28,.25);transition:all .18s;white-space:nowrap;"
+            onmouseover="this.style.background='#991b1b';this.style.transform='translateY(-1px)'"
+            onmouseout="this.style.background='#b91c1c';this.style.transform=''">
+            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>
+            Log Defect
+          </button>
+
+          <!-- Update HMR — dark navy -->
+          <button onclick="openQuickHmrModal()"
+            style="display:flex;align-items:center;justify-content:center;gap:10px;padding:14px 28px;background:#1e293b;color:#e2e8f0;border:none;border-radius:10px;font-size:13px;font-weight:700;cursor:pointer;box-shadow:0 2px 8px rgba(0,0,0,.18);transition:all .18s;white-space:nowrap;"
+            onmouseover="this.style.background='#334155';this.style.transform='translateY(-1px)'"
+            onmouseout="this.style.background='#1e293b';this.style.transform=''">
+            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 013 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+            Update HMR
+          </button>
+
+          <!-- Machine Lookup — dark navy -->
+          <button onclick="openMachineLookup()"
+            style="display:flex;align-items:center;justify-content:center;gap:10px;padding:14px 28px;background:#1e293b;color:#e2e8f0;border:none;border-radius:10px;font-size:13px;font-weight:700;cursor:pointer;box-shadow:0 2px 8px rgba(0,0,0,.18);transition:all .18s;white-space:nowrap;"
+            onmouseover="this.style.background='#334155';this.style.transform='translateY(-1px)'"
+            onmouseout="this.style.background='#1e293b';this.style.transform=''">
+            <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+            Machine Lookup
+          </button>
+
+        </div>
 
         <!-- ══ NATIVE REPORT QUICK-ACCESS ══ -->
         <div style="margin-top:24px;">
@@ -4798,61 +4860,49 @@
 
     <!-- SIGNATURE MODAL -->
       <div id="modal-defect" class="modal-overlay hidden" style="z-index: 9500;">
-        <div class="modal-card" style="max-width:500px;">
-          <div class="modal-header">
-            <div class="modal-title" id="defect-modal-title">Log New Defect</div>
-            <button class="modal-close" onclick="closeDefectModal()">×</button>
+        <div class="modal-card" style="max-width:560px;">
+          <div class="modal-header" style="background:linear-gradient(135deg,#b91c1c,#7f1d1d);border-radius:12px 12px 0 0;padding:18px 20px;">
+            <div class="modal-title" id="defect-modal-title" style="color:#fff;font-size:15px;">Log New Defect</div>
+            <button class="modal-close" onclick="closeDefectModal()" style="color:#fff;opacity:.8;">&times;</button>
           </div>
-          <div class="modal-body">
+          <div class="modal-body" style="padding:20px;">
             <input type="hidden" id="defect-id">
 
             <div class="form-group">
-              <label class="form-label">Machine</label>
-              <div class="search-container" style="position:relative;">
-                <input type="text" class="form-input" id="defect-machine-search"
-                  placeholder="Search machine (e.g. 05WR0163)..." autocomplete="off">
-                <ul class="dropdown-menu hidden" id="defect-machine-dropdown"
-                  style="position:absolute; top:100%; left:0; right:0; max-height:200px; overflow-y:auto; background:white; border:1px solid #e2e8f0; border-radius:6px; box-shadow:0 4px 6px -1px rgba(0,0,0,0.1); z-index:10;">
-                </ul>
+              <label class="form-label" style="font-weight:700;">Machine</label>
+              <div style="position:relative;">
+                <input type="text" class="form-input" id="defect-machine-search" placeholder="Search serial, model or fleet no…" autocomplete="off" style="font-weight:600;">
+                <ul class="dropdown-menu hidden" id="defect-machine-dropdown" style="position:absolute;top:100%;left:0;right:0;max-height:220px;overflow-y:auto;background:#fff;border:1px solid #e2e8f0;border-radius:8px;box-shadow:0 6px 16px rgba(0,0,0,.12);z-index:10;"></ul>
               </div>
             </div>
 
-            <div style="display:grid; grid-template-columns: 1fr 1fr; gap:16px;">
-              <div class="form-group">
-                <label class="form-label">Defect Type</label>
-                <select class="form-input" id="defect-type">
-                  <option value="Minor">Minor</option>
-                  <option value="Major">Major</option>
-                  <option value="Critical">Critical</option>
-                </select>
-              </div>
-              <div class="form-group">
-                <label class="form-label">Priority</label>
-                <select class="form-input" id="defect-priority">
-                  <option value="Low">Low</option>
-                  <option value="Medium">Medium</option>
-                  <option value="High">High</option>
-                </select>
-              </div>
+            <!-- Machine info banner -->
+            <div id="defect-machine-info" style="display:none;background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;padding:10px 14px;margin-bottom:14px;gap:16px;align-items:center;flex-wrap:wrap;">
+              <div style="flex:1;min-width:90px;"><div style="font-size:9px;color:#94a3b8;font-weight:700;text-transform:uppercase;">Customer</div><div id="defect-info-customer" style="font-size:12px;font-weight:600;color:#0f172a;">—</div></div>
+              <div><div style="font-size:9px;color:#94a3b8;font-weight:700;text-transform:uppercase;">Current HMR</div><div id="defect-info-hmr" style="font-size:14px;font-weight:800;color:#1e40af;font-family:monospace;">—</div></div>
+              <div><span id="defect-info-warranty" style="font-size:11px;font-weight:700;padding:3px 10px;border-radius:99px;background:#e2e8f0;color:#64748b;">—</span></div>
             </div>
 
-            <div class="form-group hidden" id="defect-status-group">
-              <label class="form-label">Status</label>
-              <select class="form-input" id="defect-status">
-                <option value="Open">Open</option>
-                <option value="Closed">Closed</option>
-              </select>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;">
+              <div class="form-group"><label class="form-label">Defect Type</label><select class="form-input" id="defect-type"><option value="Minor">Minor</option><option value="Major">Major</option><option value="Critical">Critical</option></select></div>
+              <div class="form-group"><label class="form-label">Priority</label><select class="form-input" id="defect-priority"><option value="Low">Low</option><option value="Medium">Medium</option><option value="High">High</option></select></div>
             </div>
 
-            <div class="form-group">
-              <label class="form-label">Description</label>
-              <textarea class="form-input" id="defect-description" rows="4"
-                placeholder="Describe the defect..."></textarea>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;">
+              <div class="form-group"><label class="form-label">HMR at Defect <span style="font-size:10px;color:#94a3b8;">(auto-filled)</span></label><input type="number" class="form-input" id="defect-hmr" placeholder="e.g. 4250" min="0" style="font-family:monospace;font-weight:700;"></div>
+              <div class="form-group"><label class="form-label">Status</label><select class="form-input" id="defect-status"><option value="Open">Open</option><option value="In Progress">In Progress</option><option value="Closed">Closed</option></select></div>
             </div>
+
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;">
+              <div class="form-group"><label class="form-label">Technician</label><div style="position:relative;"><input type="text" class="form-input" id="defect-technician-search" placeholder="Type to search…" autocomplete="off" oninput="fspTechSearch(this.value,'defect-technician','defect-tech-drop')"><input type="hidden" id="defect-technician"><ul id="defect-tech-drop" style="display:none;position:absolute;top:100%;left:0;right:0;background:#fff;border:1px solid #e2e8f0;border-radius:8px;box-shadow:0 4px 12px rgba(0,0,0,.1);z-index:20;list-style:none;padding:0;margin:0;max-height:160px;overflow-y:auto;"></ul></div></div>
+              <div class="form-group"><label class="form-label">Reported By</label><input type="text" class="form-input" id="defect-reported-by" placeholder="Your name"></div>
+            </div>
+
+            <div class="form-group"><label class="form-label">Description <span style="color:#b91c1c;">*</span></label><textarea class="form-input" id="defect-description" rows="3" placeholder="Describe the defect in detail…" style="resize:vertical;"></textarea></div>
           </div>
-          <div class="modal-footer">
+          <div class="modal-footer" style="padding:14px 20px;background:#f8fafc;border-top:1px solid #e2e8f0;border-radius:0 0 12px 12px;">
             <button class="btn btn-secondary" onclick="closeDefectModal()">Cancel</button>
-            <button class="btn btn-primary" onclick="submitDefect()">Save Defect</button>
+            <button class="btn btn-primary" onclick="submitDefect()" style="background:#b91c1c;border-color:#b91c1c;">Save Defect</button>
           </div>
         </div>
       </div>
@@ -10738,7 +10788,7 @@
       // ─── Defects ─────────────────────────────────────────────────
       get_ft_defect_summary: async (p) => {
         const res = await supaQuery('ft_defect', 'select', {
-          columns: 'name,defect_type,machine,customer,fleetrack_managed,oem,model,location,region,warranty_status,start_date,priority,status,description,on_hold,ted,end_date,defect_days',
+          columns: 'name,defect_type,machine,customer,fleetrack_managed,oem,model,location,region,warranty_status,start_date,priority,status,description,on_hold,ted,end_date,defect_days,technician,reported_by,hmr_at_defect',
           filters: p.filters || {},
           order: { column: 'start_date', ascending: false },
           limit: 5000
@@ -10964,11 +11014,20 @@
         // In Electron, use the IPC bridge which handles cookies properly
         if (isElectron && window.frappeAPI && window.frappeAPI.request) {
           try {
+            // Build auth headers for IPC bridge
+            const _ipcApiKey    = localStorage.getItem('ft_api_key');
+            const _ipcApiSecret = localStorage.getItem('ft_api_secret');
+            const _ipcHeaders   = {};
+            if (_ipcApiKey && _ipcApiSecret) {
+              _ipcHeaders['Authorization'] = `token ${_ipcApiKey}:${_ipcApiSecret}`;
+            }
+
             console.log(`[callFrappe] IPC Request (${httpMethod}): ${url}`);
             const res = await window.frappeAPI.request({
               url: url,
               method: httpMethod,
               data: requestData,
+              headers: _ipcHeaders,
               syncCookies: true
             });
 
@@ -10987,19 +11046,17 @@
           }
         }
 
-        // Fallback to fetch for browser or if IPC not available
+        // Fetch fallback — applies API key token auth whenever credentials are stored
         let headers = {
           'Content-Type': 'application/json',
           'X-Frappe-CSRF-Token': (window.frappe && window.frappe.csrf_token) || ''
         };
 
-        // Legacy API key auth (if available)
-        if (isElectron) {
-          const apiKey = localStorage.getItem("ft_api_key");
-          const apiSecret = localStorage.getItem("ft_api_secret");
-          if (apiKey && apiSecret) {
-            headers['Authorization'] = `token ${apiKey}:${apiSecret}`;
-          }
+        // Always inject API key auth if stored (works in both browser and Electron fallback)
+        const _apiKey    = localStorage.getItem('ft_api_key');
+        const _apiSecret = localStorage.getItem('ft_api_secret');
+        if (_apiKey && _apiSecret) {
+          headers['Authorization'] = `token ${_apiKey}:${_apiSecret}`;
         }
 
         const res = await fetch(url, {
@@ -12334,7 +12391,7 @@
 
       input.addEventListener("input", function () {
         const q = this.value.trim().toLowerCase();
-        if (!q) { dropdown.classList.add("hidden"); return; }
+        if (!q) { dropdown.classList.add("hidden"); _clearDefectMachineInfo(); return; }
 
         if (!window.MACHINES_MAP) return;
 
@@ -12353,17 +12410,16 @@
 
         matches.forEach(m => {
           const li = document.createElement("li");
-          li.style.padding = "8px 12px";
-          li.style.cursor = "pointer";
-          li.style.borderBottom = "1px solid #f1f5f9";
-          li.style.fontSize = "13px";
-          li.innerHTML = `<div style="font-weight:600;">${m.model}</div><div style="font-size:11px; color:#64748b;">${m.name} · ${m.customer}</div>`;
+          li.style.cssText = "padding:10px 14px;cursor:pointer;border-bottom:1px solid #f1f5f9;transition:background .1s;";
+          const wB = m.warranty_status ? `<span style="margin-left:6px;padding:1px 6px;border-radius:99px;background:#dcfce7;color:#15803d;font-size:9px;font-weight:700;">${m.warranty_status}</span>` : '';
+          li.innerHTML = `<div style="font-weight:700;font-size:13px;color:#0f172a;">${m.model||m.name}</div><div style="font-size:11px;color:#64748b;">${m.name}&nbsp;&middot;&nbsp;${m.customer||'\u2014'} ${wB}</div>`;
           li.onclick = () => {
-            input.value = `${m.model} - ${m.name}`;
+            input.value = `${m.model||m.name} \u2014 ${m.name}`;
             input.dataset.selectedName = m.name;
             dropdown.classList.add("hidden");
+            _fillDefectMachineInfo(m.name);
           };
-          li.onmouseenter = () => li.style.background = "#f1f5f9";
+          li.onmouseenter = () => li.style.background = "#f8fafc";
           li.onmouseleave = () => li.style.background = "white";
           dropdown.appendChild(li);
         });
@@ -12388,6 +12444,7 @@
                    : Array.isArray(msg)       ? msg
                    : [];
         FT_DEFECTS_DATA = data;
+        window.FT_DEFECTS_DATA = data; // keep window-scoped in sync
         renderDefectsTable(FT_DEFECTS_DATA);
       } catch (e) {
         console.error("Load Defects Error:", e);
@@ -13009,7 +13066,7 @@ We will let you know if there are any changes to the field service booking.`;
       showToast(`✅ ${type.toUpperCase()} copied to clipboard`, "success");
     }
 
-    function openDefectModal(defectId = null) {
+    function openDefectModal(defectId = null, preselectedMachine = null) {
       const modal = document.getElementById("modal-defect");
       const title = document.getElementById("defect-modal-title");
       const idInput = document.getElementById("defect-id");
@@ -13037,7 +13094,7 @@ We will let you know if there are any changes to the field service booking.`;
 
         typeSelect.value = defect.defect_type || "Minor";
         prioSelect.value = (defect.priority || "Low").split(" ")[0]; // clean up if formatted
-        statusGroup.classList.remove("hidden");
+        // status always visible in new modal
         statusSelect.value = defect.status || "Open";
         descInput.value = defect.description || "";
 
@@ -13050,14 +13107,43 @@ We will let you know if there are any changes to the field service booking.`;
         mSearch.disabled = false;
         typeSelect.value = "Minor";
         prioSelect.value = "Low";
-        statusGroup.classList.add("hidden");
+        // status always visible in new modal
         descInput.value = "";
+
+        // Pre-select machine if called from Machine Lookup
+        if (preselectedMachine) {
+          const pm = window.MACHINES_MAP?.[preselectedMachine];
+          if (pm) {
+            const displayLabel = (pm.model ? pm.model + ' — ' : '') + (pm.name || preselectedMachine);
+            mSearch.value = displayLabel;
+            mSearch.dataset.selectedName = preselectedMachine;
+            // Auto-fill HMR and machine info row
+            if (typeof _fillDefectMachineInfo === 'function') _fillDefectMachineInfo(preselectedMachine);
+          } else {
+            mSearch.value = preselectedMachine;
+            mSearch.dataset.selectedName = preselectedMachine;
+          }
+        }
       }
     }
 
     function closeDefectModal() {
       document.getElementById("modal-defect").classList.add("hidden");
     }
+
+    function _fillDefectMachineInfo(name) {
+      const b=document.getElementById('defect-machine-info'),m=window.MACHINES_MAP?.[name];
+      if(!b||!name){return;}if(!m){b.style.display='none';return;}
+      const cu=document.getElementById('defect-info-customer'),hm=document.getElementById('defect-info-hmr'),wy=document.getElementById('defect-info-warranty'),hi=document.getElementById('defect-hmr');
+      if(cu)cu.textContent=m.customer||'\u2014';
+      if(hm)hm.textContent=m.current_hmr!=null?m.current_hmr+' h':'\u2014';
+      if(hi&&m.current_hmr!=null)hi.value=m.current_hmr;
+      if(wy){const ws=(m.warranty_status||'').toLowerCase();
+        wy.style.cssText=ws.includes('under')||ws==='in warranty'?'font-size:11px;font-weight:700;padding:3px 10px;border-radius:99px;background:#dcfce7;color:#15803d;':ws.includes('fringe')||ws.includes('expir')?'font-size:11px;font-weight:700;padding:3px 10px;border-radius:99px;background:#fef9c3;color:#a16207;':'font-size:11px;font-weight:700;padding:3px 10px;border-radius:99px;background:#fee2e2;color:#b91c1c;';
+        wy.textContent=m.warranty_status||'N/A';}
+      b.style.display='flex';
+    }
+    function _clearDefectMachineInfo(){const b=document.getElementById('defect-machine-info');if(b)b.style.display='none';}
 
     async function submitDefect() {
       const id = document.getElementById("defect-id").value;
@@ -13080,9 +13166,20 @@ We will let you know if there are any changes to the field service booking.`;
             name: id, status, priority, description, defect_type
           }, 'POST');
         } else {
-          // CREATE
+          // CREATE — with new fields
+          const hmrRaw = document.getElementById('defect-hmr')?.value;
+          const hmr_at_defect = hmrRaw ? (parseInt(hmrRaw,10)||null) : null;
+          const technician  = document.getElementById('defect-technician')?.value || document.getElementById('defect-technician-search')?.value || '';
+          const reported_by = document.getElementById('defect-reported-by')?.value || '';
+          const start_date  = new Date().toISOString().split('T')[0];
+          const md = window.MACHINES_MAP?.[machine] || {};
           res = await callFrappe(FT_DEFECT_CREATE_METHOD, {
-            machine, defect_type, priority, description
+            name: 'DEF-' + Date.now(),
+            machine, defect_type, priority, status, description, start_date,
+            technician: technician||null, reported_by: reported_by||null, hmr_at_defect: hmr_at_defect||null,
+            customer: md.customer||null, model: md.model||null, oem: md.oem||null,
+            region: md.region||null, location: md.current_location||md.location||null,
+            warranty_status: md.warranty_status||null,
           }, 'POST');
         }
 
@@ -13120,6 +13217,11 @@ We will let you know if there are any changes to the field service booking.`;
       initTheme();
       const themeBtn = document.getElementById("theme-toggle");
       if (themeBtn) themeBtn.onclick = toggleTheme;
+
+      // ── Seed Frappe API credentials (always refresh on load) ───────────
+      // Update these values via Settings → Email Config → Frappe API Credentials
+      localStorage.setItem('ft_api_key',    '07660480c74686c');
+      localStorage.setItem('ft_api_secret', '904d39b2c079d38');
 
       const btnNew = document.getElementById("btn-defect-new");
       if (btnNew) btnNew.onclick = () => openDefectModal(null);
@@ -14516,6 +14618,45 @@ We will let you know if there are any changes to the field service booking.`;
         }
     }
 
+    function saveApiCredentials() {
+      const key    = (document.getElementById('set-frappe-api-key')?.value || '').trim();
+      const secret = (document.getElementById('set-frappe-api-secret')?.value || '').trim();
+      const statusEl = document.getElementById('api-cred-status');
+      if (!key || !secret) {
+        if (statusEl) { statusEl.textContent = 'Both Key and Secret are required.'; statusEl.style.color = '#ef4444'; }
+        return;
+      }
+      localStorage.setItem('ft_api_key', key);
+      localStorage.setItem('ft_api_secret', secret);
+      if (statusEl) { statusEl.textContent = '✓ Credentials saved — Backfill will now authenticate.'; statusEl.style.color = '#10b981'; }
+      showToast('Frappe API credentials saved.', 'success');
+      setTimeout(() => { if (statusEl) statusEl.textContent = ''; }, 4000);
+    }
+
+    function clearApiCredentials() {
+      localStorage.removeItem('ft_api_key');
+      localStorage.removeItem('ft_api_secret');
+      const kEl = document.getElementById('set-frappe-api-key');
+      const sEl = document.getElementById('set-frappe-api-secret');
+      if (kEl) kEl.value = '';
+      if (sEl) sEl.value = '';
+      const statusEl = document.getElementById('api-cred-status');
+      if (statusEl) { statusEl.textContent = 'Credentials cleared.'; statusEl.style.color = '#64748b'; }
+      showToast('API credentials cleared.', 'info');
+    }
+
+    // Pre-fill API fields when settings modal opens
+    function _prefillApiFields() {
+      const k = localStorage.getItem('ft_api_key');
+      const s = localStorage.getItem('ft_api_secret');
+      const kEl = document.getElementById('set-frappe-api-key');
+      const sEl = document.getElementById('set-frappe-api-secret');
+      if (kEl && k) kEl.value = k;
+      if (sEl && s) sEl.value = s;
+    }
+    document.addEventListener('DOMContentLoaded', _prefillApiFields);
+    setTimeout(_prefillApiFields, 1800);
+
     async function testEmailConnection() {
         const config = {
             host: document.getElementById('set-smtp-host').value,
@@ -14984,7 +15125,9 @@ We will let you know if there are any changes to the field service booking.`;
       ft_defect: new Set([
         'name','defect_type','machine','customer','fleetrack_managed','oem','model',
         'location','region','warranty_status','start_date','priority','status',
-        'description','on_hold','ted','end_date','defect_days','created_at','modified_at'
+        'description','on_hold','ted','end_date','defect_days',
+        'technician','reported_by','hmr_at_defect',
+        'created_at','modified_at'
       ])
     };
 
@@ -15681,79 +15824,66 @@ window.loadISR = async function() {
     // ════════════════════════════════════════════════════════
     //  3. GENERAL DEFECTS REPORT (GDR)
     // ════════════════════════════════════════════════════════
+    // Warranty pill for GDR rows
+    function _gdrWtyPill(ws) {
+      const w=(ws||'').toLowerCase();
+      if(w.includes('under')||w==='in warranty') return `<span style="font-size:9px;font-weight:700;padding:2px 8px;border-radius:99px;background:#dcfce7;color:#15803d;white-space:nowrap;">${ws}</span>`;
+      if(w.includes('fringe')||w.includes('expir')) return `<span style="font-size:9px;font-weight:700;padding:2px 8px;border-radius:99px;background:#fef9c3;color:#a16207;white-space:nowrap;">${ws}</span>`;
+      if(w.includes('out')||w.includes('expired')) return `<span style="font-size:9px;font-weight:700;padding:2px 8px;border-radius:99px;background:#fee2e2;color:#b91c1c;white-space:nowrap;">${ws}</span>`;
+      return ws?`<span style="font-size:9px;color:#94a3b8;">${ws}</span>`:'\u2014';
+    }
+
     async function loadRptGdr() {
       const tbody = document.getElementById('gdr-tbody');
-      if (tbody) tbody.innerHTML = rptEmpty(8, 'Loading…');
+      if (tbody) tbody.innerHTML = rptEmpty(10, 'Loading\u2026');
       try {
-        // Hardcoded URL — FT_DEFECT_SUMMARY_METHOD lives in a different script block
         const GDR_URL = '/api/method/mxg_fleet_track.omnis_dashboard.ft_defects_dashboard.get_ft_defect_summary';
         const res  = await callFrappe(GDR_URL, {});
-        // API returns { message: { counts:{...}, rows:[...] } }
         const msg  = res?.message || res || {};
-        const rows = Array.isArray(msg.rows) ? msg.rows
-                   : Array.isArray(msg)      ? msg
-                   : [];
+        const rows = Array.isArray(msg.rows)?msg.rows:Array.isArray(msg.data)?msg.data:Array.isArray(msg)?msg:[];
 
         if (!rows.length) {
-          tbody.innerHTML = rptEmpty(8, 'No defects found');
-          document.getElementById('gdr-open').textContent = 0;
-          document.getElementById('gdr-progress').textContent = 0;
-          document.getElementById('gdr-closed').textContent = 0;
+          tbody.innerHTML = rptEmpty(10, 'No defects found');
+          ['gdr-open','gdr-progress','gdr-closed'].forEach(id=>{const e=document.getElementById(id);if(e)e.textContent=0;});
           return;
         }
+        let open=0,prog=0,closed=0;
+        rows.forEach(r=>{const s=(r.status||'').toLowerCase();if(s==='open')open++;else if(s==='in progress'||s==='in-progress')prog++;else if(s==='closed'||s==='resolved')closed++;});
+        document.getElementById('gdr-open').textContent=open;
+        document.getElementById('gdr-progress').textContent=prog;
+        document.getElementById('gdr-closed').textContent=closed;
 
-        let open=0, prog=0, closed=0;
-        rows.forEach(r => {
-          const s = (r.status || '').toLowerCase();
-          if (s === 'open') open++;
-          else if (s === 'in progress' || s === 'in-progress') prog++;
-          else if (s === 'closed' || s === 'resolved') closed++;
-        });
-        document.getElementById('gdr-open').textContent     = open;
-        document.getElementById('gdr-progress').textContent = prog;
-        document.getElementById('gdr-closed').textContent   = closed;
+        // Keep global in sync so Machine Lookup can use fresh data
+        if (typeof FT_DEFECTS_DATA !== 'undefined') window.FT_DEFECTS_DATA = rows;
+        else window.FT_DEFECTS_DATA = rows;
 
-        const priBadge = p => {
-          const pc = (p||'').toLowerCase();
-          if (pc === 'critical') return rptBadge(p, 'red');
-          if (pc === 'high')     return rptBadge(p, 'yellow');
-          if (pc === 'medium')   return rptBadge(p, 'blue');
-          return rptBadge(p || 'Low', 'gray');
-        };
-        const stBadge = s => {
-          const sc = (s||'').toLowerCase();
-          if (sc === 'open')         return rptBadge(s, 'red');
-          if (sc.includes('progress')) return rptBadge('In Progress', 'yellow');
-          if (sc === 'closed' || sc === 'resolved') return rptBadge(s, 'green');
-          return rptBadge(s || '—', 'gray');
-        };
+        const priBadge=p=>{const pc=(p||'').toLowerCase();if(pc==='critical')return rptBadge(p,'red');if(pc==='high')return rptBadge(p,'yellow');if(pc==='medium')return rptBadge(p,'blue');return rptBadge(p||'Low','gray');};
+        const stBadge=s=>{const sc=(s||'').toLowerCase();if(sc==='open')return rptBadge(s,'red');if(sc.includes('progress'))return rptBadge('In Progress','yellow');if(sc==='closed'||sc==='resolved')return rptBadge(s,'green');return rptBadge(s||'\u2014','gray');};
 
-        const today = new Date();
-        tbody.innerHTML = rows.map(r => {
-          // Correct field names from the existing defect view
-          const desc     = r.description ? r.description.slice(0, 80) : '—';
-          const machine  = r.machine    || '—';
-          const customer = r.customer   || '—';
-          const priority = r.priority   || 'Low';
-          const status   = r.status     || 'Open';
-          const tech     = r.technician || r.oem || '—';
-          const dateStr  = r.start_date || r.creation || null;
-          const days     = dateStr ? Math.round((today - new Date(dateStr)) / 86400000) : '—';
+        const today=new Date();
+        tbody.innerHTML=rows.map(r=>{
+          const desc=r.description?r.description.slice(0,80)+(r.description.length>80?'\u2026':''):'\u2014';
+          const machine=r.machine||'\u2014',cust=r.customer||'\u2014',tech=r.technician||r.oem||'\u2014';
+          const dateStr=r.start_date||r.creation||null;
+          const days=dateStr?Math.round((today-new Date(dateStr))/86400000):'\u2014';
+          const mSafe=(r.machine||'').replace(/'/g,"\\'");
           return `<tr>
-            <td style="font-family:monospace;font-size:11px;">${machine}</td>
-            <td>${customer}</td>
-            <td title="${r.description||''}">${desc}</td>
-            <td>${priBadge(priority)}</td>
-            <td>${stBadge(status)}</td>
+            <td style="font-family:monospace;font-size:11px;font-weight:700;">${machine}</td>
+            <td>${cust}</td>
+            <td>${_gdrWtyPill(r.warranty_status)}</td>
+            <td title="${(r.description||'').replace(/"/g,'&quot;')}">${desc}</td>
+            <td>${priBadge(r.priority||'Low')}</td>
+            <td>${stBadge(r.status||'Open')}</td>
             <td>${tech}</td>
             <td>${fmtDate(dateStr)}</td>
             <td style="font-weight:700;${typeof days==='number'&&days>7?'color:#b91c1c':''}">${days}</td>
+            <td style="text-align:center;"><button onclick="openDefectModal(null,'${mSafe}')" style="background:#b91c1c;color:#fff;border:none;border-radius:6px;padding:3px 9px;font-size:11px;font-weight:700;cursor:pointer;" onmouseover="this.style.opacity='.8'" onmouseout="this.style.opacity='1'">+ Log</button></td>
           </tr>`;
         }).join('');
         initRptSort('gdr-table');
       } catch(e) {
-        console.error('[GDR]', e);
-        if (tbody) tbody.innerHTML = rptError(8, e.message);
+        console.error('[GDR]',e);
+        if(tbody)tbody.innerHTML=rptError(10,e.message);
       }
     }
 
@@ -16170,6 +16300,27 @@ window.loadISR = async function() {
                         <button onclick="saveActiveSettings()" style="flex: 2; background: #0f172a; color: white; border: none; padding: 12px; border-radius: 8px; font-weight: 700; cursor: pointer;">Save Configurations</button>
                     </div>
                     <div id="settings-status" style="margin-top: 12px; font-size: 12px; text-align: center; font-weight: 600;"></div>
+
+                    <!-- Frappe API Credentials -->
+                    <div style="border-top:1px solid #e2e8f0;margin-top:20px;padding-top:18px;">
+                        <div style="font-size:11px;font-weight:700;color:#94a3b8;text-transform:uppercase;letter-spacing:.5px;margin-bottom:12px;">Frappe API Credentials</div>
+                        <div style="background:#fef9c3;border:1px solid #fde047;border-radius:8px;padding:8px 12px;font-size:11px;color:#854d0e;margin-bottom:12px;">⚠️ These are stored locally and used to authenticate Frappe API calls (Sync / Backfill).</div>
+                        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px;">
+                            <div class="form-group">
+                                <label class="form-label">API Key</label>
+                                <input type="password" id="set-frappe-api-key" class="form-input" placeholder="API Key from Frappe user" autocomplete="off">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">API Secret</label>
+                                <input type="password" id="set-frappe-api-secret" class="form-input" placeholder="API Secret from Frappe user" autocomplete="off">
+                            </div>
+                        </div>
+                        <div style="display:flex;gap:10px;">
+                            <button onclick="saveApiCredentials()" style="flex:2;background:#0f172a;color:#fff;border:none;padding:10px;border-radius:8px;font-size:12px;font-weight:700;cursor:pointer;">Save API Credentials</button>
+                            <button onclick="clearApiCredentials()" style="flex:1;background:#f1f5f9;color:#64748b;border:1px solid #e2e8f0;padding:10px;border-radius:8px;font-size:12px;font-weight:700;cursor:pointer;">Clear</button>
+                        </div>
+                        <div id="api-cred-status" style="margin-top:8px;font-size:11px;font-weight:600;text-align:center;"></div>
+                    </div>
                 </div>
 
                 <!-- Licensing Pane -->
@@ -16615,18 +16766,21 @@ window.loadISR = async function() {
             <div class="rpt-kpi-pill" style="background:#dcfce7;color:#15803d;"><span id="gdr-closed">—</span><label>Closed</label></div>
             <button class="rpt-action-btn" onclick="exportRptCsv('gdr-table','defects_report')">⬇ CSV</button>
             <button class="rpt-action-btn rpt-action-primary" onclick="loadRptGdr()">↺ Refresh</button>
+            <button onclick="openDefectModal(null)" style="background:#b91c1c;color:#fff;border:none;border-radius:8px;padding:8px 16px;font-size:12px;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:6px;" onmouseover="this.style.opacity='.85'" onmouseout="this.style.opacity='1'">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>Log Defect
+            </button>
           </div>
         </div>
         <div class="rpt-filter-bar">
           <div class="rpt-filter-group">
             <label>Priority</label>
-            <select id="gdr-priority" onchange="filterRptTableSelect('gdr-table',this.value,3)">
+            <select id="gdr-priority" onchange="filterRptTableSelect('gdr-table',this.value,4)">
               <option value="">All</option><option>Critical</option><option>High</option><option>Medium</option><option>Low</option>
             </select>
           </div>
           <div class="rpt-filter-group">
             <label>Status</label>
-            <select id="gdr-status" onchange="filterRptTableSelect('gdr-table',this.value,4)">
+            <select id="gdr-status" onchange="filterRptTableSelect('gdr-table',this.value,5)">
               <option value="">All</option><option>Open</option><option>In Progress</option><option>Closed</option>
             </select>
           </div>
@@ -16638,10 +16792,10 @@ window.loadISR = async function() {
         <div class="rpt-table-wrap">
           <table id="gdr-table" class="rpt-table">
             <thead><tr>
-              <th>Machine</th><th>Customer</th><th>Defect Description</th>
-              <th>Priority</th><th>Status</th><th>Technician</th><th>Reported</th><th>Days Open</th>
+              <th>Machine</th><th>Customer</th><th>Warranty</th><th>Defect Description</th>
+              <th>Priority</th><th>Status</th><th>Technician</th><th>Reported</th><th>Days Open</th><th>Action</th>
             </tr></thead>
-            <tbody id="gdr-tbody"><tr><td colspan="8" class="rpt-loading">Loading…</td></tr></tbody>
+            <tbody id="gdr-tbody"><tr><td colspan="10" class="rpt-loading">Loading…</td></tr></tbody>
           </table>
         </div>
       </div>
@@ -20884,6 +21038,409 @@ window.loadISR = async function() {
 
 })();
 </script>
+
+    <!-- ══ MACHINE QUICK-LOOKUP PANEL ══ -->
+    <div id="modal-machine-lookup" style="display:none;position:fixed;top:0;right:0;bottom:0;width:580px;max-width:100vw;background:#fff;box-shadow:-4px 0 32px rgba(0,0,0,.18);z-index:9600;flex-direction:column;transform:translateX(100%);transition:transform .28s cubic-bezier(.4,0,.2,1);">
+      <div style="background:linear-gradient(135deg,#0f172a,#1e293b);padding:18px 20px;display:flex;align-items:center;justify-content:space-between;flex-shrink:0;">
+        <div><div style="font-size:10px;color:#94a3b8;font-weight:700;text-transform:uppercase;letter-spacing:.5px;">Fleetrack</div><div style="font-size:15px;font-weight:800;color:#fff;margin-top:2px;">Machine Lookup</div></div>
+        <button onclick="closeMachineLookup()" style="background:rgba(255,255,255,.1);border:none;border-radius:8px;color:#fff;font-size:20px;width:34px;height:34px;cursor:pointer;display:flex;align-items:center;justify-content:center;">&times;</button>
+      </div>
+      <div style="padding:14px 20px;border-bottom:1px solid #e2e8f0;flex-shrink:0;">
+        <div style="position:relative;">
+          <input type="text" id="mlookup-search" placeholder="Search serial, model, fleet no, customer&hellip;" style="width:100%;padding:10px 10px 10px 36px;border:1.5px solid #e2e8f0;border-radius:8px;font-size:13px;outline:none;box-sizing:border-box;" oninput="mlookupSearch(this.value)" autocomplete="off">
+          <svg style="position:absolute;left:11px;top:50%;transform:translateY(-50%);opacity:.35;" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#0f172a" stroke-width="2.5"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+          <ul id="mlookup-dropdown" style="display:none;position:absolute;top:100%;left:0;right:0;background:#fff;border:1px solid #e2e8f0;border-radius:8px;box-shadow:0 6px 20px rgba(0,0,0,.12);z-index:10;list-style:none;padding:0;margin:4px 0 0;max-height:210px;overflow-y:auto;"></ul>
+        </div>
+      </div>
+      <div id="mlookup-empty" style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;color:#94a3b8;padding:40px 20px;text-align:center;">
+        <svg width="44" height="44" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2" opacity=".4"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        <div style="font-size:13px;margin-top:14px;">Search for a machine above</div>
+      </div>
+      <div id="mlookup-card" style="display:none;flex:1;overflow-y:auto;padding-bottom:160px;">
+
+        <!-- ── Hero Header ── -->
+        <div style="padding:16px 20px 14px;background:linear-gradient(135deg,#f8fafc,#f1f5f9);border-bottom:1px solid #e2e8f0;">
+          <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:10px;">
+            <div style="min-width:0;">
+              <div id="mlookup-model" style="font-size:19px;font-weight:800;color:#0f172a;line-height:1.2;">&mdash;</div>
+              <div id="mlookup-serial" style="font-size:11px;color:#64748b;font-family:monospace;margin-top:4px;">&mdash;</div>
+              <div id="mlookup-fleet" style="font-size:11px;color:#94a3b8;margin-top:2px;"></div>
+            </div>
+            <span id="mlookup-status-badge" style="font-size:10px;font-weight:700;padding:4px 10px;border-radius:99px;background:#e2e8f0;color:#64748b;flex-shrink:0;margin-top:2px;">Unknown</span>
+          </div>
+          <!-- HMR + Warranty row -->
+          <div style="margin-top:12px;display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
+            <div style="background:#1e293b;color:#e2e8f0;padding:5px 14px;border-radius:8px;font-size:13px;font-weight:800;">
+              <span style="font-size:9px;color:#94a3b8;display:block;line-height:1;font-weight:600;">CURRENT HMR</span>
+              <span id="mlookup-hmr">&mdash;</span> h
+            </div>
+            <span id="mlookup-warranty-pill" style="font-size:11px;font-weight:700;padding:5px 14px;border-radius:99px;background:#e2e8f0;color:#64748b;">&mdash;</span>
+          </div>
+          <!-- Service HMR progress bar -->
+          <div id="mlookup-service-bar-wrap" style="display:none;margin-top:14px;">
+            <div style="display:flex;justify-content:space-between;font-size:10px;color:#64748b;font-weight:600;margin-bottom:5px;">
+              <span>Last Srvc: <span id="mlookup-bar-last" style="color:#0f172a;">—</span> h</span>
+              <span id="mlookup-bar-due-label" style="font-weight:700;">Next Srvc: <span id="mlookup-bar-next">—</span> h</span>
+            </div>
+            <div style="height:7px;background:#e2e8f0;border-radius:99px;overflow:hidden;">
+              <div id="mlookup-bar-fill" style="height:100%;border-radius:99px;background:#22c55e;transition:width .4s;"></div>
+            </div>
+            <div id="mlookup-bar-remaining" style="font-size:10px;margin-top:5px;font-weight:700;text-align:right;"></div>
+          </div>
+        </div>
+
+        <!-- ── Info Grid ── -->
+        <div style="padding:14px 20px;display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;border-bottom:1px solid #e2e8f0;">
+          <div><div style="font-size:9px;color:#94a3b8;font-weight:700;text-transform:uppercase;letter-spacing:.4px;">Customer</div><div id="mlookup-customer" style="font-size:12px;font-weight:600;color:#0f172a;margin-top:3px;">&mdash;</div></div>
+          <div><div style="font-size:9px;color:#94a3b8;font-weight:700;text-transform:uppercase;letter-spacing:.4px;">Region</div><div id="mlookup-region" style="font-size:12px;font-weight:600;color:#0f172a;margin-top:3px;">&mdash;</div></div>
+          <div><div style="font-size:9px;color:#94a3b8;font-weight:700;text-transform:uppercase;letter-spacing:.4px;">OEM</div><div id="mlookup-oem" style="font-size:12px;font-weight:600;color:#0f172a;margin-top:3px;">&mdash;</div></div>
+          <div><div style="font-size:9px;color:#94a3b8;font-weight:700;text-transform:uppercase;letter-spacing:.4px;">Fleet No</div><div id="mlookup-fleet-no" style="font-size:12px;font-weight:600;color:#0f172a;margin-top:3px;">&mdash;</div></div>
+          <div><div style="font-size:9px;color:#94a3b8;font-weight:700;text-transform:uppercase;letter-spacing:.4px;">Last Srvc HMR</div><div id="mlookup-last-srvc" style="font-size:12px;font-weight:600;color:#0f172a;margin-top:3px;">&mdash;</div></div>
+          <div><div style="font-size:9px;color:#94a3b8;font-weight:700;text-transform:uppercase;letter-spacing:.4px;">Next Srvc HMR</div><div id="mlookup-next-srvc" style="font-size:12px;font-weight:700;margin-top:3px;">&mdash;</div></div>
+          <div><div style="font-size:9px;color:#94a3b8;font-weight:700;text-transform:uppercase;letter-spacing:.4px;">Serial No</div><div id="mlookup-serial-no" style="font-size:11px;font-weight:600;color:#0f172a;margin-top:3px;font-family:monospace;">&mdash;</div></div>
+          <div><div style="font-size:9px;color:#94a3b8;font-weight:700;text-transform:uppercase;letter-spacing:.4px;">Open Breakdowns</div><div id="mlookup-breakdown-count" style="font-size:12px;font-weight:700;color:#b45309;margin-top:3px;">&mdash;</div></div>
+          <div><div style="font-size:9px;color:#94a3b8;font-weight:700;text-transform:uppercase;letter-spacing:.4px;">Total Breakdowns</div><div id="mlookup-breakdown-total" style="font-size:12px;font-weight:600;color:#0f172a;margin-top:3px;">&mdash;</div></div>
+        </div>
+
+        <!-- ── Open Defects ── -->
+        <div style="padding:14px 20px;border-bottom:1px solid #e2e8f0;">
+          <div style="display:flex;align-items:center;gap:8px;margin-bottom:10px;">
+            <span id="mlookup-defect-count" style="background:#fee2e2;color:#b91c1c;padding:2px 9px;border-radius:6px;font-size:11px;font-weight:700;">0</span>
+            <span style="font-size:12px;font-weight:700;color:#0f172a;">Open Defects</span>
+          </div>
+          <div id="mlookup-defects-list"></div>
+        </div>
+
+        <!-- ── Recent Breakdowns ── -->
+        <div style="padding:14px 20px;border-bottom:1px solid #e2e8f0;">
+          <div style="font-size:12px;font-weight:700;color:#0f172a;margin-bottom:10px;">Recent Breakdowns</div>
+          <div id="mlookup-breakdowns-list"><div style="font-size:11px;color:#94a3b8;">Loading…</div></div>
+        </div>
+
+        <!-- ── Service Tracking ── -->
+        <div style="padding:14px 20px;">
+          <div style="font-size:12px;font-weight:700;color:#0f172a;margin-bottom:10px;display:flex;align-items:center;gap:8px;">
+            <span>Service Tracking</span>
+            <span style="font-size:9px;background:#eff6ff;color:#1d4ed8;padding:2px 8px;border-radius:99px;font-weight:700;">FROM FSP</span>
+          </div>
+          <div id="mlookup-service-list"><div style="font-size:11px;color:#94a3b8;text-align:center;padding:8px 0;">Loading service records…</div></div>
+        </div>
+
+      </div>
+      <!-- ── Action Bar ── -->
+      <div id="mlookup-actions" style="display:none;position:absolute;bottom:0;left:0;right:0;padding:14px 20px 18px;background:#fff;border-top:1px solid #e2e8f0;box-shadow:0 -4px 16px rgba(0,0,0,.06);">
+        <button onclick="mlookupLogDefect()" style="width:100%;padding:13px;background:#b91c1c;color:#fff;border:none;border-radius:8px;font-size:13px;font-weight:700;cursor:pointer;margin-bottom:8px;letter-spacing:.2px;" onmouseover="this.style.opacity='.88'" onmouseout="this.style.opacity='1'">+ Log Defect for this Machine</button>
+        <div style="display:flex;gap:8px;">
+          <button onclick="mlookupUpdateHmr()" style="flex:1;padding:11px;background:#1e293b;color:#e2e8f0;border:none;border-radius:8px;font-size:12px;font-weight:700;cursor:pointer;" onmouseover="this.style.opacity='.8'" onmouseout="this.style.opacity='1'">&#9998; Update HMR</button>
+          <button onclick="mlookupViewBreakdowns()" style="flex:1;padding:11px;background:#fff7ed;color:#b45309;border:1px solid #fed7aa;border-radius:8px;font-size:12px;font-weight:700;cursor:pointer;" onmouseover="this.style.background='#ffedd5'" onmouseout="this.style.background='#fff7ed'">&#9888; Breakdowns</button>
+          <button onclick="closeMachineLookup();setTimeout(()=>showView('view-field-service-planning'),340);" style="flex:1;padding:11px;background:#eff6ff;color:#1d4ed8;border:1px solid #bfdbfe;border-radius:8px;font-size:12px;font-weight:700;cursor:pointer;" onmouseover="this.style.background='#dbeafe'" onmouseout="this.style.background='#eff6ff'">&#128197; Service Plan</button>
+          <button onclick="showView('view-rpt-machine-reg');closeMachineLookup();" style="flex:1;padding:11px;background:#f1f5f9;color:#0f172a;border:none;border-radius:8px;font-size:12px;font-weight:700;cursor:pointer;" onmouseover="this.style.background='#e2e8f0'" onmouseout="this.style.background='#f1f5f9'">Register</button>
+        </div>
+      </div>
+    </div>
+    <div id="modal-machine-lookup-backdrop" onclick="closeMachineLookup()" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.3);z-index:9590;backdrop-filter:blur(2px);"></div>
+
+    <script>
+
+    // ── Dashboard inline machine search ──────────────────────────────────
+    function _dashMachineSearch(q) {
+      const res  = document.getElementById('dash-machine-results');
+      const cnt  = document.getElementById('dash-search-count');
+      if (!res) return;
+      q = (q || '').trim().toLowerCase();
+      if (!q) {
+        res.innerHTML = '<div style="padding:10px 14px;font-size:11px;color:#94a3b8;font-weight:500;">Start typing to search machines\u2026</div>';
+        if (cnt) cnt.textContent = '';
+        return;
+      }
+      const pool = window.FT_MACHINE_ROWS || [];
+      const hits = pool.filter(m => {
+        const sn     = (m.sn     || m.name || '').toLowerCase();
+        const model  = (m.model  || '').toLowerCase();
+        const fleet  = (m.fleet_no || m.mxg_fleet_no || '').toLowerCase();
+        const cust   = (m.customer || '').toLowerCase();
+        return sn.includes(q) || model.includes(q) || fleet.includes(q) || cust.includes(q);
+      }).slice(0, 6);
+
+      if (cnt) cnt.textContent = hits.length ? `${hits.length} found` : 'No matches';
+
+      if (!hits.length) {
+        res.innerHTML = '<div style="padding:10px 14px;font-size:11px;color:#94a3b8;">No machines match \u201c' + q.substring(0,30) + '\u201d</div>';
+        return;
+      }
+
+      res.innerHTML = hits.map(m => {
+        const wty = (m.warranty_status || '').toLowerCase();
+        const wtyColor = wty.includes('in') ? '#15803d' : wty.includes('expire') ? '#b45309' : '#64748b';
+        const wtyBg    = wty.includes('in') ? '#dcfce7' : wty.includes('expire') ? '#fef3c7' : '#f1f5f9';
+        const wtyPill  = m.warranty_status
+          ? `<span style="padding:1px 7px;border-radius:99px;background:${wtyBg};color:${wtyColor};font-size:9px;font-weight:700;">${m.warranty_status}</span>`
+          : '';
+        const hmr = m.current_hmr != null ? `<span style="font-family:monospace;font-weight:800;color:#1e40af;font-size:10px;">${Number(m.current_hmr).toLocaleString()} hrs</span>` : '';
+        const machineName = m.sn || m.name || '—';
+        return `<div onclick="openMachineLookup('${(machineName).replace(/'/g,"\\'")}')"
+          style="display:flex;align-items:center;gap:10px;padding:7px 14px;cursor:pointer;border-bottom:1px solid #f8fafc;transition:background .1s;"
+          onmouseover="this.style.background='#f8fafc'" onmouseout="this.style.background=''">
+          <div style="flex:1;min-width:0;">
+            <div style="font-size:11px;font-weight:700;color:#0f172a;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${m.model || machineName} <span style="color:#64748b;font-weight:500;">&middot; ${m.customer || '—'}</span></div>
+            <div style="font-size:10px;color:#94a3b8;font-weight:500;">${machineName} &nbsp;&bull;&nbsp; Fleet: ${m.fleet_no || m.mxg_fleet_no || '—'}</div>
+          </div>
+          <div style="display:flex;gap:6px;align-items:center;flex-shrink:0;">${hmr}${wtyPill}</div>
+        </div>`;
+      }).join('');
+    }
+
+    let _mlookupMachine=null;
+    function openMachineLookup(p){
+      const pan=document.getElementById('modal-machine-lookup'),bg=document.getElementById('modal-machine-lookup-backdrop');
+      pan.style.display='flex';bg.style.display='block';
+      requestAnimationFrame(()=>{pan.style.transform='translateX(0)';});
+      if(p)mlookupShowMachine(p);else setTimeout(()=>document.getElementById('mlookup-search')?.focus(),300);
+      if(!window.MACHINES_MAP||!Object.keys(window.MACHINES_MAP).length)if(typeof loadFtMachineRegister==='function')loadFtMachineRegister();
+    }
+    function openQuickHmrModal(){if(typeof window.openHmrLogModal==='function')window.openHmrLogModal(null);else openMachineLookup();}
+    function closeMachineLookup(){
+      const pan=document.getElementById('modal-machine-lookup'),bg=document.getElementById('modal-machine-lookup-backdrop');
+      pan.style.transform='translateX(100%)';
+      setTimeout(()=>{pan.style.display='none';bg.style.display='none';},300);
+      _mlookupMachine=null;
+    }
+    function mlookupSearch(q){
+      const dd=document.getElementById('mlookup-dropdown'),ql=(q||'').trim().toLowerCase();
+      if(!ql){dd.style.display='none';return;}
+      const hits=Object.values(window.MACHINES_MAP||{}).filter(m=>[m.model,m.sn,m.name,m.fleet_no,m.customer].some(v=>(v||'').toLowerCase().includes(ql))).slice(0,8);
+      dd.innerHTML='';
+      if(!hits.length){dd.innerHTML='<li style="padding:10px 14px;color:#94a3b8;font-size:12px;">No machines found</li>';dd.style.display='block';return;}
+      hits.forEach(m=>{
+        const li=document.createElement('li');
+        li.style.cssText='padding:10px 14px;cursor:pointer;border-bottom:1px solid #f1f5f9;transition:background .1s;';
+        li.innerHTML=`<div style="font-weight:700;font-size:13px;color:#0f172a;">${m.model||m.name}</div><div style="font-size:11px;color:#64748b;">${m.name} &middot; ${m.customer||'\u2014'}</div>`;
+        li.onclick=()=>{document.getElementById('mlookup-search').value=`${m.model||m.name} \u2014 ${m.name}`;dd.style.display='none';mlookupShowMachine(m.name);};
+        li.onmouseenter=()=>li.style.background='#f8fafc';li.onmouseleave=()=>li.style.background='#fff';
+        dd.appendChild(li);
+      });
+      dd.style.display='block';
+    }
+    function mlookupShowMachine(name){
+      const m=window.MACHINES_MAP?.[name];if(!m)return;_mlookupMachine=name;
+      document.getElementById('mlookup-empty').style.display='none';
+      document.getElementById('mlookup-card').style.display='block';
+      const acts=document.getElementById('mlookup-actions');acts.style.display='flex';acts.style.flexDirection='column';
+
+      // ── Hero fields ──
+      document.getElementById('mlookup-model').textContent=m.model||'\u2014';
+      document.getElementById('mlookup-serial').textContent=m.name||'\u2014';
+      document.getElementById('mlookup-fleet').textContent=m.mxg_fleet_no||m.fleet_no?'Fleet: '+(m.mxg_fleet_no||m.fleet_no):'';
+      document.getElementById('mlookup-hmr').textContent=m.current_hmr!=null?Number(m.current_hmr).toLocaleString():'\u2014';
+
+      // Status badge
+      const sb=document.getElementById('mlookup-status-badge'),st=(m.status||'').toLowerCase();
+      const stStyles={active:'background:#dcfce7;color:#15803d',inactive:'background:#fee2e2;color:#b91c1c','under maintenance':'background:#fef9c3;color:#a16207',breakdown:'background:#fee2e2;color:#b91c1c'};
+      sb.style.cssText='font-size:10px;font-weight:700;padding:4px 10px;border-radius:99px;flex-shrink:0;margin-top:2px;'+(stStyles[st]||'background:#e2e8f0;color:#64748b');
+      sb.textContent=m.status||'Unknown';
+
+      // Warranty pill
+      const wp=document.getElementById('mlookup-warranty-pill'),ws=(m.warranty_status||'').toLowerCase();
+      wp.style.cssText=ws.includes('under')||ws==='in warranty'?'font-size:11px;font-weight:700;padding:5px 14px;border-radius:99px;background:#dcfce7;color:#15803d;':ws.includes('fringe')||ws.includes('expir')?'font-size:11px;font-weight:700;padding:5px 14px;border-radius:99px;background:#fef9c3;color:#a16207;':ws.includes('out')||ws.includes('expired')?'font-size:11px;font-weight:700;padding:5px 14px;border-radius:99px;background:#fee2e2;color:#b91c1c;':'font-size:11px;font-weight:700;padding:5px 14px;border-radius:99px;background:#e2e8f0;color:#64748b;';
+      wp.textContent=m.warranty_status||'N/A';
+
+      // ── Service HMR progress bar ──
+      const barWrap=document.getElementById('mlookup-service-bar-wrap');
+      if(m.current_hmr!=null&&m.last_service_hmr!=null&&m.next_service_hmr!=null){
+        const cur=Number(m.current_hmr),last=Number(m.last_service_hmr),next=Number(m.next_service_hmr);
+        const range=Math.max(next-last,1),done=cur-last,pct=Math.min(Math.max(done/range*100,0),100);
+        const remaining=next-cur,overdue=remaining<0;
+        document.getElementById('mlookup-bar-last').textContent=last.toLocaleString();
+        document.getElementById('mlookup-bar-next').textContent=next.toLocaleString();
+        const fill=document.getElementById('mlookup-bar-fill');
+        fill.style.width=pct+'%';
+        fill.style.background=overdue?'#ef4444':pct>80?'#f59e0b':'#22c55e';
+        const remEl=document.getElementById('mlookup-bar-remaining');
+        remEl.style.color=overdue?'#b91c1c':'#15803d';
+        remEl.textContent=overdue?'OVERDUE by '+(Math.abs(remaining)).toLocaleString()+' h':(remaining).toLocaleString()+' h to next service';
+        const dueLabel=document.getElementById('mlookup-bar-due-label');
+        dueLabel.style.color=overdue?'#b91c1c':'#64748b';
+        barWrap.style.display='block';
+      } else {barWrap.style.display='none';}
+
+      // ── Info grid ──
+      document.getElementById('mlookup-customer').textContent=m.customer||'\u2014';
+      document.getElementById('mlookup-region').textContent=m.region||'\u2014';
+      document.getElementById('mlookup-oem').textContent=m.oem||'\u2014';
+      document.getElementById('mlookup-fleet-no').textContent=m.mxg_fleet_no||m.fleet_no||'\u2014';
+      document.getElementById('mlookup-last-srvc').textContent=m.last_service_hmr!=null?Number(m.last_service_hmr).toLocaleString()+' h':'\u2014';
+      const nxEl=document.getElementById('mlookup-next-srvc');
+      if(m.next_service_hmr!=null){
+        const over=m.current_hmr!=null&&Number(m.current_hmr)>Number(m.next_service_hmr);
+        nxEl.style.color=over?'#b91c1c':'#0f172a';
+        nxEl.textContent=Number(m.next_service_hmr).toLocaleString()+' h'+(over?' \u26a0 OVERDUE':'');
+      } else {nxEl.textContent='\u2014';nxEl.style.color='#0f172a';}
+      document.getElementById('mlookup-serial-no').textContent=m.serial_no||m.sn||m.name||'\u2014';
+
+      // ── Breakdowns summary ──
+      const allBd=(window.FT_BREAKDOWN_ROWS||[]).filter(b=>b.machine===name);
+      const openBd=allBd.filter(b=>!['closed','resolved','completed'].includes((b.status||'').toLowerCase()));
+      document.getElementById('mlookup-breakdown-count').textContent=openBd.length||'0';
+      document.getElementById('mlookup-breakdown-total').textContent=allBd.length||'0';
+      const bdList=document.getElementById('mlookup-breakdowns-list');
+      const recentBd=allBd.sort((a,b)=>new Date(b.breakdown_date||0)-new Date(a.breakdown_date||0)).slice(0,4);
+      // Store rows so onclick can retrieve by index
+      window._mlookupBdRows = recentBd;
+      bdList.innerHTML=recentBd.length?recentBd.map((b,i)=>`<div onclick="if(typeof openBreakdownModal==='function')openBreakdownModal(window._mlookupBdRows[${i}])" style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;padding:9px 12px;border-left:3px solid ${['open','pending'].includes((b.status||'').toLowerCase())?'#f59e0b':'#94a3b8'};margin-bottom:6px;cursor:pointer;transition:opacity .15s;" onmouseover="this.style.opacity='.82'" onmouseout="this.style.opacity='1'">
+        <div style="font-size:11px;font-weight:700;color:#0f172a;">${(b.description||b.problem||'Breakdown').slice(0,80)}</div>
+        <div style="font-size:10px;color:#64748b;margin-top:3px;">${b.status||'Unknown'} &middot; ${b.breakdown_date||''} &middot; Days open: ${b.days_open||'—'} <span style="float:right;font-size:9px;color:#94a3b8;">&#9998; Edit</span></div>
+      </div>`).join(''):'<div style="font-size:11px;color:#94a3b8;text-align:center;padding:12px 0;font-weight:600;">✔ No breakdown history</div>';
+
+      // ── Service Tracking ──
+      const renderServiceTracking = (fspRows) => {
+        const svcEl = document.getElementById('mlookup-service-list');
+        if (!svcEl) return;
+        // Filter to this machine — match on machine or machine_name field
+        const machineSvcs = fspRows.filter(r =>
+          (r.machine||'')===name || (r.machine_name||'')===name ||
+          (r.machine||'').toLowerCase()===(m.model||'').toLowerCase()
+        );
+        if (!machineSvcs.length) {
+          svcEl.innerHTML = '<div style="font-size:11px;color:#94a3b8;text-align:center;padding:12px 0;font-weight:600;">No service records in FSP for this machine</div>';
+          return;
+        }
+        const today = new Date();
+        // Last completed service
+        const completed = machineSvcs
+          .filter(r => (r.status||'').toLowerCase() === 'completed')
+          .sort((a,b) => new Date(b.plan_for||b.raw_date||0) - new Date(a.plan_for||a.raw_date||0));
+        const lastSvc = completed[0] || null;
+        // Next upcoming (Planned / In Progress / Proposed) — closest future date first
+        const upcoming = machineSvcs
+          .filter(r => !['completed'].includes((r.status||'').toLowerCase()))
+          .sort((a,b) => new Date(a.plan_for||a.raw_date||0) - new Date(b.plan_for||b.raw_date||0));
+        const nextSvc = upcoming[0] || null;
+        const stBg = {proposed:'#f1f5f9',planned:'#eff6ff','in progress':'#fef9c3',completed:'#dcfce7'};
+        const stCol = {proposed:'#64748b',planned:'#1d4ed8','in progress':'#854d0e',completed:'#166534'};
+        // Cache FSP rows for onclick retrieval
+        window._mlookupFspRows = machineSvcs;
+        const svcCard = (r, label, borderCol, idx) => {
+          const dateStr = r.plan_for || r.raw_date || '';
+          const daysAgo = dateStr ? Math.round((today - new Date(dateStr))/86400000) : null;
+          const st = (r.status||'').toLowerCase();
+          const bgC = stBg[st]||'#f1f5f9', txC = stCol[st]||'#64748b';
+          return `<div onclick="if(typeof openFspDetailModal==='function')openFspDetailModal(window._mlookupFspRows[${idx}])" style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;padding:11px 14px;border-left:3px solid ${borderCol};margin-bottom:8px;cursor:pointer;transition:opacity .15s;" onmouseover="this.style.opacity='.82'" onmouseout="this.style.opacity='1'">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
+              <span style="font-size:9px;font-weight:800;text-transform:uppercase;letter-spacing:.4px;color:#94a3b8;">${label}</span>
+              <div style="display:flex;align-items:center;gap:6px;">
+                <span style="font-size:9px;font-weight:700;padding:2px 8px;border-radius:99px;background:${bgC};color:${txC};">${r.status||'—'}</span>
+                <span style="font-size:9px;color:#94a3b8;">&#9998;</span>
+              </div>
+            </div>
+            <div style="font-size:12px;font-weight:700;color:#0f172a;">${dateStr||'—'} ${daysAgo!==null?'<span style="font-size:10px;color:#94a3b8;font-weight:500;">('+Math.abs(daysAgo)+'d '+(daysAgo>=0?'ago':'away')+')</span>':''}</div>
+            ${r.description?`<div style="font-size:11px;color:#475569;margin-top:4px;">${r.description.slice(0,90)}</div>`:''}
+            ${r.technician?`<div style="font-size:10px;color:#94a3b8;margin-top:3px;">&#128100; ${r.technician}</div>`:''}
+          </div>`;
+        };
+        // Find indices in machineSvcs for last/next
+        const lastIdx = lastSvc ? machineSvcs.indexOf(lastSvc) : -1;
+        const nextIdx = nextSvc ? machineSvcs.indexOf(nextSvc) : -1;
+        svcEl.innerHTML =
+          (lastSvc ? svcCard(lastSvc, 'Last Completed Service', '#22c55e', lastIdx) : '<div style="font-size:11px;color:#94a3b8;padding:4px 0 8px;">No completed services recorded</div>') +
+          (nextSvc ? svcCard(nextSvc, 'Next / Upcoming Service', '#3b82f6', nextIdx) : '<div style="font-size:11px;color:#94a3b8;padding:4px 0;">No upcoming service planned</div>');
+      };
+
+      const fspSource = window._fspRows || [];
+      if (fspSource.length > 0) {
+        renderServiceTracking(fspSource);
+      } else {
+        document.getElementById('mlookup-service-list').innerHTML = '<div style="font-size:11px;color:#94a3b8;text-align:center;padding:8px 0;">Fetching service records…</div>';
+        (async () => {
+          try {
+            const res = await callFrappe('/api/method/mxg_fleet_track.omnis_dashboard.ft_breakdown_dashboard.get_ft_service_plan_list', {});
+            const msg = res?.message || res || {};
+            const rows = Array.isArray(msg.data)?msg.data:Array.isArray(msg)?msg:[];
+            window._fspRows = rows;
+            if (_mlookupMachine === name) renderServiceTracking(rows);
+          } catch(e) {
+            if (_mlookupMachine === name)
+              document.getElementById('mlookup-service-list').innerHTML = '<div style="font-size:11px;color:#ef4444;text-align:center;padding:8px 0;">Could not load service records</div>';
+          }
+        })();
+      }
+
+      // ── Open Defects ──
+      // Merge all available defect sources
+      const _allDefectSources = [
+        ...(window.FT_DEFECTS_DATA || []),
+        ...(window.FT_DEFECT_ROWS  || []),
+      ];
+      // Deduplicate by defect name/id
+      const _seenDef = new Set();
+      const _mergedDefs = _allDefectSources.filter(d => {
+        const k = d.name || d.id || (d.machine + '|' + d.description);
+        if (_seenDef.has(k)) return false;
+        _seenDef.add(k); return true;
+      });
+
+      const renderDefects = (defs) => {
+        const list=document.getElementById('mlookup-defects-list'),cntEl=document.getElementById('mlookup-defect-count');
+        const openDefs=defs.filter(d=>d.machine===name&&!['closed','resolved'].includes((d.status||'').toLowerCase()));
+        cntEl.textContent=openDefs.length;
+        const pc={critical:'#b91c1c',high:'#b91c1c',medium:'#a16207',low:'#64748b'};
+        list.innerHTML=openDefs.length?openDefs.slice(0,8).map(d=>`<div onclick="openDefectModal('${(d.name||'').replace(/'/g,"\\'")}')" style="background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;padding:9px 12px;border-left:3px solid ${pc[(d.priority||'low').toLowerCase()]||'#64748b'};margin-bottom:6px;cursor:pointer;transition:opacity .15s;" onmouseover="this.style.opacity='.82'" onmouseout="this.style.opacity='1'">
+          <div style="font-size:11px;font-weight:700;color:#0f172a;">${(d.description||'').slice(0,80)}</div>
+          <div style="font-size:10px;color:#64748b;margin-top:3px;">${d.priority||'Low'} &middot; ${d.status||'Open'} &middot; ${d.start_date||''} <span style="float:right;font-size:9px;color:#94a3b8;">&#9998; Edit</span></div>
+        </div>`).join(''):'<div style="color:#15803d;font-size:12px;text-align:center;padding:14px 0;font-weight:600;">✔ No open defects</div>';
+      };
+
+      if (_mergedDefs.length > 0) {
+        renderDefects(_mergedDefs);
+      } else {
+        // Neither global has data yet — fetch live for this machine
+        document.getElementById('mlookup-defects-list').innerHTML = '<div style="font-size:11px;color:#94a3b8;text-align:center;padding:10px;">Loading defects…</div>';
+        (async () => {
+          try {
+            const GDR_URL = '/api/method/mxg_fleet_track.omnis_dashboard.ft_defects_dashboard.get_ft_defect_summary';
+            const res = await callFrappe(GDR_URL, {});
+            const msg = res?.message || res || {};
+            const fetched = Array.isArray(msg.rows)?msg.rows:Array.isArray(msg.data)?msg.data:Array.isArray(msg)?msg:[];
+            window.FT_DEFECTS_DATA = fetched;
+            if (_mlookupMachine === name) renderDefects(fetched); // only update if still viewing same machine
+          } catch(e) {
+            if (_mlookupMachine === name)
+              document.getElementById('mlookup-defects-list').innerHTML = '<div style="font-size:11px;color:#ef4444;text-align:center;padding:10px;">Could not load defects</div>';
+          }
+        })();
+      }
+    }
+    function mlookupLogDefect(){
+      const machineName = _mlookupMachine;
+      closeMachineLookup();
+      setTimeout(() => openDefectModal(null, machineName), 340);
+    }
+    function mlookupUpdateHmr(){
+      const m = window.MACHINES_MAP?.[_mlookupMachine];
+      const machineCopy = m ? Object.assign({}, m) : null;
+      closeMachineLookup();
+      setTimeout(() => {
+        if (typeof window.openHmrLogModal === 'function' && machineCopy) {
+          window.openHmrLogModal(machineCopy);
+        } else {
+          showToast('HMR modal not available', 'err', 2500);
+        }
+      }, 340);
+    }
+    function mlookupViewBreakdowns(){
+      const machineName = _mlookupMachine;
+      closeMachineLookup();
+      setTimeout(() => {
+        if (typeof showView === 'function') showView('view-breakdowns');
+        // If there is a machine filter input in the breakdowns view, prefill it
+        const filters = ['bd-machine-filter','breakdown-machine','brk-machine','bd-search'];
+        for (const fid of filters) {
+          const el = document.getElementById(fid);
+          if (el) { el.value = machineName; el.dispatchEvent(new Event('input')); break; }
+        }
+      }, 340);
+    }
+    document.addEventListener('keydown',e=>{if(e.key==='Escape')closeMachineLookup();});
+    </script>
 
 </body>
 </html>
