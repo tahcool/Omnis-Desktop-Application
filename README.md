@@ -1,6 +1,6 @@
 # Omnis Desktop Application
 
-Omnis is a high-performance, engineering-grade command center for the Machinery Exchange and Powerstar ecosystems. It integrates multiple operational systems into a single, unified desktop interface with built-in AI assistance and WhatsApp automation.
+Omnis is a high-performance, engineering-grade command center for the Machinery Exchange and Powerstar ecosystems. It integrates multiple operational systems into a single, unified desktop interface with built-in AI assistance and WhatsApp automation....
 
 ## 🚀 Key Features
 
