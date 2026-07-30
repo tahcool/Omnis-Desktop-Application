@@ -138,3 +138,7 @@
   Files: .mcp/knowledge/_shared/commit_log.md,.mcp/knowledge/fleetrack/session_notes.md,supabase/migrations/20260622115936_create_omnis_sales_persons.sql,supabase/migrations/20260626000000_create_training_progress.sql,supabase/migrations/20260717000000_aftersales_email_queue_policy.sql,supabase/migrations/20260718000000_salestrack_missing_tables.sql,supabase/migrations/20260718000001_salestrack_fix_and_add.sql,supabase/migrations/20260729000000_ft_service_logs.sql,supabase/migrations/20260729000001_ft_technicians.sql,supabase/migrations/20260730000000_ft_defect_extra.sql,systems/fleetrack/index.html,
 - `1ce4a9f` 2026-07-30 [supabase-migration] fix: update payload.modified to modified_at for editing defects
   Files: .mcp/knowledge/_shared/commit_log.md,systems/fleetrack/index.html,
+- `2798282` 2026-07-30 [supabase-migration] chore: update session notes and commit log
+  Files: .mcp/knowledge/_shared/commit_log.md,.mcp/knowledge/fleetrack/session_notes.md,
+- `c5d112b` 2026-07-30 [supabase-migration] feat: standardise defect loading animations with omnis loader modal
+  Files: systems/fleetrack/index.html,

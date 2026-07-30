@@ -45,3 +45,5 @@
 \n- **Commit 2b61773** (2026-07-30): Restore point: before adding category filter and sync
 \n- **Commit 773cd13** (2026-07-30): Fix category dropdown styling and force-sync categories natively
 \n- **Commit 1ce4a9f** (2026-07-30): fix: update payload.modified to modified_at for editing defects
+\n- **Commit 2798282** (2026-07-30): chore: update session notes and commit log
+\n- **Commit c5d112b** (2026-07-30): feat: standardise defect loading animations with omnis loader modal
