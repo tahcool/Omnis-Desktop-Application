@@ -36,6 +36,7 @@ def get_ft_defect_summary():
         "ted",                # Date
         "end_date",           # Date
         "defect_days",        # Int
+        "category",
     ]
 
     rows = []

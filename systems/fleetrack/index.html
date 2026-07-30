@@ -4331,6 +4331,12 @@
               </select>
             </div>
             <div class="rpt-filter-group">
+              <label>Category</label>
+              <select id="filter-defect-category" onchange="filterDefectsTable()">
+                <option value="">All</option>
+              </select>
+            </div>
+            <div class="rpt-filter-group">
               <label>Machine / Model</label>
               <input type="text" id="filter-defect-machine" placeholder="Filter by machine..." oninput="filterDefectsTable()">
             </div>
@@ -4340,6 +4346,7 @@
             </div>
             <div style="display:flex;align-items:flex-end;gap:10px;">
               <button class="rpt-action-btn" onclick="clearDefectFilters()">Clear</button>
+              <button class="rpt-action-btn" onclick="forceSyncDefects()" style="background:#3b82f6; color:#fff; border-color:#3b82f6;">Force Sync</button>
               <button class="rpt-action-btn" id="btn-defect-new" style="background:#ef4444; color:#fff; border-color:#ef4444;" onclick="openDefectModal()">Log new defect</button>
             </div>
           </div>
@@ -4992,8 +4999,9 @@
                 <div class="form-group">
                   <label class="form-label" style="font-weight:700;">Category <span style="color:#b91c1c;">*</span></label>
                   <div style="position:relative;">
-                    <input type="text" class="form-input" id="defect-category" placeholder="Select or type category..." list="defect-categories-list" autocomplete="off">
-                    <datalist id="defect-categories-list"></datalist>
+                    <input type="text" class="form-input" id="defect-category" placeholder="Select or type category..." autocomplete="off">
+                    <!-- Custom Autocomplete Dropdown -->
+                    <ul id="defect-category-dropdown" class="custom-dropdown hidden" style="position:absolute; top:100%; left:0; right:0; max-height:200px; overflow-y:auto; background:#fff; border:1px solid #cbd5e1; border-top:none; border-radius:0 0 6px 6px; z-index:9999; list-style:none; padding:0; margin:0; box-shadow:0 4px 6px -1px rgba(0,0,0,0.1);"></ul>
                   </div>
                 </div>
                 <div class="form-group">
@@ -12852,6 +12860,14 @@
         }
         
         renderDefectsTable(FT_DEFECTS_DATA);
+        // Auto-run force sync once
+        if (!localStorage.getItem('did_auto_sync_defects_v2')) {
+            localStorage.setItem('did_auto_sync_defects_v2', 'true');
+            if (typeof forceSyncDefects === 'function') {
+                setTimeout(forceSyncDefects, 1000);
+            }
+        }
+        if (typeof loadDefectCategories === 'function') loadDefectCategories();
       } catch (e) {
         console.error("Load Defects Error:", e);
         if (tbody) tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;padding:24px;color:#ef4444;">Failed to load defects. Check connection.</td></tr>';
@@ -12861,12 +12877,21 @@
 
     async function loadDefectCategories() {
       const datalist = document.getElementById('defect-categories-list');
-      if (!datalist || datalist.dataset.loaded) return;
+      const filterSelect = document.getElementById('filter-defect-category');
+      
+      if (window.DEFECT_CATEGORIES) return;
       try {
-        const res = await callFrappe('frappe.client.get_list', { doctype: 'FT Defect Category', fields: '["name"]', limit_page_length: 500 }, 'GET');
+        const res = await callFrappe('/api/method/frappe.client.get_list', { doctype: 'FT Defect Category', fields: '["name", "category"]', limit_page_length: 500 }, 'GET');
         let cats = res.message || [];
-        datalist.innerHTML = cats.map(c => `<option value="${c.name}">`).join('');
-        datalist.dataset.loaded = "true";
+        
+        // Store globally for custom dropdown
+        window.DEFECT_CATEGORIES = cats;
+        
+        
+        // Populate the filter dropdown
+        if (filterSelect) {
+           filterSelect.innerHTML = '<option value="">All</option>' + cats.map(c => `<option value="${c.name}">${c.category || c.name}</option>`).join('');
+        }
       } catch(e) {
          console.warn("Failed to load defect categories", e);
       }
@@ -12880,6 +12905,7 @@
     function clearDefectFilters() {
       if(document.getElementById('filter-defect-status')) document.getElementById('filter-defect-status').value = '';
       if(document.getElementById('filter-defect-severity')) document.getElementById('filter-defect-severity').value = '';
+      if(document.getElementById('filter-defect-category')) document.getElementById('filter-defect-category').value = '';
       if(document.getElementById('filter-defect-machine')) document.getElementById('filter-defect-machine').value = '';
       if(document.getElementById('filter-defect-customer')) document.getElementById('filter-defect-customer').value = '';
       filterDefectsTable();
@@ -12890,6 +12916,7 @@
       const severity = (document.getElementById('filter-defect-severity')?.value || '').toLowerCase();
       const machine  = (document.getElementById('filter-defect-machine')?.value || '').toLowerCase();
       const customer = (document.getElementById('filter-defect-customer')?.value || '').toLowerCase();
+      const category = (document.getElementById('filter-defect-category')?.value || '').toLowerCase();
 
       window.FT_DEFECTS_FILTERED_DATA = (FT_DEFECTS_DATA || []).filter(r => {
         // Status is determined by presence of end_date
@@ -12897,11 +12924,13 @@
         const rSev = (r.priority || 'low').toLowerCase();
         const rMach = ((r.machine || '') + ' ' + (r.model || '')).toLowerCase();
         const rCust = (r.customer || '').toLowerCase();
+        const rCat  = (r.category || '').toLowerCase();
 
         return (!status || computedStatus === status) &&
                (!severity || rSev === severity) &&
                (!machine || rMach.includes(machine)) &&
-               (!customer || rCust.includes(customer));
+               (!customer || rCust.includes(customer)) &&
+               (!category || rCat === category);
       });
       window.DEFECTS_CURRENT_PAGE = 1;
       renderDefectsTable(window.FT_DEFECTS_FILTERED_DATA);
@@ -13196,7 +13225,7 @@
             const ALLOWED = new Set([
               'name','defect_type','machine','customer','fleetrack_managed','oem','model',
               'location','region','warranty_status','start_date','priority','status',
-              'description','on_hold','ted','end_date','defect_days'
+              'description','on_hold','ted','end_date','defect_days','category'
             ]);
             const toUpsert = allDefects.map(d => {
               const row = {};
@@ -13572,6 +13601,94 @@ We will let you know if there are any changes to the field service booking.`;
       showToast(`✅ ${type.toUpperCase()} copied to clipboard`, "success");
     }
 
+    
+    window.forceSyncDefects = async function() {
+      try {
+        console.log("Forcing sync of all defects from Frappe...");
+        showToast("Force syncing defects from Frappe...", "info");
+        const res = await callFrappe("/api/method/mxg_fleet_track.omnis_dashboard.ft_defects_dashboard.get_ft_defect_summary", {}, "GET");
+        
+        // Workaround for remote server not having 'category' in summary endpoint yet:
+        let defectCats = {};
+        try {
+           const catRes = await callFrappe("/api/method/frappe.client.get_list", { doctype: "FT Defects Log", fields: '["name", "category"]', limit_page_length: 10000 }, "GET");
+           if (catRes.message) {
+               catRes.message.forEach(c => { defectCats[c.name] = c.category; });
+           }
+        } catch(e) { console.warn("Failed to fetch defect categories mapping from Frappe", e); }
+
+        if (res.message && res.message.rows) {
+          const rows = res.message.rows;
+          const toUpsert = rows.map(r => {
+            // Merge the natively fetched category
+            if (defectCats[r.name]) {
+               r.category = defectCats[r.name];
+            }
+
+            const row = {};
+            const ALLOWED = new Set([
+              'name','defect_type','machine','customer','fleetrack_managed','oem','model',
+              'location','region','warranty_status','start_date','priority','status',
+              'description','on_hold','ted','end_date','defect_days','category'
+            ]);
+            for (const [k, v] of Object.entries(r)) {
+              if (ALLOWED.has(k)) row[k] = v ?? null;
+            }
+            return row;
+          });
+          
+          await window.electron.invoke('supabase:query', {
+            table: 'ft_defect', method: 'upsert', params: {}, data: toUpsert
+          });
+          showToast(`Synced ${toUpsert.length} defects!`, "success");
+          
+          // Reload
+          loadFtDefects();
+        }
+      } catch (e) {
+        console.error(e);
+        showToast("Failed to force sync", "err");
+      }
+    };
+
+    
+    let FT_DEFECT_CATEGORY_DROPDOWN_INIT = false;
+    function initDefectCategorySearch() {
+      if (FT_DEFECT_CATEGORY_DROPDOWN_INIT) return;
+      const input = document.getElementById("defect-category");
+      const dropdown = document.getElementById("defect-category-dropdown");
+      if (!input || !dropdown) return;
+      
+      const renderCats = (q) => {
+        if (!window.DEFECT_CATEGORIES) return;
+        const matches = window.DEFECT_CATEGORIES.filter(c => c.name.toLowerCase().includes(q) || (c.category && c.category.toLowerCase().includes(q)));
+        dropdown.innerHTML = "";
+        if (matches.length === 0) {
+           dropdown.classList.add("hidden");
+           return;
+        }
+        dropdown.classList.remove("hidden");
+        matches.forEach(m => {
+          const li = document.createElement('li');
+          li.style.cssText = "padding:8px 12px; cursor:pointer; font-size:13px; color:#1e293b; border-bottom:1px solid #f1f5f9;";
+          li.textContent = m.category || m.name;
+          li.onmouseover = () => { li.style.background = "#f1f5f9"; };
+          li.onmouseout = () => { li.style.background = "#fff"; };
+          li.onmousedown = (e) => {
+            e.preventDefault();
+            input.value = m.name;
+            dropdown.classList.add("hidden");
+          };
+          dropdown.appendChild(li);
+        });
+      };
+      
+      input.addEventListener("focus", () => renderCats(""));
+      input.addEventListener("input", function() { renderCats(this.value.trim().toLowerCase()); });
+      input.addEventListener("blur", () => setTimeout(() => dropdown.classList.add("hidden"), 150));
+      FT_DEFECT_CATEGORY_DROPDOWN_INIT = true;
+    }
+
     function openDefectModal(defectId = null, preselectedMachine = null) {
       const modal = document.getElementById("modal-defect");
       const title = document.getElementById("defect-modal-title");
@@ -13581,6 +13698,7 @@ We will let you know if there are any changes to the field service booking.`;
       if (typeof loadDefectCategories === 'function') loadDefectCategories();
 
       initDefectMachineSearch();
+      initDefectCategorySearch();
       modal.classList.remove("hidden");
 
       if (defectId) {
@@ -13729,7 +13847,7 @@ We will let you know if there are any changes to the field service booking.`;
         const datalist = document.getElementById('defect-categories-list');
         const opts = Array.from(datalist.options).map(o => o.value);
         if (!opts.includes(category)) {
-           callFrappe('frappe.client.insert', { doc: { doctype: 'FT Defect Category', category_name: category } }, 'POST').catch(e => console.warn(e));
+           callFrappe('/api/method/frappe.client.insert', { doc: { doctype: 'FT Defect Category', category: category } }, 'POST').catch(e => console.warn(e));
         }
         
         showToast("Defect Saved!", "success");
