@@ -142,3 +142,5 @@
   Files: .mcp/knowledge/_shared/commit_log.md,.mcp/knowledge/fleetrack/session_notes.md,
 - `c5d112b` 2026-07-30 [supabase-migration] feat: standardise defect loading animations with omnis loader modal
   Files: systems/fleetrack/index.html,
+- `d962a63` 2026-07-30 [supabase-migration] chore: update session notes and commit log
+  Files: .mcp/knowledge/_shared/commit_log.md,.mcp/knowledge/fleetrack/session_notes.md,

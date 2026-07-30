@@ -4987,6 +4987,10 @@
                 <input type="checkbox" id="defect-on-hold" style="accent-color:#b91c1c; width:16px; height:16px;">
                 On Hold?
               </label>
+              <label style="display:flex; align-items:center; gap:6px; font-weight:700; color:#10b981; font-size:13px; cursor:pointer; margin-left:20px;">
+                <input type="checkbox" id="defect-machine-running" checked style="accent-color:#10b981; width:16px; height:16px;">
+                Machine Running?
+              </label>
             </div>
 
             <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-bottom:20px;">
@@ -5021,7 +5025,7 @@
                 </div>
                 <div class="form-group">
                   <label class="form-label" style="font-weight:700;">Solution</label>
-                  <input type="text" class="form-input" id="defect-solution" placeholder="Solution for Defect">
+                  <textarea class="form-input" id="defect-solution" placeholder="Solution for Defect" style="resize:vertical; min-height:60px; font-family:inherit;"></textarea>
                 </div>
                 <div class="form-group">
                   <label class="form-label" style="font-weight:700;">Quotation Sent Date</label>
@@ -5055,7 +5059,7 @@
                   <label class="form-label" style="font-weight:700;">Parts ETA</label>
                   <input type="date" class="form-input" id="defect-parts-eta">
                 </div>
-                <div class="form-group">
+                <div class="form-group" id="defect-ted-group">
                   <label class="form-label" style="font-weight:700;">TED</label>
                   <input type="date" class="form-input" id="defect-ted">
                 </div>
@@ -5071,9 +5075,14 @@
             <input type="hidden" id="defect-reported-by">
             <input type="hidden" id="defect-hmr">
           </div>
-          <div class="modal-footer" style="padding:14px 20px;background:#f8fafc;border-top:1px solid #e2e8f0;border-radius:0 0 12px 12px;display:flex;gap:10px;justify-content:flex-end;">
-            <button class="btn btn-secondary" onclick="closeDefectModal()">Cancel</button>
-            <button class="btn btn-primary" onclick="submitDefect()" style="background:#b91c1c;border-color:#b91c1c;">Submit Defect</button>
+          <div class="modal-footer" style="padding:14px 20px;background:#f8fafc;border-top:1px solid #e2e8f0;border-radius:0 0 12px 12px;display:flex;justify-content:space-between;align-items:center;">
+            <div>
+              <button id="btn-delete-defect" onclick="promptDeleteDefect()" class="btn" style="display:none; padding:8px 16px; border:1px solid #ef4444; background:#fef2f2; color:#ef4444; font-size:13px; font-weight:600;">Delete Defect</button>
+            </div>
+            <div style="display:flex;gap:10px;">
+              <button class="btn btn-secondary" onclick="closeDefectModal()">Cancel</button>
+              <button class="btn btn-primary" onclick="submitDefect()" style="background:#b91c1c;border-color:#b91c1c;">Submit Defect</button>
+            </div>
           </div>
         </div>
       </div>
@@ -13008,6 +13017,11 @@
                     : "transparent";
 
         tr.style.background = rowBg;
+        if (r.machine_running === false) {
+            tr.style.borderLeft = "4px solid #ef4444";
+            tr.style.background = "#fef2f2";
+            rowBg = "#fef2f2"; // Update rowBg so mouseleave restores to red tint
+        }
         tr.onmouseenter = () => tr.style.background = (priority === "High" && s === "open") ? "#fee2e2" : (priority === "Medium" && s === "open") ? "#fef3c7" : "#f8fafc";
         tr.onmouseleave = () => tr.style.background = rowBg;
 
@@ -13047,7 +13061,7 @@
         
         const statusHtml = `<div style="font-weight:800;color:${statusColor};font-size:11px;text-transform:uppercase;">${status}</div>${extraStatusHtml}`;
         
-        const tedStr = (r.ted && r.ted.trim() !== '') ? new Date(r.ted.split(" ")[0]).toLocaleDateString('en-GB', {day:'2-digit', month:'short', year:'numeric'}) : "-";
+        const tedStr = (r.ted_status === 'TBA') ? 'TBA' : ((r.ted && r.ted.trim() !== '') ? new Date(r.ted.split(" ")[0]).toLocaleDateString('en-GB', {day:'2-digit', month:'short', year:'numeric'}) : "-");
         const redStr = (r.red && r.red.trim() !== '') ? new Date(r.red.split(" ")[0]).toLocaleDateString('en-GB', {day:'2-digit', month:'short', year:'numeric'}) : "-";
 
         let daysOnBreakdown = "";
@@ -13835,6 +13849,9 @@ We will let you know if there are any changes to the field service booking.`;
         mSearch.disabled = true;
 
         document.getElementById("defect-on-hold").checked = defect.on_hold ? true : false;
+        document.getElementById("defect-machine-running").checked = defect.machine_running === false ? false : true;
+        const delBtn = document.getElementById("btn-delete-defect");
+        if (delBtn) delBtn.style.display = "block";
         document.getElementById("defect-customer").value = defect.customer || "";
         document.getElementById("defect-machine-display").value = defect.model ? defect.model + " [" + defect.machine + "]" : defect.machine || "";
         
@@ -13863,6 +13880,9 @@ We will let you know if there are any changes to the field service booking.`;
         mSearch.disabled = false;
         
         document.getElementById("defect-on-hold").checked = false;
+        document.getElementById("defect-machine-running").checked = true;
+        const delBtn = document.getElementById("btn-delete-defect");
+        if (delBtn) delBtn.style.display = "none";
         document.getElementById("defect-customer").value = "";
         document.getElementById("defect-machine-display").value = "";
         document.getElementById("defect-type").value = "Minor";
@@ -13921,6 +13941,7 @@ We will let you know if there are any changes to the field service booking.`;
       const machine = document.getElementById("defect-machine-search").dataset.selectedName || document.getElementById("defect-machine-search").value;
       
       const on_hold = document.getElementById("defect-on-hold").checked;
+      const machine_running = document.getElementById("defect-machine-running").checked;
       const defect_type = document.getElementById("defect-type").value;
       const ted_status = document.getElementById("defect-ted-status").value;
       const category = document.getElementById("defect-category").value;
@@ -13949,7 +13970,7 @@ We will let you know if there are any changes to the field service booking.`;
         // Supabase Insert/Update
         const payload = {
           machine, defect_type, priority, status, description, start_date, end_date,
-          on_hold, ted_status, category, quotation_sent_date, parts_eta, ted, red, solution,
+          on_hold, machine_running, ted_status, category, quotation_sent_date, parts_eta, ted, red, solution,
           customer: md.customer||null, model: md.model||null, oem: md.oem||null,
           region: md.region||null, location: md.current_location||md.location||null,
           warranty_status: md.warranty_status||null
@@ -22975,7 +22996,88 @@ window.loadISR = async function() {
       }, 340);
     }
     document.addEventListener('keydown',e=>{if(e.key==='Escape')closeMachineLookup();});
-    </script>
+    
+    // Custom logic for TED visibility
+    document.addEventListener("DOMContentLoaded", () => {
+      const tedStatus = document.getElementById("defect-ted-status");
+      const tedGroup = document.getElementById("defect-ted-group");
+      if (tedStatus && tedGroup) {
+        tedStatus.addEventListener("change", () => {
+          if (tedStatus.value === "TBA") {
+            tedGroup.style.display = "none";
+          } else {
+            tedGroup.style.display = "block";
+          }
+        });
+      }
+    });
+
+    function promptDeleteDefect() {
+      document.getElementById('delete-prompt-email').value = "";
+      document.getElementById('delete-prompt-pwd').value = "";
+      document.getElementById('modal-delete-prompt').style.display = "flex";
+    }
+
+    async function executeDeleteDefect() {
+      const email = document.getElementById('delete-prompt-email').value;
+      const pwd = document.getElementById('delete-prompt-pwd').value;
+      if (!email || !pwd) {
+        showToast("Email and password are required", "err");
+        return;
+      }
+
+      document.getElementById('modal-delete-prompt').style.display = "none";
+      window.showOmnisLoader("Verifying Admin credentials...");
+      try {
+        const { data, error } = await window.supabase.auth.signInWithPassword({
+          email: email,
+          password: pwd
+        });
+        
+        if (error) throw error;
+
+        const id = document.getElementById("defect-id").value;
+        const { error: delErr } = await window.supabase.from("ft_defect").delete().eq("name", id);
+        if (delErr) throw delErr;
+
+        showToast("Defect deleted securely", "success");
+        closeDefectModal();
+        if (typeof loadFtDefects === "function") loadFtDefects();
+        if (typeof forceSyncDefects === "function") setTimeout(forceSyncDefects, 500);
+      } catch (err) {
+        console.error(err);
+        showToast("Authentication or Deletion failed: " + err.message, "err");
+      } finally {
+        window.hideOmnisLoader();
+      }
+    }
+
+</script>
+
+
+  <!-- Custom Prompt Modal for Delete -->
+  <div id="modal-delete-prompt" class="modal-overlay hidden" style="position:fixed; top:0; left:0; right:0; bottom:0; background:rgba(15,23,42,0.6); backdrop-filter:blur(4px); z-index:99999; display:none; align-items:center; justify-content:center;">
+    <div style="background:#fff; border-radius:12px; width:400px; max-width:90%; box-shadow:0 20px 25px -5px rgba(0,0,0,0.1), 0 8px 10px -6px rgba(0,0,0,0.1); overflow:hidden;">
+      <div style="padding:16px 20px; background:#b91c1c; display:flex; justify-content:space-between; align-items:center;">
+        <div style="color:#fff; font-size:15px; font-weight:700;">Authorize Deletion</div>
+        <button onclick="document.getElementById('modal-delete-prompt').style.display='none'" style="background:transparent; border:none; color:#fca5a5; cursor:pointer; font-size:18px;">&times;</button>
+      </div>
+      <div style="padding:20px;">
+        <div style="margin-bottom:12px;">
+          <label style="display:block; font-size:12px; font-weight:700; color:#475569; margin-bottom:4px;">Administrator Email</label>
+          <input type="email" id="delete-prompt-email" style="width:100%; padding:8px; border:1px solid #cbd5e1; border-radius:6px; font-size:13px; outline:none;" placeholder="admin@example.com">
+        </div>
+        <div style="margin-bottom:20px;">
+          <label style="display:block; font-size:12px; font-weight:700; color:#475569; margin-bottom:4px;">Administrator Password</label>
+          <input type="password" id="delete-prompt-pwd" style="width:100%; padding:8px; border:1px solid #cbd5e1; border-radius:6px; font-size:13px; outline:none;" placeholder="********">
+        </div>
+        <div style="display:flex; justify-content:flex-end; gap:10px;">
+          <button onclick="document.getElementById('modal-delete-prompt').style.display='none'" style="padding:8px 16px; border:1px solid #cbd5e1; background:#fff; border-radius:20px; cursor:pointer; font-size:13px; font-weight:600; color:#475569;">Cancel</button>
+          <button onclick="executeDeleteDefect()" style="padding:8px 16px; border:none; background:#b91c1c; color:#fff; border-radius:20px; cursor:pointer; font-size:13px; font-weight:600; box-shadow:0 2px 4px rgba(185,28,28,0.2);">Authorize & Delete</button>
+        </div>
+      </div>
+    </div>
+  </div>
 
 </body>
 </html>
