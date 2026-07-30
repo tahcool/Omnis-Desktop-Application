@@ -4852,7 +4852,7 @@
               <input type="date" class="form-input" id="fsp-new-date">
             </div>
 
-            <div class="form-group" style="grid-column: span 2; display: none;" id="fsp-defects-container">
+            <div class="form-group" style="grid-column: span 2; display: block;" id="fsp-defects-container">
               <label class="form-label">Logged Machine Defects (Ticking adds to plan)</label>
               <div id="fsp-defects-table-wrap" style="max-height: 150px; overflow-y: auto; border: 1px solid #e2e8f0; border-radius: 8px; background: #f8fafc; padding: 0;">
                 <table style="width: 100%; font-size: 11px; border-collapse: collapse;">
@@ -4864,7 +4864,7 @@
                     </tr>
                   </thead>
                   <tbody id="fsp-defects-tbody">
-                    <!-- Dynamic rows -->
+                    <tr><td colspan="3" style="padding:12px; text-align:center; color:#94a3b8; font-size:11px;">🔍 Please select a machine to view its open defects</td></tr>
                   </tbody>
                 </table>
               </div>
@@ -13332,9 +13332,9 @@
       document.getElementById("fsp-new-defects").value = "";
       
       const defContainer = document.getElementById("fsp-defects-container");
-      if (defContainer) defContainer.style.display = "none";
+      if (defContainer) defContainer.style.display = "block";
       const defTbody = document.getElementById("fsp-defects-tbody");
-      if (defTbody) defTbody.innerHTML = "";
+      if (defTbody) defTbody.innerHTML = '<tr><td colspan="3" style="padding:12px; text-align:center; color:#94a3b8; font-size:11px;">🔍 Please select a machine to view its open defects</td></tr>';
 
       modal.classList.remove("hidden");
       if (!FT_FSP_SEARCH_INIT) initFspMachineSearch();
@@ -13460,13 +13460,15 @@
           params: {
             columns: 'name,description,priority,end_date,status,machine',
             options: {},
-            match: { machine: machineName },
-            or: 'end_date.is.null,end_date.eq.'   // NULL or empty string
+            match: { machine: machineName }
           }
         });
 
-        // Belt-and-braces: filter out any with a real end_date
-        const defects = (sbRes?.data || []).filter(d => !d.end_date || d.end_date === '');
+        // Filter based on status rather than end_date, as end_date might be populated for other reasons
+        const defects = (sbRes?.data || []).filter(d => {
+            const st = (d.status || 'open').toLowerCase();
+            return st !== 'closed' && st !== 'completed';
+        });
         console.log(`[FSP Defects] ${defects.length} active defects from Supabase for ${machineName}`);
 
         tbody.innerHTML = "";
