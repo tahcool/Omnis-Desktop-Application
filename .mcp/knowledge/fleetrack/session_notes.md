@@ -44,3 +44,4 @@
 \n- **Commit ed31a4a** (2026-07-30): Restore point before migrating defects schema
 \n- **Commit 2b61773** (2026-07-30): Restore point: before adding category filter and sync
 \n- **Commit 773cd13** (2026-07-30): Fix category dropdown styling and force-sync categories natively
+\n- **Commit 1ce4a9f** (2026-07-30): fix: update payload.modified to modified_at for editing defects
