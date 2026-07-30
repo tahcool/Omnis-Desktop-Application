@@ -12838,7 +12838,8 @@
 
     async function loadFtDefects() {
       const tbody = document.getElementById("tbl-defects");
-      if (tbody) tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;padding:24px;color:#94a3b8;">⏳ Loading defects...</td></tr>';
+      if (tbody) tbody.innerHTML = '';
+      window.showOmnisLoader('Loading defects...');
       try {
         if (!window.supabase) throw new Error("Supabase client not found");
         
@@ -12883,6 +12884,8 @@
         console.error("Load Defects Error:", e);
         if (tbody) tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;padding:24px;color:#ef4444;">Failed to load defects. Check connection.</td></tr>';
         showToast("Failed to load defects", "err");
+      } finally {
+        window.hideOmnisLoader();
       }
     }
 
@@ -13272,7 +13275,8 @@
       const tbody = document.getElementById("fsp-defects-tbody");
       if (!container || !tbody) return;
 
-      tbody.innerHTML = '<tr><td colspan="3" style="padding:10px; text-align:center; color:#64748b;">Loading defects…</td></tr>';
+      tbody.innerHTML = '';
+      window.showOmnisLoader('Loading defects...');
       container.style.display = "block";
 
       try {
@@ -13363,7 +13367,9 @@
 
       } catch (err) {
         console.error("[FSP Defects] Error:", err);
-        tbody.innerHTML = `<tr><td colspan="3" style="padding:10px; text-align:center; color:#ef4444; font-size:11px;">Failed to load defects — ${err.message}</td></tr>`;
+        tbody.innerHTML = `<tr><td colspan="3" style="padding:10px; text-align:center; color:#ef4444; font-size:11px;">Failed to load defects  ${err.message}</td></tr>`;
+      } finally {
+        window.hideOmnisLoader();
       }
     }
 
@@ -22919,7 +22925,8 @@ window.loadISR = async function() {
         renderDefects(_mergedDefs);
       } else {
         // Neither global has data yet — fetch live for this machine
-        document.getElementById('mlookup-defects-list').innerHTML = '<div style="font-size:11px;color:#94a3b8;text-align:center;padding:10px;">Loading defects…</div>';
+        document.getElementById('mlookup-defects-list').innerHTML = '';
+        window.showOmnisLoader('Loading defects...');
         (async () => {
           try {
             const GDR_URL = '/api/method/mxg_fleet_track.omnis_dashboard.ft_defects_dashboard.get_ft_defect_summary';
@@ -22931,6 +22938,8 @@ window.loadISR = async function() {
           } catch(e) {
             if (_mlookupMachine === name)
               document.getElementById('mlookup-defects-list').innerHTML = '<div style="font-size:11px;color:#ef4444;text-align:center;padding:10px;">Could not load defects</div>';
+          } finally {
+            window.hideOmnisLoader();
           }
         })();
       }
