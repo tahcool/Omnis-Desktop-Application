@@ -1,0 +1,60 @@
+<!-- TAB: BRAND MAPPINGS -->
+                      <div id="settings-tab-brand-mappings" class="settings-tab-content hidden">
+                          <div class="dash-card" style="background:#fff; padding:30px; border-radius:16px; border:1px solid #e2e8f0; box-shadow:0 4px 6px -1px rgba(0,0,0,0.05);">
+                              <div style="margin-bottom:20px;">
+                                  <h2 style="font-size:18px; font-weight:700; color:#1e293b; margin:0; display:flex; align-items:center; gap:10px;">
+                                      <i class="fas fa-tags" style="color:#10b981;"></i> OEM & Brand Mappings
+                                  </h2>
+                                  <p style="color:#64748b; font-size:13px; margin-top:6px;">Assign Brands/OEMs to specific companies. This controls how the stock inventory is filtered by company.</p>
+                              </div>
+
+                              <!-- Add New Mapping -->
+                              <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:12px; padding:20px; margin-bottom:24px;">
+                                  <h3 style="margin:0 0 16px 0; font-size:14px; font-weight:700; color:#0f172a;">Add New Mapping</h3>
+                                  <div style="display:flex; gap:16px; align-items:flex-end;">
+                                      <div style="flex:1;">
+                                          <label style="display:block; font-size:12px; font-weight:700; color:#475569; margin-bottom:6px;">Brand / OEM Name <span style="color:#ef4444">*</span></label>
+                                          <input type="text" id="new-stock-brand" style="width:100%; box-sizing:border-box; border:1px solid #cbd5e1; border-radius:8px; padding:10px; font-size:13px; outline:none;" placeholder="e.g. Caterpillar">
+                                      </div>
+                                      <div style="flex:1;">
+                                          <label style="display:block; font-size:12px; font-weight:700; color:#475569; margin-bottom:6px;">Upload Logo</label>
+                                          <div style="display:flex; gap:8px;">
+                                              <input type="file" id="new-stock-logo-upload" accept="image/*" style="flex:1; box-sizing:border-box; border:1px solid #cbd5e1; border-radius:8px; padding:7px; font-size:13px; outline:none; background:white;" onchange="if(this.files && this.files[0]) { const r = new FileReader(); r.onload = e => { const img = document.getElementById('new-stock-logo-preview'); img.src = e.target.result; img.style.display = 'block'; document.getElementById('new-stock-logo').value = e.target.result; }; r.readAsDataURL(this.files[0]); }">
+                                              <input type="hidden" id="new-stock-logo">
+                                              <img id="new-stock-logo-preview" style="height:36px; max-width:60px; object-fit:contain; border-radius:4px; display:none; background:#f8fafc; border:1px solid #e2e8f0;">
+                                          </div>
+                                      </div>
+                                      <div style="flex:1;">
+                                          <label style="display:block; font-size:12px; font-weight:700; color:#475569; margin-bottom:6px;">Assign Company <span style="color:#ef4444">*</span></label>
+                                          <select id="new-stock-company" style="width:100%; box-sizing:border-box; border:1px solid #cbd5e1; border-radius:8px; padding:10px; font-size:13px; outline:none; background:white;">
+                                              <option value="Machinery Exchange">Machinery Exchange</option>
+                                              <option value="Sinopower">Sinopower</option>
+                                          </select>
+                                      </div>
+                                      <div>
+                                          <button onclick="salestrack.addStockMapping()" style="padding:10px 24px; background:#10b981; color:white; border:none; border-radius:8px; font-size:13px; font-weight:700; cursor:pointer; box-shadow:0 4px 6px -1px rgba(16, 185, 129, 0.2);"><i class="fas fa-plus"></i> Add Mapping</button>
+                                      </div>
+                                  </div>
+                              </div>
+
+                              <!-- Mappings List -->
+                              <div>
+                                  <h3 style="margin:0 0 16px 0; font-size:14px; font-weight:700; color:#0f172a;">Current Mappings</h3>
+                                  <div style="border:1px solid #e2e8f0; border-radius:12px; overflow:hidden;">
+                                      <table style="width:100%; border-collapse:collapse; text-align:left;">
+                                          <thead style="background:#f1f5f9; border-bottom:1px solid #e2e8f0;">
+                                              <tr>
+                                                  <th style="padding:12px 20px; font-size:12px; font-weight:800; color:#475569; text-transform:uppercase;">Brand / OEM</th>
+                                                  <th style="padding:12px 20px; font-size:12px; font-weight:800; color:#475569; text-transform:uppercase;">Assigned Company</th>
+                                                  <th style="padding:12px 20px; font-size:12px; font-weight:800; color:#475569; text-transform:uppercase; text-align:center;">Logo</th>
+                                                  <th style="padding:12px 20px; font-size:12px; font-weight:800; color:#475569; text-transform:uppercase; text-align:right;">Actions</th>
+                                              </tr>
+                                          </thead>
+                                          <tbody id="stock-mappings-tbody">
+                                              <!-- Mappings populated dynamically -->
+                                              <tr><td colspan="4" style="text-align:center; padding:30px; color:#94a3b8; font-style:italic; font-size:13px;">Loading mappings...</td></tr>
+                                          </tbody>
+                                      </table>
+                                  </div>
+                              </div>
+                          </div>

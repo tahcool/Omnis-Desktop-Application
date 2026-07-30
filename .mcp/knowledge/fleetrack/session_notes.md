@@ -38,3 +38,6 @@
 3. Schema Agent: design normalized schema for ft_customer, ft_region, ft_breakdown, ft_service_plan
 4. Migration Agent: migrate ft_customer and ft_region (no dependencies)
 5. Fleetrack Agent: replace machine register callFrappe() calls (lines 9190, 11029, 11096)
+\n- **Commit d310495** (2026-07-28): Restore point: fleetrack machine lookup service tracking and clickable cards added
+\n- **Commit cbbe0ea** (2026-07-28): Enhance View Modal and revamp Service Tracking Report (STR)
+\n- **Commit 4c15df2** (2026-07-29): Update Shortcuts strip and add premium Export Report button

@@ -1,0 +1,82 @@
+<!-- TAB: EMAIL RECIPIENTS -->
+                      <div id="settings-tab-email-recipients" class="settings-tab-content hidden">
+                          <div class="gs-card" style="background:#fff; padding:30px; border-radius:16px; border:1px solid #e2e8f0; box-shadow:0 4px 6px -1px rgba(0,0,0,0.05);">
+                              <div style="margin-bottom:20px;">
+                                  <h2 style="font-size:18px; font-weight:700; color:#1e293b; margin:0; display:flex; align-items:center; gap:10px;">
+                                      <i class="fas fa-envelope" style="color:#1d4ed8;"></i> Automated Email CC Recipients
+                                  </h2>
+                                  <p style="color:#64748b; font-size:13px; margin-top:6px;">Configure the internal staff CC'd on Order Tracking and Aftersales Handover emails. Enter one email per line.</p>
+                              </div>
+        
+                              <div style="display:flex; flex-direction:column; gap:24px;">
+                                  <!-- Machinery Exchange -->
+                                  <div style="border:1px solid #e2e8f0; border-radius:12px; padding:20px; background:#fafbfc;">
+                                      <div style="display:flex; align-items:center; gap:14px; margin-bottom:14px;">
+                                          <img src="https://pfqaeewmlwfayxbgmuaq.supabase.co/storage/v1/object/public/public-assets/logos/mxg-logo.png" alt="MXG" style="height:28px; width:auto;">
+                                          <h3 style="margin:0; font-size:14px; color:#1e293b; font-weight:700;">Machinery Exchange &mdash; Email Settings</h3>
+                                      </div>
+                                      
+                                      <div style="display:grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap:12px; margin-bottom:16px;">
+                                          <div>
+                                              <label style="display:block; font-size:12px; font-weight:700; color:#475569; margin-bottom:6px;">Contact Person Name</label>
+                                              <input type="text" id="email-contact-name-mxg" style="width:100%; box-sizing:border-box; border:1px solid #cbd5e1; border-radius:8px; padding:10px; font-size:13px; color:#0f172a;" placeholder="e.g. Chetan Samji">
+                                          </div>
+                                          <div>
+                                              <label style="display:block; font-size:12px; font-weight:700; color:#475569; margin-bottom:6px;">Job Title</label>
+                                              <input type="text" id="email-contact-title-mxg" style="width:100%; box-sizing:border-box; border:1px solid #cbd5e1; border-radius:8px; padding:10px; font-size:13px; color:#0f172a;" placeholder="e.g. Commercial Manager">
+                                          </div>
+                                          <div>
+                                              <label style="display:block; font-size:12px; font-weight:700; color:#475569; margin-bottom:6px;">Email Address</label>
+                                              <input type="email" id="email-contact-email-mxg" style="width:100%; box-sizing:border-box; border:1px solid #cbd5e1; border-radius:8px; padding:10px; font-size:13px; color:#0f172a;" placeholder="e.g. chetan@example.com">
+                                          </div>
+                                          <div>
+                                              <label style="display:block; font-size:12px; font-weight:700; color:#475569; margin-bottom:6px;">WhatsApp Number</label>
+                                              <input type="text" id="email-contact-phone-mxg" style="width:100%; box-sizing:border-box; border:1px solid #cbd5e1; border-radius:8px; padding:10px; font-size:13px; color:#0f172a;" placeholder="e.g. +263772949515">
+                                          </div>
+                                      </div>
+
+                                      <label style="display:block; font-size:12px; font-weight:700; color:#475569; margin-bottom:6px;">CC Recipients (One per line)</label>
+                                      <textarea id="email-recipients-mxg" rows="4" style="width:100%; box-sizing:border-box; border:1px solid #cbd5e1; border-radius:8px; padding:12px; font-size:12.5px; font-family:monospace; resize:vertical; color:#0f172a;" placeholder="one@email.com&#10;another@email.com"></textarea>
+                                  </div>
+        
+                                  <!-- Sinopower -->
+                                  <div style="border:1px solid #e2e8f0; border-radius:12px; padding:20px; background:#fafbfc;">
+                                      <div style="display:flex; align-items:center; gap:14px; margin-bottom:14px;">
+                                          <div style="background:#7b1515; padding:6px 10px; border-radius:7px; display:inline-flex; align-items:center;">
+                                              <img src="https://pfqaeewmlwfayxbgmuaq.supabase.co/storage/v1/object/public/public-assets/logos/spz-logo.png" alt="SPZ" style="height:22px; width:auto;">
+                                          </div>
+                                          <h3 style="margin:0; font-size:14px; color:#1e293b; font-weight:700;">Sinopower &mdash; Email Settings</h3>
+                                      </div>
+                                      
+                                      <div style="display:grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap:12px; margin-bottom:16px;">
+                                          <div>
+                                              <label style="display:block; font-size:12px; font-weight:700; color:#475569; margin-bottom:6px;">Contact Person Name</label>
+                                              <input type="text" id="email-contact-name-spz" style="width:100%; box-sizing:border-box; border:1px solid #cbd5e1; border-radius:8px; padding:10px; font-size:13px; color:#0f172a;" placeholder="e.g. Brett Berry">
+                                          </div>
+                                          <div>
+                                              <label style="display:block; font-size:12px; font-weight:700; color:#475569; margin-bottom:6px;">Job Title</label>
+                                              <input type="text" id="email-contact-title-spz" style="width:100%; box-sizing:border-box; border:1px solid #cbd5e1; border-radius:8px; padding:10px; font-size:13px; color:#0f172a;" placeholder="e.g. Commercial Manager">
+                                          </div>
+                                          <div>
+                                              <label style="display:block; font-size:12px; font-weight:700; color:#475569; margin-bottom:6px;">Email Address</label>
+                                              <input type="email" id="email-contact-email-spz" style="width:100%; box-sizing:border-box; border:1px solid #cbd5e1; border-radius:8px; padding:10px; font-size:13px; color:#0f172a;" placeholder="e.g. brett@sinopower.co.zw">
+                                          </div>
+                                          <div>
+                                              <label style="display:block; font-size:12px; font-weight:700; color:#475569; margin-bottom:6px;">WhatsApp Number</label>
+                                              <input type="text" id="email-contact-phone-spz" style="width:100%; box-sizing:border-box; border:1px solid #cbd5e1; border-radius:8px; padding:10px; font-size:13px; color:#0f172a;" placeholder="e.g. +263775553862">
+                                          </div>
+                                      </div>
+
+                                      <label style="display:block; font-size:12px; font-weight:700; color:#475569; margin-bottom:6px;">CC Recipients (One per line)</label>
+                                      <textarea id="email-recipients-spz" rows="4" style="width:100%; box-sizing:border-box; border:1px solid #cbd5e1; border-radius:8px; padding:12px; font-size:12.5px; font-family:monospace; resize:vertical; color:#0f172a;" placeholder="one@email.com&#10;another@email.com"></textarea>
+                                  </div>
+                              </div>
+        
+                              <div style="margin-top:24px; display:flex; justify-content:flex-end; gap:10px; border-top:1px solid #f1f5f9; padding-top:20px;">
+                                  <button onclick="salestrack.resetEmailRecipients()" style="padding:10px 22px; border:1px solid #cbd5e1; border-radius:8px; background:white; color:#475569; font-size:13px; font-weight:600; cursor:pointer;">Reset to Defaults</button>
+                                  <button onclick="salestrack.saveEmailRecipients()" style="padding:10px 22px; border:none; border-radius:8px; background:#1d4ed8; color:white; font-size:13px; font-weight:600; cursor:pointer;">&#10003; Save Recipients</button>
+                              </div>
+                          </div>
+                      </div>
+        
+                      

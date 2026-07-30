@@ -1,0 +1,15 @@
+{
+  "name": "replace_file_content",
+  "args": {
+    "AllowMultiple": false,
+    "Description": "Add view-create-quotation to the list of views that are safely reparented when opened, preventing it from being hidden inside another view.",
+    "EndLine": 11874,
+    "Instruction": "Add 'view-create-quotation' to the VIEWS_TO_ESCAPE array in index.html to fix the blank screen bug.",
+    "ReplacementContent": "        const VIEWS_TO_ESCAPE = [\n          'view-group-sales-list', 'view-customers-list', 'view-products-list',\n          'view-create-ce', 'view-ce-list', 'view-create-quotation'\n        ];\n        if (VIEWS_TO_ESCAPE.includes(view.id) && !view.dataset.reparented) {",
+    "StartLine": 11870,
+    "TargetContent": "        const VIEWS_TO_ESCAPE = [\n          'view-group-sales-list', 'view-customers-list', 'view-products-list',\n          'view-create-ce', 'view-ce-list'\n        ];\n        if (VIEWS_TO_ESCAPE.includes(view.id) && !view.dataset.reparented) {",
+    "TargetFile": "c:\\Users\\Administrator\\omnis\\systems\\salestrack\\index.html",
+    "toolAction": "Escaping view-create-quotation to fix blank screen",
+    "toolSummary": "Escape view-create-quotation"
+  }
+}

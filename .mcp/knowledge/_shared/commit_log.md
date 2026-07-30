@@ -119,3 +119,11 @@
 \n## 2026-07-13
 - `2dd4ff7` 2026-07-13 [supabase-migration] Bump version to 4.2.7 and fix stock pipeline form issues
   Files: omnis-web-deploy/systems/salestrack/index.html,omnis_dashboard.py,package.json,systems/salestrack/index.html,
+\n## 2026-07-28
+- `d310495` 2026-07-28 [supabase-migration] Restore point: fleetrack machine lookup service tracking and clickable cards added
+  Files: systems/fleetrack/index.html,
+- `cbbe0ea` 2026-07-28 [supabase-migration] Enhance View Modal and revamp Service Tracking Report (STR)
+  Files: systems/fleetrack/index.html,
+\n## 2026-07-29
+- `4c15df2` 2026-07-29 [supabase-migration] Update Shortcuts strip and add premium Export Report button
+  Files: systems/fleetrack/index.html,

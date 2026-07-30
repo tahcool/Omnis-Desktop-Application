@@ -3683,7 +3683,7 @@
                         <div style="margin-top:4px;font-size:10px;font-weight:700;color:#f59e0b;text-transform:uppercase;letter-spacing:0.5px;">MWR</div>
                       </div>
           
-                      <div onclick="showView('view-rpt-gdr')" style="cursor:pointer;background:#fff;border:1px solid #e2e8f0;border-radius:14px;padding:20px;display:flex;flex-direction:column;gap:8px;transition:box-shadow 0.15s,border-color 0.15s;" onmouseenter="this.style.boxShadow='0 4px 20px rgba(0,0,0,0.08)';this.style.borderColor='#ef4444'" onmouseleave="this.style.boxShadow='none';this.style.borderColor='#e2e8f0'">
+                      <div onclick="showView('view-defects')" style="cursor:pointer;background:#fff;border:1px solid #e2e8f0;border-radius:14px;padding:20px;display:flex;flex-direction:column;gap:8px;transition:box-shadow 0.15s,border-color 0.15s;" onmouseenter="this.style.boxShadow='0 4px 20px rgba(0,0,0,0.08)';this.style.borderColor='#ef4444'" onmouseleave="this.style.boxShadow='none';this.style.borderColor='#e2e8f0'">
                         <div style="font-size:22px;">🔴</div>
                         <div style="font-weight:700;font-size:14px;color:#0f172a;">General Defects</div>
                         <div style="font-size:11px;color:#64748b;">All open and in-progress defects across the fleet.</div>
@@ -3739,7 +3739,7 @@
               <span style="font-size:20px; font-weight:900; color:#0f172a; letter-spacing:-0.5px;">Service Tracking Timeline</span>
               <span style="font-size:10px; background:linear-gradient(135deg, #3b82f6, #6366f1); color:#fff; padding:4px 12px; border-radius:99px; font-weight:800; box-shadow: 0 4px 12px rgba(59,130,246,0.3);">NEXT 7 DAYS</span>
             </div>
-            <button onclick="showView('view-field-service-planning')" style="background:#fff; border:1px solid #e2e8f0; border-radius:8px; padding:8px 16px; font-size:12px; font-weight:800; color:#0f172a; cursor:pointer; box-shadow:0 2px 4px rgba(0,0,0,0.02); transition:all 0.2s cubic-bezier(0.4, 0, 0.2, 1);" onmouseover="this.style.transform='translateY(-1px)'; this.style.boxShadow='0 4px 12px rgba(0,0,0,0.05)'; this.style.borderColor='#cbd5e1';" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 2px 4px rgba(0,0,0,0.02)'; this.style.borderColor='#e2e8f0';">Open Full Planner &rarr;</button>
+            <button onclick="showView('view-fsi')" style="background:#fff; border:1px solid #e2e8f0; border-radius:8px; padding:8px 16px; font-size:12px; font-weight:800; color:#0f172a; cursor:pointer; box-shadow:0 2px 4px rgba(0,0,0,0.02); transition:all 0.2s cubic-bezier(0.4, 0, 0.2, 1);" onmouseover="this.style.transform='translateY(-1px)'; this.style.boxShadow='0 4px 12px rgba(0,0,0,0.05)'; this.style.borderColor='#cbd5e1';" onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 2px 4px rgba(0,0,0,0.02)'; this.style.borderColor='#e2e8f0';">Open Full Planner &rarr;</button>
           </div>
           <div id="dash-fsp-grid" style="flex:1; display:grid; grid-template-columns:repeat(7, 1fr); grid-template-rows:1fr; gap:24px; padding:10px 0;">
             <div style="grid-column:1/-1; display:flex; align-items:center; justify-content:center; color:#94a3b8; font-size:13px; font-weight:600;">Loading service timeline...</div>
@@ -4277,36 +4277,81 @@
 
       <!-- DEFECTS VIEW -->
       <div id="view-defects" class="view-page hidden">
-        <div class="module-card">
-          <div class="module-title">Defects</div>
-          <div class="module-sub">
-            All open and closed defects logged against machines in the fleet.
+        <div class="rpt-view-wrap">
+          <div class="rpt-view-header">
+            <div>
+              <h2 class="rpt-view-title">Defects</h2>
+              <p class="rpt-view-sub">All open and closed defects logged against machines in the fleet.</p>
+            </div>
+            <div style="display:flex;gap:10px;align-items:center;">
+              <!-- Total Defects KPI -->
+              <div class="rpt-kpi-pill" style="position:relative; background:linear-gradient(135deg,rgba(15,23,42,0.85),rgba(30,41,59,0.95)); backdrop-filter:blur(12px); border:1px solid rgba(255,255,255,0.1); border-radius:12px; color:#ffffff; overflow:hidden; padding:10px 18px; align-items:flex-start; min-width:120px; box-shadow:0 4px 12px rgba(0,0,0,0.15); transition:transform 0.2s;">
+                <div style="position:absolute; right:-5px; bottom:-10px; opacity:0.05; pointer-events:none; transform:rotate(-10deg);">
+                  <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline></svg>
+                </div>
+                <label style="color:#94a3b8; font-size:10px; font-weight:700; margin-bottom:2px; z-index:1; position:relative;">TOTAL DEFECTS</label>
+                <span id="defects-kpi-total" style="font-size:24px; font-weight:800; z-index:1; position:relative;">0</span>
+              </div>
+              <!-- Open Defects KPI -->
+              <div class="rpt-kpi-pill" style="position:relative; background:linear-gradient(135deg,rgba(15,23,42,0.85),rgba(30,41,59,0.95)); backdrop-filter:blur(12px); border:1px solid rgba(255,255,255,0.1); border-radius:12px; color:#ffffff; overflow:hidden; padding:10px 18px; align-items:flex-start; min-width:120px; box-shadow:0 4px 12px rgba(0,0,0,0.15); transition:transform 0.2s;">
+                <div style="position:absolute; right:-5px; bottom:-10px; opacity:0.05; pointer-events:none; transform:rotate(5deg);">
+                  <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
+                </div>
+                <label style="color:#94a3b8; font-size:10px; font-weight:700; margin-bottom:2px; z-index:1; position:relative;">OPEN</label>
+                <span id="defects-kpi-open" style="font-size:24px; font-weight:800; color:#3b82f6; z-index:1; position:relative;">0</span>
+              </div>
+              <!-- High Severity KPI -->
+              <div class="rpt-kpi-pill" style="position:relative; background:linear-gradient(135deg,rgba(15,23,42,0.85),rgba(30,41,59,0.95)); backdrop-filter:blur(12px); border:1px solid rgba(255,255,255,0.1); border-radius:12px; color:#ffffff; overflow:hidden; padding:10px 18px; align-items:flex-start; min-width:120px; box-shadow:0 4px 12px rgba(0,0,0,0.15); transition:transform 0.2s;">
+                <div style="position:absolute; right:-5px; bottom:-10px; opacity:0.05; pointer-events:none; transform:rotate(-5deg);">
+                  <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+                </div>
+                <label style="color:#94a3b8; font-size:10px; font-weight:700; margin-bottom:2px; z-index:1; position:relative;">HIGH SEVERITY</label>
+                <span id="defects-kpi-high" style="font-size:24px; font-weight:800; color:#ef4444; z-index:1; position:relative;">0</span>
+              </div>
+            </div>
           </div>
-          <div class="module-actions">
-            <button class="module-btn module-btn-primary" id="btn-defect-new">Log new defect</button>
-            <button class="module-btn" id="btn-defect-filter-severity">Filter by severity</button>
-            <button class="module-btn" id="btn-defect-filter-machine">Filter by machine</button>
-            <button class="module-btn" id="btn-defect-filter-overdue">Show only overdue</button>
+          
+          <!-- Filter Bar -->
+          <div class="rpt-filter-bar">
+            <div style="display:flex; gap:10px;">
+              <button class="rpt-action-btn" id="btn-defect-new" style="background:#ef4444; color:#fff; border-color:#ef4444;">Log new defect</button>
+              <button class="rpt-action-btn" id="btn-defect-filter-severity">Filter by severity</button>
+              <button class="rpt-action-btn" id="btn-defect-filter-machine">Filter by machine</button>
+              <button class="rpt-action-btn" id="btn-defect-filter-overdue">Show only overdue</button>
+            </div>
+            <div id="defect-filter-summary" class="filter-summary" style="margin-left:auto; font-size:11px; color:#64748b; padding-top:8px;">
+              Showing <strong>all severities</strong>, <strong>all machines</strong>, including <strong>open &amp; closed</strong>.
+            </div>
           </div>
-          <div id="defect-filter-summary" class="filter-summary">
-            Showing <strong>all severities</strong>, <strong>all machines</strong>, including <strong>open &amp;
-              closed</strong>.
-          </div>
-          <div class="table-wrapper">
-            <table id="defects-table" style="width:100%;border-collapse:collapse;font-size:10px;table-layout:auto;border:1px solid #e5e7f0;background:#fff;">
+
+          <!-- Table -->
+          <style>
+            #defects-table thead th {
+              background: #f02510 !important;
+              color: #ffffff !important;
+              border-bottom: 2px solid #ef4444 !important;
+              padding: 10px 16px;
+              text-align: left;
+              font-weight: 700;
+              cursor: pointer;
+            }
+            #defects-table thead th:hover { color: #fef08a !important; }
+          </style>
+          <div class="rpt-table-wrap">
+            <table class="rpt-table" id="defects-table" style="width:100%;border-collapse:collapse;font-size:10px;table-layout:auto;border:1px solid #e5e7f0;background:#fff;">
               <thead>
-                <tr style="background:#f02510; color:#ffffff !important;">
-                  <th style="padding:10px 16px;text-align:left;font-weight:700;color:#ffffff !important;border-bottom:2px solid #ef4444;">DEFECT</th>
-                  <th style="padding:10px 16px;text-align:left;font-weight:700;color:#ffffff !important;border-bottom:2px solid #ef4444;">MACHINE</th>
-                  <th style="padding:10px 16px;text-align:left;font-weight:700;color:#ffffff !important;border-bottom:2px solid #ef4444;">SEVERITY</th>
-                  <th style="padding:10px 16px;text-align:left;font-weight:700;color:#ffffff !important;border-bottom:2px solid #ef4444;">STATUS</th>
-                  <th style="padding:10px 16px;text-align:left;font-weight:700;color:#ffffff !important;border-bottom:2px solid #ef4444;">TECHNICIAN</th>
-                  <th style="padding:10px 16px;text-align:right;font-weight:700;color:#ffffff !important;border-bottom:2px solid #ef4444;">REPORTED</th>
+                <tr>
+                  <th>DEFECT</th>
+                  <th>MACHINE</th>
+                  <th>SEVERITY</th>
+                  <th>STATUS</th>
+                  <th>TECHNICIAN</th>
+                  <th style="text-align:right;">REPORTED</th>
                 </tr>
               </thead>
               <tbody id="tbl-defects">
                 <tr>
-                  <td colspan="6" style="font-size:11px;color:#6b7280;">
+                  <td colspan="6" style="font-size:11px;color:#6b7280;text-align:center;padding:20px;">
                     Defect list will be wired to your Defects log in Fleetrack.
                   </td>
                 </tr>
@@ -12720,6 +12765,16 @@
       const tbody = document.getElementById("tbl-defects");
       if (!tbody) return;
       tbody.innerHTML = "";
+      
+      if (rows) {
+        const total = rows.length;
+        const open = rows.filter(r => (r.status || 'Open').toLowerCase() !== 'closed').length;
+        const high = rows.filter(r => (r.priority || 'Low').toLowerCase() === 'high' && (r.status || 'Open').toLowerCase() !== 'closed').length;
+        
+        if (document.getElementById('defects-kpi-total')) document.getElementById('defects-kpi-total').innerText = total;
+        if (document.getElementById('defects-kpi-open')) document.getElementById('defects-kpi-open').innerText = open;
+        if (document.getElementById('defects-kpi-high')) document.getElementById('defects-kpi-high').innerText = high;
+      }
 
       if (!rows || rows.length === 0) {
         tbody.innerHTML = '<tr><td colspan="6" style="text-align:center; padding:20px; color:#94a3b8;">No defects found</td></tr>';
@@ -20605,12 +20660,14 @@ window.loadISR = async function() {
     if (pw && pw.length < 8) { errEl.textContent = 'Password must be at least 8 characters.'; return; }
     btn.disabled = true; btn.textContent = 'Creating…';
     try {
-      var res = await window.electron.invoke('supabase:auth', { action: 'inviteUser', email: email });
+      var res = await window.electron.invoke('supabase:createUser', { 
+        email: email, 
+        password: pw || 'ChangeMe123!', 
+        is_admin: false, 
+        systems: ['fleetrack'] 
+      });
       if (!res?.ok) throw new Error(res?.error);
-      if (pw) {
-        var pr = await window.electron.invoke('supabase:auth', { action: 'setPasswordByEmail', email: email, password: pw });
-        if (!pr?.ok) throw new Error('User created but password not set: ' + pr?.error);
-      }
+      sucEl.textContent = 'User created successfully!';
       sucEl.textContent = '✓ ' + email + ' created! ' + (pw ? 'Password set.' : 'Invite email sent.');
       setTimeout(function(){ closeUserMgmtModal(); loadUserMgmt(); }, 2000);
     } catch(e) { errEl.textContent = e.message; }
