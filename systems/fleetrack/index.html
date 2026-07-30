@@ -13951,7 +13951,7 @@ We will let you know if there are any changes to the field service booking.`;
 
         if (id) {
            payload.name = id;
-           payload.modified = new Date().toISOString();
+           payload.modified_at = new Date().toISOString();
         } else {
            payload.name = 'DEF-' + Date.now();
         }
