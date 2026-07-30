@@ -12,18 +12,22 @@ CREATE TABLE IF NOT EXISTS public.training_progress (
 -- RLS Policies
 ALTER TABLE public.training_progress ENABLE ROW LEVEL SECURITY;
 
-CREATE POLICY "Allow all read access to training_progress" 
-ON public.training_progress FOR SELECT 
+DROP POLICY IF EXISTS "Allow all read access to training_progress" ON public.training_progress;
+CREATE POLICY "Allow all read access to training_progress"
+  ON public.training_progress FOR SELECT 
 USING (true);
 
-CREATE POLICY "Allow all insert access to training_progress" 
-ON public.training_progress FOR INSERT 
+DROP POLICY IF EXISTS "Allow all insert access to training_progress" ON public.training_progress;
+CREATE POLICY "Allow all insert access to training_progress"
+  ON public.training_progress FOR INSERT 
 WITH CHECK (true);
 
-CREATE POLICY "Allow all update access to training_progress" 
-ON public.training_progress FOR UPDATE 
+DROP POLICY IF EXISTS "Allow all update access to training_progress" ON public.training_progress;
+CREATE POLICY "Allow all update access to training_progress"
+  ON public.training_progress FOR UPDATE 
 USING (true);
 
-CREATE POLICY "Allow all delete access to training_progress" 
-ON public.training_progress FOR DELETE 
+DROP POLICY IF EXISTS "Allow all delete access to training_progress" ON public.training_progress;
+CREATE POLICY "Allow all delete access to training_progress"
+  ON public.training_progress FOR DELETE 
 USING (true);

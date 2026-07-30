@@ -14,13 +14,17 @@ BEGIN
     IF NOT EXISTS (
         SELECT 1 FROM pg_policies WHERE tablename = 'omnis_sales_persons' AND policyname = 'Enable read access for all users'
     ) THEN
-        CREATE POLICY "Enable read access for all users" ON public.omnis_sales_persons FOR SELECT USING (true);
+        DROP POLICY IF EXISTS "Enable read access for all users" ON public.omnis_sales_persons;
+CREATE POLICY "Enable read access for all users"
+  ON public.omnis_sales_persons FOR SELECT USING (true);
     END IF;
     
     IF NOT EXISTS (
         SELECT 1 FROM pg_policies WHERE tablename = 'omnis_sales_persons' AND policyname = 'Enable all access for authenticated users'
     ) THEN
-        CREATE POLICY "Enable all access for authenticated users" ON public.omnis_sales_persons FOR ALL USING (true) WITH CHECK (true);
+        DROP POLICY IF EXISTS "Enable all access for authenticated users" ON public.omnis_sales_persons;
+CREATE POLICY "Enable all access for authenticated users"
+  ON public.omnis_sales_persons FOR ALL USING (true) WITH CHECK (true);
     END IF;
 END $$;
 

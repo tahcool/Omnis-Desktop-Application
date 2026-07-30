@@ -18,29 +18,33 @@ CREATE TABLE IF NOT EXISTS public.ft_service_logs (
 ALTER TABLE public.ft_service_logs ENABLE ROW LEVEL SECURITY;
 
 -- Policy: Allow read access for authenticated users
-CREATE POLICY "Enable read access for authenticated users" 
-ON public.ft_service_logs 
+DROP POLICY IF EXISTS "Enable read access for authenticated users" ON public.ft_service_logs;
+CREATE POLICY "Enable read access for authenticated users"
+  ON public.ft_service_logs 
 FOR SELECT 
 TO authenticated 
 USING (true);
 
 -- Policy: Allow insert for authenticated users
-CREATE POLICY "Enable insert for authenticated users" 
-ON public.ft_service_logs 
+DROP POLICY IF EXISTS "Enable insert for authenticated users" ON public.ft_service_logs;
+CREATE POLICY "Enable insert for authenticated users"
+  ON public.ft_service_logs 
 FOR INSERT 
 TO authenticated 
 WITH CHECK (true);
 
 -- Policy: Allow update for authenticated users
-CREATE POLICY "Enable update for authenticated users" 
-ON public.ft_service_logs 
+DROP POLICY IF EXISTS "Enable update for authenticated users" ON public.ft_service_logs;
+CREATE POLICY "Enable update for authenticated users"
+  ON public.ft_service_logs 
 FOR UPDATE 
 TO authenticated 
 USING (true);
 
 -- Policy: Allow delete for authenticated users
-CREATE POLICY "Enable delete for authenticated users" 
-ON public.ft_service_logs 
+DROP POLICY IF EXISTS "Enable delete for authenticated users" ON public.ft_service_logs;
+CREATE POLICY "Enable delete for authenticated users"
+  ON public.ft_service_logs 
 FOR DELETE 
 TO authenticated 
 USING (true);

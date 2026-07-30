@@ -32,9 +32,13 @@ CREATE INDEX IF NOT EXISTS idx_gsm_tasks_status   ON gsm_tasks(status);
 
 ALTER TABLE gsm_tasks ENABLE ROW LEVEL SECURITY;
 
+DROP POLICY IF EXISTS "Authenticated users can read gsm_tasks" ON gsm_tasks;
+DROP POLICY IF EXISTS "Authenticated users can read gsm_tasks" ON gsm_tasks;
 CREATE POLICY "Authenticated users can read gsm_tasks"
   ON gsm_tasks FOR SELECT TO authenticated USING (true);
 
+DROP POLICY IF EXISTS "Service role full access gsm_tasks" ON gsm_tasks;
+DROP POLICY IF EXISTS "Service role full access gsm_tasks" ON gsm_tasks;
 CREATE POLICY "Service role full access gsm_tasks"
   ON gsm_tasks FOR ALL TO service_role USING (true);
 
@@ -61,8 +65,12 @@ CREATE INDEX IF NOT EXISTS idx_stock_pipeline_brand  ON stock_pipeline(brand);
 
 ALTER TABLE stock_pipeline ENABLE ROW LEVEL SECURITY;
 
+DROP POLICY IF EXISTS "Authenticated users can read stock_pipeline" ON stock_pipeline;
+DROP POLICY IF EXISTS "Authenticated users can read stock_pipeline" ON stock_pipeline;
 CREATE POLICY "Authenticated users can read stock_pipeline"
   ON stock_pipeline FOR SELECT TO authenticated USING (true);
 
+DROP POLICY IF EXISTS "Service role full access stock_pipeline" ON stock_pipeline;
+DROP POLICY IF EXISTS "Service role full access stock_pipeline" ON stock_pipeline;
 CREATE POLICY "Service role full access stock_pipeline"
   ON stock_pipeline FOR ALL TO service_role USING (true);

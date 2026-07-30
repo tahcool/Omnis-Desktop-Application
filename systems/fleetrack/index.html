@@ -1326,7 +1326,7 @@
   gap: 12px;
 }
 .rpt-view-title {
-  font-size: 20px;
+  font-size: 26px;
   font-weight: 800;
   color: var(--text-main, #0f172a);
   margin: 0 0 4px 0;
@@ -4285,33 +4285,41 @@
             </div>
             <div style="display:flex;gap:10px;align-items:center;">
               <!-- Total Defects KPI -->
-              <div class="rpt-kpi-pill" style="position:relative; background:linear-gradient(135deg,rgba(15,23,42,0.85),rgba(30,41,59,0.95)); backdrop-filter:blur(12px); border:1px solid rgba(255,255,255,0.1); border-radius:12px; color:#ffffff; overflow:hidden; padding:10px 18px; align-items:flex-start; min-width:120px; box-shadow:0 4px 12px rgba(0,0,0,0.15); transition:transform 0.2s;">
-                <div style="position:absolute; right:-5px; bottom:-10px; opacity:0.05; pointer-events:none; transform:rotate(-10deg);">
-                  <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline></svg>
+              <div class="rpt-kpi-pill" style="position:relative; background:#ffffff; border:1px solid rgba(226, 232, 240, 0.8); border-radius:16px; color:#0f172a; overflow:hidden; padding:20px 24px; align-items:flex-start; min-width:160px; box-shadow:0 10px 25px rgba(0,0,0,0.03), 0 4px 10px rgba(0,0,0,0.02); transition:all 0.3s cubic-bezier(0.4, 0, 0.2, 1); cursor:default;"
+                   onmouseover="this.style.transform='translateY(-4px)'; this.style.boxShadow='0 20px 30px rgba(0,0,0,0.06), 0 8px 15px rgba(0,0,0,0.04)'; this.style.borderColor='#cbd5e1';"
+                   onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 10px 25px rgba(0,0,0,0.03), 0 4px 10px rgba(0,0,0,0.02)'; this.style.borderColor='rgba(226, 232, 240, 0.8)';">
+                <div style="position:absolute; right:-12px; bottom:-15px; opacity:0.06; pointer-events:none; transform:rotate(-10deg);">
+                  <svg width="84" height="84" viewBox="0 0 24 24" fill="none" stroke="#0f172a" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline></svg>
                 </div>
-                <label style="color:#94a3b8; font-size:10px; font-weight:700; margin-bottom:2px; z-index:1; position:relative;">TOTAL DEFECTS</label>
-                <span id="defects-kpi-total" style="font-size:24px; font-weight:800; z-index:1; position:relative;">0</span>
+                <label style="color:#64748b; font-size:11px; font-weight:800; margin-bottom:4px; z-index:1; position:relative; letter-spacing:0.5px;">TOTAL DEFECTS</label>
+                <span id="defects-kpi-total" style="font-size:32px; font-weight:900; color:#0f172a; z-index:1; position:relative; line-height:1.1; letter-spacing:-1px;">0</span>
               </div>
+
               <!-- Open Defects KPI -->
-              <div class="rpt-kpi-pill" style="position:relative; background:linear-gradient(135deg,rgba(15,23,42,0.85),rgba(30,41,59,0.95)); backdrop-filter:blur(12px); border:1px solid rgba(255,255,255,0.1); border-radius:12px; color:#ffffff; overflow:hidden; padding:10px 18px; align-items:flex-start; min-width:120px; box-shadow:0 4px 12px rgba(0,0,0,0.15); transition:transform 0.2s;">
-                <div style="position:absolute; right:-5px; bottom:-10px; opacity:0.05; pointer-events:none; transform:rotate(5deg);">
-                  <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
+              <div class="rpt-kpi-pill" style="position:relative; background:#ffffff; border:1px solid rgba(226, 232, 240, 0.8); border-radius:16px; color:#0f172a; overflow:hidden; padding:20px 24px; align-items:flex-start; min-width:160px; box-shadow:0 10px 25px rgba(0,0,0,0.03), 0 4px 10px rgba(0,0,0,0.02); transition:all 0.3s cubic-bezier(0.4, 0, 0.2, 1); cursor:default;"
+                   onmouseover="this.style.transform='translateY(-4px)'; this.style.boxShadow='0 20px 30px rgba(59,130,246,0.08), 0 8px 15px rgba(59,130,246,0.05)'; this.style.borderColor='#93c5fd';"
+                   onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 10px 25px rgba(0,0,0,0.03), 0 4px 10px rgba(0,0,0,0.02)'; this.style.borderColor='rgba(226, 232, 240, 0.8)';">
+                <div style="position:absolute; right:-12px; bottom:-15px; opacity:0.06; pointer-events:none; transform:rotate(5deg);">
+                  <svg width="84" height="84" viewBox="0 0 24 24" fill="none" stroke="#3b82f6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
                 </div>
-                <label style="color:#94a3b8; font-size:10px; font-weight:700; margin-bottom:2px; z-index:1; position:relative;">OPEN</label>
-                <span id="defects-kpi-open" style="font-size:24px; font-weight:800; color:#3b82f6; z-index:1; position:relative;">0</span>
+                <label style="color:#64748b; font-size:11px; font-weight:800; margin-bottom:4px; z-index:1; position:relative; letter-spacing:0.5px;">OPEN</label>
+                <span id="defects-kpi-open" style="font-size:32px; font-weight:900; color:#0f172a; z-index:1; position:relative; line-height:1.1; letter-spacing:-1px;">0</span>
               </div>
+
               <!-- High Severity KPI -->
-              <div class="rpt-kpi-pill" style="position:relative; background:linear-gradient(135deg,rgba(15,23,42,0.85),rgba(30,41,59,0.95)); backdrop-filter:blur(12px); border:1px solid rgba(255,255,255,0.1); border-radius:12px; color:#ffffff; overflow:hidden; padding:10px 18px; align-items:flex-start; min-width:120px; box-shadow:0 4px 12px rgba(0,0,0,0.15); transition:transform 0.2s;">
-                <div style="position:absolute; right:-5px; bottom:-10px; opacity:0.05; pointer-events:none; transform:rotate(-5deg);">
-                  <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+              <div class="rpt-kpi-pill" style="position:relative; background:#ffffff; border:1px solid rgba(226, 232, 240, 0.8); border-radius:16px; color:#0f172a; overflow:hidden; padding:20px 24px; align-items:flex-start; min-width:160px; box-shadow:0 10px 25px rgba(0,0,0,0.03), 0 4px 10px rgba(0,0,0,0.02); transition:all 0.3s cubic-bezier(0.4, 0, 0.2, 1); cursor:default;"
+                   onmouseover="this.style.transform='translateY(-4px)'; this.style.boxShadow='0 20px 30px rgba(239,68,68,0.08), 0 8px 15px rgba(239,68,68,0.05)'; this.style.borderColor='#fca5a5';"
+                   onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 10px 25px rgba(0,0,0,0.03), 0 4px 10px rgba(0,0,0,0.02)'; this.style.borderColor='rgba(226, 232, 240, 0.8)';">
+                <div style="position:absolute; right:-12px; bottom:-15px; opacity:0.06; pointer-events:none; transform:rotate(-5deg);">
+                  <svg width="84" height="84" viewBox="0 0 24 24" fill="none" stroke="#ef4444" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
                 </div>
-                <label style="color:#94a3b8; font-size:10px; font-weight:700; margin-bottom:2px; z-index:1; position:relative;">HIGH SEVERITY</label>
-                <span id="defects-kpi-high" style="font-size:24px; font-weight:800; color:#ef4444; z-index:1; position:relative;">0</span>
+                <label style="color:#64748b; font-size:11px; font-weight:800; margin-bottom:4px; z-index:1; position:relative; letter-spacing:0.5px;">HIGH SEVERITY</label>
+                <span id="defects-kpi-high" style="font-size:32px; font-weight:900; color:#0f172a; z-index:1; position:relative; line-height:1.1; letter-spacing:-1px;">0</span>
               </div>
             </div>
           </div>
-          
-                    <!-- Filter bar -->
+
+          <!-- Filter bar -->
           <div class="rpt-filter-bar">
             <div class="rpt-filter-group">
               <label>Status</label>
@@ -4368,11 +4376,14 @@
             <table class="rpt-table" id="defects-table" style="width:100%;border-collapse:collapse;font-size:12px;table-layout:auto;border:1px solid #e5e7f0;background:#fff;">
               <thead>
                 <tr>
+                  <th style="width:30px; text-align:center;">#</th>
                   <th>DEFECT</th>
                   <th>MACHINE</th>
-                  <th>SEVERITY</th>
+                  
                   <th>STATUS</th>
-                  <th>TECHNICIAN</th>
+                  <th>TED</th>
+                  <th>RED</th>
+                  <th>DAYS ON BREAKDOWN</th>
                   <th style="text-align:right;">REPORTED</th>
                 </tr>
               </thead>
@@ -4639,7 +4650,7 @@
                   <th style="padding:10px 16px;text-align:left;font-weight:700;color:#ffffff !important;border-bottom:2px solid #ef4444;">SERIAL NUMBER</th>
                   <th style="padding:10px 16px;text-align:left;font-weight:700;color:#ffffff !important;border-bottom:2px solid #ef4444;">DESCRIPTION</th>
                   <th style="padding:10px 16px;text-align:left;font-weight:700;color:#ffffff !important;border-bottom:2px solid #ef4444;">LOCATION</th>
-                  <th style="padding:10px 16px;text-align:left;font-weight:700;color:#ffffff !important;border-bottom:2px solid #ef4444;">TECHNICIAN</th>
+                  <th style="padding:10px 16px;text-align:left;font-weight:700;color:#ffffff !important;border-bottom:2px solid #ef4444;">DAYS ON BREAKDOWN</th>
                   <th style="padding:10px 16px;text-align:left;font-weight:700;color:#ffffff !important;border-bottom:2px solid #ef4444;">DEFECTS</th>
                   <th style="padding:10px 16px;text-align:left;font-weight:700;color:#ffffff !important;border-bottom:2px solid #ef4444;">WARRANTY</th>
                   <th style="padding:10px 16px;text-align:left;font-weight:700;color:#ffffff !important;border-bottom:2px solid #ef4444;">DATE</th>
@@ -9492,7 +9503,7 @@
 
         // Output TR
         const rowNum = start + idx + 1;
-        const colNum = `<td style="padding:10px 8px; text-align:center; vertical-align:middle; color:#94a3b8; font-size:10px; font-weight:700; border-bottom:1px solid #e5e7eb; white-space:nowrap;">${rowNum}</td>`;
+        const colNum = `<td style="padding:10px 8px; text-align:center; vertical-align:middle; color:#64748b; font-size:10px; font-weight:800; border-bottom:1px solid #e5e7eb; white-space:nowrap;">${rowNum}</td>`;
         tr.innerHTML = colNum + colCustomer + colImage + colMachine + colSched + colCond;
         
         tbody.appendChild(tr);
@@ -12861,8 +12872,8 @@
         
         renderDefectsTable(FT_DEFECTS_DATA);
         // Auto-run force sync once
-        if (!localStorage.getItem('did_auto_sync_defects_v2')) {
-            localStorage.setItem('did_auto_sync_defects_v2', 'true');
+        if (!localStorage.getItem('did_auto_sync_defects_v3')) {
+            localStorage.setItem('did_auto_sync_defects_v3', 'true');
             if (typeof forceSyncDefects === 'function') {
                 setTimeout(forceSyncDefects, 1000);
             }
@@ -12955,7 +12966,7 @@
       }
 
       if (!rows || rows.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="6" style="text-align:center; padding:20px; color:#94a3b8;">No defects found</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="8" style="text-align:center; padding:20px; color:#94a3b8;">No defects found</td></tr>';
         return;
       }
 
@@ -12968,7 +12979,7 @@
       const endIdx = startIdx + PAGE_SIZE;
       const pageRows = rows.slice(startIdx, endIdx);
 
-      pageRows.forEach(r => {
+      pageRows.forEach((r, idx) => {
         const tr = document.createElement("tr");
         tr.className = "df-row";
         tr.onclick = () => openDefectModal(r.name);
@@ -12984,41 +12995,95 @@
         const reported   = rawDate !== "—" ? new Date(rawDate.split(" ")[0]).toLocaleDateString('en-GB', {day:'2-digit', month:'short', year:'numeric'}) : "—";
 
         // Severity colour pill
-        const sevColour = priority === "High" ? "#ef4444"
-                        : priority === "Medium" ? "#f59e0b"
-                        : "#64748b";
+        const sevBg = priority === "High" ? "#fee2e2" : priority === "Medium" ? "#fef3c7" : "#f1f5f9";
+        const sevText = priority === "High" ? "#ef4444" : priority === "Medium" ? "#f59e0b" : "#64748b";
+        const sevBorder = priority === "High" ? "#fca5a5" : priority === "Medium" ? "#fcd34d" : "#cbd5e1";
+
+        const rowBg = s === "closed" ? "transparent" 
+                    : priority === "High" ? "#fef2f2" 
+                    : priority === "Medium" ? "#fffbeb" 
+                    : "transparent";
+
+        tr.style.background = rowBg;
+        tr.onmouseenter = () => tr.style.background = (priority === "High" && s === "open") ? "#fee2e2" : (priority === "Medium" && s === "open") ? "#fef3c7" : "#f8fafc";
+        tr.onmouseleave = () => tr.style.background = rowBg;
 
         const defectType = r.defect_type || "Minor";
+        let typeBg = "#f1f5f9";
+        let typeColor = "#64748b";
+        const dtLower = defectType.toLowerCase();
+        if (dtLower.includes("major") || dtLower.includes("critical")) {
+            typeBg = "#fee2e2"; typeColor = "#ef4444";
+        }
+        
         const defectHtml = `
-            <div style="font-weight:700;color:#0f172a;font-size:13px;">${desc}</div>
-            <div style="font-size:11px;color:#64748b;margin-top:2px;">Type: ${defectType} | Customer: ${r.customer || '—'}</div>
+            <div style="font-weight:700;color:#0f172a;font-size:13px;display:flex;align-items:center;gap:8px;">
+              ${r.customer || 'Unknown Customer'}
+              <span style="background:${typeBg}; color:${typeColor}; padding:2px 8px; border-radius:12px; font-size:9px; font-weight:800; text-transform:uppercase; letter-spacing:0.5px;">${defectType}</span>
+            </div>
+            <div style="font-size:11px;color:#64748b;margin-top:4px;">${desc}</div>
         `;
 
         const machineModel = r.model || r.oem || 'Unknown Machine';
         const machineHtml = `
             <div style="font-weight:700;color:#0f172a;font-size:13px;">${machineModel}</div>
-            <div style="font-size:11px;color:#64748b;margin-top:2px;">SN: ${r.machine || '—'}</div>
+            <div style="font-size:11px;color:#64748b;margin-top:2px;">SN: ${r.machine || ''}</div>
         `;
 
         const statusColor = s === 'closed' ? '#22c55e' : (s === 'open' ? '#3b82f6' : '#64748b');
-        const statusHtml = `<div style="font-weight:800;color:${statusColor};font-size:11px;text-transform:uppercase;">${status}</div>`;
+        
+        let extraStatusHtml = "";
+        if (r.quotation_sent_date && r.quotation_sent_date.trim() !== '') {
+            const qDate = new Date(r.quotation_sent_date.split(" ")[0]).toLocaleDateString('en-GB', {day:'2-digit', month:'short', year:'numeric'});
+            extraStatusHtml += `<div style="font-size:10px;color:#64748b;margin-top:2px;">Quote: ${qDate}</div>`;
+        }
+        if (r.parts_eta && r.parts_eta.trim() !== '') {
+            const pDate = new Date(r.parts_eta.split(" ")[0]).toLocaleDateString('en-GB', {day:'2-digit', month:'short', year:'numeric'});
+            extraStatusHtml += `<div style="font-size:10px;color:#64748b;margin-top:2px;">Parts ETA: ${pDate}</div>`;
+        }
+        
+        const statusHtml = `<div style="font-weight:800;color:${statusColor};font-size:11px;text-transform:uppercase;">${status}</div>${extraStatusHtml}`;
+        
+        const tedStr = (r.ted && r.ted.trim() !== '') ? new Date(r.ted.split(" ")[0]).toLocaleDateString('en-GB', {day:'2-digit', month:'short', year:'numeric'}) : "-";
+        const redStr = (r.red && r.red.trim() !== '') ? new Date(r.red.split(" ")[0]).toLocaleDateString('en-GB', {day:'2-digit', month:'short', year:'numeric'}) : "-";
+
+        let daysOnBreakdown = "";
+        if (r.start_date) {
+            const start = new Date(r.start_date.split(" ")[0]);
+            const end = (r.end_date && r.end_date.trim() !== '') ? new Date(r.end_date.split(" ")[0]) : new Date();
+            const diff = Math.floor((end - start) / (1000 * 60 * 60 * 24));
+            daysOnBreakdown = diff >= 0 ? diff : 0;
+        }
+
+        // Severity Ribbon
+        let ribbonHtml = "";
+        if (priority === "High" || priority === "Medium") {
+            ribbonHtml = `
+              <div style="position:absolute; right:4px; top:4px; bottom:4px; width:20px; background:${sevText}; color:white; font-size:8px; font-weight:600; display:flex; align-items:center; justify-content:center; writing-mode:vertical-rl; transform:rotate(180deg); letter-spacing:0.5px; opacity:0.85; box-shadow:0 2px 4px rgba(0,0,0,0.1); border-radius: 4px;">
+                ${priority.toUpperCase()}
+              </div>
+            `;
+        }
 
         tr.innerHTML = `
+          <td class="df-cell" style="padding:10px; font-weight:800; color:#94a3b8; font-size:11px; text-align:center; border-right: 1px solid #f1f5f9;">${startIdx + idx + 1}</td>
           <td class="df-cell" style="padding:10px 16px;">${defectHtml}</td>
           <td class="df-cell" style="padding:10px 16px;">${machineHtml}</td>
-          <td class="df-cell" style="padding:10px 16px;">
-            <span style="background:${sevColour}22;color:${sevColour};border:1px solid ${sevColour}44;border-radius:999px;padding:2px 8px;font-size:9px;font-weight:700;">${priority}</span>
-          </td>
           <td class="df-cell" style="padding:10px 16px;">${statusHtml}</td>
-          <td class="df-cell" style="color:var(--text-muted); padding:10px 16px; font-weight:600;">${technician}</td>
-          <td class="df-cell" style="text-align:right; font-weight:600; padding:10px 16px; color:#475569;">${reported}</td>
+          <td class="df-cell" style="color:#0f172a; padding:10px 16px; font-size:11px; font-weight:500;">${tedStr}</td>
+          <td class="df-cell" style="color:#0f172a; padding:10px 16px; font-size:11px; font-weight:500;">${redStr}</td>
+          <td class="df-cell" style="color:var(--text-muted); padding:10px 16px; font-weight:600; text-align:center;">${daysOnBreakdown}</td>
+          <td class="df-cell" style="text-align:right; font-weight:600; padding:10px 32px 10px 16px; color:#475569; position:relative; overflow:hidden;">
+            ${reported}
+            ${ribbonHtml}
+          </td>
         `;
         tbody.appendChild(tr);
       });
 
       // Pagination Controls Row
       const pagTr = document.createElement("tr");
-      pagTr.innerHTML = `<td colspan="6" style="padding:12px 16px; background:#f8fafc; border-top:1px solid #e2e8f0; border-radius:0 0 8px 8px;">
+      pagTr.innerHTML = `<td colspan="8" style="padding:12px 16px; background:#f8fafc; border-top:1px solid #e2e8f0; border-radius:0 0 8px 8px;">
         <div style="display:flex; justify-content:space-between; align-items:center;">
           <div style="font-size:11px; color:#64748b; font-weight:600;">Showing ${startIdx + 1} to ${Math.min(endIdx, totalRows)} of ${totalRows} defects</div>
           <div style="display:flex; gap:6px;">
@@ -13225,7 +13290,7 @@
             const ALLOWED = new Set([
               'name','defect_type','machine','customer','fleetrack_managed','oem','model',
               'location','region','warranty_status','start_date','priority','status',
-              'description','on_hold','ted','end_date','defect_days','category'
+              'description','on_hold','ted','end_date','defect_days','category','solution','quotation_sent_date','parts_eta','ted_status','red'
             ]);
             const toUpsert = allDefects.map(d => {
               const row = {};
@@ -13611,25 +13676,40 @@ We will let you know if there are any changes to the field service booking.`;
         // Workaround for remote server not having 'category' in summary endpoint yet:
         let defectCats = {};
         try {
-           const catRes = await callFrappe("/api/method/frappe.client.get_list", { doctype: "FT Defects Log", fields: '["name", "category"]', limit_page_length: 10000 }, "GET");
-           if (catRes.message) {
-               catRes.message.forEach(c => { defectCats[c.name] = c.category; });
+           let start = 0;
+           let limit = 1000;
+           while (true) {
+               const catRes = await callFrappe("/api/method/frappe.client.get_list", { doctype: "FT Defects Log", fields: '["name", "category", "solution", "quotation_sent_date", "parts_eta", "ted_status", "red", "ted"]', limit_page_length: limit, limit_start: start }, "GET");
+               if (catRes.message && catRes.message.length > 0) {
+                   catRes.message.forEach(c => { defectCats[c.name] = c; });
+                   if (catRes.message.length < limit) break;
+                   start += limit;
+               } else {
+                   break;
+               }
            }
         } catch(e) { console.warn("Failed to fetch defect categories mapping from Frappe", e); }
 
         if (res.message && res.message.rows) {
           const rows = res.message.rows;
           const toUpsert = rows.map(r => {
-            // Merge the natively fetched category
+            // Merge natively fetched fields
             if (defectCats[r.name]) {
-               r.category = defectCats[r.name];
+               const extra = defectCats[r.name];
+               r.category = extra.category;
+               r.solution = extra.solution;
+               r.quotation_sent_date = extra.quotation_sent_date;
+               r.parts_eta = extra.parts_eta;
+               r.ted_status = extra.ted_status;
+               r.red = extra.red;
+               if (!r.ted) r.ted = extra.ted; // prefer summary ted if exists
             }
 
             const row = {};
             const ALLOWED = new Set([
               'name','defect_type','machine','customer','fleetrack_managed','oem','model',
               'location','region','warranty_status','start_date','priority','status',
-              'description','on_hold','ted','end_date','defect_days','category'
+              'description','on_hold','ted','end_date','defect_days','category','solution','quotation_sent_date','parts_eta','ted_status','red'
             ]);
             for (const [k, v] of Object.entries(r)) {
               if (ALLOWED.has(k)) row[k] = v ?? null;
@@ -13637,9 +13717,45 @@ We will let you know if there are any changes to the field service booking.`;
             return row;
           });
           
-          await window.electron.invoke('supabase:query', {
-            table: 'ft_defect', method: 'upsert', params: {}, data: toUpsert
-          });
+          // Backfill extra fields (category, solution, etc.) for historical records not in summary
+          const summaryNames = new Set(rows.map(r => r.name));
+          if (window.FT_DEFECTS_DATA) {
+              window.FT_DEFECTS_DATA.forEach(d => {
+                  if (!summaryNames.has(d.name) && defectCats[d.name]) {
+                      const extra = defectCats[d.name];
+                      if (d.category !== extra.category || d.solution !== extra.solution || d.red !== extra.red) {
+                          const updatedRow = { ...d };
+                          updatedRow.category = extra.category;
+                          updatedRow.solution = extra.solution;
+                          updatedRow.quotation_sent_date = extra.quotation_sent_date;
+                          updatedRow.parts_eta = extra.parts_eta;
+                          updatedRow.ted_status = extra.ted_status;
+                          updatedRow.red = extra.red;
+                          if (!updatedRow.ted) updatedRow.ted = extra.ted;
+                          
+                          // Clean up undefined/null values before upsert to match allowed schema
+                          const ALLOWED = new Set([
+                            'name','defect_type','machine','customer','fleetrack_managed','oem','model',
+                            'location','region','warranty_status','start_date','priority','status',
+                            'description','on_hold','ted','end_date','defect_days','category','solution','quotation_sent_date','parts_eta','ted_status','red'
+                          ]);
+                          const cleanRow = {};
+                          for (const [k, v] of Object.entries(updatedRow)) {
+                            if (ALLOWED.has(k)) cleanRow[k] = v ?? null;
+                          }
+                          toUpsert.push(cleanRow);
+                      }
+                  }
+              });
+          }
+
+          const BATCH_SIZE = 500;
+          for (let i = 0; i < toUpsert.length; i += BATCH_SIZE) {
+              const batch = toUpsert.slice(i, i + BATCH_SIZE);
+              await window.electron.invoke('supabase:query', {
+                  table: 'ft_defect', method: 'upsert', params: {}, data: batch
+              });
+          }
           showToast(`Synced ${toUpsert.length} defects!`, "success");
           
           // Reload
@@ -13844,11 +13960,12 @@ We will let you know if there are any changes to the field service booking.`;
         if (error) throw new Error(error.message);
         
         // Ensure new category is passed to Frappe if typed (best effort)
-        const datalist = document.getElementById('defect-categories-list');
-        const opts = Array.from(datalist.options).map(o => o.value);
-        if (!opts.includes(category)) {
-           callFrappe('/api/method/frappe.client.insert', { doc: { doctype: 'FT Defect Category', category: category } }, 'POST').catch(e => console.warn(e));
-        }
+        try {
+            const existing = (window.DEFECT_CATEGORIES || []).map(c => c.category || c.name);
+            if (!existing.includes(category)) {
+               callFrappe('/api/method/frappe.client.insert', { doc: { doctype: 'FT Defect Category', category: category } }, 'POST').catch(e => console.warn(e));
+            }
+        } catch(e) {}
         
         showToast("Defect Saved!", "success");
         closeDefectModal();
@@ -17720,18 +17837,18 @@ window.loadISR = async function() {
           </div>
           <div style="display:flex;gap:10px;align-items:center;">
             <!-- Overdue KPI -->
-            <div class="rpt-kpi-pill" style="position:relative; background:linear-gradient(135deg,rgba(15,23,42,0.85),rgba(30,41,59,0.95)); backdrop-filter:blur(12px); border:1px solid rgba(255,255,255,0.1); border-radius:12px; color:#ffffff; overflow:hidden; padding:10px 18px; align-items:flex-start; min-width:120px; box-shadow:0 4px 12px rgba(0,0,0,0.15); transition:transform 0.2s;">
+            <div class="rpt-kpi-pill" style="position:relative; background:#ffffff; border:1px solid #e2e8f0; border-radius:12px; color:#0f172a; overflow:hidden; padding:10px 18px; align-items:flex-start; min-width:120px; box-shadow:0 1px 3px rgba(0,0,0,0.05); transition:transform 0.2s;">
               <div style="position:absolute; right:-5px; bottom:-10px; opacity:0.05; pointer-events:none; transform:rotate(-10deg);">
-                <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+                <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#ef4444" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
               </div>
               <label style="color:#ef4444; font-size:10px; font-weight:700; margin-bottom:2px; z-index:1; position:relative;">OVERDUE</label>
               <span id="sts-overdue" style="font-size:24px; font-weight:800; z-index:1; position:relative;">—</span>
             </div>
             
             <!-- Approaching KPI -->
-            <div class="rpt-kpi-pill" style="position:relative; background:linear-gradient(135deg,rgba(15,23,42,0.85),rgba(30,41,59,0.95)); backdrop-filter:blur(12px); border:1px solid rgba(255,255,255,0.1); border-radius:12px; color:#ffffff; overflow:hidden; padding:10px 18px; align-items:flex-start; min-width:120px; box-shadow:0 4px 12px rgba(0,0,0,0.15); transition:transform 0.2s;">
+            <div class="rpt-kpi-pill" style="position:relative; background:#ffffff; border:1px solid #e2e8f0; border-radius:12px; color:#0f172a; overflow:hidden; padding:10px 18px; align-items:flex-start; min-width:120px; box-shadow:0 1px 3px rgba(0,0,0,0.05); transition:transform 0.2s;">
               <div style="position:absolute; right:-5px; bottom:-10px; opacity:0.05; pointer-events:none; transform:rotate(5deg);">
-                <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+                <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#3b82f6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
               </div>
               <label style="color:#f59e0b; font-size:10px; font-weight:700; margin-bottom:2px; z-index:1; position:relative;">APPROACHING</label>
               <span id="sts-approaching" style="font-size:24px; font-weight:800; z-index:1; position:relative;">—</span>
@@ -17950,20 +18067,20 @@ window.loadISR = async function() {
         </div>
         <div style="display:flex;gap:10px;align-items:center;">
           <!-- No Service KPI -->
-          <div class="rpt-kpi-pill" style="position:relative; background:linear-gradient(135deg,rgba(15,23,42,0.85),rgba(30,41,59,0.95)); backdrop-filter:blur(12px); border:1px solid rgba(255,255,255,0.1); border-radius:12px; color:#ffffff; overflow:hidden; padding:10px 18px; align-items:flex-start; min-width:120px; box-shadow:0 4px 12px rgba(0,0,0,0.15); transition:transform 0.2s;">
+          <div class="rpt-kpi-pill" style="position:relative; background:#ffffff; border:1px solid #e2e8f0; border-radius:12px; color:#0f172a; overflow:hidden; padding:10px 18px; align-items:flex-start; min-width:120px; box-shadow:0 1px 3px rgba(0,0,0,0.05); transition:transform 0.2s;">
             <div style="position:absolute; right:-5px; bottom:-10px; opacity:0.05; pointer-events:none; transform:rotate(-10deg);">
               <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path></svg>
             </div>
-            <label style="color:#94a3b8; font-size:10px; font-weight:700; margin-bottom:2px; z-index:1; position:relative;">NO SERVICE</label>
+            <label style="color:#64748b; font-size:10px; font-weight:800; margin-bottom:2px; z-index:1; position:relative;">NO SERVICE</label>
             <span id="isr-count" style="font-size:24px; font-weight:800; z-index:1; position:relative;">—</span>
           </div>
           
           <!-- High HMR KPI -->
-          <div class="rpt-kpi-pill" style="position:relative; background:linear-gradient(135deg,rgba(15,23,42,0.85),rgba(30,41,59,0.95)); backdrop-filter:blur(12px); border:1px solid rgba(255,255,255,0.1); border-radius:12px; color:#ffffff; overflow:hidden; padding:10px 18px; align-items:flex-start; min-width:120px; box-shadow:0 4px 12px rgba(0,0,0,0.15); transition:transform 0.2s;">
+          <div class="rpt-kpi-pill" style="position:relative; background:#ffffff; border:1px solid #e2e8f0; border-radius:12px; color:#0f172a; overflow:hidden; padding:10px 18px; align-items:flex-start; min-width:120px; box-shadow:0 1px 3px rgba(0,0,0,0.05); transition:transform 0.2s;">
             <div style="position:absolute; right:-5px; bottom:-10px; opacity:0.05; pointer-events:none; transform:rotate(5deg);">
-              <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+              <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#3b82f6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
             </div>
-            <label style="color:#94a3b8; font-size:10px; font-weight:700; margin-bottom:2px; z-index:1; position:relative;">HIGH HMR</label>
+            <label style="color:#64748b; font-size:10px; font-weight:800; margin-bottom:2px; z-index:1; position:relative;">HIGH HMR</label>
             <span id="isr-high-hmr" style="font-size:24px; font-weight:800; color:#f59e0b; z-index:1; position:relative;">—</span>
           </div>
           <button class="rpt-action-btn" onclick="exportRptCsv('isr-table','initial_service_report')">⬇ CSV</button>

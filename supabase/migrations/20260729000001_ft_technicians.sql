@@ -16,18 +16,21 @@ CREATE TABLE IF NOT EXISTS public.ft_technicians (
 -- RLS Policies
 ALTER TABLE public.ft_technicians ENABLE ROW LEVEL SECURITY;
 
-CREATE POLICY "Allow authenticated read access to ft_technicians" 
-ON public.ft_technicians FOR SELECT 
+DROP POLICY IF EXISTS "Allow authenticated read access to ft_technicians" ON public.ft_technicians;
+CREATE POLICY "Allow authenticated read access to ft_technicians"
+  ON public.ft_technicians FOR SELECT 
 TO authenticated 
 USING (true);
 
-CREATE POLICY "Allow authenticated insert to ft_technicians" 
-ON public.ft_technicians FOR INSERT 
+DROP POLICY IF EXISTS "Allow authenticated insert to ft_technicians" ON public.ft_technicians;
+CREATE POLICY "Allow authenticated insert to ft_technicians"
+  ON public.ft_technicians FOR INSERT 
 TO authenticated 
 WITH CHECK (true);
 
-CREATE POLICY "Allow authenticated update to ft_technicians" 
-ON public.ft_technicians FOR UPDATE 
+DROP POLICY IF EXISTS "Allow authenticated update to ft_technicians" ON public.ft_technicians;
+CREATE POLICY "Allow authenticated update to ft_technicians"
+  ON public.ft_technicians FOR UPDATE 
 TO authenticated 
 USING (true);
 
