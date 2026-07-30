@@ -4311,16 +4311,36 @@
             </div>
           </div>
           
-          <!-- Filter Bar -->
+                    <!-- Filter bar -->
           <div class="rpt-filter-bar">
-            <div style="display:flex; gap:10px;">
-              <button class="rpt-action-btn" id="btn-defect-new" style="background:#ef4444; color:#fff; border-color:#ef4444;">Log new defect</button>
-              <button class="rpt-action-btn" id="btn-defect-filter-severity">Filter by severity</button>
-              <button class="rpt-action-btn" id="btn-defect-filter-machine">Filter by machine</button>
-              <button class="rpt-action-btn" id="btn-defect-filter-overdue">Show only overdue</button>
+            <div class="rpt-filter-group">
+              <label>Status</label>
+              <select id="filter-defect-status" onchange="filterDefectsTable()">
+                <option value="">All</option>
+                <option value="Open">Open</option>
+                <option value="Closed">Closed</option>
+              </select>
             </div>
-            <div id="defect-filter-summary" class="filter-summary" style="margin-left:auto; font-size:11px; color:#64748b; padding-top:8px;">
-              Showing <strong>all severities</strong>, <strong>all machines</strong>, including <strong>open &amp; closed</strong>.
+            <div class="rpt-filter-group">
+              <label>Severity</label>
+              <select id="filter-defect-severity" onchange="filterDefectsTable()">
+                <option value="">All</option>
+                <option value="High">High</option>
+                <option value="Medium">Medium</option>
+                <option value="Low">Low</option>
+              </select>
+            </div>
+            <div class="rpt-filter-group">
+              <label>Machine / Model</label>
+              <input type="text" id="filter-defect-machine" placeholder="Filter by machine..." oninput="filterDefectsTable()">
+            </div>
+            <div class="rpt-filter-group">
+              <label>Customer</label>
+              <input type="text" id="filter-defect-customer" placeholder="Filter by customer..." oninput="filterDefectsTable()">
+            </div>
+            <div style="display:flex;align-items:flex-end;gap:10px;">
+              <button class="rpt-action-btn" onclick="clearDefectFilters()">Clear</button>
+              <button class="rpt-action-btn" id="btn-defect-new" style="background:#ef4444; color:#fff; border-color:#ef4444;" onclick="openDefectModal()">Log new defect</button>
             </div>
           </div>
 
@@ -4338,7 +4358,7 @@
             #defects-table thead th:hover { color: #fef08a !important; }
           </style>
           <div class="rpt-table-wrap">
-            <table class="rpt-table" id="defects-table" style="width:100%;border-collapse:collapse;font-size:10px;table-layout:auto;border:1px solid #e5e7f0;background:#fff;">
+            <table class="rpt-table" id="defects-table" style="width:100%;border-collapse:collapse;font-size:12px;table-layout:auto;border:1px solid #e5e7f0;background:#fff;">
               <thead>
                 <tr>
                   <th>DEFECT</th>
@@ -4936,49 +4956,105 @@
 
     <!-- SIGNATURE MODAL -->
       <div id="modal-defect" class="modal-overlay hidden" style="z-index: 9999;">
-        <div class="modal-card" style="max-width:560px;">
+        <div class="modal-card" style="max-width:800px;">
           <div class="modal-header" style="background:linear-gradient(135deg,#b91c1c,#7f1d1d);border-radius:12px 12px 0 0;padding:18px 20px;">
             <div class="modal-title" id="defect-modal-title" style="color:#fff;font-size:15px;">Log New Defect</div>
             <button class="modal-close" onclick="closeDefectModal()" style="color:#fff;opacity:.8;">&times;</button>
           </div>
-          <div class="modal-body" style="padding:20px;">
+          <div class="modal-body" style="padding:20px; max-height: 80vh; overflow-y: auto;">
             <input type="hidden" id="defect-id">
+            
+            <div style="display:flex; align-items:center; gap:12px; margin-bottom:14px; padding-bottom:14px; border-bottom:1px solid #e2e8f0;">
+              <label style="display:flex; align-items:center; gap:6px; font-weight:700; color:#b91c1c; font-size:13px; cursor:pointer;">
+                <input type="checkbox" id="defect-on-hold" style="accent-color:#b91c1c; width:16px; height:16px;">
+                On Hold?
+              </label>
+            </div>
 
-            <div class="form-group">
-              <label class="form-label" style="font-weight:700;">Machine</label>
-              <div style="position:relative;">
-                <input type="text" class="form-input" id="defect-machine-search" placeholder="Search serial, model or fleet no…" autocomplete="off" style="font-weight:600;">
-                <ul class="dropdown-menu hidden" id="defect-machine-dropdown" style="position:absolute;top:100%;left:0;right:0;max-height:220px;overflow-y:auto;background:#fff;border:1px solid #e2e8f0;border-radius:8px;box-shadow:0 6px 16px rgba(0,0,0,.12);z-index:10;"></ul>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-bottom:20px;">
+              <!-- Left Column -->
+              <div style="display:flex;flex-direction:column;gap:14px;">
+                <div class="form-group">
+                  <label class="form-label" style="font-weight:700;">Customer</label>
+                  <input type="text" class="form-input" id="defect-customer" readonly style="background:#f8fafc; color:#64748b; font-weight:600;">
+                </div>
+                <div class="form-group">
+                  <label class="form-label" style="font-weight:700;">Machine SN <span style="color:#b91c1c;">*</span></label>
+                  <div style="position:relative;">
+                    <input type="text" class="form-input" id="defect-machine-search" placeholder="Search serial…" autocomplete="off" style="font-weight:600;">
+                    <ul class="dropdown-menu hidden" id="defect-machine-dropdown" style="position:absolute;top:100%;left:0;right:0;max-height:220px;overflow-y:auto;background:#fff;border:1px solid #e2e8f0;border-radius:8px;box-shadow:0 6px 16px rgba(0,0,0,.12);z-index:10;"></ul>
+                  </div>
+                </div>
+                <div class="form-group">
+                  <label class="form-label" style="font-weight:700;">Start Date <span style="color:#b91c1c;">*</span></label>
+                  <input type="date" class="form-input" id="defect-start-date">
+                </div>
+                <div class="form-group">
+                  <label class="form-label" style="font-weight:700;">Category <span style="color:#b91c1c;">*</span></label>
+                  <div style="position:relative;">
+                    <input type="text" class="form-input" id="defect-category" placeholder="Select or type category..." list="defect-categories-list" autocomplete="off">
+                    <datalist id="defect-categories-list"></datalist>
+                  </div>
+                </div>
+                <div class="form-group">
+                  <label class="form-label" style="font-weight:700;">Priority <span style="color:#b91c1c;">*</span></label>
+                  <select class="form-input" id="defect-priority"><option value="Low">Low</option><option value="Medium">Medium</option><option value="High">High</option></select>
+                </div>
+                <div class="form-group">
+                  <label class="form-label" style="font-weight:700;">Solution</label>
+                  <input type="text" class="form-input" id="defect-solution" placeholder="Solution for Defect">
+                </div>
+                <div class="form-group">
+                  <label class="form-label" style="font-weight:700;">Quotation Sent Date</label>
+                  <input type="date" class="form-input" id="defect-quotation-date">
+                </div>
+              </div>
+
+              <!-- Right Column -->
+              <div style="display:flex;flex-direction:column;gap:14px;">
+                <div class="form-group">
+                  <label class="form-label" style="font-weight:700;">Defect Type <span style="color:#b91c1c;">*</span></label>
+                  <select class="form-input" id="defect-type"><option value="Minor">Minor</option><option value="Major">Major</option><option value="Telematics Alert">Telematics Alert</option></select>
+                </div>
+                <div class="form-group">
+                  <label class="form-label" style="font-weight:700;">TED Status</label>
+                  <select class="form-input" id="defect-ted-status"><option value="Available">Available</option><option value="TBA">TBA</option></select>
+                </div>
+                <div class="form-group">
+                  <label class="form-label" style="font-weight:700;">Machine</label>
+                  <input type="text" class="form-input" id="defect-machine-display" readonly style="background:#f8fafc; color:#64748b;">
+                </div>
+                <div class="form-group">
+                  <label class="form-label" style="font-weight:700;">End Date</label>
+                  <input type="date" class="form-input" id="defect-end-date">
+                </div>
+                <div class="form-group">
+                  <label class="form-label" style="font-weight:700;">Description <span style="color:#b91c1c;">*</span></label>
+                  <textarea class="form-input" id="defect-description" rows="2" placeholder="Describe the defect…"></textarea>
+                </div>
+                <div class="form-group">
+                  <label class="form-label" style="font-weight:700;">Parts ETA</label>
+                  <input type="date" class="form-input" id="defect-parts-eta">
+                </div>
+                <div class="form-group">
+                  <label class="form-label" style="font-weight:700;">TED</label>
+                  <input type="date" class="form-input" id="defect-ted">
+                </div>
+                <div class="form-group" style="display:flex;gap:10px;">
+                   <div style="flex:1;"><label class="form-label" style="font-weight:700;">RED</label><input type="date" class="form-input" id="defect-red"></div>
+                   <div style="flex:1;"><label class="form-label" style="font-weight:700;">Status</label><select class="form-input" id="defect-status"><option value="Open">Open</option><option value="In Progress">In Progress</option><option value="On Hold">On Hold</option><option value="Closed">Closed</option></select></div>
+                </div>
               </div>
             </div>
-
-            <!-- Machine info banner -->
-            <div id="defect-machine-info" style="display:none;background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;padding:10px 14px;margin-bottom:14px;gap:16px;align-items:center;flex-wrap:wrap;">
-              <div style="flex:1;min-width:90px;"><div style="font-size:9px;color:#94a3b8;font-weight:700;text-transform:uppercase;">Customer</div><div id="defect-info-customer" style="font-size:12px;font-weight:600;color:#0f172a;">—</div></div>
-              <div><div style="font-size:9px;color:#94a3b8;font-weight:700;text-transform:uppercase;">Current HMR</div><div id="defect-info-hmr" style="font-size:14px;font-weight:800;color:#1e40af;font-family:monospace;">—</div></div>
-              <div><span id="defect-info-warranty" style="font-size:11px;font-weight:700;padding:3px 10px;border-radius:99px;background:#e2e8f0;color:#64748b;">—</span></div>
-            </div>
-
-            <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;">
-              <div class="form-group"><label class="form-label">Defect Type</label><select class="form-input" id="defect-type"><option value="Minor">Minor</option><option value="Major">Major</option><option value="Critical">Critical</option></select></div>
-              <div class="form-group"><label class="form-label">Priority</label><select class="form-input" id="defect-priority"><option value="Low">Low</option><option value="Medium">Medium</option><option value="High">High</option></select></div>
-            </div>
-
-            <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;">
-              <div class="form-group"><label class="form-label">HMR at Defect <span style="font-size:10px;color:#94a3b8;">(auto-filled)</span></label><input type="number" class="form-input" id="defect-hmr" placeholder="e.g. 4250" min="0" style="font-family:monospace;font-weight:700;"></div>
-              <div class="form-group"><label class="form-label">Status</label><select class="form-input" id="defect-status"><option value="Open">Open</option><option value="In Progress">In Progress</option><option value="Closed">Closed</option></select></div>
-            </div>
-
-            <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;">
-              <div class="form-group"><label class="form-label">Technician</label><div style="position:relative;"><input type="text" class="form-input" id="defect-technician-search" placeholder="Type to search…" autocomplete="off" oninput="fspTechSearch(this.value,'defect-technician','defect-tech-drop')"><input type="hidden" id="defect-technician"><ul id="defect-tech-drop" style="display:none;position:absolute;top:100%;left:0;right:0;background:#fff;border:1px solid #e2e8f0;border-radius:8px;box-shadow:0 4px 12px rgba(0,0,0,.1);z-index:20;list-style:none;padding:0;margin:0;max-height:160px;overflow-y:auto;"></ul></div></div>
-              <div class="form-group"><label class="form-label">Reported By</label><input type="text" class="form-input" id="defect-reported-by" placeholder="Your name"></div>
-            </div>
-
-            <div class="form-group"><label class="form-label">Description <span style="color:#b91c1c;">*</span></label><textarea class="form-input" id="defect-description" rows="3" placeholder="Describe the defect in detail…" style="resize:vertical;"></textarea></div>
+            
+            <input type="hidden" id="defect-technician">
+            <input type="hidden" id="defect-technician-search">
+            <input type="hidden" id="defect-reported-by">
+            <input type="hidden" id="defect-hmr">
           </div>
-          <div class="modal-footer" style="padding:14px 20px;background:#f8fafc;border-top:1px solid #e2e8f0;border-radius:0 0 12px 12px;">
+          <div class="modal-footer" style="padding:14px 20px;background:#f8fafc;border-top:1px solid #e2e8f0;border-radius:0 0 12px 12px;display:flex;gap:10px;justify-content:flex-end;">
             <button class="btn btn-secondary" onclick="closeDefectModal()">Cancel</button>
-            <button class="btn btn-primary" onclick="submitDefect()" style="background:#b91c1c;border-color:#b91c1c;">Save Defect</button>
+            <button class="btn btn-primary" onclick="submitDefect()" style="background:#b91c1c;border-color:#b91c1c;">Submit Defect</button>
           </div>
         </div>
       </div>
@@ -12745,14 +12821,36 @@
       const tbody = document.getElementById("tbl-defects");
       if (tbody) tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;padding:24px;color:#94a3b8;">⏳ Loading defects...</td></tr>';
       try {
-        const res = await callFrappe(FT_DEFECT_SUMMARY_METHOD, {});
-        // API returns { counts:{...}, rows:[...], error:null }
-        const msg = res.message || res;
-        const data = Array.isArray(msg.rows) ? msg.rows
-                   : Array.isArray(msg)       ? msg
-                   : [];
-        FT_DEFECTS_DATA = data;
-        window.FT_DEFECTS_DATA = data; // keep window-scoped in sync
+        if (!window.supabase) throw new Error("Supabase client not found");
+        
+        // Fetch total count for parallel pagination
+        const { count, error: countErr } = await window.supabase.from('ft_defect').select('*', { count: 'exact', head: true });
+        if (countErr) throw countErr;
+        
+        let allData = [];
+        const limit = 1000;
+        const total = count || 0;
+        
+        if (total > 0) {
+          const requests = [];
+          for (let i = 0; i < total; i += limit) {
+             requests.push(window.supabase.from('ft_defect').select('*').order('start_date', { ascending: false }).range(i, i + limit - 1));
+          }
+          
+          const results = await Promise.all(requests);
+          for (const res of results) {
+             if (res.error) throw res.error;
+             if (res.data) allData = allData.concat(res.data);
+          }
+        }
+
+        FT_DEFECTS_DATA = allData;
+        window.FT_DEFECTS_DATA = FT_DEFECTS_DATA;
+        
+        if (typeof window.DEFECTS_CURRENT_PAGE === 'undefined') {
+            window.DEFECTS_CURRENT_PAGE = 1;
+        }
+        
         renderDefectsTable(FT_DEFECTS_DATA);
       } catch (e) {
         console.error("Load Defects Error:", e);
@@ -12761,15 +12859,66 @@
       }
     }
 
+    async function loadDefectCategories() {
+      const datalist = document.getElementById('defect-categories-list');
+      if (!datalist || datalist.dataset.loaded) return;
+      try {
+        const res = await callFrappe('frappe.client.get_list', { doctype: 'FT Defect Category', fields: '["name"]', limit_page_length: 500 }, 'GET');
+        let cats = res.message || [];
+        datalist.innerHTML = cats.map(c => `<option value="${c.name}">`).join('');
+        datalist.dataset.loaded = "true";
+      } catch(e) {
+         console.warn("Failed to load defect categories", e);
+      }
+    }
+
+    window.changeDefectsPage = function(dir) {
+      window.DEFECTS_CURRENT_PAGE += dir;
+      renderDefectsTable(window.FT_DEFECTS_FILTERED_DATA || FT_DEFECTS_DATA);
+    };
+
+    function clearDefectFilters() {
+      if(document.getElementById('filter-defect-status')) document.getElementById('filter-defect-status').value = '';
+      if(document.getElementById('filter-defect-severity')) document.getElementById('filter-defect-severity').value = '';
+      if(document.getElementById('filter-defect-machine')) document.getElementById('filter-defect-machine').value = '';
+      if(document.getElementById('filter-defect-customer')) document.getElementById('filter-defect-customer').value = '';
+      filterDefectsTable();
+    }
+
+    function filterDefectsTable() {
+      const status   = (document.getElementById('filter-defect-status')?.value || '').toLowerCase();
+      const severity = (document.getElementById('filter-defect-severity')?.value || '').toLowerCase();
+      const machine  = (document.getElementById('filter-defect-machine')?.value || '').toLowerCase();
+      const customer = (document.getElementById('filter-defect-customer')?.value || '').toLowerCase();
+
+      window.FT_DEFECTS_FILTERED_DATA = (FT_DEFECTS_DATA || []).filter(r => {
+        // Status is determined by presence of end_date
+        const computedStatus = (r.end_date && r.end_date.trim() !== '') ? 'closed' : 'open';
+        const rSev = (r.priority || 'low').toLowerCase();
+        const rMach = ((r.machine || '') + ' ' + (r.model || '')).toLowerCase();
+        const rCust = (r.customer || '').toLowerCase();
+
+        return (!status || computedStatus === status) &&
+               (!severity || rSev === severity) &&
+               (!machine || rMach.includes(machine)) &&
+               (!customer || rCust.includes(customer));
+      });
+      window.DEFECTS_CURRENT_PAGE = 1;
+      renderDefectsTable(window.FT_DEFECTS_FILTERED_DATA);
+    }
+
     function renderDefectsTable(rows) {
+      if (!window.DEFECTS_CURRENT_PAGE) window.DEFECTS_CURRENT_PAGE = 1;
+      const PAGE_SIZE = 50;
+
       const tbody = document.getElementById("tbl-defects");
       if (!tbody) return;
       tbody.innerHTML = "";
       
       if (rows) {
         const total = rows.length;
-        const open = rows.filter(r => (r.status || 'Open').toLowerCase() !== 'closed').length;
-        const high = rows.filter(r => (r.priority || 'Low').toLowerCase() === 'high' && (r.status || 'Open').toLowerCase() !== 'closed').length;
+        const open = rows.filter(r => !(r.end_date && r.end_date.trim() !== '')).length;
+        const high = rows.filter(r => (r.priority || 'Low').toLowerCase() === 'high' && !(r.end_date && r.end_date.trim() !== '')).length;
         
         if (document.getElementById('defects-kpi-total')) document.getElementById('defects-kpi-total').innerText = total;
         if (document.getElementById('defects-kpi-open')) document.getElementById('defects-kpi-open').innerText = open;
@@ -12781,36 +12930,75 @@
         return;
       }
 
-      rows.forEach(r => {
+      const totalRows = rows.length;
+      const totalPages = Math.ceil(totalRows / PAGE_SIZE) || 1;
+      if (window.DEFECTS_CURRENT_PAGE > totalPages) window.DEFECTS_CURRENT_PAGE = totalPages;
+      if (window.DEFECTS_CURRENT_PAGE < 1) window.DEFECTS_CURRENT_PAGE = 1;
+
+      const startIdx = (window.DEFECTS_CURRENT_PAGE - 1) * PAGE_SIZE;
+      const endIdx = startIdx + PAGE_SIZE;
+      const pageRows = rows.slice(startIdx, endIdx);
+
+      pageRows.forEach(r => {
         const tr = document.createElement("tr");
         tr.className = "df-row";
         tr.onclick = () => openDefectModal(r.name);
 
-        const status = (r.status || "Open");
+        const status = (r.end_date && r.end_date.trim() !== '') ? "Closed" : "Open";
         const s = status.toLowerCase();
         const badgeClass = s === "open" ? "df-badge-open" : s === "closed" ? "df-badge-closed" : "df-badge-other";
         const priority   = r.priority   || "Low";
         const desc       = r.description ? r.description.slice(0, 80) + (r.description.length > 80 ? "…" : "") : "No description";
         const technician = r.technician || r.oem || "—";
-        const reported   = r.start_date || r.creation || "—";
+        
+        const rawDate    = r.start_date || r.creation || "—";
+        const reported   = rawDate !== "—" ? new Date(rawDate.split(" ")[0]).toLocaleDateString('en-GB', {day:'2-digit', month:'short', year:'numeric'}) : "—";
 
         // Severity colour pill
         const sevColour = priority === "High" ? "#ef4444"
                         : priority === "Medium" ? "#f59e0b"
                         : "#64748b";
 
+        const defectType = r.defect_type || "Minor";
+        const defectHtml = `
+            <div style="font-weight:700;color:#0f172a;font-size:13px;">${desc}</div>
+            <div style="font-size:11px;color:#64748b;margin-top:2px;">Type: ${defectType} | Customer: ${r.customer || '—'}</div>
+        `;
+
+        const machineModel = r.model || r.oem || 'Unknown Machine';
+        const machineHtml = `
+            <div style="font-weight:700;color:#0f172a;font-size:13px;">${machineModel}</div>
+            <div style="font-size:11px;color:#64748b;margin-top:2px;">SN: ${r.machine || '—'}</div>
+        `;
+
+        const statusColor = s === 'closed' ? '#22c55e' : (s === 'open' ? '#3b82f6' : '#64748b');
+        const statusHtml = `<div style="font-weight:800;color:${statusColor};font-size:11px;text-transform:uppercase;">${status}</div>`;
+
         tr.innerHTML = `
-          <td class="df-cell" style="font-weight:600; padding:10px 16px;">${desc}</td>
-          <td class="df-cell" style="padding:10px 16px;">${r.machine || "—"}</td>
+          <td class="df-cell" style="padding:10px 16px;">${defectHtml}</td>
+          <td class="df-cell" style="padding:10px 16px;">${machineHtml}</td>
           <td class="df-cell" style="padding:10px 16px;">
             <span style="background:${sevColour}22;color:${sevColour};border:1px solid ${sevColour}44;border-radius:999px;padding:2px 8px;font-size:9px;font-weight:700;">${priority}</span>
           </td>
-          <td class="df-cell" style="padding:10px 16px;"><span class="df-badge ${badgeClass}" style="font-size:9px;">${status}</span></td>
-          <td class="df-cell" style="color:var(--text-muted); padding:10px 16px;">${technician}</td>
-          <td class="df-cell" style="text-align:right; font-family:monospace; padding:10px 16px;">${reported}</td>
+          <td class="df-cell" style="padding:10px 16px;">${statusHtml}</td>
+          <td class="df-cell" style="color:var(--text-muted); padding:10px 16px; font-weight:600;">${technician}</td>
+          <td class="df-cell" style="text-align:right; font-weight:600; padding:10px 16px; color:#475569;">${reported}</td>
         `;
         tbody.appendChild(tr);
       });
+
+      // Pagination Controls Row
+      const pagTr = document.createElement("tr");
+      pagTr.innerHTML = `<td colspan="6" style="padding:12px 16px; background:#f8fafc; border-top:1px solid #e2e8f0; border-radius:0 0 8px 8px;">
+        <div style="display:flex; justify-content:space-between; align-items:center;">
+          <div style="font-size:11px; color:#64748b; font-weight:600;">Showing ${startIdx + 1} to ${Math.min(endIdx, totalRows)} of ${totalRows} defects</div>
+          <div style="display:flex; gap:6px;">
+            <button class="btn btn-secondary btn-sm" onclick="window.changeDefectsPage(-1)" ${window.DEFECTS_CURRENT_PAGE === 1 ? 'disabled' : ''} style="font-size:11px; padding:6px 12px;">Previous</button>
+            <button class="btn btn-secondary btn-sm" onclick="window.changeDefectsPage(1)" ${window.DEFECTS_CURRENT_PAGE === totalPages ? 'disabled' : ''} style="font-size:11px; padding:6px 12px;">Next</button>
+          </div>
+        </div>
+      </td>`;
+      tbody.appendChild(pagTr);
     }
 
     // --- FSP TECHNICIAN TYPEAHEAD ---
@@ -13389,33 +13577,43 @@ We will let you know if there are any changes to the field service booking.`;
       const title = document.getElementById("defect-modal-title");
       const idInput = document.getElementById("defect-id");
       const mSearch = document.getElementById("defect-machine-search");
-      const typeSelect = document.getElementById("defect-type");
-      const prioSelect = document.getElementById("defect-priority");
-      const statusGroup = document.getElementById("defect-status-group");
-      const statusSelect = document.getElementById("defect-status");
-      const descInput = document.getElementById("defect-description");
+      
+      if (typeof loadDefectCategories === 'function') loadDefectCategories();
 
       initDefectMachineSearch();
-
       modal.classList.remove("hidden");
 
       if (defectId) {
         // EDIT MODE
         const defect = FT_DEFECTS_DATA.find(d => d.name === defectId);
-        if (!defect) return; // Should allow fetch check if not found
+        if (!defect) return;
 
         title.textContent = "Edit Defect: " + defectId;
         idInput.value = defectId;
         mSearch.value = defect.machine || "";
         mSearch.dataset.selectedName = defect.machine;
-        mSearch.disabled = true; // Cannot change machine on edit usually
+        mSearch.disabled = true;
 
-        typeSelect.value = defect.defect_type || "Minor";
-        prioSelect.value = (defect.priority || "Low").split(" ")[0]; // clean up if formatted
-        // status always visible in new modal
-        statusSelect.value = defect.status || "Open";
-        descInput.value = defect.description || "";
+        document.getElementById("defect-on-hold").checked = defect.on_hold ? true : false;
+        document.getElementById("defect-customer").value = defect.customer || "";
+        document.getElementById("defect-machine-display").value = defect.model ? defect.model + " [" + defect.machine + "]" : defect.machine || "";
+        
+        document.getElementById("defect-type").value = defect.defect_type || "Minor";
+        document.getElementById("defect-ted-status").value = defect.ted_status || "Available";
+        document.getElementById("defect-category").value = defect.category || "";
+        document.getElementById("defect-priority").value = (defect.priority || "Low").split(" ")[0];
+        document.getElementById("defect-status").value = defect.status || "Open";
+        document.getElementById("defect-description").value = defect.description || "";
+        document.getElementById("defect-solution").value = defect.solution || "";
 
+        const splitDate = d => d ? d.split('T')[0] : "";
+        document.getElementById("defect-start-date").value = splitDate(defect.start_date);
+        document.getElementById("defect-end-date").value = splitDate(defect.end_date);
+        document.getElementById("defect-quotation-date").value = splitDate(defect.quotation_sent_date);
+        document.getElementById("defect-parts-eta").value = splitDate(defect.parts_eta);
+        document.getElementById("defect-ted").value = splitDate(defect.ted);
+        document.getElementById("defect-red").value = splitDate(defect.red);
+        
       } else {
         // NEW MODE
         title.textContent = "Log New Defect";
@@ -13423,19 +13621,32 @@ We will let you know if there are any changes to the field service booking.`;
         mSearch.value = "";
         mSearch.dataset.selectedName = "";
         mSearch.disabled = false;
-        typeSelect.value = "Minor";
-        prioSelect.value = "Low";
-        // status always visible in new modal
-        descInput.value = "";
+        
+        document.getElementById("defect-on-hold").checked = false;
+        document.getElementById("defect-customer").value = "";
+        document.getElementById("defect-machine-display").value = "";
+        document.getElementById("defect-type").value = "Minor";
+        document.getElementById("defect-ted-status").value = "Available";
+        document.getElementById("defect-category").value = "";
+        document.getElementById("defect-priority").value = "Low";
+        document.getElementById("defect-status").value = "Open";
+        document.getElementById("defect-description").value = "";
+        document.getElementById("defect-solution").value = "";
 
-        // Pre-select machine if called from Machine Lookup
+        const today = new Date().toISOString().split('T')[0];
+        document.getElementById("defect-start-date").value = today;
+        document.getElementById("defect-end-date").value = "";
+        document.getElementById("defect-quotation-date").value = "";
+        document.getElementById("defect-parts-eta").value = "";
+        document.getElementById("defect-ted").value = "";
+        document.getElementById("defect-red").value = "";
+
         if (preselectedMachine) {
           const pm = window.MACHINES_MAP?.[preselectedMachine];
           if (pm) {
-            const displayLabel = (pm.model ? pm.model + ' — ' : '') + (pm.name || preselectedMachine);
+            const displayLabel = (pm.model ? pm.model + '  ' : '') + (pm.name || preselectedMachine);
             mSearch.value = displayLabel;
             mSearch.dataset.selectedName = preselectedMachine;
-            // Auto-fill HMR and machine info row
             if (typeof _fillDefectMachineInfo === 'function') _fillDefectMachineInfo(preselectedMachine);
           } else {
             mSearch.value = preselectedMachine;
@@ -13450,59 +13661,77 @@ We will let you know if there are any changes to the field service booking.`;
     }
 
     function _fillDefectMachineInfo(name) {
-      const b=document.getElementById('defect-machine-info'),m=window.MACHINES_MAP?.[name];
-      if(!b||!name){return;}if(!m){b.style.display='none';return;}
-      const cu=document.getElementById('defect-info-customer'),hm=document.getElementById('defect-info-hmr'),wy=document.getElementById('defect-info-warranty'),hi=document.getElementById('defect-hmr');
-      if(cu)cu.textContent=m.customer||'\u2014';
-      if(hm)hm.textContent=m.current_hmr!=null?m.current_hmr+' h':'\u2014';
-      if(hi&&m.current_hmr!=null)hi.value=m.current_hmr;
-      if(wy){const ws=(m.warranty_status||'').toLowerCase();
-        wy.style.cssText=ws.includes('under')||ws==='in warranty'?'font-size:11px;font-weight:700;padding:3px 10px;border-radius:99px;background:#dcfce7;color:#15803d;':ws.includes('fringe')||ws.includes('expir')?'font-size:11px;font-weight:700;padding:3px 10px;border-radius:99px;background:#fef9c3;color:#a16207;':'font-size:11px;font-weight:700;padding:3px 10px;border-radius:99px;background:#fee2e2;color:#b91c1c;';
-        wy.textContent=m.warranty_status||'N/A';}
-      b.style.display='flex';
+      const m = window.MACHINES_MAP?.[name];
+      if(!m) return;
+      const cu = document.getElementById('defect-customer');
+      const md = document.getElementById('defect-machine-display');
+      if(cu) cu.value = m.customer || '';
+      if(md) md.value = (m.model ? m.model + " [" + m.name + "]" : m.name) || '';
+      const hi = document.getElementById('defect-hmr');
+      if(hi && m.current_hmr != null) hi.value = m.current_hmr;
     }
-    function _clearDefectMachineInfo(){const b=document.getElementById('defect-machine-info');if(b)b.style.display='none';}
-
+    function _clearDefectMachineInfo(){
+      const cu = document.getElementById('defect-customer');
+      const md = document.getElementById('defect-machine-display');
+      if(cu) cu.value = '';
+      if(md) md.value = '';
+    }
     async function submitDefect() {
       const id = document.getElementById("defect-id").value;
       const machine = document.getElementById("defect-machine-search").dataset.selectedName || document.getElementById("defect-machine-search").value;
+      
+      const on_hold = document.getElementById("defect-on-hold").checked;
       const defect_type = document.getElementById("defect-type").value;
+      const ted_status = document.getElementById("defect-ted-status").value;
+      const category = document.getElementById("defect-category").value;
       const priority = document.getElementById("defect-priority").value;
       const status = document.getElementById("defect-status").value;
+      
+      const start_date = document.getElementById("defect-start-date").value || null;
+      const end_date = document.getElementById("defect-end-date").value || null;
+      const quotation_sent_date = document.getElementById("defect-quotation-date").value || null;
+      const parts_eta = document.getElementById("defect-parts-eta").value || null;
+      const ted = document.getElementById("defect-ted").value || null;
+      const red = document.getElementById("defect-red").value || null;
+      
       const description = document.getElementById("defect-description").value;
+      const solution = document.getElementById("defect-solution").value;
 
       if (!machine && !id) { showToast("Select a machine", "err"); return; }
       if (!description) { showToast("Description required", "err"); return; }
+      if (!category) { showToast("Category required", "err"); return; }
 
       showToast("Saving...", "info", 1000);
 
       try {
-        let res;
+        const md = window.MACHINES_MAP?.[machine] || {};
+        
+        // Supabase Insert/Update
+        const payload = {
+          machine, defect_type, priority, status, description, start_date, end_date,
+          on_hold, ted_status, category, quotation_sent_date, parts_eta, ted, red, solution,
+          customer: md.customer||null, model: md.model||null, oem: md.oem||null,
+          region: md.region||null, location: md.current_location||md.location||null,
+          warranty_status: md.warranty_status||null
+        };
+
         if (id) {
-          // UPDATE
-          res = await callFrappe(FT_DEFECT_UPDATE_METHOD, {
-            name: id, status, priority, description, defect_type
-          }, 'POST');
+           payload.name = id;
+           payload.modified = new Date().toISOString();
         } else {
-          // CREATE — with new fields
-          const hmrRaw = document.getElementById('defect-hmr')?.value;
-          const hmr_at_defect = hmrRaw ? (parseInt(hmrRaw,10)||null) : null;
-          const technician  = document.getElementById('defect-technician')?.value || document.getElementById('defect-technician-search')?.value || '';
-          const reported_by = document.getElementById('defect-reported-by')?.value || '';
-          const start_date  = new Date().toISOString().split('T')[0];
-          const md = window.MACHINES_MAP?.[machine] || {};
-          res = await callFrappe(FT_DEFECT_CREATE_METHOD, {
-            name: 'DEF-' + Date.now(),
-            machine, defect_type, priority, status, description, start_date,
-            technician: technician||null, reported_by: reported_by||null, hmr_at_defect: hmr_at_defect||null,
-            customer: md.customer||null, model: md.model||null, oem: md.oem||null,
-            region: md.region||null, location: md.current_location||md.location||null,
-            warranty_status: md.warranty_status||null,
-          }, 'POST');
+           payload.name = 'DEF-' + Date.now();
         }
 
-        if (res.error) throw new Error(res.error);
-
+        const { error } = await window.supabase.from('ft_defect').upsert(payload);
+        if (error) throw new Error(error.message);
+        
+        // Ensure new category is passed to Frappe if typed (best effort)
+        const datalist = document.getElementById('defect-categories-list');
+        const opts = Array.from(datalist.options).map(o => o.value);
+        if (!opts.includes(category)) {
+           callFrappe('frappe.client.insert', { doc: { doctype: 'FT Defect Category', category_name: category } }, 'POST').catch(e => console.warn(e));
+        }
+        
         showToast("Defect Saved!", "success");
         closeDefectModal();
         loadFtDefects();

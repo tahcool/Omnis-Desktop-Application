@@ -41,3 +41,4 @@
 \n- **Commit d310495** (2026-07-28): Restore point: fleetrack machine lookup service tracking and clickable cards added
 \n- **Commit cbbe0ea** (2026-07-28): Enhance View Modal and revamp Service Tracking Report (STR)
 \n- **Commit 4c15df2** (2026-07-29): Update Shortcuts strip and add premium Export Report button
+\n- **Commit ed31a4a** (2026-07-30): Restore point before migrating defects schema

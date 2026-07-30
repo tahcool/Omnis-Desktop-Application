@@ -127,3 +127,6 @@
 \n## 2026-07-29
 - `4c15df2` 2026-07-29 [supabase-migration] Update Shortcuts strip and add premium Export Report button
   Files: systems/fleetrack/index.html,
+\n## 2026-07-30
+- `ed31a4a` 2026-07-30 [supabase-migration] Restore point before migrating defects schema
+  Files: .env,.mcp/knowledge/_shared/commit_log.md,.mcp/knowledge/fleetrack/session_notes.md,Create_FMB_Report_Machines.sql,Fix_RLS_Authenticated_Reads.sql,Supabase_Migration_Profiles_Enquiries.sql,Supabase_Push_Tokens.sql,Update_CDV_Logs.sql,Update_FollowUpDate.sql,add_defect_rls.sql,add_fetch.py,add_trace.js,admin_brand.html,admin_email.html,admin_intel.html,admin_migration.html,alter_customers.js,backfill_ce_sales_rep.js,check_account_managers.js,check_ce.js,
