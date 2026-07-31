@@ -22941,20 +22941,17 @@ window.loadISR = async function() {
 
       setProgress(AM_EDIT_MODE ? '✓ Machine updated!' : '✓ Machine created!', 100, true);
 
-      // 6. Refresh registry — clear filters and force full server reload so the new machine appears
-      if (!AM_EDIT_MODE) {
-        // Clear stale filter fields so the new machine isn't hidden
-        var filterCust = document.getElementById('mr-filter-customer');
-        var filterModel = document.getElementById('mr-filter-model');
-        if (filterCust) filterCust.value = '';
-        if (filterModel) filterModel.value = '';
-      }
-      if (window.FT_MACHINE_ROWS) window.FT_MACHINE_ROWS = [];
-      if (typeof loadFtMachineRegister === 'function') {
-        loadFtMachineRegister({});
-      } else if (typeof refreshMachineRegisterReport === 'function') {
-        refreshMachineRegisterReport();
-      }
+      // 6. Refresh registry — the new machine is already in FT_MACHINE_ROWS (added in step 5).
+      //    DO NOT call loadFtMachineRegister — it fetches from Frappe, which doesn't have the
+      //    new Supabase-only machine, and would OVERWRITE in-memory data, hiding the new entry.
+      //    Just clear stale UI filters and re-render from the updated in-memory array.
+      var filterCust  = document.getElementById('mr-filter-customer');
+      var filterModel = document.getElementById('mr-filter-model');
+      var filterFt    = document.getElementById('mr-filter-fleetrack');
+      if (filterCust)  filterCust.value  = '';
+      if (filterModel) filterModel.value = '';
+      if (filterFt)    filterFt.value    = '';
+      if (typeof refreshMachineRegisterReport === 'function') refreshMachineRegisterReport();
 
       var label = AM_EDIT_MODE ? 'updated' : 'created';
       showToast((AM_EDIT_MODE ? '✎ ' : '✓ ') + nameVal + ' ' + label + ' successfully.', 'ok', 4000);
