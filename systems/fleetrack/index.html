@@ -14063,6 +14063,7 @@
       const model = machineInfo.model || "Unknown Model";
       const sn = machineInfo.sn || r.machine;
       const fleet = machineInfo.fleet_no || "NA";
+      const internalFleet = machineInfo.mxg_fleet_no || "NA";
       
       let contact = "@[Unassigned]";
       if (r.technician && r.technician !== "Unassigned") {
@@ -14092,6 +14093,7 @@ FSI ${dateFmt}
 *CUSTOMER* : ${r.customer}
 *MACHINE* : ${model} SN: ${sn}
 *CUSTOMER FLEET NUMBER* : ${fleet}
+*INTERNAL FLEET NUMBER* : ${internalFleet}
 *WARRANTY STATUS* : ${r.warranty_status || "NA"}
 *SCOPE OF WORK* :  
 ${scopeLines}
@@ -14108,6 +14110,7 @@ ${scopeLines}
 
 *MACHINE*: ${model} *SN*: ${sn}
 *CUSTOMER FLEET NUMBER*: ${fleet}
+*INTERNAL FLEET NUMBER*: ${internalFleet}
 *SCOPE OF WORK*:
 ${scopeLines}
 
@@ -14125,6 +14128,7 @@ We will let you know if there are any changes to the field service booking.`;
 
 *MACHINE*: ${model} *SN*: ${sn}
 *CUSTOMER FLEET NUMBER*: ${fleet}
+*INTERNAL FLEET NUMBER*: ${internalFleet}
 *SCOPE OF WORK*:
 ${scopeLines}
 
