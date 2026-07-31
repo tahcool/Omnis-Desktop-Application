@@ -3702,7 +3702,7 @@
 
 
         <!-- ══ QUICK-ACTION STRIP ══ -->
-        <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:24px; background:linear-gradient(135deg, rgba(15, 23, 42, 0.45) 0%, rgba(15, 23, 42, 0.25) 100%); backdrop-filter:blur(24px); -webkit-backdrop-filter:blur(24px); border:1px solid rgba(255,255,255,0.15); border-radius:16px; padding:12px 24px; box-shadow:0 12px 40px -12px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.1); position:sticky; top:104px; z-index:90;">
+        <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:24px; background:rgba(15, 23, 42, 0.25); backdrop-filter:blur(24px); -webkit-backdrop-filter:blur(24px); border:1px solid rgba(255,255,255,0.15); border-radius:16px; padding:12px 24px; box-shadow:none; position:sticky; top:104px; z-index:90;">
           
           <div style="display:flex; align-items:center; gap:14px;">
             <div style="width:36px; height:36px; border-radius:10px; background:rgba(255,255,255,0.1); display:flex; align-items:center; justify-content:center; color:#ffffff; box-shadow:0 2px 6px rgba(0,0,0,0.1) inset;">
@@ -3715,54 +3715,54 @@
 
             <!-- Create Service Booking — primary -->
             <button onclick="openFspModal(null)"
-              style="display:flex;align-items:center;justify-content:center;gap:8px;padding:10px 20px;background:#2563eb;color:#ffffff;border:1px solid transparent;border-radius:10px;font-size:13px;font-weight:700;cursor:pointer;box-shadow:0 2px 4px rgba(0,0,0,0.1);transition:all .2s ease;white-space:nowrap;"
-              onmouseover="this.style.background='#1d4ed8';this.style.transform='translateY(-1px)';this.style.boxShadow='0 4px 6px rgba(0,0,0,0.2)';"
-              onmouseout="this.style.background='#2563eb';this.style.transform='translateY(0)';this.style.boxShadow='0 2px 4px rgba(0,0,0,0.1)';">
+              style="display:flex;align-items:center;justify-content:center;gap:8px;padding:10px 20px;background:#2563eb;color:#ffffff;border:1px solid transparent;border-radius:10px;font-size:13px;font-weight:700;cursor:pointer;box-shadow:none;transition:all .2s ease;white-space:nowrap;"
+              onmouseover="this.style.background='#1d4ed8';"
+              onmouseout="this.style.background='#2563eb';">
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
               Create Service Booking
             </button>
 
             <!-- Log Defect — secondary -->
             <button onclick="openDefectModal(null)"
-              style="display:flex;align-items:center;justify-content:center;gap:8px;padding:10px 20px;background:#dc2626;color:#ffffff;border:1px solid transparent;border-radius:10px;font-size:13px;font-weight:700;cursor:pointer;box-shadow:0 2px 4px rgba(0,0,0,0.1);transition:all .2s ease;white-space:nowrap;"
-              onmouseover="this.style.background='#b91c1c';this.style.transform='translateY(-1px)';this.style.boxShadow='0 4px 6px rgba(0,0,0,0.2)';"
-              onmouseout="this.style.background='#dc2626';this.style.transform='translateY(0)';this.style.boxShadow='0 2px 4px rgba(0,0,0,0.1)';">
+              style="display:flex;align-items:center;justify-content:center;gap:8px;padding:10px 20px;background:#dc2626;color:#ffffff;border:1px solid transparent;border-radius:10px;font-size:13px;font-weight:700;cursor:pointer;box-shadow:none;transition:all .2s ease;white-space:nowrap;"
+              onmouseover="this.style.background='#b91c1c';"
+              onmouseout="this.style.background='#dc2626';">
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>
               Log Defect
             </button>
             
             <!-- Generate Report — secondary -->
             <button onclick="showView('view-rpt-aftersales')"
-              style="display:flex;align-items:center;justify-content:center;gap:8px;padding:10px 20px;background:#7c3aed;color:#ffffff;border:1px solid transparent;border-radius:10px;font-size:13px;font-weight:700;cursor:pointer;box-shadow:0 2px 4px rgba(0,0,0,0.1);transition:all .2s ease;white-space:nowrap;"
-              onmouseover="this.style.background='#6d28d9';this.style.transform='translateY(-1px)';this.style.boxShadow='0 4px 6px rgba(0,0,0,0.2)';"
-              onmouseout="this.style.background='#7c3aed';this.style.transform='translateY(0)';this.style.boxShadow='0 2px 4px rgba(0,0,0,0.1)';">
+              style="display:flex;align-items:center;justify-content:center;gap:8px;padding:10px 20px;background:#7c3aed;color:#ffffff;border:1px solid transparent;border-radius:10px;font-size:13px;font-weight:700;cursor:pointer;box-shadow:none;transition:all .2s ease;white-space:nowrap;"
+              onmouseover="this.style.background='#6d28d9';"
+              onmouseout="this.style.background='#7c3aed';">
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
               Export Report
             </button>
 
             <!-- Update HMR — secondary -->
             <button onclick="openQuickHmrModal()"
-              style="display:flex;align-items:center;justify-content:center;gap:8px;padding:10px 20px;background:#475569;color:#ffffff;border:1px solid transparent;border-radius:10px;font-size:13px;font-weight:700;cursor:pointer;box-shadow:0 2px 4px rgba(0,0,0,0.1);transition:all .2s ease;white-space:nowrap;"
-              onmouseover="this.style.background='#334155';this.style.transform='translateY(-1px)';this.style.boxShadow='0 4px 6px rgba(0,0,0,0.2)';"
-              onmouseout="this.style.background='#475569';this.style.transform='translateY(0)';this.style.boxShadow='0 2px 4px rgba(0,0,0,0.1)';">
+              style="display:flex;align-items:center;justify-content:center;gap:8px;padding:10px 20px;background:#475569;color:#ffffff;border:1px solid transparent;border-radius:10px;font-size:13px;font-weight:700;cursor:pointer;box-shadow:none;transition:all .2s ease;white-space:nowrap;"
+              onmouseover="this.style.background='#334155';"
+              onmouseout="this.style.background='#475569';">
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 013 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
               Update HMR
             </button>
 
             <!-- Machine Lookup — secondary -->
             <button onclick="openMachineLookup()"
-              style="display:flex;align-items:center;justify-content:center;gap:8px;padding:10px 20px;background:#475569;color:#ffffff;border:1px solid transparent;border-radius:10px;font-size:13px;font-weight:700;cursor:pointer;box-shadow:0 2px 4px rgba(0,0,0,0.1);transition:all .2s ease;white-space:nowrap;"
-              onmouseover="this.style.background='#334155';this.style.transform='translateY(-1px)';this.style.boxShadow='0 4px 6px rgba(0,0,0,0.2)';"
-              onmouseout="this.style.background='#475569';this.style.transform='translateY(0)';this.style.boxShadow='0 2px 4px rgba(0,0,0,0.1)';">
+              style="display:flex;align-items:center;justify-content:center;gap:8px;padding:10px 20px;background:#475569;color:#ffffff;border:1px solid transparent;border-radius:10px;font-size:13px;font-weight:700;cursor:pointer;box-shadow:none;transition:all .2s ease;white-space:nowrap;"
+              onmouseover="this.style.background='#334155';"
+              onmouseout="this.style.background='#475569';">
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
               Lookup
             </button>
 
             <!-- Add Machine — primary -->
             <button onclick="openAddMachineModal()"
-              style="display:flex;align-items:center;justify-content:center;gap:8px;padding:10px 20px;background:#16a34a;color:#ffffff;border:1px solid transparent;border-radius:10px;font-size:13px;font-weight:700;cursor:pointer;box-shadow:0 2px 4px rgba(0,0,0,0.1);transition:all .2s ease;white-space:nowrap;"
-              onmouseover="this.style.background='#15803d';this.style.transform='translateY(-1px)';this.style.boxShadow='0 4px 6px rgba(0,0,0,0.2)';"
-              onmouseout="this.style.background='#16a34a';this.style.transform='translateY(0)';this.style.boxShadow='0 2px 4px rgba(0,0,0,0.1)';">
+              style="display:flex;align-items:center;justify-content:center;gap:8px;padding:10px 20px;background:#16a34a;color:#ffffff;border:1px solid transparent;border-radius:10px;font-size:13px;font-weight:700;cursor:pointer;box-shadow:none;transition:all .2s ease;white-space:nowrap;"
+              onmouseover="this.style.background='#15803d';"
+              onmouseout="this.style.background='#16a34a';">
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
               Add Machine
             </button>
