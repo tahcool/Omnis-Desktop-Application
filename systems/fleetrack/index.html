@@ -10286,16 +10286,24 @@
         console.log("[MachineModal] Fetching data for:", name);
         let doc = FT_MACHINE_DETAIL_CACHE[name];
         if (!doc) {
-          // fetch via Frappe call to avoid permission error on direct REST resource
-          const raw = await callFrappe(FT_MACHINE_DETAIL_METHOD, { name: name });
-          if (raw.exc || raw.exception || raw.error) throw new Error(raw.exc || raw.exception || raw.error || "Failed to load machine doc");
-
-          doc = raw.message || raw.data || raw;
-          // If message wrapper is used, doc is inside message
-          if (doc && doc.name) {
+          // PRIMARY: read from Supabase data already in memory (MACHINES_MAP is populated
+          // from ft_machine on every register load — this is always authoritative).
+          const supabaseRow = window.MACHINES_MAP && window.MACHINES_MAP[name];
+          if (supabaseRow && supabaseRow.name) {
+            // Merge Supabase library URLs into the doc if available
+            const libUrls = (window.LIB_SUPABASE_MAP && window.LIB_SUPABASE_MAP[name]) || {};
+            doc = Object.assign({}, supabaseRow, { _libUrls: libUrls });
             FT_MACHINE_DETAIL_CACHE[name] = doc;
           } else {
-            throw new Error("Machine not found");
+            // FALLBACK: fetch from Frappe (machine not yet synced to Supabase)
+            const raw = await callFrappe(FT_MACHINE_DETAIL_METHOD, { name: name });
+            if (raw.exc || raw.exception || raw.error) throw new Error(raw.exc || raw.exception || raw.error || "Failed to load machine doc");
+            doc = raw.message || raw.data || raw;
+            if (doc && doc.name) {
+              FT_MACHINE_DETAIL_CACHE[name] = doc;
+            } else {
+              throw new Error("Machine not found");
+            }
           }
         }
         
@@ -15685,20 +15693,16 @@ We will let you know if there are any changes to the field service booking.`;
         localFn: async () => {
           const n = (window.FT_MACHINE_ROWS || []).length;
           if (n) return { count: n };
-          // Register not loaded yet — fetch just to count (lightweight, allow_guest)
+          // Register not loaded yet — count from Supabase (fast, no Frappe needed)
           try {
-            const res = await callFrappe(FT_MACHINE_REGISTER_METHOD, {}, 'GET');
-            const rows = res?.message || res?.data || [];
-            const total = Array.isArray(rows) ? rows.length : null;
-            if (total !== null) {
-              // Populate FT_MACHINE_ROWS if empty so rest of app benefits too
-              if (!window.FT_MACHINE_ROWS?.length && Array.isArray(rows)) {
-                window.FT_MACHINE_ROWS = rows;
-              }
-              return { count: total };
-            }
+            const res = await window.electron.invoke('supabase:query', {
+              table: 'ft_machine', method: 'select',
+              params: { columns: 'name', range: { from: 0, to: 0 } }
+            });
+            // Supabase count: use count option via head query if supported, else just return null
+            if (res && res.count != null) return { count: res.count };
           } catch (_) {}
-          return null; // fall through to frappePath (frappe.client.get_count)
+          return null; // fall through to frappePath
         },
         frappePath: '/api/method/frappe.client.get_count',
         frappParams: { doctype: 'FT Machine' }
@@ -19703,13 +19707,16 @@ window.loadISR = async function() {
   async function fetchAllMachines() {
     if (_cpaAllMachines.length) return;
     try {
-      // Use already-loaded Frappe machine data if available
+      // Use already-loaded Supabase machine data if available
       let rows = (window.FT_MACHINE_ROWS || []);
       if (!rows.length) {
-        // Fallback: fetch from Frappe directly
-        const raw = await callFrappe(FT_MACHINE_REGISTER_METHOD, {}, 'GET', { showLoader: false });
-        const payload = raw.message || raw;
-        rows = payload.data || [];
+        // Fallback: query Supabase directly
+        const res = await window.electron.invoke('supabase:query', {
+          table: 'ft_machine',
+          method: 'select',
+          params: { columns: 'name,sn,customer,type,model,mxg_fleet_no,fleet_no', range: { from: 0, to: 4999 } }
+        });
+        rows = (res && res.data) || [];
       }
       // Map to consistent shape using Frappe field names
       _cpaAllMachines = rows
