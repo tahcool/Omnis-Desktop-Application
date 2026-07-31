@@ -13357,16 +13357,26 @@
 
     // --- FSP MODAL LOGIC ---
     let FT_FSP_SEARCH_INIT = false;
-    function openFspModal(presetDate = null) {
+    function openFspModal(presetDate = null, preselectedMachine = null) {
       const modal = document.getElementById("modal-fsp-new");
       if (!modal) return;
       
       // Reset fields
-      document.getElementById("fsp-new-sn").value = "";
-      document.getElementById("fsp-new-sn").dataset.selectedName = "";
-      document.getElementById("fsp-new-customer").value = "";
-      document.getElementById("fsp-new-warranty").value = "";
-      document.getElementById("fsp-new-location").value = "";
+      if (preselectedMachine) {
+        let mObj = typeof preselectedMachine === 'object' ? preselectedMachine : (window.MACHINES_MAP ? window.MACHINES_MAP[preselectedMachine] : null) || { name: preselectedMachine };
+        document.getElementById("fsp-new-sn").value = mObj.sn || mObj.name;
+        document.getElementById("fsp-new-sn").dataset.selectedName = mObj.name;
+        document.getElementById("fsp-new-customer").value = mObj.customer || "";
+        document.getElementById("fsp-new-warranty").value = mObj.warranty_status || "Standard";
+        document.getElementById("fsp-new-location").value = mObj.current_location || mObj.location || "";
+        if (typeof loadFspMachineDefects === 'function') loadFspMachineDefects(mObj.name);
+      } else {
+        document.getElementById("fsp-new-sn").value = "";
+        document.getElementById("fsp-new-sn").dataset.selectedName = "";
+        document.getElementById("fsp-new-customer").value = "";
+        document.getElementById("fsp-new-warranty").value = "";
+        document.getElementById("fsp-new-location").value = "";
+      }
       document.getElementById("fsp-new-description").value = "";
       document.getElementById("fsp-new-technician").value = "";
       const techSearch = document.getElementById("fsp-new-technician-search");
@@ -14114,16 +14124,26 @@ We will let you know if there are any changes to the field service booking.`;
         // NEW MODE
         title.textContent = "Log New Defect";
         idInput.value = "";
-        mSearch.value = "";
-        mSearch.dataset.selectedName = "";
-        mSearch.disabled = false;
+        
+        if (preselectedMachine) {
+          let mObj = typeof preselectedMachine === 'object' ? preselectedMachine : (window.MACHINES_MAP ? window.MACHINES_MAP[preselectedMachine] : null) || { name: preselectedMachine };
+          mSearch.value = mObj.model ? `${mObj.model} [${mObj.name}]` : (mObj.sn || mObj.name);
+          mSearch.dataset.selectedName = mObj.name;
+          mSearch.disabled = false;
+          document.getElementById("defect-customer").value = mObj.customer || "";
+          document.getElementById("defect-machine-display").value = mObj.model ? `${mObj.model} [${mObj.name}]` : (mObj.sn || mObj.name);
+        } else {
+          mSearch.value = "";
+          mSearch.dataset.selectedName = "";
+          mSearch.disabled = false;
+          document.getElementById("defect-customer").value = "";
+          document.getElementById("defect-machine-display").value = "";
+        }
         
         document.getElementById("defect-on-hold").checked = false;
         document.getElementById("defect-machine-running").checked = true;
         const delBtn = document.getElementById("btn-delete-defect");
         if (delBtn) delBtn.style.display = "none";
-        document.getElementById("defect-customer").value = "";
-        document.getElementById("defect-machine-display").value = "";
         document.getElementById("defect-type").value = "Minor";
         document.getElementById("defect-ted-status").value = "Available";
         document.getElementById("defect-category").value = "";
@@ -16683,6 +16703,8 @@ We will let you know if there are any changes to the field service booking.`;
         </div>
         <div style="display:flex;gap:8px;align-items:center;">
           <button id="mc-add-breakdown" class="tiny-btn" style="background:#ef4444; color:white; border:none; padding:6px 14px;">Add Breakdown</button>
+          <button id="mc-add-defect" class="tiny-btn" style="background:#f97316; color:white; border:none; padding:6px 14px;">Log Defect</button>
+          <button id="mc-add-fsp" class="tiny-btn" style="background:#2563eb; color:white; border:none; padding:6px 14px;">Service Plan</button>
           <button id="mc-add-hmr" class="tiny-btn" style="background:#f1f5f9; color:#1e293b; border:1px solid #e2e8f0; padding:6px 14px;">Add HMR</button>
           <button id="mc-edit-machine" class="tiny-btn" style="background:linear-gradient(135deg,#f59e0b,#d97706); color:white; border:none; padding:6px 14px; font-weight:600;" title="Edit machine record">&#9998; Edit</button>
           <button id="mc-delete-machine" class="tiny-btn" style="background:#fff0f0; color:#b91c1c; border:1px solid #fca5a5; padding:6px 14px; font-weight:600;" title="Permanently delete this machine">&#128465; Delete</button>
@@ -16702,6 +16724,8 @@ We will let you know if there are any changes to the field service booking.`;
     window.mcSubtitle = document.getElementById("mc-subtitle");
     window.mcBody = document.getElementById("mc-body");
     window.mcAddBreakdown = document.getElementById("mc-add-breakdown");
+    window.mcAddDefect = document.getElementById("mc-add-defect");
+    window.mcAddFsp = document.getElementById("mc-add-fsp");
     window.mcAddHmr = document.getElementById("mc-add-hmr");
     window.mcEditMachine = document.getElementById("mc-edit-machine");
     window.mcDeleteMachine = document.getElementById("mc-delete-machine");
@@ -16901,11 +16925,26 @@ We will let you know if there are any changes to the field service booking.`;
         }
       });
     }
-    
     if (window.mcAddBreakdown) {
       window.mcAddBreakdown.addEventListener("click", () => {
         if (window.MC_CURRENT_MACHINE && typeof window.openCreateModal === "function") {
           window.openCreateModal(window.MC_CURRENT_MACHINE.name);
+        }
+      });
+    }
+    
+    if (window.mcAddDefect) {
+      window.mcAddDefect.addEventListener("click", () => {
+        if (window.MC_CURRENT_MACHINE && typeof window.openDefectModal === "function") {
+          window.openDefectModal(null, window.MC_CURRENT_MACHINE);
+        }
+      });
+    }
+    
+    if (window.mcAddFsp) {
+      window.mcAddFsp.addEventListener("click", () => {
+        if (window.MC_CURRENT_MACHINE && typeof window.openFspModal === "function") {
+          window.openFspModal(null, window.MC_CURRENT_MACHINE);
         }
       });
     }
