@@ -15681,6 +15681,149 @@ We will let you know if there are any changes to the field service booking.`;
     window.openWaLinkModal = openWaLinkModal;
     window.closeWaLinkModal = closeWaLinkModal;
 
+    // =====================================================================
+    // AUDIT TRAIL VIEWER
+    // =====================================================================
+    var _auditCurrentPage = 1;
+    var _auditPageSize    = 50;
+    var _auditTotal       = 0;
+
+    window.loadAuditTrail = async function(reset) {
+      if (reset !== false) _auditCurrentPage = 1;
+      var tbody  = document.getElementById('audit-tbody');
+      var cntEl  = document.getElementById('audit-count');
+      var pgLbl  = document.getElementById('audit-page-lbl');
+      var prevBtn = document.getElementById('audit-prev');
+      var nextBtn = document.getElementById('audit-next');
+      if (!tbody) return;
+      tbody.innerHTML = '<tr><td colspan="5" style="padding:30px;text-align:center;color:#9ca3af;">Loading...</td></tr>';
+
+      try {
+        var evtFilter  = (document.getElementById('audit-filter-type') || {}).value || '';
+        var searchTerm = ((document.getElementById('audit-search') || {}).value || '').trim().toLowerCase();
+        var from = (_auditCurrentPage - 1) * _auditPageSize;
+        var to   = from + _auditPageSize - 1;
+
+        var params = {
+          columns: 'id,event_type,entity_type,entity_name,user_email,details,created_at',
+          order:   { column: 'created_at', ascending: false },
+          range:   { from: from, to: to }
+        };
+        if (evtFilter) params.filter = { event_type: evtFilter };
+
+        var res = await window.electron.invoke('supabase:query', {
+          table: 'omnis_audit_trail',
+          method: 'select',
+          params: params
+        });
+
+        var rows = (res && res.data) || [];
+        _auditTotal = res && res.count != null ? res.count : (_auditCurrentPage * _auditPageSize + (rows.length < _auditPageSize ? 0 : 1));
+
+        // Client-side search filter (fast enough for 50 rows)
+        if (searchTerm) {
+          rows = rows.filter(function(r) {
+            return (r.event_type || '').toLowerCase().includes(searchTerm) ||
+                   (r.entity_name || '').toLowerCase().includes(searchTerm) ||
+                   (r.user_email || '').toLowerCase().includes(searchTerm) ||
+                   (r.entity_type || '').toLowerCase().includes(searchTerm);
+          });
+        }
+
+        // Render
+        var EVENT_COLORS = {
+          MACHINE_CREATED: { bg: '#dcfce7', color: '#166534' },
+          MACHINE_EDITED:  { bg: '#fef9c3', color: '#854d0e' },
+          MACHINE_DELETED: { bg: '#fee2e2', color: '#991b1b' },
+          MACHINE_FILE_UPLOADED: { bg: '#ede9fe', color: '#5b21b6' },
+          USER_LOGIN:      { bg: '#dbeafe', color: '#1e40af' },
+          USER_LOGOUT:     { bg: '#f3f4f6', color: '#374151' },
+          HMR_UPDATED:     { bg: '#ffedd5', color: '#9a3412' }
+        };
+
+        if (!rows.length) {
+          tbody.innerHTML = '<tr><td colspan="5" style="padding:40px;text-align:center;color:#9ca3af;">No audit records found.</td></tr>';
+        } else {
+          tbody.innerHTML = rows.map(function(r, i) {
+            var c = EVENT_COLORS[r.event_type] || { bg: '#f3f4f6', color: '#374151' };
+            var evtLabel = (r.event_type || '').replace(/_/g, ' ');
+            var dt = r.created_at ? new Date(r.created_at).toLocaleString('en-ZA', { dateStyle: 'short', timeStyle: 'medium' }) : '--';
+            var detailStr = '';
+            if (r.details) {
+              try {
+                var d = typeof r.details === 'string' ? JSON.parse(r.details) : r.details;
+                var keys = Object.keys(d).slice(0, 3);
+                detailStr = keys.map(function(k) { return k + ': ' + JSON.stringify(d[k]).slice(0, 40); }).join(', ');
+              } catch(_) { detailStr = String(r.details).slice(0, 80); }
+            }
+            var bg = i % 2 === 0 ? '#fff' : '#f9fafb';
+            return '<tr style="background:' + bg + ';border-bottom:1px solid #f3f4f6;">' +
+              '<td style="padding:9px 12px;color:#374151;white-space:nowrap;font-size:11px;">' + dt + '</td>' +
+              '<td style="padding:9px 12px;">' +
+                '<span style="background:' + c.bg + ';color:' + c.color + ';padding:2px 7px;border-radius:4px;font-size:10px;font-weight:600;letter-spacing:0.3px;">' + evtLabel + '</span>' +
+              '</td>' +
+              '<td style="padding:9px 12px;font-size:12px;font-weight:600;color:#111;">' + (r.entity_name || '<span style='color:#9ca3af;'>--</span>') + '</td>' +
+              '<td style="padding:9px 12px;font-size:11px;color:#6b7280;">' + (r.user_email || '--') + '</td>' +
+              '<td style="padding:9px 12px;font-size:11px;color:#6b7280;max-width:200px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;" title="' + detailStr + '">' + (detailStr || '--') + '</td>' +
+            '</tr>';
+          }).join('');
+        }
+
+        var totalPages = Math.ceil(_auditTotal / _auditPageSize) || 1;
+        if (cntEl) cntEl.textContent = _auditTotal + ' total records';
+        if (pgLbl) pgLbl.textContent = 'Page ' + _auditCurrentPage + ' of ' + totalPages;
+        if (prevBtn) prevBtn.disabled = _auditCurrentPage <= 1;
+        if (nextBtn) nextBtn.disabled = rows.length < _auditPageSize;
+      } catch(e) {
+        tbody.innerHTML = '<tr><td colspan="5" style="padding:30px;text-align:center;color:#dc2626;">Error: ' + (e.message || String(e)) + '</td></tr>';
+      }
+    };
+
+    window.auditPage = function(dir) {
+      _auditCurrentPage = Math.max(1, _auditCurrentPage + dir);
+      window.loadAuditTrail(false);
+    };
+
+    window.exportAuditCsv = async function() {
+      try {
+        var res = await window.electron.invoke('supabase:query', {
+          table: 'omnis_audit_trail',
+          method: 'select',
+          params: {
+            columns: 'created_at,event_type,entity_type,entity_name,user_email,details',
+            order: { column: 'created_at', ascending: false },
+            range: { from: 0, to: 4999 }
+          }
+        });
+        var rows = (res && res.data) || [];
+        var header = ['Timestamp', 'Event', 'Entity Type', 'Entity Name', 'User', 'Details'];
+        var lines = [header.join(',')];
+        rows.forEach(function(r) {
+          var detStr = '';
+          try { detStr = JSON.stringify(r.details || '').replace(/"/g, "'"); } catch(_) {}
+          lines.push([
+            '"' + (r.created_at || '') + '"',
+            '"' + (r.event_type || '') + '"',
+            '"' + (r.entity_type || '') + '"',
+            '"' + (r.entity_name || '') + '"',
+            '"' + (r.user_email || '') + '"',
+            '"' + detStr + '"'
+          ].join(','));
+        });
+        var csv = lines.join('
+');
+        var blob = new Blob([csv], { type: 'text/csv' });
+        var url = URL.createObjectURL(blob);
+        var a = document.createElement('a');
+        a.href = url; a.download = 'omnis-audit-trail-' + new Date().toISOString().slice(0,10) + '.csv';
+        document.body.appendChild(a); a.click(); a.remove();
+        URL.revokeObjectURL(url);
+        if (typeof showToast === 'function') showToast('Audit trail exported (' + rows.length + ' records).', 'ok', 3000);
+      } catch(e) {
+        if (typeof showToast === 'function') showToast('Export failed: ' + e.message, 'err', 4000);
+      }
+    };
+
     // ══════════════════════════════════════════════════════
     //  SYNC MONITOR — compare Frappe ↔ Supabase record counts
     // ══════════════════════════════════════════════════════
@@ -16467,7 +16610,8 @@ We will let you know if there are any changes to the field service booking.`;
         <div style="display:flex;gap:8px;align-items:center;">
           <button id="mc-add-breakdown" class="tiny-btn" style="background:#ef4444; color:white; border:none; padding:6px 14px;">Add Breakdown</button>
           <button id="mc-add-hmr" class="tiny-btn" style="background:#f1f5f9; color:#1e293b; border:1px solid #e2e8f0; padding:6px 14px;">Add HMR</button>
-          <button id="mc-edit-machine" class="tiny-btn" style="background:linear-gradient(135deg,#f59e0b,#d97706); color:white; border:none; padding:6px 14px; font-weight:600;" title="Edit machine record">✎ Edit</button>
+          <button id="mc-edit-machine" class="tiny-btn" style="background:linear-gradient(135deg,#f59e0b,#d97706); color:white; border:none; padding:6px 14px; font-weight:600;" title="Edit machine record">&#9998; Edit</button>
+          <button id="mc-delete-machine" class="tiny-btn" style="background:#fff0f0; color:#b91c1c; border:1px solid #fca5a5; padding:6px 14px; font-weight:600;" title="Permanently delete this machine">&#128465; Delete</button>
           <button id="mc-close" class="tiny-btn">Close</button>
         </div>
       </div>
@@ -16486,6 +16630,7 @@ We will let you know if there are any changes to the field service booking.`;
     window.mcAddBreakdown = document.getElementById("mc-add-breakdown");
     window.mcAddHmr = document.getElementById("mc-add-hmr");
     window.mcEditMachine = document.getElementById("mc-edit-machine");
+    window.mcDeleteMachine = document.getElementById("mc-delete-machine");
     window.mcClose = document.getElementById("mc-close");
     if (window.mcEditMachine) {
       window.mcEditMachine.addEventListener('click', function() {
@@ -16493,10 +16638,187 @@ We will let you know if there are any changes to the field service booking.`;
         if (name) openEditMachineModal(name);
       });
     }
+    if (window.mcDeleteMachine) {
+      window.mcDeleteMachine.addEventListener('click', function() {
+        var m = window.MC_CURRENT_MACHINE || {};
+        if (!m.name) return;
+        window.openDeleteMachineConfirm(m.name, m.customer || '');
+      });
+    }
     
     // Safety check
     if (window.ftDebugLog) window.ftDebugLog("Modal elements re-registered at bottom.");
     
+    // =====================================================================
+    // AUDIT TRAIL HELPER
+    // =====================================================================
+    window.logAudit = async function(eventType, entityType, entityName, details) {
+      try {
+        var email = '';
+        try { email = window.FT_USER_EMAIL || localStorage.getItem('ft_user_email') || ''; } catch(_) {}
+        await window.electron.invoke('supabase:query', {
+          table: 'omnis_audit_trail',
+          method: 'insert',
+          params: { data: {
+            event_type:  eventType,
+            entity_type: entityType,
+            entity_name: String(entityName || '').slice(0, 200),
+            user_email:  email,
+            details:     details || null
+          }}
+        });
+      } catch(e) { console.warn('[AuditLog]', e); }
+    };
+
+    // =====================================================================
+    // DELETE MACHINE CONFIRMATION OVERLAY
+    // =====================================================================
+    window.openDeleteMachineConfirm = function(machineName, customer, model) {
+      var old = document.getElementById('del-machine-overlay');
+      if (old) old.remove();
+
+      var ov = document.createElement('div');
+      ov.id = 'del-machine-overlay';
+      ov.style.cssText = [
+        'position:fixed;inset:0;z-index:999999;display:flex;',
+        'align-items:center;justify-content:center;',
+        'background:rgba(0,0,0,0.65);backdrop-filter:blur(4px);'
+      ].join('');
+
+      var meta = [model, customer].filter(Boolean).join(' — ');
+
+      var card = document.createElement('div');
+      card.style.cssText = [
+        'background:#fff;border-radius:12px;width:480px;max-width:92vw;overflow:hidden;',
+        "font-family:'Segoe UI',system-ui,sans-serif;",
+        'box-shadow:0 24px 64px rgba(0,0,0,0.28);'
+      ].join('');
+
+      // Header
+      var hdr = document.createElement('div');
+      hdr.style.cssText = 'background:linear-gradient(135deg,#dc2626,#b91c1c);padding:20px 24px;color:#fff;';
+      hdr.innerHTML = (
+        '<div style="display:flex;align-items:center;gap:10px;margin-bottom:4px;">' +
+          '<svg viewBox="0 0 20 20" width="20" height="20" fill="#fff">' +
+            '<path d="M10 2a8 8 0 1 1 0 16A8 8 0 0 1 10 2zM9 9v5h2V9H9zm0-4v2h2V5H9z"/>' +
+          '</svg>' +
+          '<span style="font-size:15px;font-weight:700;">Permanent Deletion Warning</span>' +
+        '</div>' +
+        '<div style="font-size:12px;opacity:0.85;">This action cannot be reversed or recovered.</div>'
+      );
+
+      // Body
+      var body = document.createElement('div');
+      body.style.cssText = 'padding:22px 24px;';
+
+      var machineBox = document.createElement('div');
+      machineBox.style.cssText = 'background:#fff8f8;border:1px solid #fca5a5;border-radius:8px;padding:12px 14px;margin-bottom:18px;';
+      var lbl = document.createElement('div');
+      lbl.style.cssText = 'font-size:11px;color:#6b7280;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:4px;';
+      lbl.textContent = 'Machine to be deleted';
+      var nm = document.createElement('div');
+      nm.style.cssText = 'font-size:14px;font-weight:700;color:#111;';
+      nm.textContent = machineName;
+      var mt = document.createElement('div');
+      mt.style.cssText = 'font-size:12px;color:#6b7280;margin-top:2px;';
+      mt.textContent = meta;
+      machineBox.appendChild(lbl); machineBox.appendChild(nm); machineBox.appendChild(mt);
+
+      var p1 = document.createElement('p');
+      p1.style.cssText = 'font-size:13px;color:#374151;line-height:1.55;margin:0 0 6px;';
+      p1.innerHTML = 'Deleting this machine will <strong>permanently remove</strong> its record from the Machine Registry. ' +
+        'Service history and HMR logs will be retained in the database, but the machine will no longer appear in any register or report.';
+
+      var p2 = document.createElement('p');
+      p2.style.cssText = 'font-size:12px;color:#9ca3af;margin:0 0 18px;';
+      p2.innerHTML = 'This action is logged in the Audit Trail and <strong>cannot be undone</strong>.';
+
+      var confirmLbl = document.createElement('label');
+      confirmLbl.style.cssText = 'display:block;font-size:12px;font-weight:600;color:#374151;margin-bottom:6px;';
+      var code = document.createElement('span');
+      code.style.cssText = 'font-family:monospace;background:#f3f4f6;padding:1px 5px;border-radius:3px;color:#b91c1c;';
+      code.textContent = machineName;
+      confirmLbl.appendChild(document.createTextNode('Type '));
+      confirmLbl.appendChild(code);
+      confirmLbl.appendChild(document.createTextNode(' to confirm:'));
+
+      var inp = document.createElement('input');
+      inp.id = 'del-confirm-input';
+      inp.type = 'text'; inp.autocomplete = 'off';
+      inp.placeholder = 'Type the machine ID exactly as shown above...';
+      inp.style.cssText = 'width:100%;box-sizing:border-box;border:1.5px solid #d1d5db;border-radius:6px;padding:9px 12px;font-size:13px;outline:none;transition:border-color 0.2s;';
+
+      var errDiv = document.createElement('div');
+      errDiv.id = 'del-error';
+      errDiv.style.cssText = 'color:#dc2626;font-size:11px;margin-top:6px;min-height:16px;';
+
+      body.appendChild(machineBox);
+      body.appendChild(p1); body.appendChild(p2);
+      body.appendChild(confirmLbl); body.appendChild(inp); body.appendChild(errDiv);
+
+      // Footer
+      var ftr = document.createElement('div');
+      ftr.style.cssText = 'padding:16px 24px;background:#f9fafb;border-top:1px solid #e5e7eb;display:flex;justify-content:flex-end;gap:10px;';
+
+      var cancelBtn = document.createElement('button');
+      cancelBtn.id = 'del-cancel-btn';
+      cancelBtn.textContent = 'Cancel';
+      cancelBtn.style.cssText = 'padding:9px 18px;border:1px solid #d1d5db;border-radius:6px;background:#fff;color:#374151;font-size:13px;font-weight:600;cursor:pointer;';
+
+      var delBtn = document.createElement('button');
+      delBtn.id = 'del-confirm-btn';
+      delBtn.textContent = 'Permanently Delete';
+      delBtn.disabled = true;
+      delBtn.style.cssText = 'padding:9px 20px;border:none;border-radius:6px;background:#9ca3af;color:#fff;font-size:13px;font-weight:700;cursor:not-allowed;transition:background 0.2s;';
+
+      ftr.appendChild(cancelBtn); ftr.appendChild(delBtn);
+      card.appendChild(hdr); card.appendChild(body); card.appendChild(ftr);
+      ov.appendChild(card);
+      document.body.appendChild(ov);
+
+      cancelBtn.addEventListener('click', function() { ov.remove(); });
+      ov.addEventListener('click', function(e) { if (e.target === ov) ov.remove(); });
+
+      inp.addEventListener('input', function() {
+        var ok = inp.value.trim() === machineName;
+        delBtn.disabled = !ok;
+        delBtn.style.background = ok ? '#dc2626' : '#9ca3af';
+        delBtn.style.cursor = ok ? 'pointer' : 'not-allowed';
+        if (ok) errDiv.textContent = '';
+      });
+
+      delBtn.addEventListener('click', async function() {
+        if (delBtn.disabled) return;
+        delBtn.disabled = true; delBtn.textContent = 'Deleting...'; errDiv.textContent = '';
+        try {
+          var res = await window.electron.invoke('supabase:query', {
+            table: 'ft_machine', method: 'delete',
+            params: { filter: { name: machineName } }
+          });
+          if (!res || !res.ok) throw new Error(res && res.error ? res.error : 'Delete failed');
+
+          if (window.FT_MACHINE_ROWS) window.FT_MACHINE_ROWS = window.FT_MACHINE_ROWS.filter(function(r){ return r.name !== machineName; });
+          if (window.MACHINES_MAP) delete window.MACHINES_MAP[machineName];
+          if (window.FT_MACHINE_DETAIL_CACHE) delete window.FT_MACHINE_DETAIL_CACHE[machineName];
+          if (window.LIB_SUPABASE_MAP) delete window.LIB_SUPABASE_MAP[machineName];
+
+          if (typeof window.logAudit === 'function') {
+            window.logAudit('MACHINE_DELETED', 'machine', machineName, { customer: customer, model: model });
+          }
+
+          ov.remove();
+          var mcOv = document.getElementById('mc-modal-overlay') || window.mcModalOverlay;
+          if (mcOv) { mcOv.classList.add('hidden'); mcOv.style.setProperty('display','none','important'); }
+          if (typeof showToast === 'function') showToast('Machine "' + machineName + '" permanently deleted.', 'ok', 5000);
+          setTimeout(function() { if (typeof refreshMachineRegisterReport === 'function') refreshMachineRegisterReport(); }, 80);
+        } catch(e) {
+          errDiv.textContent = 'Error: ' + (e.message || String(e));
+          delBtn.disabled = false; delBtn.textContent = 'Permanently Delete'; delBtn.style.background = '#dc2626';
+        }
+      });
+      setTimeout(function() { if (inp) inp.focus(); }, 60);
+    };
+
     // Add actions
     if (window.mcAddHmr) {
       window.mcAddHmr.addEventListener("click", () => {
@@ -17479,6 +17801,7 @@ window.loadISR = async function() {
                     <div class="settings-tab" onclick="switchSettingsTab('licensing')">🛡️ Licensing</div>
                     <div class="settings-tab" onclick="switchSettingsTab('about')">ℹ️ About System</div>
                     <div class="settings-tab" onclick="switchSettingsTab('sync');runSyncCheck();">🔄 Sync Monitor</div>
+                    <div class="settings-tab" onclick="switchSettingsTab('audit');loadAuditTrail();">&#128269; Audit Trail</div>
                 </div>
 
                 <!-- Email Pane -->
@@ -17833,6 +18156,57 @@ window.loadISR = async function() {
                   </div>
 
                 </div><!-- /pane-sync -->
+
+                <!-- ======================================================== -->
+                <!-- AUDIT TRAIL PANE                                          -->
+                <!-- ======================================================== -->
+                <div id="pane-audit" class="settings-pane">
+                  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;flex-wrap:wrap;gap:10px;">
+                    <div>
+                      <div style="font-size:14px;font-weight:700;color:#111827;">System Audit Trail</div>
+                      <div style="font-size:12px;color:#6b7280;margin-top:2px;">All system actions with timestamps &mdash; stored permanently in Supabase.</div>
+                    </div>
+                    <div style="display:flex;gap:8px;flex-wrap:wrap;align-items:center;">
+                      <select id="audit-filter-type" style="border:1px solid #d1d5db;border-radius:6px;padding:6px 10px;font-size:12px;background:#fff;color:#374151;" onchange="loadAuditTrail()">
+                        <option value="">All Events</option>
+                        <option value="MACHINE_CREATED">Machine Created</option>
+                        <option value="MACHINE_EDITED">Machine Edited</option>
+                        <option value="MACHINE_DELETED">Machine Deleted</option>
+                        <option value="MACHINE_FILE_UPLOADED">File Uploaded</option>
+                        <option value="USER_LOGIN">User Login</option>
+                        <option value="USER_LOGOUT">User Logout</option>
+                        <option value="HMR_UPDATED">HMR Updated</option>
+                      </select>
+                      <input id="audit-search" type="text" placeholder="Search machine / user..." style="border:1px solid #d1d5db;border-radius:6px;padding:6px 10px;font-size:12px;width:180px;" oninput="loadAuditTrail()" />
+                      <button onclick="exportAuditCsv()" style="padding:6px 12px;background:#0f172a;color:#fff;border:none;border-radius:6px;font-size:12px;font-weight:600;cursor:pointer;">Export CSV</button>
+                    </div>
+                  </div>
+
+                  <div id="audit-table-wrap" style="overflow:auto;max-height:420px;border:1px solid #e5e7eb;border-radius:8px;">
+                    <table style="width:100%;border-collapse:collapse;font-size:12px;">
+                      <thead>
+                        <tr style="background:#f9fafb;position:sticky;top:0;z-index:1;">
+                          <th style="padding:10px 12px;text-align:left;font-weight:600;color:#374151;border-bottom:1px solid #e5e7eb;white-space:nowrap;">Timestamp</th>
+                          <th style="padding:10px 12px;text-align:left;font-weight:600;color:#374151;border-bottom:1px solid #e5e7eb;">Event</th>
+                          <th style="padding:10px 12px;text-align:left;font-weight:600;color:#374151;border-bottom:1px solid #e5e7eb;">Entity</th>
+                          <th style="padding:10px 12px;text-align:left;font-weight:600;color:#374151;border-bottom:1px solid #e5e7eb;">User</th>
+                          <th style="padding:10px 12px;text-align:left;font-weight:600;color:#374151;border-bottom:1px solid #e5e7eb;">Details</th>
+                        </tr>
+                      </thead>
+                      <tbody id="audit-tbody">
+                        <tr><td colspan="5" style="padding:40px;text-align:center;color:#9ca3af;">Loading audit records...</td></tr>
+                      </tbody>
+                    </table>
+                  </div>
+                  <div style="display:flex;align-items:center;justify-content:space-between;margin-top:10px;">
+                    <div id="audit-count" style="font-size:11px;color:#9ca3af;"></div>
+                    <div style="display:flex;gap:6px;">
+                      <button id="audit-prev" onclick="auditPage(-1)" style="padding:5px 12px;border:1px solid #d1d5db;border-radius:5px;font-size:12px;cursor:pointer;background:#fff;" disabled>&#8592; Prev</button>
+                      <span id="audit-page-lbl" style="padding:5px 10px;font-size:12px;color:#6b7280;"></span>
+                      <button id="audit-next" onclick="auditPage(1)" style="padding:5px 12px;border:1px solid #d1d5db;border-radius:5px;font-size:12px;cursor:pointer;background:#fff;">Next &#8594;</button>
+                    </div>
+                  </div>
+                </div><!-- /pane-audit -->
 
 
             </div>
@@ -22952,29 +23326,28 @@ window.loadISR = async function() {
         window.LIB_SUPABASE_MAP[nameVal] = libUrls;
       }
 
-      setProgress(AM_EDIT_MODE ? '✓ Machine updated!' : '✓ Machine created!', 100, true);
+      // 6. Update in-memory register \u2014 close modal FIRST, then refresh after a tick.
+      //    Deferring the DOM-heavy refreshMachineRegisterReport prevents UI freeze.
+      var _savedName = nameVal;
+      var _wasEdit   = AM_EDIT_MODE;
+      var label = _wasEdit ? 'updated' : 'created';
 
-      // 6. Persist the new machine so it survives future Frappe reloads,
-      //    then clear stale UI filters and re-render.
-      if (!window.FT_SUPABASE_EXTRA_ROWS) window.FT_SUPABASE_EXTRA_ROWS = [];
-      // Remove any old entry with same name and push fresh row
-      window.FT_SUPABASE_EXTRA_ROWS = window.FT_SUPABASE_EXTRA_ROWS.filter(function(r){ return r.name !== nameVal; });
-      window.FT_SUPABASE_EXTRA_ROWS.push(row);
-      //    DO NOT call loadFtMachineRegister — it fetches from Frappe, which doesn't have the
-      //    new Supabase-only machine, and would OVERWRITE in-memory data, hiding the new entry.
-      //    Just clear stale UI filters and re-render from the updated in-memory array.
-      var filterCust  = document.getElementById('mr-filter-customer');
-      var filterModel = document.getElementById('mr-filter-model');
-      var filterFt    = document.getElementById('mr-filter-fleetrack');
-      if (filterCust)  filterCust.value  = '';
-      if (filterModel) filterModel.value = '';
-      if (filterFt)    filterFt.value    = '';
-      if (typeof refreshMachineRegisterReport === 'function') refreshMachineRegisterReport();
+      showToast((_wasEdit ? '\u270e ' : '\u2713 ') + _savedName + ' ' + label + ' successfully.', 'ok', 4000);
 
-      var label = AM_EDIT_MODE ? 'updated' : 'created';
-      showToast((AM_EDIT_MODE ? '✎ ' : '✓ ') + nameVal + ' ' + label + ' successfully.', 'ok', 4000);
+      // Log to audit trail (non-blocking)
+      if (typeof window.logAudit === 'function') {
+        window.logAudit(_wasEdit ? 'MACHINE_EDITED' : 'MACHINE_CREATED', 'machine', _savedName, { row: row });
+      }
 
-      setTimeout(function() { closeAddMachineModal(); }, 1200);
+      // Close modal immediately (no delay), then refresh register after 80ms
+      closeAddMachineModal();
+      setTimeout(function() {
+        var filterCust  = document.getElementById('mr-filter-customer');
+        var filterModel = document.getElementById('mr-filter-model');
+        if (filterCust)  filterCust.value  = '';
+        if (filterModel) filterModel.value = '';
+        if (typeof refreshMachineRegisterReport === 'function') refreshMachineRegisterReport();
+      }, 80);
 
     } catch(e) {
       errEl.textContent = '⚠ ' + e.message;
