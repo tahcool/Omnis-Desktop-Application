@@ -22422,10 +22422,11 @@ window.loadISR = async function() {
       return;
     }
     var html = matches.slice(0, 50).map(function(c) {
-      var safe = (c.customer_name || '').replace(/"/g,'&quot;');
-      return '<div class="am-cust-opt" onclick="amSelectCustomer(' + JSON.stringify(safe) + ')" style="padding:9px 14px;cursor:pointer;font-size:13px;font-weight:600;color:#0f172a;border-bottom:1px solid #f1f5f9;" onmouseover="this.style.background=\'#f8fafc\'" onmouseout="this.style.background=\'white\'">'
-        + safe
-        + (c.territory ? '<span style="font-size:11px;color:#64748b;font-weight:400;"> — ' + c.territory + '</span>' : '')
+      var safeName = (c.customer_name || '').replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;');
+      var safeTerr = (c.territory || '').replace(/&/g,'&amp;').replace(/</g,'&lt;');
+      return '<div class="am-cust-opt" data-custname="' + safeName + '" onclick="amSelectCustomer(this.dataset.custname)" style="padding:9px 14px;cursor:pointer;font-size:13px;font-weight:600;color:#0f172a;border-bottom:1px solid #f1f5f9;" onmouseover="this.style.background=\'#f8fafc\'" onmouseout="this.style.background=\'white\'">'
+        + safeName
+        + (safeTerr ? '<span style="font-size:11px;color:#64748b;font-weight:400;"> &mdash; ' + safeTerr + '</span>' : '')
         + '</div>';
     }).join('');
     dd.innerHTML = html;
@@ -22492,8 +22493,8 @@ window.loadISR = async function() {
 
       var res = await window.electron.invoke('supabase:query', {
         table: 'customers',
-        method: 'insert',
-        params: { data: row }
+        method: 'upsert',
+        params: { data: row, options: { onConflict: 'frappe_id' } }
       });
       if (!res || !res.ok) throw new Error(res && res.error ? res.error : 'Failed to save customer');
 
@@ -22940,7 +22941,14 @@ window.loadISR = async function() {
 
       setProgress(AM_EDIT_MODE ? '✓ Machine updated!' : '✓ Machine created!', 100, true);
 
-      // 6. Refresh registry — force full server reload so the new machine appears immediately
+      // 6. Refresh registry — clear filters and force full server reload so the new machine appears
+      if (!AM_EDIT_MODE) {
+        // Clear stale filter fields so the new machine isn't hidden
+        var filterCust = document.getElementById('mr-filter-customer');
+        var filterModel = document.getElementById('mr-filter-model');
+        if (filterCust) filterCust.value = '';
+        if (filterModel) filterModel.value = '';
+      }
       if (window.FT_MACHINE_ROWS) window.FT_MACHINE_ROWS = [];
       if (typeof loadFtMachineRegister === 'function') {
         loadFtMachineRegister({});
