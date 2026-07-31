@@ -9698,62 +9698,37 @@
 
       setSyncState("syncing");
       try {
-        const fields = [
-          "name", "customer", "model", "oem", "type",
-          "mxg_fleet_no", "fleet_no", "sn", "esn",
-          "location", "region", "warranty_status",
-          "current_hmr", "machine_picture"
-        ];
-
-        // Use callFrappe which handles IPC bridge authentication
         const showLoader = !overrides.quiet;
-        const raw = await callFrappe(FT_MACHINE_REGISTER_METHOD, overrides, 'GET', { 
-            showLoader: showLoader, 
-            loaderMsg: "Syncing Machines" 
-        });
+        if (showLoader) showLoader && showGlobalLoader && showGlobalLoader("Loading Machines…");
 
-        if (raw.exc || raw.exception) {
-          // Extract clean error message, avoiding full tracebacks
-          let msg = "Failed to load machines";
+        // ── PRIMARY SOURCE: Supabase ft_machine ──────────────────────────────
+        // Supabase is now the single source of truth for the Machine Register.
+        // The Frappe→Supabase sync below keeps data fresh from the ERP in the background.
+        const PAGE_SIZE = 5000;
+        let allRows = [];
+        let from = 0;
+        let keepFetching = true;
 
-          if (raw._server_messages) {
-            try {
-              const parsed = JSON.parse(raw._server_messages);
-              if (Array.isArray(parsed) && parsed.length > 0) {
-                const firstMsg = JSON.parse(parsed[0]);
-                msg = firstMsg.message || msg;
-              }
-            } catch {
-              msg = String(raw._server_messages).slice(0, 100);
+        while (keepFetching) {
+          const res = await window.electron.invoke('supabase:query', {
+            table: 'ft_machine',
+            method: 'select',
+            params: {
+              columns: '*',
+              range: { from, to: from + PAGE_SIZE - 1 }
             }
-          } else if (raw.exception) {
-            // Extract just the exception type and first line
-            const excStr = String(raw.exception);
-            const firstLine = excStr.split('\n')[0];
-            msg = firstLine.slice(0, 150);
-          } else if (raw.exc) {
-            const excStr = String(raw.exc);
-            const firstLine = excStr.split('\n')[0];
-            msg = firstLine.slice(0, 150);
-          }
-
-          showToast("Machine register error: " + msg, "err", 4500);
-          return;
-        }
-
-        // Check if wrapped in message (standard framework behavior)
-        const payload = raw.message || raw;
-        window.FT_MACHINE_ROWS = payload.data || [];
-
-        // Merge in any machines added locally via the Add Machine modal (Supabase-only, not in Frappe).
-        // These are stored in FT_SUPABASE_EXTRA_ROWS so they survive every Frappe reload.
-        if (window.FT_SUPABASE_EXTRA_ROWS && window.FT_SUPABASE_EXTRA_ROWS.length) {
-          var frappeNames = new Set(window.FT_MACHINE_ROWS.map(function(m){ return m.name; }));
-          window.FT_SUPABASE_EXTRA_ROWS.forEach(function(r) {
-            if (!frappeNames.has(r.name)) window.FT_MACHINE_ROWS.push(r);
-            else frappeNames.delete(r.name); // keep Frappe version if it now exists there
           });
+          if (!res || !res.ok) throw new Error(res?.error || 'Supabase ft_machine query failed');
+          const batch = res.data || [];
+          allRows = allRows.concat(batch);
+          if (batch.length < PAGE_SIZE) {
+            keepFetching = false;
+          } else {
+            from += PAGE_SIZE;
+          }
         }
+
+        window.FT_MACHINE_ROWS = allRows;
 
         // Populate global map
         window.MACHINES_MAP = {};
@@ -9761,12 +9736,35 @@
           if (m.name) window.MACHINES_MAP[m.name] = m;
         });
 
-        // Sync to Supabase (non-blocking — fire and forget)
+        // ── BACKGROUND SYNC: Frappe → Supabase (non-blocking, fire-and-forget) ──
+        // This keeps Supabase current with the ERP. It runs silently after the
+        // register is already displayed so the user sees data immediately.
         if (window.syncMachinesToSupabase) {
-          window.syncMachinesToSupabase(FT_MACHINE_ROWS)
+          // Fetch fresh from Frappe in background, then upsert to Supabase
+          callFrappe(FT_MACHINE_REGISTER_METHOD, {}, 'GET', { showLoader: false })
+            .then(raw => {
+              if (!raw.exc && !raw.exception) {
+                const payload = raw.message || raw;
+                const frappe = payload.data || [];
+                if (frappe.length) {
+                  return window.syncMachinesToSupabase(frappe)
+                    .then(() => {
+                      // Update in-memory rows with any fresher Frappe data
+                      frappe.forEach(fm => {
+                        const idx = window.FT_MACHINE_ROWS.findIndex(r => r.name === fm.name);
+                        if (idx >= 0) Object.assign(window.FT_MACHINE_ROWS[idx], fm);
+                        else window.FT_MACHINE_ROWS.push(fm);
+                        if (fm.name) window.MACHINES_MAP[fm.name] = window.FT_MACHINE_ROWS.find(r => r.name === fm.name);
+                      });
+                    });
+                }
+              }
+            })
             .then(() => window.loadLibSupabaseUrls && window.loadLibSupabaseUrls())
-            .catch(e => console.warn('[Supabase Sync] ft_machine sync error:', e));
+            .catch(e => console.warn('[BgSync] Frappe→Supabase sync error:', e));
         }
+
+        if (showLoader) hideGlobalLoader && hideGlobalLoader();
 
         // Filter and sort the newly loaded array before rendering
         refreshMachineRegisterReport();
@@ -9929,6 +9927,7 @@
           }
         }
 
+        console.log(`[MachineRegister] Loaded ${FT_MACHINE_ROWS.length} machines from Supabase`);
         showToast("Machine register loaded: " + FT_MACHINE_ROWS.length, "ok", 2200);
 
       } catch (e) {
