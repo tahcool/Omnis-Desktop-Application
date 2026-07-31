@@ -7747,7 +7747,7 @@
 
         // Content Area z-index wrapper
         const contentArea = document.createElement("div");
-        contentArea.style.cssText = "display:flex; flex-direction:column; gap:10px; z-index:1; position:relative; flex:1;";
+        contentArea.style.cssText = "display:flex; flex-direction:column; gap:6px; z-index:1; position:relative; flex:1;";
         
         if (!jobs.length) {
           const empty = document.createElement("div");
@@ -7768,28 +7768,28 @@
             
             if (isToday) {
                // Glassmorphic dark card for today
-               jdiv.style.cssText = `background:rgba(255,255,255,0.15); border:1px solid rgba(255,255,255,0.2); backdrop-filter:blur(8px); border-radius:12px; padding:12px; font-size:11px; cursor:pointer; transition:all .2s; box-shadow:0 4px 12px rgba(0,0,0,0.1);`;
+               jdiv.style.cssText = `background:rgba(255,255,255,0.15); border:1px solid rgba(255,255,255,0.2); backdrop-filter:blur(8px); border-radius:10px; padding:8px 10px; font-size:10px; cursor:pointer; transition:all .2s; box-shadow:0 4px 12px rgba(0,0,0,0.1);`;
                jdiv.onmouseover = () => { jdiv.style.background = 'rgba(255,255,255,0.25)'; jdiv.style.transform = 'translateY(-1px)'; };
                jdiv.onmouseout = () => { jdiv.style.background = 'rgba(255,255,255,0.15)'; jdiv.style.transform = 'translateY(0)'; };
                
                jdiv.innerHTML = `
-                <div style="font-weight:800;color:#ffffff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;letter-spacing:0.2px; font-size: 13px;">${r.machine||'—'}</div>
-                <div style="display:flex;justify-content:space-between;align-items:center;margin-top:6px;">
+                <div style="font-weight:800;color:#ffffff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;letter-spacing:0.2px; font-size: 11px;">${r.machine||'—'}</div>
+                <div style="display:flex;justify-content:space-between;align-items:center;margin-top:4px;">
                   <span style="color:rgba(255,255,255,0.9);font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:70px;">${(r.technician||'').split(' ')[0]||'TBA'}</span>
-                  <span style="font-size:9px;background:${txC};color:#fff;padding:2px 8px;border-radius:99px;font-weight:800;letter-spacing:0.3px;box-shadow:0 2px 6px rgba(0,0,0,0.15);">${r.status||'—'}</span>
+                  <span style="font-size:8px;background:${txC};color:#fff;padding:2px 6px;border-radius:99px;font-weight:800;letter-spacing:0.3px;box-shadow:0 2px 6px rgba(0,0,0,0.15);">${r.status||'—'}</span>
                 </div>
               `;
             } else {
                // Premium light card for future days
-               jdiv.style.cssText = `background:#ffffff; border:1px solid rgba(226,232,240,0.8); border-left:4px solid ${txC}; border-radius:12px; padding:12px; font-size:11px; cursor:pointer; transition:all .2s; box-shadow:0 2px 6px -2px rgba(0,0,0,0.05);`;
+               jdiv.style.cssText = `background:#ffffff; border:1px solid rgba(226,232,240,0.8); border-left:4px solid ${txC}; border-radius:10px; padding:8px 10px; font-size:10px; cursor:pointer; transition:all .2s; box-shadow:0 2px 6px -2px rgba(0,0,0,0.05);`;
                jdiv.onmouseover = () => { jdiv.style.boxShadow = '0 6px 14px -4px rgba(0,0,0,0.08)'; jdiv.style.transform = 'translateY(-1px)'; jdiv.style.borderColor = '#cbd5e1'; };
                jdiv.onmouseout = () => { jdiv.style.boxShadow = '0 2px 6px -2px rgba(0,0,0,0.05)'; jdiv.style.transform = 'translateY(0)'; jdiv.style.borderColor = 'rgba(226,232,240,0.8)'; };
                
                jdiv.innerHTML = `
-                <div style="font-weight:800;color:#0f172a;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;letter-spacing:0.2px; font-size: 13px;">${r.machine||'—'}</div>
-                <div style="display:flex;justify-content:space-between;align-items:center;margin-top:6px;">
+                <div style="font-weight:800;color:#0f172a;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;letter-spacing:0.2px; font-size: 11px;">${r.machine||'—'}</div>
+                <div style="display:flex;justify-content:space-between;align-items:center;margin-top:4px;">
                   <span style="color:#475569;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:70px;">${(r.technician||'').split(' ')[0]||'TBA'}</span>
-                  <span style="font-size:9px;background:${bgC};color:${txC};padding:2px 8px;border-radius:99px;font-weight:800;letter-spacing:0.3px;">${r.status||'—'}</span>
+                  <span style="font-size:8px;background:${bgC};color:${txC};padding:2px 6px;border-radius:99px;font-weight:800;letter-spacing:0.3px;">${r.status||'—'}</span>
                 </div>
               `;
             }
