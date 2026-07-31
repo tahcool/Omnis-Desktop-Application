@@ -9699,6 +9699,9 @@
       setSyncState("syncing");
       try {
         const showLoader = !overrides.quiet;
+        const loaderMsg  = overrides.loaderMsg || 'Loading machines...';
+
+        if (showLoader && window.showOmnisLoader) window.showOmnisLoader(loaderMsg);
 
         // ── PRIMARY SOURCE: Supabase ft_machine ──────────────────────────────
         // Supabase is now the single source of truth for the Machine Register.
@@ -9925,10 +9928,12 @@
         }
 
         console.log(`[MachineRegister] Loaded ${FT_MACHINE_ROWS.length} machines from Supabase`);
+        if (showLoader && window.hideOmnisLoader) window.hideOmnisLoader();
         showToast("Machine register loaded: " + FT_MACHINE_ROWS.length, "ok", 2200);
 
       } catch (e) {
         console.error("loadFtMachineRegister error:", e);
+        if (showLoader && window.hideOmnisLoader) window.hideOmnisLoader();
         showToast("Machine register failed to load.", "err", 4500);
       } finally {
         refreshOnlineState();
