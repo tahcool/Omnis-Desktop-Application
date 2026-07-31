@@ -17780,6 +17780,30 @@ window.loadISR = async function() {
         </div>
     </div>
 
+    <!-- Settings Modal Functions — dedicated block to guarantee global availability -->
+    <script>
+    (function() {
+        window.openSettingsModal = function() {
+            var m = document.getElementById('settings-modal');
+            if (m) m.classList.remove('hidden');
+        };
+        window.closeSettingsModal = function() {
+            var m = document.getElementById('settings-modal');
+            if (m) m.classList.add('hidden');
+        };
+        window.switchSettingsTab = function(tab) {
+            document.querySelectorAll('.settings-tab').forEach(function(t) { t.classList.remove('active'); });
+            document.querySelectorAll('.settings-pane').forEach(function(p) { p.classList.remove('active'); });
+            document.querySelectorAll('.settings-tab').forEach(function(t) {
+                var oc = t.getAttribute('onclick') || '';
+                if (oc.indexOf("'" + tab + "'") !== -1) t.classList.add('active');
+            });
+            var pane = document.getElementById('pane-' + tab);
+            if (pane) pane.classList.add('active');
+        };
+    })();
+    </script>
+
     <!-- System Settings Modal -->
     <div id="settings-modal" class="modal-overlay hidden" style="z-index: 9500;">
         <div class="modal-card" style="max-width: 800px;">
