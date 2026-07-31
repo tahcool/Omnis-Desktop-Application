@@ -7761,9 +7761,20 @@
 
       if (!window._fspRows) {
         try {
-          const res = await callFrappe('/api/method/mxg_fleet_track.omnis_dashboard.ft_breakdown_dashboard.get_ft_service_plan_list', {});
-          const msg = res?.message || res || {};
-          window._fspRows = Array.isArray(msg.data) ? msg.data : Array.isArray(msg) ? msg : [];
+          const { data: rowsResult, error } = await window.electron.invoke('supabase:query', {
+            table: 'ft_service_plan',
+            method: 'select',
+            params: { columns: '*' }
+          });
+          if (error) throw new Error(error.message);
+          
+          const msg = rowsResult || [];
+          window._fspRows = Array.isArray(msg) ? msg : [];
+          window._fspRows.forEach(r => {
+             r.name = r.frappe_name || r.id; 
+             r.machine = r.machine_name || r.machine_id;
+             r.plan_for = r.raw_date;
+          });
         } catch(e) {
           grid.innerHTML = `<div style="grid-column:1/-1;text-align:center;color:#ef4444;font-size:12px;font-weight:600;padding:20px;">Could not load service data</div>`;
           return;
@@ -14092,37 +14103,38 @@
       console.log("Sending data to backend:", { machine, description, planned_date, technician, warranty_status, location });
 
       try {
-        const res = await callFrappe(FT_ADD_SERVICE_PLAN_METHOD, {
-          machine, 
+        const payload = {
+          machine_name: machine,
           description, 
-          planned_date, 
+          raw_date: planned_date, 
           technician, 
           defects: finalDefects, 
-          warranty_status, 
+          status: "Proposed",
           location
-        }, 'POST');
-
-        console.log("Full Backend Response Debug:", JSON.stringify(res));
-
-        // Ultra-robust success check: look for "success" or a record 'name' at any level
-        function checkSuccess(obj) {
-          if (!obj) return false;
-          if (obj.status === "success" || obj.name || obj.ok === true) return true;
-          if (obj.message && typeof obj.message === 'object') return checkSuccess(obj.message);
-          return false;
+        };
+        
+        // Attempt to auto-fill customer if available in local machine register
+        if (typeof FT_MACHINE_ROWS !== 'undefined') {
+          const mObj = FT_MACHINE_ROWS.find(m => m.name === machine || m.machine_name === machine);
+          if (mObj) payload.customer = mObj.customer;
         }
 
-        const isSuccess = checkSuccess(res);
+        const { error } = await window.electron.invoke('supabase:query', {
+          table: 'ft_service_plan',
+          method: 'insert',
+          params: {
+            payload: payload
+          }
+        });
 
-        if (isSuccess) {
-          console.log("✅ Success confirmed via robust check. Closing modal.");
+        if (!error) {
+          console.log("✅ Success confirmed via Supabase insert. Closing modal.");
           showToast("✅ Service Plan Entry Created", "success");
           closeFspModal();
           if (typeof loadFieldServicePlan === "function") loadFieldServicePlan();
         } else {
-          console.warn("⚠️ Response format unrecognized or failed:", res);
-          // Try to extract any message for the user
-          const msg = res.message?.message || res.message || res.error || "Entry might have been created (check list)";
+          console.warn("⚠️ Supabase error:", error);
+          const msg = error.message || "Entry might have been created (check list)";
           showToast(msg, "error");
         }
       } catch (e) {
@@ -14278,13 +14290,20 @@ We will let you know if there are any further updates.`;
       }
 
       try {
-        const res = await callFrappe("/api/method/mxg_fleet_track.omnis_dashboard.ft_breakdown_dashboard.update_ft_service_plan_entry", payload, "POST");
-        if (res.message && res.message.status === "success") {
+        const { error } = await window.electron.invoke('supabase:query', {
+          table: 'ft_service_plan',
+          method: 'update',
+          params: {
+            payload: payload,
+            match: name.length > 20 ? { id: name } : { frappe_name: name }
+          }
+        });
+        if (!error) {
           showToast("✅ FSP Entry Updated", "success");
           closeFspDetailModal();
           loadFieldServicePlan();
         } else {
-          showToast(res.message?.message || "Update failed", "error");
+          showToast(error.message || "Update failed", "error");
         }
       } catch (e) {
         console.error(e);
@@ -14879,13 +14898,29 @@ We will let you know if there are any further updates.`;
           status: document.getElementById("fsp-filter-status")?.value || ""
         };
 
-        const result = await callFrappe(FT_GET_SERVICE_PLAN_LIST_METHOD, filters);
+        const match = {};
+        if (filters.region) match.region = filters.region;
+        if (filters.customer) match.customer = filters.customer;
+        if (filters.status) match.status = filters.status;
+        
+        let queryParams = { columns: '*', match: match, order: ['created_at', { ascending: false }] };
+        if (filters.machine) queryParams.ilike = { 'machine_name': `%${filters.machine}%` };
+        
+        const { data: rowsResult, error } = await window.electron.invoke('supabase:query', {
+          table: 'ft_service_plan',
+          method: 'select',
+          params: queryParams
+        });
 
         // Check for backend errors
-        if (result.error) throw new Error(result.error);
-        if (result.message && result.message.error) throw new Error(result.message.error);
+        if (error) throw new Error(error.message);
 
-        const rows = result.message || [];
+        const rows = rowsResult || [];
+        rows.forEach(r => {
+           r.name = r.frappe_name || r.id; 
+           r.machine = r.machine_name || r.machine_id;
+           r.plan_for = r.raw_date;
+        });
         
         // Update Weekly Calendar
         window._fspRows = rows;   // ← cache for full calendar
