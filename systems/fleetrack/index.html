@@ -21796,6 +21796,89 @@ window.loadISR = async function() {
   .am-btn-nav:disabled { opacity:.5; cursor:not-allowed; }
 </style>
 
+<!-- Add New Customer Modal (used by Add Machine form) -->
+<div id="am-new-cust-overlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:100000;align-items:center;justify-content:center;backdrop-filter:blur(3px);">
+  <div style="background:white;width:520px;max-width:95vw;border-radius:16px;box-shadow:0 25px 60px rgba(0,0,0,0.25);overflow:hidden;display:flex;flex-direction:column;max-height:90vh;">
+    <!-- Header -->
+    <div style="padding:20px 24px 16px;border-bottom:1px solid #e2e8f0;display:flex;align-items:center;justify-content:space-between;background:linear-gradient(135deg,#f8fafc,#ffffff);">
+      <div>
+        <div style="font-size:18px;font-weight:800;color:#0f172a;letter-spacing:-0.02em;">Add New Customer</div>
+        <div style="font-size:12px;color:#64748b;margin-top:2px;">This customer will be shared across Fleetrack &amp; Salestrack.</div>
+      </div>
+      <button onclick="amCloseNewCustomerModal()" style="background:none;border:none;cursor:pointer;font-size:20px;color:#94a3b8;padding:4px;border-radius:8px;transition:all .15s;" onmouseover="this.style.color='#334155'" onmouseout="this.style.color='#94a3b8'">✕</button>
+    </div>
+    <!-- Body -->
+    <div style="padding:20px 24px;overflow-y:auto;flex:1;">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;">
+
+        <div style="grid-column:1/-1;">
+          <label style="font-size:11px;font-weight:700;color:#475569;text-transform:uppercase;letter-spacing:0.04em;display:block;margin-bottom:5px;">Customer Name <span style="color:#ef4444">*</span></label>
+          <input type="text" id="am-nc-name" placeholder="e.g. Barloworld Equipment"
+            style="width:100%;padding:10px 14px;border:1px solid #e2e8f0;border-radius:10px;font-size:13px;font-weight:600;outline:none;transition:border .15s;box-sizing:border-box;"
+            onfocus="this.style.borderColor='#3b82f6'" onblur="this.style.borderColor='#e2e8f0'" />
+        </div>
+
+        <div>
+          <label style="font-size:11px;font-weight:700;color:#475569;text-transform:uppercase;letter-spacing:0.04em;display:block;margin-bottom:5px;">Customer Type</label>
+          <select id="am-nc-type" style="width:100%;padding:10px 14px;border:1px solid #e2e8f0;border-radius:10px;font-size:13px;font-weight:600;outline:none;background:white;box-sizing:border-box;">
+            <option value="Company">Company</option>
+            <option value="Individual">Individual</option>
+          </select>
+        </div>
+
+        <div>
+          <label style="font-size:11px;font-weight:700;color:#475569;text-transform:uppercase;letter-spacing:0.04em;display:block;margin-bottom:5px;">Customer Group</label>
+          <input type="text" id="am-nc-group" placeholder="e.g. Commercial"
+            style="width:100%;padding:10px 14px;border:1px solid #e2e8f0;border-radius:10px;font-size:13px;font-weight:600;outline:none;transition:border .15s;box-sizing:border-box;"
+            onfocus="this.style.borderColor='#3b82f6'" onblur="this.style.borderColor='#e2e8f0'" />
+        </div>
+
+        <div>
+          <label style="font-size:11px;font-weight:700;color:#475569;text-transform:uppercase;letter-spacing:0.04em;display:block;margin-bottom:5px;">Territory / Region</label>
+          <input type="text" id="am-nc-territory" placeholder="e.g. Harare, Bulawayo"
+            style="width:100%;padding:10px 14px;border:1px solid #e2e8f0;border-radius:10px;font-size:13px;font-weight:600;outline:none;transition:border .15s;box-sizing:border-box;"
+            onfocus="this.style.borderColor='#3b82f6'" onblur="this.style.borderColor='#e2e8f0'" />
+        </div>
+
+        <div>
+          <label style="font-size:11px;font-weight:700;color:#475569;text-transform:uppercase;letter-spacing:0.04em;display:block;margin-bottom:5px;">Account Manager</label>
+          <input type="text" id="am-nc-account-mgr" placeholder="e.g. John Smith"
+            style="width:100%;padding:10px 14px;border:1px solid #e2e8f0;border-radius:10px;font-size:13px;font-weight:600;outline:none;transition:border .15s;box-sizing:border-box;"
+            onfocus="this.style.borderColor='#3b82f6'" onblur="this.style.borderColor='#e2e8f0'" />
+        </div>
+
+        <div>
+          <label style="font-size:11px;font-weight:700;color:#475569;text-transform:uppercase;letter-spacing:0.04em;display:block;margin-bottom:5px;">Contact Phone</label>
+          <input type="text" id="am-nc-phone" placeholder="e.g. +263 77 123 4567"
+            style="width:100%;padding:10px 14px;border:1px solid #e2e8f0;border-radius:10px;font-size:13px;font-weight:600;outline:none;transition:border .15s;box-sizing:border-box;"
+            onfocus="this.style.borderColor='#3b82f6'" onblur="this.style.borderColor='#e2e8f0'" />
+        </div>
+
+        <div>
+          <label style="font-size:11px;font-weight:700;color:#475569;text-transform:uppercase;letter-spacing:0.04em;display:block;margin-bottom:5px;">Contact Email</label>
+          <input type="email" id="am-nc-email" placeholder="e.g. info@barloworld.com"
+            style="width:100%;padding:10px 14px;border:1px solid #e2e8f0;border-radius:10px;font-size:13px;font-weight:600;outline:none;transition:border .15s;box-sizing:border-box;"
+            onfocus="this.style.borderColor='#3b82f6'" onblur="this.style.borderColor='#e2e8f0'" />
+        </div>
+
+        <div style="grid-column:1/-1;">
+          <label style="font-size:11px;font-weight:700;color:#475569;text-transform:uppercase;letter-spacing:0.04em;display:block;margin-bottom:5px;">Address</label>
+          <input type="text" id="am-nc-address" placeholder="e.g. 123 Main Street, Harare"
+            style="width:100%;padding:10px 14px;border:1px solid #e2e8f0;border-radius:10px;font-size:13px;font-weight:600;outline:none;transition:border .15s;box-sizing:border-box;"
+            onfocus="this.style.borderColor='#3b82f6'" onblur="this.style.borderColor='#e2e8f0'" />
+        </div>
+
+      </div>
+      <div id="am-nc-error" style="margin-top:12px;font-size:12px;color:#ef4444;font-weight:600;min-height:18px;"></div>
+    </div>
+    <!-- Footer -->
+    <div style="padding:16px 24px;border-top:1px solid #e2e8f0;display:flex;justify-content:flex-end;gap:10px;background:#f8fafc;">
+      <button onclick="amCloseNewCustomerModal()" style="padding:10px 20px;background:white;color:#334155;border:1px solid #e2e8f0;border-radius:10px;font-size:13px;font-weight:700;cursor:pointer;">Cancel</button>
+      <button id="am-nc-save-btn" onclick="amSaveNewCustomer()" style="padding:10px 24px;background:#0f172a;color:white;border:none;border-radius:10px;font-size:13px;font-weight:700;cursor:pointer;transition:background .15s;" onmouseover="this.style.background='#1e293b'" onmouseout="this.style.background='#0f172a'">Save Customer</button>
+    </div>
+  </div>
+</div>
+
 <div id="am-overlay">
   <div id="am-panel">
     <div class="am-header">
@@ -21846,12 +21929,18 @@ window.loadISR = async function() {
         </div>
         <div class="am-field">
           <label>Model</label>
-          <input type="text" id="am-f-model" list="am-model-list" placeholder="e.g. Shantui-SE220LC" />
-          <datalist id="am-model-list"></datalist>
+          <div style="position:relative;">
+            <input type="text" id="am-f-model" list="am-model-list" placeholder="e.g. Shantui-SE220LC"
+              oninput="amModelAutofillOem(this.value)"
+              style="width:100%;padding-right:32px;" />
+            <datalist id="am-model-list"></datalist>
+            <svg id="am-model-loading" style="display:none;position:absolute;right:8px;top:50%;transform:translateY(-50%);width:16px;height:16px;animation:spin 1s linear infinite;" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="2"><path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83"/></svg>
+          </div>
+          <div id="am-model-hint" style="font-size:11px;color:#10b981;margin-top:3px;display:none;">✓ OEM auto-filled</div>
         </div>
         <div class="am-field">
           <label>OEM / Brand</label>
-          <input type="text" id="am-f-oem" placeholder="e.g. Shantui" />
+          <input type="text" id="am-f-oem" placeholder="e.g. Shantui (auto-fills from model)" />
         </div>
         <div class="am-field">
           <label>Type</label>
@@ -21875,9 +21964,20 @@ window.loadISR = async function() {
       <!-- Ownership & Location -->
       <div class="am-section-title">Ownership &amp; Location</div>
       <div class="am-grid">
-        <div class="am-field">
-          <label>Customer</label>
-          <input type="text" id="am-f-customer" placeholder="Customer name" />
+        <div class="am-field" style="position:relative;">
+          <label style="display:flex;align-items:center;justify-content:space-between;">
+            <span>Customer</span>
+            <button type="button" onclick="amOpenNewCustomerModal()" style="font-size:10px;font-weight:700;color:#1d4ed8;background:#eff6ff;border:1px solid #bfdbfe;border-radius:6px;padding:2px 8px;cursor:pointer;transition:all .15s;" onmouseover="this.style.background='#dbeafe'" onmouseout="this.style.background='#eff6ff'">+ Add New</button>
+          </label>
+          <div style="position:relative;">
+            <input type="text" id="am-f-customer" placeholder="Search customers..." autocomplete="off"
+              oninput="amFilterCustomers(this.value)"
+              onfocus="amShowCustomerDropdown()"
+              style="width:100%;" />
+            <div id="am-customer-dropdown"
+              style="display:none;position:absolute;top:calc(100% + 2px);left:0;right:0;background:white;border:1px solid #e2e8f0;border-radius:10px;box-shadow:0 10px 25px rgba(0,0,0,0.12);z-index:9999;max-height:200px;overflow-y:auto;">
+            </div>
+          </div>
         </div>
         <div class="am-field">
           <label>Fleet No.</label>
@@ -22271,6 +22371,148 @@ window.loadISR = async function() {
     }
     dl.innerHTML = html;
   }
+
+  // ── OEM Auto-fill from Model ──────────────────────────────
+  window.amModelAutofillOem = function(val) {
+    if (!val || !window.AM_MODELS_MAP) return;
+    var trimmed = val.trim();
+    if (window.AM_MODELS_MAP[trimmed]) {
+      var oemField = document.getElementById('am-f-oem');
+      var hint = document.getElementById('am-model-hint');
+      if (oemField && !oemField.value) {
+        oemField.value = window.AM_MODELS_MAP[trimmed];
+        if (hint) { hint.style.display = 'block'; setTimeout(function(){ hint.style.display='none'; }, 3000); }
+      }
+    }
+  };
+
+  // ── Customer Live Search ──────────────────────────────────
+  var AM_CUSTOMERS_CACHE = [];
+
+  async function amLoadCustomers() {
+    if (AM_CUSTOMERS_CACHE.length > 0) return;
+    try {
+      var res = await window.electron.invoke('supabase:query', {
+        table: 'customers',
+        method: 'select',
+        params: { columns: 'id, customer_name, territory, account_manager', range: { from: 0, to: 4999 } }
+      });
+      if (res && res.ok && res.data) {
+        AM_CUSTOMERS_CACHE = res.data.sort(function(a,b){ return (a.customer_name||'').localeCompare(b.customer_name||''); });
+      }
+    } catch(e) { console.warn('Could not load customers', e); }
+  }
+
+  window.amShowCustomerDropdown = function() {
+    amLoadCustomers().then(function() {
+      amFilterCustomers(document.getElementById('am-f-customer').value || '');
+    });
+  };
+
+  window.amFilterCustomers = function(q) {
+    var dd = document.getElementById('am-customer-dropdown');
+    if (!dd) return;
+    var lower = (q || '').toLowerCase();
+    var matches = lower
+      ? AM_CUSTOMERS_CACHE.filter(function(c){ return (c.customer_name||'').toLowerCase().includes(lower); })
+      : AM_CUSTOMERS_CACHE.slice(0, 40);
+    if (matches.length === 0 && lower) {
+      dd.innerHTML = '<div style="padding:10px 14px;color:#94a3b8;font-size:12px;">No match — <button type="button" onclick="amOpenNewCustomerModal()" style="color:#1d4ed8;background:none;border:none;cursor:pointer;font-size:12px;font-weight:700;padding:0;">+ Add new customer</button></div>';
+      dd.style.display = 'block';
+      return;
+    }
+    var html = matches.slice(0, 50).map(function(c) {
+      var safe = (c.customer_name || '').replace(/"/g,'&quot;');
+      return '<div class="am-cust-opt" onclick="amSelectCustomer(' + JSON.stringify(safe) + ')" style="padding:9px 14px;cursor:pointer;font-size:13px;font-weight:600;color:#0f172a;border-bottom:1px solid #f1f5f9;" onmouseover="this.style.background=\'#f8fafc\'" onmouseout="this.style.background=\'white\'">'
+        + safe
+        + (c.territory ? '<span style="font-size:11px;color:#64748b;font-weight:400;"> — ' + c.territory + '</span>' : '')
+        + '</div>';
+    }).join('');
+    dd.innerHTML = html;
+    dd.style.display = matches.length ? 'block' : 'none';
+  };
+
+  window.amSelectCustomer = function(name) {
+    var inp = document.getElementById('am-f-customer');
+    if (inp) inp.value = name;
+    var dd = document.getElementById('am-customer-dropdown');
+    if (dd) dd.style.display = 'none';
+  };
+
+  // Close dropdown when clicking outside
+  document.addEventListener('click', function(e) {
+    var dd = document.getElementById('am-customer-dropdown');
+    var inp = document.getElementById('am-f-customer');
+    if (dd && inp && !inp.contains(e.target) && !dd.contains(e.target)) {
+      dd.style.display = 'none';
+    }
+  });
+
+  // ── Add New Customer Modal ────────────────────────────────
+  window.amOpenNewCustomerModal = function() {
+    document.getElementById('am-new-cust-overlay').style.display = 'flex';
+    document.getElementById('am-nc-name').focus();
+    // Pre-fill name from whatever was typed
+    var typed = (document.getElementById('am-f-customer').value || '').trim();
+    if (typed) document.getElementById('am-nc-name').value = typed;
+  };
+
+  window.amCloseNewCustomerModal = function() {
+    document.getElementById('am-new-cust-overlay').style.display = 'none';
+    ['am-nc-name','am-nc-group','am-nc-territory','am-nc-type','am-nc-account-mgr','am-nc-phone','am-nc-email','am-nc-address'].forEach(function(id){
+      var el = document.getElementById(id);
+      if (el) el.value = '';
+    });
+    document.getElementById('am-nc-error').textContent = '';
+  };
+
+  window.amSaveNewCustomer = async function() {
+    var errEl = document.getElementById('am-nc-error');
+    errEl.textContent = '';
+    var name = (document.getElementById('am-nc-name').value || '').trim();
+    if (!name) { errEl.textContent = 'Customer name is required.'; return; }
+
+    var btn = document.getElementById('am-nc-save-btn');
+    btn.disabled = true;
+    btn.textContent = 'Saving...';
+
+    try {
+      var row = {
+        customer_name:    name,
+        customer_group:   (document.getElementById('am-nc-group').value || '').trim() || null,
+        territory:        (document.getElementById('am-nc-territory').value || '').trim() || null,
+        customer_type:    document.getElementById('am-nc-type').value || 'Company',
+        account_manager:  (document.getElementById('am-nc-account-mgr').value || '').trim() || null,
+        phone:            (document.getElementById('am-nc-phone').value || '').trim() || null,
+        email_id:         (document.getElementById('am-nc-email').value || '').trim() || null,
+        address:          (document.getElementById('am-nc-address').value || '').trim() || null,
+        frappe_id:        'MANUAL-' + Date.now(),
+        updated_at:       new Date().toISOString()
+      };
+
+      var res = await window.electron.invoke('supabase:query', {
+        table: 'customers',
+        method: 'insert',
+        params: { data: row }
+      });
+      if (!res || !res.ok) throw new Error(res && res.error ? res.error : 'Failed to save customer');
+
+      // Add to cache
+      AM_CUSTOMERS_CACHE.push(Object.assign({}, row));
+      AM_CUSTOMERS_CACHE.sort(function(a,b){ return (a.customer_name||'').localeCompare(b.customer_name||''); });
+
+      // Pre-fill the machine form customer field
+      amSelectCustomer(name);
+
+      showToast('✓ Customer "' + name + '" created successfully.', 'ok', 4000);
+      amCloseNewCustomerModal();
+    } catch(e) {
+      errEl.textContent = '⚠ ' + e.message;
+    } finally {
+      btn.disabled = false;
+      btn.textContent = 'Save Customer';
+    }
+  };
 
   // ── Open helpers ────────────────────────────────────────
   window.openAddMachineModal = function() {
@@ -22698,8 +22940,13 @@ window.loadISR = async function() {
 
       setProgress(AM_EDIT_MODE ? '✓ Machine updated!' : '✓ Machine created!', 100, true);
 
-      // 6. Refresh registry
-      if (typeof refreshMachineRegisterReport === 'function') refreshMachineRegisterReport();
+      // 6. Refresh registry — force full server reload so the new machine appears immediately
+      if (window.FT_MACHINE_ROWS) window.FT_MACHINE_ROWS = [];
+      if (typeof loadFtMachineRegister === 'function') {
+        loadFtMachineRegister({});
+      } else if (typeof refreshMachineRegisterReport === 'function') {
+        refreshMachineRegisterReport();
+      }
 
       var label = AM_EDIT_MODE ? 'updated' : 'created';
       showToast((AM_EDIT_MODE ? '✎ ' : '✓ ') + nameVal + ' ' + label + ' successfully.', 'ok', 4000);
