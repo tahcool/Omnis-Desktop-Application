@@ -16790,7 +16790,7 @@ We will let you know if there are any changes to the field service booking.`;
         try {
           var res = await window.electron.invoke('supabase:query', {
             table: 'ft_machine', method: 'delete',
-            params: { filter: { name: machineName } }
+            params: { match: { name: machineName } }
           });
           if (!res || !res.ok) throw new Error(res && res.error ? res.error : 'Delete failed');
 
