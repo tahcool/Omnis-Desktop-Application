@@ -13474,11 +13474,14 @@
     function fspAddSuggestedService() {
       const suggBox = document.getElementById("fsp-service-suggestion");
       const descInput = document.getElementById("fsp-new-description");
+      const tbody = document.getElementById("fsp-defects-tbody");
+      
       if (!suggBox || !descInput) return;
       
       const svcType = suggBox.dataset.serviceType;
       if (!svcType) return;
       
+      // 1. Add to the Description field
       let currentVal = descInput.value.trim();
       if (currentVal && !currentVal.includes(svcType)) {
         descInput.value = currentVal + ", " + svcType;
@@ -13486,7 +13489,33 @@
         descInput.value = svcType;
       }
       
-      // Hide suggestion after adding to clean up UI
+      // 2. Add as a checked row in the defects table so it's formally listed
+      if (tbody) {
+        // Clear the empty state message if it exists
+        if (tbody.innerHTML.includes("No open defects") || tbody.innerHTML.includes("Please select a machine")) {
+          tbody.innerHTML = "";
+        }
+        
+        const tr = document.createElement("tr");
+        tr.style.borderBottom = "1px solid #fde68a";
+        tr.style.background = "#fffbeb";
+        tr.innerHTML = `
+          <td style="padding:6px 10px; vertical-align:middle;">
+            <input type="checkbox" class="fsp-defect-check" data-name="Scheduled Service" data-desc="${svcType}" checked style="cursor:pointer; accent-color:#f59e0b;">
+          </td>
+          <td style="padding:6px 10px; line-height:1.3;">
+            <div style="font-weight:600; color:#92400e; font-size:12px;">Recommended Service</div>
+            <div style="font-size:10px; color:#b45309; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:280px;">${svcType} (Added from suggestion)</div>
+          </td>
+          <td style="padding:6px 10px; white-space:nowrap;">
+            <span style="font-size:9px; font-weight:700; color:#f59e0b; text-transform:uppercase;">MEDIUM</span>
+          </td>
+        `;
+        // Insert at top of list
+        tbody.insertBefore(tr, tbody.firstChild);
+      }
+      
+      // Hide suggestion banner after adding
       suggBox.style.display = "none";
     }
 
