@@ -4171,15 +4171,6 @@
             <div>
               <div style="display:flex; gap:12px;">
                 <button
-                  onclick="openMigrationModal()"
-                  style="background:linear-gradient(135deg,#7c3aed,#6d28d9); color:white; border:none; padding:8px 16px; border-radius:8px; font-size:13px; font-weight:700; cursor:pointer; box-shadow:0 4px 6px -1px rgba(124,58,237,0.3); white-space:nowrap; transition:all 0.2s; display:flex; align-items:center; gap:6px;"
-                  onmouseover="this.style.opacity='0.88'; this.style.transform='translateY(-1px)'"
-                  onmouseout="this.style.opacity='1'; this.style.transform='translateY(0)'"
-                  title="Migrate all Frappe media to Supabase Storage">
-                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 20V10"/><path d="M12 20V4"/><path d="M6 20v-6"/></svg>
-                  Migrate to Supabase
-                </button>
-                <button
                   onclick="openAddMachineModal()"
                   style="background:linear-gradient(135deg,#16a34a,#15803d); color:white; border:none; padding:8px 16px; border-radius:8px; font-size:13px; font-weight:700; cursor:pointer; box-shadow:0 4px 6px -1px rgba(22,163,74,0.3); white-space:nowrap; transition:all 0.2s; display:flex; align-items:center; gap:6px;"
                   onmouseover="this.style.opacity='0.88'; this.style.transform='translateY(-1px)'"
@@ -15541,9 +15532,9 @@ We will let you know if there are any changes to the field service booking.`;
               customer:   item.customer || "",
               model:      item.model || "",
               date:       new Date().toISOString().split("T")[0],
-              hmr:        String(item.hmr),
-              hmr_on_log: String(item.prev),
-              op_hours:   "0",
+              hmr:        Number(item.hmr),
+              hmr_on_log: Number(item.prev),
+              op_hours:   0,
               telematics: "No"
             },
             "POST"
