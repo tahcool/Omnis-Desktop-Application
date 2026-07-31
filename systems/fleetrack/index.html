@@ -15810,8 +15810,7 @@ We will let you know if there are any changes to the field service booking.`;
             '"' + detStr + '"'
           ].join(','));
         });
-        var csv = lines.join('
-');
+        var csv = lines.join('\r\n');
         var blob = new Blob([csv], { type: 'text/csv' });
         var url = URL.createObjectURL(blob);
         var a = document.createElement('a');
