@@ -9745,6 +9745,16 @@
         const payload = raw.message || raw;
         window.FT_MACHINE_ROWS = payload.data || [];
 
+        // Merge in any machines added locally via the Add Machine modal (Supabase-only, not in Frappe).
+        // These are stored in FT_SUPABASE_EXTRA_ROWS so they survive every Frappe reload.
+        if (window.FT_SUPABASE_EXTRA_ROWS && window.FT_SUPABASE_EXTRA_ROWS.length) {
+          var frappeNames = new Set(window.FT_MACHINE_ROWS.map(function(m){ return m.name; }));
+          window.FT_SUPABASE_EXTRA_ROWS.forEach(function(r) {
+            if (!frappeNames.has(r.name)) window.FT_MACHINE_ROWS.push(r);
+            else frappeNames.delete(r.name); // keep Frappe version if it now exists there
+          });
+        }
+
         // Populate global map
         window.MACHINES_MAP = {};
         FT_MACHINE_ROWS.forEach(m => {
@@ -22941,7 +22951,12 @@ window.loadISR = async function() {
 
       setProgress(AM_EDIT_MODE ? '✓ Machine updated!' : '✓ Machine created!', 100, true);
 
-      // 6. Refresh registry — the new machine is already in FT_MACHINE_ROWS (added in step 5).
+      // 6. Persist the new machine so it survives future Frappe reloads,
+      //    then clear stale UI filters and re-render.
+      if (!window.FT_SUPABASE_EXTRA_ROWS) window.FT_SUPABASE_EXTRA_ROWS = [];
+      // Remove any old entry with same name and push fresh row
+      window.FT_SUPABASE_EXTRA_ROWS = window.FT_SUPABASE_EXTRA_ROWS.filter(function(r){ return r.name !== nameVal; });
+      window.FT_SUPABASE_EXTRA_ROWS.push(row);
       //    DO NOT call loadFtMachineRegister — it fetches from Frappe, which doesn't have the
       //    new Supabase-only machine, and would OVERWRITE in-memory data, hiding the new entry.
       //    Just clear stale UI filters and re-render from the updated in-memory array.
