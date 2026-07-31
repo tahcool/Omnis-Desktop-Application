@@ -9699,7 +9699,6 @@
       setSyncState("syncing");
       try {
         const showLoader = !overrides.quiet;
-        if (showLoader) showLoader && showGlobalLoader && showGlobalLoader("Loading Machines…");
 
         // ── PRIMARY SOURCE: Supabase ft_machine ──────────────────────────────
         // Supabase is now the single source of truth for the Machine Register.
@@ -9763,8 +9762,6 @@
             .then(() => window.loadLibSupabaseUrls && window.loadLibSupabaseUrls())
             .catch(e => console.warn('[BgSync] Frappe→Supabase sync error:', e));
         }
-
-        if (showLoader) hideGlobalLoader && hideGlobalLoader();
 
         // Filter and sort the newly loaded array before rendering
         refreshMachineRegisterReport();
