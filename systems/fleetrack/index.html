@@ -3323,6 +3323,11 @@
               <svg class="dd-icon" viewBox="0 0 24 24" fill="currentColor"><path d="M19 3H5a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2V5a2 2 0 00-2-2zm-7 3a1 1 0 011 1v3h3a1 1 0 010 2h-3v3a1 1 0 01-2 0v-3H8a1 1 0 010-2h3V7a1 1 0 011-1z"/></svg>
               Field Service Planning
             </div>
+            <div class="top-nav-dropdown-item" data-view="view-technicians" onclick="showView('view-technicians');closeAllDropdowns();"
+              title="Manage your field service technicians and their details.">
+              <svg class="dd-icon" viewBox="0 0 24 24" fill="currentColor"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>
+              Technicians
+            </div>
             <div class="top-nav-dropdown-item" data-view="view-job-cards" onclick="showView('view-job-cards');closeAllDropdowns();"
               title="View and manage job cards linked to breakdowns and service work orders.">
               <svg class="dd-icon" viewBox="0 0 24 24" fill="currentColor"><path d="M6 2a2 2 0 00-2 2v16a2 2 0 002 2h12a2 2 0 002-2V8l-6-6H6zm7 1.5L18.5 9H13V3.5zM8 13h8a1 1 0 010 2H8a1 1 0 010-2zm0 4h5a1 1 0 010 2H8a1 1 0 010-2z"/></svg>
@@ -4525,6 +4530,40 @@
                     Defect list will be wired to your Defects log in Fleetrack.
                   </td>
                 </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- TECHNICIANS VIEW -->
+      <div id="view-technicians" class="view-page hidden">
+        <div class="module-card">
+          <div style="display:flex; justify-content:space-between; align-items:flex-start;">
+            <div>
+              <div class="module-title">Technician Management</div>
+              <div class="module-sub">Manage your field service technicians and their contact details.</div>
+            </div>
+            <button onclick="openAddTechnicianModal()" class="btn btn-primary" style="display:flex; align-items:center; gap:6px;">
+              <svg style="width:16px;height:16px;" viewBox="0 0 24 24" fill="currentColor"><path d="M12 4a1 1 0 011 1v6h6a1 1 0 110 2h-6v6a1 1 0 11-2 0v-6H5a1 1 0 110-2h6V5a1 1 0 011-1z"/></svg>
+              Add Technician
+            </button>
+          </div>
+          
+          <div class="table-container" style="margin-top:20px;">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Full Name</th>
+                  <th>Mobile Phone</th>
+                  <th>Site</th>
+                  <th>Designation</th>
+                  <th>Status</th>
+                  <th style="width:100px;">Actions</th>
+                </tr>
+              </thead>
+              <tbody id="technicians-table-body">
+                <tr><td colspan="6" style="text-align:center; padding:20px; color:#64748b;">Loading technicians...</td></tr>
               </tbody>
             </table>
           </div>
@@ -7313,6 +7352,7 @@
     const viewMachines = document.getElementById("view-machines");
     const viewDefects = document.getElementById("view-defects");
     const viewFsi = document.getElementById("view-fsi");
+    const viewTechnicians = document.getElementById("view-technicians");
     const viewJobCards = document.getElementById("view-job-cards");
     const viewTeleHitachi = document.getElementById("view-telematics-hitachi");
     const viewTeleShantui = document.getElementById("view-telematics-shantui");
@@ -10853,6 +10893,7 @@
         viewMachines,
         viewDefects,
         viewFsi,
+        viewTechnicians,
         viewTeleHitachi,
         viewTeleShantui,
         viewTeleWirtgen,
@@ -10925,6 +10966,13 @@
           subtitle: "Plan and monitor field service jobs.",
           actionLabel: "New Plan",
           action: () => openFspModal(),
+        },
+        "view-technicians": {
+          el: viewTechnicians,
+          title: "Technician Management",
+          subtitle: "Manage your field service technicians and their contact details.",
+          actionLabel: "Refresh",
+          action: () => loadTechniciansView(),
         },
         "view-telematics-hitachi": {
           el: viewTeleHitachi,
@@ -13391,6 +13439,9 @@
           // Invalidate cache
           FT_TECH_CACHE.data = null;
           FT_TECH_CACHE.ts = 0;
+          if (typeof loadTechniciansView === 'function' && document.getElementById('view-technicians') && !document.getElementById('view-technicians').classList.contains('hidden')) {
+            loadTechniciansView();
+          }
           
           // Automatically select in the New FSP modal if it's open
           const searchEl = document.getElementById('fsp-new-technician-search');
@@ -13416,6 +13467,94 @@
       } finally {
         btn.disabled = false;
         btn.innerHTML = 'Save';
+      }
+    }
+
+    // --- TECHNICIANS VIEW LOGIC ---
+    async function loadTechniciansView() {
+      const tbody = document.getElementById('technicians-table-body');
+      if (!tbody) return;
+      tbody.innerHTML = '<tr><td colspan="6" style="text-align:center; padding:20px; color:#64748b;">Loading technicians...</td></tr>';
+
+      try {
+        const res = await window.electron.invoke('supabase:query', {
+          table: 'ft_technicians',
+          method: 'select',
+          params: { columns: '*', range: { from: 0, to: 1000 } }
+        });
+        
+        if (!res || !res.ok) throw new Error(res?.error?.message || "Failed to load technicians");
+        const techs = res.data || [];
+        techs.sort((a,b) => (a.full_name || '').localeCompare(b.full_name || ''));
+        
+        tbody.innerHTML = '';
+        if (techs.length === 0) {
+          tbody.innerHTML = '<tr><td colspan="6" style="text-align:center; padding:20px; color:#64748b;">No technicians found.</td></tr>';
+          return;
+        }
+
+        techs.forEach(t => {
+          const tr = document.createElement('tr');
+          const statColor = t.status === 'Active' ? '#22c55e' : '#ef4444';
+          tr.innerHTML = `
+            <td style="font-weight:600; color:#0f172a;">${t.full_name || '-'}</td>
+            <td>${t.mobile_phone || '-'}</td>
+            <td>${t.site || '-'}</td>
+            <td>${t.designation || '-'}</td>
+            <td><span style="display:inline-flex; align-items:center; gap:6px; padding:4px 8px; border-radius:12px; font-size:11px; font-weight:700; background:${statColor}1a; color:${statColor};"><span style="width:6px;height:6px;border-radius:50%;background:${statColor};"></span>${t.status || 'Active'}</span></td>
+            <td>
+              <div style="display:flex; gap:8px;">
+                <button onclick="toggleTechnicianStatus('${t.id}', '${t.status}')" class="btn btn-secondary btn-sm" style="padding:4px 8px; font-size:11px;" title="Toggle Status">Toggle</button>
+                <button onclick="deleteTechnician('${t.id}', '${t.full_name}')" class="btn btn-secondary btn-sm" style="padding:4px 8px; font-size:11px; color:#ef4444; border-color:#fecaca;" title="Delete">Del</button>
+              </div>
+            </td>
+          `;
+          tbody.appendChild(tr);
+        });
+        
+      } catch (e) {
+        console.error(e);
+        tbody.innerHTML = '<tr><td colspan="6" style="text-align:center; padding:20px; color:#ef4444;">Error loading technicians.</td></tr>';
+      }
+    }
+
+    async function toggleTechnicianStatus(id, currentStatus) {
+      const newStatus = currentStatus === 'Active' ? 'Inactive' : 'Active';
+      try {
+        const res = await window.electron.invoke('supabase:query', {
+          table: 'ft_technicians',
+          method: 'update',
+          params: { updates: { status: newStatus }, match: { id: id } }
+        });
+        if (res && res.ok) {
+          showToast(`Technician marked as ${newStatus}`, "success");
+          loadTechniciansView();
+          FT_TECH_CACHE.data = null; // Invalidate cache
+        } else {
+          showToast("Failed to update status", "error");
+        }
+      } catch (e) {
+        showToast("Error updating status", "error");
+      }
+    }
+
+    async function deleteTechnician(id, name) {
+      if (!confirm(`Are you sure you want to delete technician: ${name}?`)) return;
+      try {
+        const res = await window.electron.invoke('supabase:query', {
+          table: 'ft_technicians',
+          method: 'delete',
+          params: { match: { id: id } }
+        });
+        if (res && res.ok) {
+          showToast("Technician deleted", "success");
+          loadTechniciansView();
+          FT_TECH_CACHE.data = null; // Invalidate cache
+        } else {
+          showToast("Failed to delete technician", "error");
+        }
+      } catch (e) {
+        showToast("Error deleting technician", "error");
       }
     }
 
