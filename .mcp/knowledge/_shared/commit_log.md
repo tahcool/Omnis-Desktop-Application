@@ -144,3 +144,92 @@
   Files: systems/fleetrack/index.html,
 - `d962a63` 2026-07-30 [supabase-migration] chore: update session notes and commit log
   Files: .mcp/knowledge/_shared/commit_log.md,.mcp/knowledge/fleetrack/session_notes.md,
+\n## 2026-07-31
+- `c458576` 2026-07-31 [supabase-migration] style: update fleetrack dashboard quick access grid and action buttons
+  Files: systems/fleetrack/index.html,
+- `a5eb754` 2026-07-31 [supabase-migration] feat: add machine modal - model live search with OEM autofill, customer live search + add new modal, fix machine register refresh bug
+  Files: supabase/migrations/20260731000000_customers_contact_fields.sql,systems/fleetrack/index.html,
+- `7c19e53` 2026-07-31 [supabase-migration] fix: customer dropdown HTML injection, customer upsert API call, clear filters on machine save
+  Files: systems/fleetrack/index.html,
+- `5965c0a` 2026-07-31 [supabase-migration] fix: machine register shows new machine after save - use in-memory data not Frappe reload
+  Files: systems/fleetrack/index.html,
+- `fceaefa` 2026-07-31 [supabase-migration] fix: persist locally-added machines across Frappe reloads via FT_SUPABASE_EXTRA_ROWS
+  Files: systems/fleetrack/index.html,
+- `4385d28` 2026-07-31 [supabase-migration] feat: migrate Machine Register to Supabase as primary source of truth
+  Files: supabase/migrations/20260731000001_ft_machine_supabase_primary.sql,systems/fleetrack/index.html,
+- `262b23f` 2026-07-31 [supabase-migration] fix: remove showGlobalLoader/hideGlobalLoader calls that don't exist in codebase
+  Files: systems/fleetrack/index.html,
+- `381d1bd` 2026-07-31 [supabase-migration] feat: complete Supabase migration - all machine reads now from Supabase/memory
+  Files: systems/fleetrack/index.html,
+- `3241f85` 2026-07-31 [supabase-migration] feat: delete machine + audit trail + UI freeze fix
+  Files: supabase/migrations/20260731000002_omnis_audit_trail.sql,systems/fleetrack/index.html,
+- `f7469b7` 2026-07-31 [supabase-migration] fix: settings modal broken by CSV join syntax error
+  Files: systems/fleetrack/index.html,
+- `0937872` 2026-07-31 [supabase-migration] fix: make openSettingsModal immediately available on window
+  Files: systems/fleetrack/index.html,
+- `475cb07` 2026-07-31 [supabase-migration] fix: assign all settings tab functions directly to window at declaration
+  Files: systems/fleetrack/index.html,
+- `07ebb4d` 2026-07-31 [supabase-migration] fix: add dedicated isolated script block for settings modal functions
+  Files: systems/fleetrack/index.html,
+- `00817af` 2026-07-31 [supabase-migration] feat: add loading overlay to Machine Registry (matches defects UX)
+  Files: systems/fleetrack/index.html,
+- `381c1b9` 2026-07-31 [supabase-migration] fix: machine delete uses match instead of filter in Supabase query
+  Files: systems/fleetrack/index.html,
+- `a203820` 2026-07-31 [supabase-migration] fix: Machine Register shortcut now opens view-machines (Supabase registry)
+  Files: systems/fleetrack/index.html,
+- `76b5132` 2026-07-31 [supabase-migration] feat: predictive service recommendation in Field Service Plan modal
+  Files: systems/fleetrack/index.html,
+- `042c3a9` 2026-07-31 [supabase-migration] feat: FSP recommended service adds to defects checklist
+  Files: systems/fleetrack/index.html,
+- `e740a7b` 2026-07-31 [supabase-migration] style: apply frosted glass translucent effect to top navbar
+  Files: systems/fleetrack/index.html,
+- `be51f8d` 2026-07-31 [supabase-migration] style: apply frosted glass to shortcuts strip and make sticky
+  Files: systems/fleetrack/index.html,
+- `fa8f18c` 2026-07-31 [supabase-migration] style: change shortcuts strip to dark frosted glass
+  Files: systems/fleetrack/index.html,
+- `edc98eb` 2026-07-31 [supabase-migration] feat(ui): add solid colors to shortcut buttons and Edit button to lookup modal
+  Files: systems/fleetrack/index.html,
+- `5bc9273` 2026-07-31 [supabase-migration] style: make service timeline more compact and move it up
+  Files: systems/fleetrack/index.html,
+- `5cb4ca2` 2026-07-31 [supabase-migration] style: add subtle premium tinted backgrounds to report cards
+  Files: systems/fleetrack/index.html,
+- `40d9d6b` 2026-07-31 [supabase-migration] style: enhance KPI dashboard cards with premium pastel gradients
+  Files: systems/fleetrack/index.html,
+- `fd40f20` 2026-07-31 [supabase-migration] style: enhance dash shortcuts card with premium glassmorphism
+  Files: systems/fleetrack/index.html,
+- `8513aea` 2026-07-31 [supabase-migration] style: flatten shortcuts strip and make buttons flat
+  Files: systems/fleetrack/index.html,
+- `82b7a3f` 2026-07-31 [supabase-migration] feat(machine-registry): add log defect and service plan buttons to detail modal
+  Files: systems/fleetrack/index.html,
+- `1681c47` 2026-07-31 [supabase-migration] fix(machine-registry): fix modal stacking order for machine detail actions
+  Files: systems/fleetrack/index.html,
+- `c73c327` 2026-07-31 [supabase-migration] fix(machine-registry): fix modal stacking contexts and object rendering in defect modal
+  Files: systems/fleetrack/index.html,
+- `8f2f49d` 2026-07-31 [supabase-migration] fix(machine-registry): fix JS z-index override causing machine modal to cover all inner modals
+  Files: systems/fleetrack/index.html,
+- `a3c6071` 2026-07-31 [supabase-migration] fix(machine-registry): fix FSP modal stacking order
+  Files: systems/fleetrack/index.html,
+- `a65b4b5` 2026-07-31 [supabase-migration] fix(machine-registry): remove migrate to supabase button and fix bulk hmr entry
+  Files: systems/fleetrack/index.html,
+- `a590250` 2026-07-31 [supabase-migration] fix(machine-registry): fix JS syntax error breaking script block
+  Files: systems/fleetrack/index.html,
+- `75e592d` 2026-07-31 [supabase-migration] feat(dashboard): change Update HMR to Bulk HMR Entry
+  Files: systems/fleetrack/index.html,
+- `aa62469` 2026-07-31 [supabase-migration] style(dashboard): revert shortcuts strip style
+  Files: systems/fleetrack/index.html,
+- `a210273` 2026-07-31 [supabase-migration] feat(machine-registry): sync warranty options with Frappe
+  Files: systems/fleetrack/index.html,
+- `2d69f2b` 2026-07-31 [supabase-migration] style(machine-registry): rename fleet number labels
+  Files: systems/fleetrack/index.html,
+- `b33731f` 2026-07-31 [supabase-migration] feat(field-service): update FSI template format and add SCU tab
+  Files: systems/fleetrack/index.html,
+- `fddf076` 2026-07-31 [supabase-migration] feat(field-service): migrate technicians to Supabase with live search and add modal
+  Files: systems/fleetrack/index.html,
+- `54a2ae3` 2026-07-31 [supabase-migration] feat(technicians): add dedicated management view
+  Files: systems/fleetrack/index.html,
+- `2abda7e` 2026-07-31 [supabase-migration] fix(technicians): add view auto-load to router
+  Files: systems/fleetrack/index.html,
+- `4bbb48b` 2026-07-31 [supabase-migration] feat(fsi): add Internal Fleet Number to job instructions templates
+  Files: systems/fleetrack/index.html,
+- `9c797e6` 2026-07-31 [supabase-migration] feat(dashboard): migrate KPI metrics to query Supabase directly
+  Files: systems/fleetrack/index.html,

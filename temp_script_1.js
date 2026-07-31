@@ -1,1 +1,0 @@
-if (localStorage.getItem("omnisDebug") === "true") document.getElementById("omnis-debug-logs").style.display = "block";

@@ -48,3 +48,47 @@
 \n- **Commit 2798282** (2026-07-30): chore: update session notes and commit log
 \n- **Commit c5d112b** (2026-07-30): feat: standardise defect loading animations with omnis loader modal
 \n- **Commit d962a63** (2026-07-30): chore: update session notes and commit log
+\n- **Commit c458576** (2026-07-31): style: update fleetrack dashboard quick access grid and action buttons
+\n- **Commit a5eb754** (2026-07-31): feat: add machine modal - model live search with OEM autofill, customer live search + add new modal, fix machine register refresh bug
+\n- **Commit 7c19e53** (2026-07-31): fix: customer dropdown HTML injection, customer upsert API call, clear filters on machine save
+\n- **Commit 5965c0a** (2026-07-31): fix: machine register shows new machine after save - use in-memory data not Frappe reload
+\n- **Commit fceaefa** (2026-07-31): fix: persist locally-added machines across Frappe reloads via FT_SUPABASE_EXTRA_ROWS
+\n- **Commit 4385d28** (2026-07-31): feat: migrate Machine Register to Supabase as primary source of truth
+\n- **Commit 262b23f** (2026-07-31): fix: remove showGlobalLoader/hideGlobalLoader calls that don't exist in codebase
+\n- **Commit 381d1bd** (2026-07-31): feat: complete Supabase migration - all machine reads now from Supabase/memory
+\n- **Commit 3241f85** (2026-07-31): feat: delete machine + audit trail + UI freeze fix
+\n- **Commit f7469b7** (2026-07-31): fix: settings modal broken by CSV join syntax error
+\n- **Commit 0937872** (2026-07-31): fix: make openSettingsModal immediately available on window
+\n- **Commit 475cb07** (2026-07-31): fix: assign all settings tab functions directly to window at declaration
+\n- **Commit 07ebb4d** (2026-07-31): fix: add dedicated isolated script block for settings modal functions
+\n- **Commit 00817af** (2026-07-31): feat: add loading overlay to Machine Registry (matches defects UX)
+\n- **Commit 381c1b9** (2026-07-31): fix: machine delete uses match instead of filter in Supabase query
+\n- **Commit a203820** (2026-07-31): fix: Machine Register shortcut now opens view-machines (Supabase registry)
+\n- **Commit 76b5132** (2026-07-31): feat: predictive service recommendation in Field Service Plan modal
+\n- **Commit 042c3a9** (2026-07-31): feat: FSP recommended service adds to defects checklist
+\n- **Commit e740a7b** (2026-07-31): style: apply frosted glass translucent effect to top navbar
+\n- **Commit be51f8d** (2026-07-31): style: apply frosted glass to shortcuts strip and make sticky
+\n- **Commit fa8f18c** (2026-07-31): style: change shortcuts strip to dark frosted glass
+\n- **Commit edc98eb** (2026-07-31): feat(ui): add solid colors to shortcut buttons and Edit button to lookup modal
+\n- **Commit 5bc9273** (2026-07-31): style: make service timeline more compact and move it up
+\n- **Commit 5cb4ca2** (2026-07-31): style: add subtle premium tinted backgrounds to report cards
+\n- **Commit 40d9d6b** (2026-07-31): style: enhance KPI dashboard cards with premium pastel gradients
+\n- **Commit fd40f20** (2026-07-31): style: enhance dash shortcuts card with premium glassmorphism
+\n- **Commit 8513aea** (2026-07-31): style: flatten shortcuts strip and make buttons flat
+\n- **Commit 82b7a3f** (2026-07-31): feat(machine-registry): add log defect and service plan buttons to detail modal
+\n- **Commit 1681c47** (2026-07-31): fix(machine-registry): fix modal stacking order for machine detail actions
+\n- **Commit c73c327** (2026-07-31): fix(machine-registry): fix modal stacking contexts and object rendering in defect modal
+\n- **Commit 8f2f49d** (2026-07-31): fix(machine-registry): fix JS z-index override causing machine modal to cover all inner modals
+\n- **Commit a3c6071** (2026-07-31): fix(machine-registry): fix FSP modal stacking order
+\n- **Commit a65b4b5** (2026-07-31): fix(machine-registry): remove migrate to supabase button and fix bulk hmr entry
+\n- **Commit a590250** (2026-07-31): fix(machine-registry): fix JS syntax error breaking script block
+\n- **Commit 75e592d** (2026-07-31): feat(dashboard): change Update HMR to Bulk HMR Entry
+\n- **Commit aa62469** (2026-07-31): style(dashboard): revert shortcuts strip style
+\n- **Commit a210273** (2026-07-31): feat(machine-registry): sync warranty options with Frappe
+\n- **Commit 2d69f2b** (2026-07-31): style(machine-registry): rename fleet number labels
+\n- **Commit b33731f** (2026-07-31): feat(field-service): update FSI template format and add SCU tab
+\n- **Commit fddf076** (2026-07-31): feat(field-service): migrate technicians to Supabase with live search and add modal
+\n- **Commit 54a2ae3** (2026-07-31): feat(technicians): add dedicated management view
+\n- **Commit 2abda7e** (2026-07-31): fix(technicians): add view auto-load to router
+\n- **Commit 4bbb48b** (2026-07-31): feat(fsi): add Internal Fleet Number to job instructions templates
+\n- **Commit 9c797e6** (2026-07-31): feat(dashboard): migrate KPI metrics to query Supabase directly
