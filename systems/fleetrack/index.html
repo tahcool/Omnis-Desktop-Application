@@ -6100,6 +6100,10 @@
       
       const overlay = document.getElementById("hmr-log-overlay");
       if (!overlay) return;
+      
+      if (overlay.parentElement !== document.body) {
+        document.body.appendChild(overlay);
+      }
 
       // Populate Background Labels
       document.getElementById("hmr-log-customer-label").textContent = machineData.customer || "—";
@@ -12683,6 +12687,11 @@
 
     async function openCreateModal(prefillMachineName) {
       const overlay = document.getElementById("db-create-modal-overlay");
+      
+      if (overlay && overlay.parentElement !== document.body) {
+        document.body.appendChild(overlay);
+      }
+      
       overlay.classList.remove("hidden");
 
       // Set default date to today
@@ -13361,14 +13370,19 @@
       const modal = document.getElementById("modal-fsp-new");
       if (!modal) return;
       
+      if (modal.parentElement !== document.body) {
+        document.body.appendChild(modal);
+      }
+      
       // Reset fields
       if (preselectedMachine) {
-        let mObj = typeof preselectedMachine === 'object' ? preselectedMachine : (window.MACHINES_MAP ? window.MACHINES_MAP[preselectedMachine] : null) || { name: preselectedMachine };
-        document.getElementById("fsp-new-sn").value = mObj.sn || mObj.name;
-        document.getElementById("fsp-new-sn").dataset.selectedName = mObj.name;
-        document.getElementById("fsp-new-customer").value = mObj.customer || "";
-        document.getElementById("fsp-new-warranty").value = mObj.warranty_status || "Standard";
-        document.getElementById("fsp-new-location").value = mObj.current_location || mObj.location || "";
+        let mObj = typeof preselectedMachine === 'object' ? preselectedMachine : ((window.MACHINES_MAP && window.MACHINES_MAP[preselectedMachine]) ? window.MACHINES_MAP[preselectedMachine] : { name: preselectedMachine });
+        let snDisp = mObj.sn || mObj.name || "";
+        document.getElementById("fsp-new-sn").value = String(snDisp);
+        document.getElementById("fsp-new-sn").dataset.selectedName = String(mObj.name || "");
+        document.getElementById("fsp-new-customer").value = String(mObj.customer || "");
+        document.getElementById("fsp-new-warranty").value = String(mObj.warranty_status || "Standard");
+        document.getElementById("fsp-new-location").value = String(mObj.current_location || mObj.location || "");
         if (typeof loadFspMachineDefects === 'function') loadFspMachineDefects(mObj.name);
       } else {
         document.getElementById("fsp-new-sn").value = "";
@@ -14080,6 +14094,10 @@ We will let you know if there are any changes to the field service booking.`;
       const idInput = document.getElementById("defect-id");
       const mSearch = document.getElementById("defect-machine-search");
       
+      if (modal && modal.parentElement !== document.body) {
+        document.body.appendChild(modal);
+      }
+      
       if (typeof loadDefectCategories === 'function') loadDefectCategories();
 
       initDefectMachineSearch();
@@ -14126,9 +14144,10 @@ We will let you know if there are any changes to the field service booking.`;
         idInput.value = "";
         
         if (preselectedMachine) {
-          let mObj = typeof preselectedMachine === 'object' ? preselectedMachine : (window.MACHINES_MAP ? window.MACHINES_MAP[preselectedMachine] : null) || { name: preselectedMachine };
-          mSearch.value = mObj.model ? `${mObj.model} [${mObj.name}]` : (mObj.sn || mObj.name);
-          mSearch.dataset.selectedName = mObj.name;
+          let mObj = typeof preselectedMachine === 'object' ? preselectedMachine : ((window.MACHINES_MAP && window.MACHINES_MAP[preselectedMachine]) ? window.MACHINES_MAP[preselectedMachine] : { name: preselectedMachine });
+          let disp = mObj.model ? `${mObj.model} [${mObj.name}]` : (mObj.sn || mObj.name || "");
+          mSearch.value = String(disp);
+          mSearch.dataset.selectedName = String(mObj.name || "");
           mSearch.disabled = false;
           document.getElementById("defect-customer").value = mObj.customer || "";
           document.getElementById("defect-machine-display").value = mObj.model ? `${mObj.model} [${mObj.name}]` : (mObj.sn || mObj.name);
