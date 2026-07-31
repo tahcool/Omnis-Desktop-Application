@@ -8739,8 +8739,116 @@
     }
 
     // ---------------------------
-    // Fleetrack KPI + breakdown list
+    // Fleetrack KPI + breakdown list (Supabase version)
     // ---------------------------
+    async function loadDashboardKpisFromSupabase() {
+      setSyncState("syncing");
+      try {
+        const setKpi = (id, value) => {
+          const el = document.getElementById(id);
+          if (el) el.textContent = value != null ? value : "–";
+        };
+
+        // 1. Active Machines
+        const { count: activeMachines, error: e1 } = await window.electron.invoke('supabase:query', {
+          table: 'ft_machine', method: 'select', params: { columns: '*', count: 'exact', head: true, match: { fleetrack_managed: 1 }, neq: ['working_status', 'Down'] }
+        });
+        if (!e1) setKpi("kpi-active-machines", activeMachines);
+
+        // 2. Open Breakdowns & Recent Breakdowns Table
+        const { data: openBreakdowns, error: e2 } = await window.electron.invoke('supabase:query', {
+          table: 'ft_breakdown_log', method: 'select', params: { columns: '*', is: ['end_date', null] }
+        });
+        if (!e2 && openBreakdowns) {
+          FT_BREAKDOWN_ROWS_OPEN = openBreakdowns;
+          FT_BREAKDOWN_ROWS_ALL = openBreakdowns; // partial, but we only strictly need open for home screen
+
+          const urgentRows = openBreakdowns.filter(row => !!row.urgent);
+          setKpi("kpi-open-breakdowns", openBreakdowns.length);
+          setKpi("kpi-urgent-breakdowns", urgentRows.length);
+
+          // Avg days open
+          if (openBreakdowns.length > 0) {
+            let totalMs = 0;
+            const now = new Date();
+            let valid = 0;
+            openBreakdowns.forEach(row => {
+               if (row.date || row.breakdown_date) {
+                 const d = new Date(row.date || row.breakdown_date);
+                 if (!isNaN(d)) { totalMs += (now - d); valid++; }
+               }
+            });
+            if (valid > 0) {
+               const avgDays = (totalMs / valid / (1000 * 60 * 60 * 24)).toFixed(1);
+               const sub = document.getElementById("sub-open-breakdowns");
+               if (sub) sub.textContent = "Avg days (open): " + avgDays;
+            }
+          }
+
+          const tbody = document.getElementById("tbl-recent-breakdowns");
+          if (tbody) {
+            tbody.innerHTML = "";
+            const rowsToShow = openBreakdowns.slice(0, 10);
+            if (!rowsToShow.length) {
+              tbody.innerHTML = `<tr><td colspan="6" style="font-size:11px;color:#6b7280;">No open breakdowns.</td></tr>`;
+            } else {
+              rowsToShow.forEach((row, idx) => {
+                const tr = document.createElement("tr");
+                tr.dataset.index = String(idx);
+                const statusLabel = row.urgent ? "Open · Urgent" : (row.status || "Open");
+                if (row.urgent) tr.classList.add("bd-row-urgent");
+                else tr.classList.add("bd-row-open");
+                tr.innerHTML = `
+                  <td>${row.name || ""}</td>
+                  <td><div style="font-weight:600;">${row.machine || ""}</div><div style="font-size:10px;color:var(--text-muted);">${row.customer || ""}</div></td>
+                  <td>${row.location || "—"}</td>
+                  <td><span class="tag-pill" style="font-size:10px; padding:2px 6px;">${statusLabel}</span></td>
+                  <td style="font-size:11px;">${row.breakdown_date || row.date || ""}</td>
+                  <td><button class="tiny-btn tiny-btn-danger" onclick="sendBreakdownForApproval('${row.name}')">Approve</button></td>
+                `;
+                tbody.appendChild(tr);
+              });
+              if (openBreakdowns.length > 10) {
+                  const trMore = document.createElement("tr");
+                  trMore.innerHTML = `<td colspan="6" style="text-align:center; padding:10px;"><button class="tiny-btn" onclick="showView('view-reports')" style="background:#f1f5f9; color:#475569;">View all ${openBreakdowns.length} items in Reports</button></td>`;
+                  tbody.appendChild(trMore);
+              }
+            }
+          }
+          renderBreakdownLogTable(openBreakdowns);
+        }
+
+        // 3. Machines w/ Defects (distinct)
+        const { data: defects, error: e3 } = await window.electron.invoke('supabase:query', {
+          table: 'ft_defect', method: 'select', params: { columns: 'machine', neq: ['status', 'Closed'] }
+        });
+        if (!e3 && defects) {
+          const uniqueMachines = new Set(defects.map(d => d.machine).filter(Boolean));
+          setKpi("kpi-machines-defects", uniqueMachines.size);
+        }
+
+        // 4. Field Jobs Today
+        const todayStr = new Date().toISOString().split('T')[0];
+        const { count: jobsToday, error: e4 } = await window.electron.invoke('supabase:query', {
+          table: 'ft_service_plan', method: 'select', params: { columns: '*', count: 'exact', head: true, eq: ['plan_for', todayStr] }
+        });
+        if (!e4) setKpi("kpi-field-jobs-today", jobsToday);
+
+        // 5. Render FSP Calendar
+        const fspContainer = document.getElementById("dashboard-fsp-container");
+        if (fspContainer) {
+          fspContainer.classList.remove("hidden");
+          renderDashboardFsp();
+        }
+
+      } catch (e) {
+        console.error("loadDashboardKpisFromSupabase error:", e);
+        showToast("Dashboard KPIs failed to load.", "err", 4500);
+      } finally {
+        refreshOnlineState();
+      }
+    }
+
     async function loadFtBreakdownDashboard() {
       setSyncState("syncing");
       try {
@@ -11146,7 +11254,9 @@
         if (!FT_MACHINE_ROWS.length) loadFtMachineRegister();
       }
 
-      // (initDbrEditModal call moved to Boot)
+      if (viewId === "view-dashboard") {
+        if (typeof loadDashboardKpisFromSupabase === 'function') loadDashboardKpisFromSupabase();
+      }
 
       if (viewId === "view-telematics-hitachi") {
         if (!HITACHI_LAST_SNAPSHOT) hitachiRefreshSnapshot("auto-open");
