@@ -4844,6 +4844,14 @@
             <div class="form-group" style="grid-column: span 2;">
               <label class="form-label">Description (Job Type)</label>
               <input type="text" class="form-input" id="fsp-new-description" placeholder="e.g. 1000 Hour Service, Boom Repair">
+              
+              <div id="fsp-service-suggestion" style="display:none; margin-top: 8px; font-size: 11px; color: #78350f; background: #fffbeb; border: 1px solid #fde68a; border-radius: 6px; padding: 8px 12px; align-items: center; justify-content: space-between;">
+                <div style="display:flex; align-items:center; gap:8px;">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#f59e0b" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" y1="8" x2="12" y2="12"></line><line x1="12" y1="16" x2="12.01" y2="16"></line></svg>
+                  <span id="fsp-service-suggestion-text" style="font-weight:500;"></span>
+                </div>
+                <button onclick="fspAddSuggestedService()" style="background: #f59e0b; color: #fff; border: none; border-radius: 4px; padding: 4px 10px; font-weight: 700; font-size: 10px; cursor: pointer; transition: background 0.2s;" onmouseover="this.style.background='#d97706'" onmouseout="this.style.background='#f59e0b'">+ Add to Plan</button>
+              </div>
             </div>
 
             <div class="form-group" style="position:relative;">
@@ -13428,6 +13436,25 @@
             document.getElementById("fsp-new-location").value = m.current_location || m.location || "";
             document.getElementById("fsp-new-warranty").value = m.warranty_status || "Standard";
 
+            // Service Recommendation Logic (80 HMR threshold)
+            const suggBox = document.getElementById("fsp-service-suggestion");
+            const suggText = document.getElementById("fsp-service-suggestion-text");
+            let hrsRemaining = m.hours_remaining_to_service;
+            if (hrsRemaining == null && m.next_service_hmr != null && m.current_hmr != null) {
+              hrsRemaining = Number(m.next_service_hmr) - Number(m.current_hmr);
+            }
+            
+            if (hrsRemaining != null && hrsRemaining <= 80) {
+              const svcType = m.next_service_type ? `${m.next_service_type}H ` : "";
+              const hrsText = hrsRemaining < 0 ? `OVERDUE by ${Math.abs(hrsRemaining).toFixed(0)} hrs` : `due in ${Number(hrsRemaining).toFixed(0)} hrs`;
+              suggText.innerHTML = `Since you are attending a defect, consider doing the <strong>${svcType}Service</strong> which is ${hrsText}.`;
+              suggBox.dataset.serviceType = `${svcType}Service`.trim();
+              suggBox.style.display = "flex";
+            } else if (suggBox) {
+              suggBox.style.display = "none";
+              suggBox.dataset.serviceType = "";
+            }
+
             loadFspMachineDefects(m.name);
             
             dropdown.classList.add("hidden");
@@ -13442,6 +13469,25 @@
         if (!input.contains(e.target) && !dropdown.contains(e.target)) dropdown.classList.add("hidden");
       });
       FT_FSP_SEARCH_INIT = true;
+    }
+
+    function fspAddSuggestedService() {
+      const suggBox = document.getElementById("fsp-service-suggestion");
+      const descInput = document.getElementById("fsp-new-description");
+      if (!suggBox || !descInput) return;
+      
+      const svcType = suggBox.dataset.serviceType;
+      if (!svcType) return;
+      
+      let currentVal = descInput.value.trim();
+      if (currentVal && !currentVal.includes(svcType)) {
+        descInput.value = currentVal + ", " + svcType;
+      } else if (!currentVal) {
+        descInput.value = svcType;
+      }
+      
+      // Hide suggestion after adding to clean up UI
+      suggBox.style.display = "none";
     }
 
     async function loadFspMachineDefects(machineName) {
