@@ -15538,7 +15538,7 @@ We will let you know if there are any changes to the field service booking.`;
         document.getElementById('settings-modal').classList.add('hidden');
     };
 
-    function switchSettingsTab(tab) {
+    window.switchSettingsTab = function switchSettingsTab(tab) {
         // Deactivate all tabs and panes
         document.querySelectorAll('.settings-tab').forEach(t => t.classList.remove('active'));
         document.querySelectorAll('.settings-pane').forEach(p => p.classList.remove('active'));
@@ -15552,9 +15552,9 @@ We will let you know if there are any changes to the field service booking.`;
         // Activate the matching pane
         const pane = document.getElementById(`pane-${tab}`);
         if (pane) pane.classList.add('active');
-    }
+    };
 
-    async function saveActiveSettings() {
+    window.saveActiveSettings = async function saveActiveSettings() {
         const config = {
             host: document.getElementById('set-smtp-host').value,
             port: document.getElementById('set-smtp-port').value,
@@ -15582,9 +15582,9 @@ We will let you know if there are any changes to the field service booking.`;
             statusEl.style.color = "#ef4444";
             showToast("Save failed: " + err.message, "error");
         }
-    }
+    };
 
-    function saveApiCredentials() {
+    window.saveApiCredentials = function saveApiCredentials() {
       const key    = (document.getElementById('set-frappe-api-key')?.value || '').trim();
       const secret = (document.getElementById('set-frappe-api-secret')?.value || '').trim();
       const statusEl = document.getElementById('api-cred-status');
@@ -15597,9 +15597,9 @@ We will let you know if there are any changes to the field service booking.`;
       if (statusEl) { statusEl.textContent = '✓ Credentials saved — Backfill will now authenticate.'; statusEl.style.color = '#10b981'; }
       showToast('Frappe API credentials saved.', 'success');
       setTimeout(() => { if (statusEl) statusEl.textContent = ''; }, 4000);
-    }
+    };
 
-    function clearApiCredentials() {
+    window.clearApiCredentials = function clearApiCredentials() {
       localStorage.removeItem('ft_api_key');
       localStorage.removeItem('ft_api_secret');
       const kEl = document.getElementById('set-frappe-api-key');
@@ -15609,7 +15609,7 @@ We will let you know if there are any changes to the field service booking.`;
       const statusEl = document.getElementById('api-cred-status');
       if (statusEl) { statusEl.textContent = 'Credentials cleared.'; statusEl.style.color = '#64748b'; }
       showToast('API credentials cleared.', 'info');
-    }
+    };
 
     // Pre-fill API fields when settings modal opens
     function _prefillApiFields() {
@@ -15623,7 +15623,7 @@ We will let you know if there are any changes to the field service booking.`;
     document.addEventListener('DOMContentLoaded', _prefillApiFields);
     setTimeout(_prefillApiFields, 1800);
 
-    async function testEmailConnection() {
+    window.testEmailConnection = async function testEmailConnection() {
         const config = {
             host: document.getElementById('set-smtp-host').value,
             port: document.getElementById('set-smtp-port').value,
@@ -15652,10 +15652,9 @@ We will let you know if there are any changes to the field service booking.`;
             statusEl.innerText = "❌ Error: " + err.message;
             statusEl.style.color = "#dc2626";
         }
-    }
+    };
 
-    // --- WHATSAPP LINK CENTER ---
-    function openWaLinkModal() {
+    window.openWaLinkModal = function openWaLinkModal() {
         document.getElementById('wa-link-modal').classList.remove('hidden');
         const status = document.getElementById('wa-status-text');
         const qr = document.getElementById('wa-qr-code');
@@ -15667,19 +15666,13 @@ We will let you know if there are any changes to the field service booking.`;
             status.innerText = "Scan with your WhatsApp";
             qr.style.opacity = "1";
         }, 1500);
-    }
+    };
 
-    function closeWaLinkModal() {
+    window.closeWaLinkModal = function closeWaLinkModal() {
         document.getElementById('wa-link-modal').classList.add('hidden');
-    }
+    };
     
-    // Wire up global access
-    window.openSettingsModal = openSettingsModal;
-    window.closeSettingsModal = closeSettingsModal;
-    window.switchSettingsTab = switchSettingsTab;
-    window.saveActiveSettings = saveActiveSettings;
-    window.openWaLinkModal = openWaLinkModal;
-    window.closeWaLinkModal = closeWaLinkModal;
+    // All settings functions are now directly on window at definition site
 
     // =====================================================================
     // AUDIT TRAIL VIEWER
