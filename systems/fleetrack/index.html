@@ -24600,16 +24600,16 @@ window.loadISR = async function() {
 
 
   <!-- Generic Styled Confirm Modal -->
-  <div id="modal-ui-confirm" class="modal-overlay hidden" style="position:fixed; top:0; left:0; right:0; bottom:0; background:rgba(15,23,42,0.6); backdrop-filter:blur(4px); z-index:99999; display:none; align-items:center; justify-content:center;">
+  <div id="modal-ui-confirm" class="modal-overlay hidden" style="position:fixed; top:0; left:0; right:0; bottom:0; background:rgba(15,23,42,0.6); backdrop-filter:blur(4px); z-index:99999; display:flex; align-items:center; justify-content:center;">
     <div style="background:#fff; border-radius:12px; width:400px; max-width:90%; box-shadow:0 20px 25px -5px rgba(0,0,0,0.1), 0 8px 10px -6px rgba(0,0,0,0.1); overflow:hidden;">
       <div style="padding:16px 20px; background:#f8fafc; border-bottom:1px solid #e2e8f0; display:flex; justify-content:space-between; align-items:center;">
         <div id="ui-confirm-title" style="color:#0f172a; font-size:16px; font-weight:700;">Confirm Action</div>
-        <button onclick="document.getElementById('modal-ui-confirm').style.display='none'" style="background:transparent; border:none; color:#94a3b8; cursor:pointer; font-size:20px;">&times;</button>
+        <button onclick="document.getElementById('modal-ui-confirm').classList.add('hidden')" style="background:transparent; border:none; color:#94a3b8; cursor:pointer; font-size:20px;">&times;</button>
       </div>
       <div style="padding:24px 20px;">
         <div id="ui-confirm-message" style="color:#475569; font-size:14px; margin-bottom:24px; line-height:1.5;">Are you sure?</div>
         <div style="display:flex; justify-content:flex-end; gap:12px;">
-          <button onclick="document.getElementById('modal-ui-confirm').style.display='none'" style="padding:8px 16px; border:1px solid #cbd5e1; background:#fff; border-radius:8px; cursor:pointer; font-size:14px; font-weight:600; color:#475569; transition:all 0.2s;">Cancel</button>
+          <button onclick="document.getElementById('modal-ui-confirm').classList.add('hidden')" style="padding:8px 16px; border:1px solid #cbd5e1; background:#fff; border-radius:8px; cursor:pointer; font-size:14px; font-weight:600; color:#475569; transition:all 0.2s;">Cancel</button>
           <button id="ui-confirm-btn" style="padding:8px 16px; border:none; background:#ef4444; color:#fff; border-radius:8px; cursor:pointer; font-size:14px; font-weight:600; box-shadow:0 4px 6px rgba(239,68,68,0.2); transition:all 0.2s;">Confirm</button>
         </div>
       </div>
@@ -24627,11 +24627,11 @@ window.loadISR = async function() {
       uiConfirmCallback = onConfirm;
       
       btn.onclick = () => {
-        document.getElementById("modal-ui-confirm").style.display = "none";
+        document.getElementById("modal-ui-confirm").classList.add("hidden");
         if (uiConfirmCallback) uiConfirmCallback();
       };
       
-      document.getElementById("modal-ui-confirm").style.display = "flex";
+      document.getElementById("modal-ui-confirm").classList.remove("hidden");
     }
   </script>
 
