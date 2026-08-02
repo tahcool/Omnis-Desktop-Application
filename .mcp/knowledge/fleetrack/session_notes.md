@@ -92,3 +92,21 @@
 \n- **Commit 2abda7e** (2026-07-31): fix(technicians): add view auto-load to router
 \n- **Commit 4bbb48b** (2026-07-31): feat(fsi): add Internal Fleet Number to job instructions templates
 \n- **Commit 9c797e6** (2026-07-31): feat(dashboard): migrate KPI metrics to query Supabase directly
+\n- **Commit 00a71ab** (2026-07-31): chore: cleanup before version bump
+\n- **Commit 544fdea** (2026-07-31): feat(fsp): fully migrate field service planning crud to supabase
+\n- **Commit c9bec69** (2026-08-02): fix(fsp): correct supabase query parameter format for order and ilike
+\n- **Commit d932d03** (2026-08-02): feat(fsp): match edit modal layout with entry modal
+\n- **Commit d1f3f30** (2026-08-02): feat(fsp): shorten fleet labels and fetch machine from supabase
+\n- **Commit 036fdfa** (2026-08-02): fix(fsp): fix syntax error preventing modals from opening
+\n- **Commit 50e9d1b** (2026-08-02): feat(fsp): combine job description and defects in scope of work
+\n- **Commit 0045c3d** (2026-08-02): fix(fsp): correct scheduled_date to raw_date in save payload
+\n- **Commit fdbd582** (2026-08-02): style(fsp): change send buttons to red theme
+\n- **Commit ebec753** (2026-08-02): style(fsp): apply red theme to tabs and close button
+\n- **Commit 4b79218** (2026-08-02): feat(fsp): add contact person field to creation and edit flows
+\n- **Commit 42f5150** (2026-08-02): feat(fsp): add contact number field to fsp modals
+\n- **Commit b5d73ef** (2026-08-02): feat(fsp): add dedicated additional notes field
+\n- **Commit e29d29b** (2026-08-02): fix(fsp): modal scrolling and grid layout alignment
+\n- **Commit 998aad3** (2026-08-02): fix(defects): force sync no longer overwrites local edits
+\n- **Commit 208b79f** (2026-08-02): feat(fsp): implement delete button functionality
+\n- **Commit 7c737b8** (2026-08-02): feat(ui): add custom styled confirmation modal for deletions
+\n- **Commit 2af50dd** (2026-08-02): fix(ui): use classList for modal visibility instead of inline display

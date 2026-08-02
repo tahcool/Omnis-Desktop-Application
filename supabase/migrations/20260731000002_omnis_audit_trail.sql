@@ -1,4 +1,4 @@
-﻿-- Omnis System Audit Trail
+-- Omnis System Audit Trail
 -- Stores all significant actions with timestamps for accountability and compliance.
 
 CREATE TABLE IF NOT EXISTS omnis_audit_trail (

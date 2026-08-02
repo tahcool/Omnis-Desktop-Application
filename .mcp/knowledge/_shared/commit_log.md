@@ -233,3 +233,44 @@
   Files: systems/fleetrack/index.html,
 - `9c797e6` 2026-07-31 [supabase-migration] feat(dashboard): migrate KPI metrics to query Supabase directly
   Files: systems/fleetrack/index.html,
+- `00a71ab` 2026-07-31 [supabase-migration] chore: cleanup before version bump
+  Files: .mcp/knowledge/_shared/commit_log.md,.mcp/knowledge/fleetrack/session_notes.md,temp_check_anon_join.js,temp_check_hitachi.js,temp_check_hitachi_in_join.js,temp_check_mappings.js,temp_check_query.js,temp_check_query_anon.js,temp_check_query_join.js,temp_check_render_logic.js,temp_script.js,temp_script2.js,temp_script3.js,temp_script_0.js,temp_script_1.js,temp_script_10.js,temp_script_11.js,temp_script_12.js,temp_script_13.js,temp_script_14.js,
+- `52163fd` 2026-07-31 [supabase-migration] 4.2.11
+  Files: package-lock.json,package.json,
+- `544fdea` 2026-07-31 [supabase-migration] feat(fsp): fully migrate field service planning crud to supabase
+  Files: systems/fleetrack/index.html,
+\n## 2026-08-02
+- `c9bec69` 2026-08-02 [supabase-migration] fix(fsp): correct supabase query parameter format for order and ilike
+  Files: systems/fleetrack/index.html,
+- `d932d03` 2026-08-02 [supabase-migration] feat(fsp): match edit modal layout with entry modal
+  Files: systems/fleetrack/index.html,
+- `4911a33` 2026-08-02 [supabase-migration] chore: create restore point before next changes
+  Files: 
+- `d1f3f30` 2026-08-02 [supabase-migration] feat(fsp): shorten fleet labels and fetch machine from supabase
+  Files: systems/fleetrack/index.html,
+- `036fdfa` 2026-08-02 [supabase-migration] fix(fsp): fix syntax error preventing modals from opening
+  Files: systems/fleetrack/index.html,
+- `50e9d1b` 2026-08-02 [supabase-migration] feat(fsp): combine job description and defects in scope of work
+  Files: systems/fleetrack/index.html,
+- `0045c3d` 2026-08-02 [supabase-migration] fix(fsp): correct scheduled_date to raw_date in save payload
+  Files: systems/fleetrack/index.html,
+- `fdbd582` 2026-08-02 [supabase-migration] style(fsp): change send buttons to red theme
+  Files: systems/fleetrack/index.html,
+- `ebec753` 2026-08-02 [supabase-migration] style(fsp): apply red theme to tabs and close button
+  Files: systems/fleetrack/index.html,
+- `4b79218` 2026-08-02 [supabase-migration] feat(fsp): add contact person field to creation and edit flows
+  Files: systems/fleetrack/index.html,
+- `42f5150` 2026-08-02 [supabase-migration] feat(fsp): add contact number field to fsp modals
+  Files: systems/fleetrack/index.html,
+- `b5d73ef` 2026-08-02 [supabase-migration] feat(fsp): add dedicated additional notes field
+  Files: systems/fleetrack/index.html,
+- `e29d29b` 2026-08-02 [supabase-migration] fix(fsp): modal scrolling and grid layout alignment
+  Files: systems/fleetrack/index.html,
+- `998aad3` 2026-08-02 [supabase-migration] fix(defects): force sync no longer overwrites local edits
+  Files: systems/fleetrack/index.html,
+- `208b79f` 2026-08-02 [supabase-migration] feat(fsp): implement delete button functionality
+  Files: systems/fleetrack/index.html,
+- `7c737b8` 2026-08-02 [supabase-migration] feat(ui): add custom styled confirmation modal for deletions
+  Files: systems/fleetrack/index.html,
+- `2af50dd` 2026-08-02 [supabase-migration] fix(ui): use classList for modal visibility instead of inline display
+  Files: systems/fleetrack/index.html,
