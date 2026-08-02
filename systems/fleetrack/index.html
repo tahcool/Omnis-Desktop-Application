@@ -11195,9 +11195,9 @@
         document.getElementById('view-rpt-mwr'),
         document.getElementById('view-rpt-wwu'),
         document.getElementById('view-rpt-isr'),
-        // Customer portal admin
         document.getElementById('view-customer-portal-admin'),
         document.getElementById('view-user-mgmt'),
+        document.getElementById('view-customers'),
       ].forEach(v => v && v.classList.add("hidden"));
 
       // After-Sales Hub overlay — hide when switching away
@@ -11249,6 +11249,13 @@
           subtitle: "Plan and monitor field service jobs.",
           actionLabel: "New Plan",
           action: () => openFspModal(),
+        },
+        "view-customers": {
+          el: document.getElementById("view-customers"),
+          title: "Customers",
+          subtitle: "Manage customer directory and contacts.",
+          actionLabel: "Refresh",
+          action: () => loadFtCustomers(),
         },
         "view-technicians": {
           el: viewTechnicians,
