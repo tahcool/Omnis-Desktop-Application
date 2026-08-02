@@ -14216,7 +14216,7 @@
       document.getElementById("fsp-edit-defects").value = r.defects || "";
       document.getElementById("fsp-edit-status").value = r.status || "Proposed";
 
-      const machineInfo = (window.MACHINES_MAP && window.MACHINES_MAP[r.machine]) || {};
+      let machineInfo = (window.MACHINES_MAP && window.MACHINES_MAP[r.machine]) || {};
       const customerField = document.getElementById("fsp-edit-customer");
       if (customerField) customerField.value = r.customer || machineInfo.customer || "Auto-filled";
       const warrantyField = document.getElementById("fsp-edit-warranty");
@@ -14226,8 +14226,6 @@
       if (typeof loadFspMachineDefects === "function" && r.machine) {
         loadFspMachineDefects(r.machine, "fsp-edit-defects-tbody");
       }
-
-      let machineInfo = (window.MACHINES_MAP && window.MACHINES_MAP[r.machine]) || {};
       if (r.machine) {
         try {
           const res = await window.electron.invoke('supabase:query', {
