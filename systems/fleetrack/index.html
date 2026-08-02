@@ -4881,6 +4881,11 @@
               <input type="text" class="form-input" id="fsp-new-contact" placeholder="Customer Contact">
             </div>
 
+            <div class="form-group">
+              <label class="form-label">Contact Number</label>
+              <input type="text" class="form-input" id="fsp-new-contact-number" placeholder="Phone Number">
+            </div>
+
             <div class="form-group" style="grid-column: span 2;">
               <label class="form-label">Description (Job Type)</label>
               <input type="text" class="form-input" id="fsp-new-description" placeholder="e.g. 1000 Hour Service, Boom Repair">
@@ -5069,6 +5074,10 @@
                   <div class="form-group">
                     <label class="form-label">Contact Person</label>
                     <input type="text" class="form-input" id="fsp-edit-contact">
+                  </div>
+                  <div class="form-group">
+                    <label class="form-label">Contact Number</label>
+                    <input type="text" class="form-input" id="fsp-edit-contact-number">
                   </div>
 
                   <div class="form-group" style="grid-column: span 2;">
@@ -14114,6 +14123,7 @@
       const planned_date = document.getElementById("fsp-new-date").value;
       const technician = document.getElementById("fsp-new-technician").value.trim();
       const contact_person = document.getElementById("fsp-new-contact").value.trim();
+      const contact_number = document.getElementById("fsp-new-contact-number").value.trim();
       const warranty_status = document.getElementById("fsp-new-warranty").value;
       const location = document.getElementById("fsp-new-location").value.trim();
 
@@ -14157,6 +14167,7 @@
           raw_date: planned_date, 
           technician, 
           contact_person,
+          contact_number,
           defects: finalDefects, 
           status: "Proposed",
           location
@@ -14230,6 +14241,7 @@
       document.getElementById("fsp-edit-defects").value = r.defects || "";
       document.getElementById("fsp-edit-status").value = r.status || "Proposed";
       document.getElementById("fsp-edit-contact").value = r.contact_person || "";
+      document.getElementById("fsp-edit-contact-number").value = r.contact_number || "";
 
       let machineInfo = (window.MACHINES_MAP && window.MACHINES_MAP[r.machine]) || {};
       const customerField = document.getElementById("fsp-edit-customer");
@@ -14286,6 +14298,11 @@
         scopeLines += `\n${formattedDefects}`;
       }
 
+      let fsiContact = r.contact_person || "[To be added]";
+      if (r.contact_number) {
+        fsiContact += ` - ${r.contact_number}`;
+      }
+
       // FSI Template
       const fsi = `${contact}
 FSI ${dateFmt}
@@ -14300,7 +14317,7 @@ ${scopeLines}
 [To be added]
 *LOCATION* : ${r.location}
 *ETA* : TBA
-*CONTACT* : ${r.contact_person || "[To be added]"}`;
+*CONTACT* : ${fsiContact}`;
 
       // FSB Template
       const fsb = `Good evening
@@ -14368,6 +14385,7 @@ We will let you know if there are any further updates.`;
         description: document.getElementById("fsp-edit-description").value,
         location: document.getElementById("fsp-edit-location").value,
         contact_person: document.getElementById("fsp-edit-contact").value,
+        contact_number: document.getElementById("fsp-edit-contact-number").value,
         technician: document.getElementById("fsp-edit-technician").value,
         raw_date: document.getElementById("fsp-edit-date").value,
         status: document.getElementById("fsp-edit-status").value,
