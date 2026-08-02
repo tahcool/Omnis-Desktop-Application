@@ -14227,6 +14227,21 @@
         loadFspMachineDefects(r.machine, "fsp-edit-defects-tbody");
       }
 
+      let machineInfo = (window.MACHINES_MAP && window.MACHINES_MAP[r.machine]) || {};
+      if (r.machine) {
+        try {
+          const res = await window.electron.invoke('supabase:query', {
+            table: 'ft_machine',
+            method: 'getOne',
+            params: { name: r.machine }
+          });
+          if (res && res.data) {
+            machineInfo = res.data;
+            if (window.MACHINES_MAP) window.MACHINES_MAP[r.machine] = machineInfo;
+          }
+        } catch(e) {}
+      }
+
       const model = machineInfo.model || "Unknown Model";
       const sn = machineInfo.sn || r.machine;
       const fleet = machineInfo.fleet_no || "NA";
@@ -14259,8 +14274,8 @@
 FSI ${dateFmt}
 *CUSTOMER* : ${r.customer}
 *MACHINE* : ${model} SN: ${sn}
-*CUSTOMER FLEET NUMBER* : ${fleet}
-*INTERNAL FLEET NUMBER* : ${internalFleet}
+*CFN* : ${fleet}
+*IFN* : ${internalFleet}
 *WARRANTY STATUS* : ${r.warranty_status || "NA"}
 *SCOPE OF WORK* :  
 ${scopeLines}
@@ -14276,8 +14291,8 @@ ${scopeLines}
 *Date*: ${dateFmt}
 
 *MACHINE*: ${model} *SN*: ${sn}
-*CUSTOMER FLEET NUMBER*: ${fleet}
-*INTERNAL FLEET NUMBER*: ${internalFleet}
+*CFN*: ${fleet}
+*IFN*: ${internalFleet}
 *SCOPE OF WORK*:
 ${scopeLines}
 
@@ -14294,8 +14309,8 @@ We will let you know if there are any changes to the field service booking.`;
 *Date*: ${dateFmt}
 
 *MACHINE*: ${model} *SN*: ${sn}
-*CUSTOMER FLEET NUMBER*: ${fleet}
-*INTERNAL FLEET NUMBER*: ${internalFleet}
+*CFN*: ${fleet}
+*IFN*: ${internalFleet}
 *SCOPE OF WORK*:
 ${scopeLines}
 
