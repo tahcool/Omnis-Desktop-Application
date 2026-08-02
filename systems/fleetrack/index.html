@@ -5043,16 +5043,29 @@
                     <label class="form-label">Machine</label>
                     <input type="text" class="form-input" id="fsp-edit-machine" readonly style="background:#f8fafc;">
                   </div>
+                  
+                  <div class="form-group">
+                    <label class="form-label">Customer</label>
+                    <input type="text" class="form-input" id="fsp-edit-customer" placeholder="Auto-filled" readonly style="background:#f8fafc;">
+                  </div>
+
+                  <div class="form-group">
+                    <label class="form-label">Warranty Status</label>
+                    <input type="text" class="form-input" id="fsp-edit-warranty" placeholder="Auto-filled" readonly style="background:#f8fafc;">
+                  </div>
+
+                  <div class="form-group" style="grid-column: span 2;">
+                    <label class="form-label">Location</label>
+                    <input type="text" class="form-input" id="fsp-edit-location">
+                  </div>
+
                   <div class="form-group" style="grid-column: span 2;">
                     <label class="form-label">Description (Job Type)</label>
                     <input type="text" class="form-input" id="fsp-edit-description">
                   </div>
-                  <div class="form-group">
-                    <label class="form-label">Location</label>
-                    <input type="text" class="form-input" id="fsp-edit-location">
-                  </div>
+                  
                   <div class="form-group" style="position:relative;">
-                    <label class="form-label">Technician</label>
+                    <label class="form-label">Assigned Technician</label>
                     <input type="text" class="form-input" id="fsp-edit-technician-search"
                       placeholder="Search technician name..."
                       autocomplete="off"
@@ -5071,7 +5084,31 @@
                     <label class="form-label">Scheduled Date</label>
                     <input type="date" class="form-input" id="fsp-edit-date">
                   </div>
-                  <div class="form-group">
+
+                  <div class="form-group" style="grid-column: span 2; display: block;" id="fsp-edit-defects-container">
+                    <label class="form-label">Logged Machine Defects (Ticking adds to plan)</label>
+                    <div id="fsp-edit-defects-table-wrap" style="max-height: 150px; overflow-y: auto; border: 1px solid #e2e8f0; border-radius: 8px; background: #f8fafc; padding: 0;">
+                      <table style="width: 100%; font-size: 11px; border-collapse: collapse;">
+                        <thead style="position: sticky; top: 0; background: #f1f5f9; z-index: 1;">
+                          <tr style="border-bottom: 1px solid #e2e8f0;">
+                            <th style="padding: 6px 10px; text-align: left; width: 30px;"></th>
+                            <th style="padding: 6px 10px; text-align: left;">Defect</th>
+                            <th style="padding: 6px 10px; text-align: left;">Priority</th>
+                          </tr>
+                        </thead>
+                        <tbody id="fsp-edit-defects-tbody">
+                          <tr><td colspan="3" style="padding:12px; text-align:center; color:#94a3b8; font-size:11px;">🔍 Please select a machine to view its open defects</td></tr>
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+
+                  <div class="form-group" style="grid-column: span 2;">
+                    <label class="form-label">Additional Defects / Technical Notes</label>
+                    <textarea class="form-input" id="fsp-edit-defects" style="height:80px; resize:none;"></textarea>
+                  </div>
+                  
+                  <div class="form-group" style="grid-column: span 2;">
                     <label class="form-label">Status</label>
                     <select class="form-input" id="fsp-edit-status">
                       <option value="Proposed">Proposed</option>
@@ -5080,10 +5117,7 @@
                       <option value="Completed">Completed</option>
                     </select>
                   </div>
-                  <div class="form-group" style="grid-column: span 2;">
-                    <label class="form-label">Technical Notes / Defects</label>
-                    <textarea class="form-input" id="fsp-edit-defects" style="height:120px; resize:none;"></textarea>
-                  </div>
+
                   <div style="grid-column: span 2; margin-top: 10px;">
                     <button onclick="saveFspEdit()" id="btn-fsp-edit-save" class="btn btn-primary" style="width:100%; background:#ef4444; border:none; padding:12px; font-weight:700;">Update Service Plan Entry</button>
                   </div>
@@ -13950,9 +13984,10 @@
       suggBox.style.display = "none";
     }
 
-    async function loadFspMachineDefects(machineName) {
-      const container = document.getElementById("fsp-defects-container");
-      const tbody = document.getElementById("fsp-defects-tbody");
+    async function loadFspMachineDefects(machineName, targetTbody = "fsp-defects-tbody") {
+      const containerId = targetTbody === "fsp-edit-defects-tbody" ? "fsp-edit-defects-container" : "fsp-defects-container";
+      const container = document.getElementById(containerId);
+      const tbody = document.getElementById(targetTbody);
       if (!container || !tbody) return;
 
       tbody.innerHTML = '';
@@ -14182,6 +14217,16 @@
       document.getElementById("fsp-edit-status").value = r.status || "Proposed";
 
       const machineInfo = (window.MACHINES_MAP && window.MACHINES_MAP[r.machine]) || {};
+      const customerField = document.getElementById("fsp-edit-customer");
+      if (customerField) customerField.value = r.customer || machineInfo.customer || "Auto-filled";
+      const warrantyField = document.getElementById("fsp-edit-warranty");
+      if (warrantyField) warrantyField.value = r.warranty_status || machineInfo.warranty_status || "Auto-filled";
+      
+      // Load defects checklist for this machine
+      if (typeof loadFspMachineDefects === "function" && r.machine) {
+        loadFspMachineDefects(r.machine, "fsp-edit-defects-tbody");
+      }
+
       const model = machineInfo.model || "Unknown Model";
       const sn = machineInfo.sn || r.machine;
       const fleet = machineInfo.fleet_no || "NA";
@@ -14274,6 +14319,18 @@ We will let you know if there are any further updates.`;
       const btn = document.getElementById("btn-fsp-edit-save");
       if (!name) return;
 
+      let existingDefects = document.getElementById("fsp-edit-defects").value;
+      const modalEdit = document.getElementById("modal-fsp-detail");
+      if (modalEdit) {
+        const newlySelected = Array.from(modalEdit.querySelectorAll(".fsp-defect-check:checked"))
+          .map(el => "• " + (el.dataset.desc || el.dataset.name));
+        newlySelected.forEach(d => {
+          if (!existingDefects.includes(d)) {
+            existingDefects = (existingDefects ? existingDefects + "\n" : "") + d;
+          }
+        });
+      }
+
       const payload = {
         name: name,
         description: document.getElementById("fsp-edit-description").value,
@@ -14281,7 +14338,7 @@ We will let you know if there are any further updates.`;
         technician: document.getElementById("fsp-edit-technician").value,
         scheduled_date: document.getElementById("fsp-edit-date").value,
         status: document.getElementById("fsp-edit-status").value,
-        defects: document.getElementById("fsp-edit-defects").value
+        defects: existingDefects
       };
 
       if (btn) {
