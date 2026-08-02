@@ -4944,6 +4944,11 @@
               <textarea class="form-input" id="fsp-new-defects" style="height:80px; resize:none;" placeholder="List any additional items..."></textarea>
             </div>
 
+            <div class="form-group" style="grid-column: span 2;">
+              <label class="form-label">Additional Notes</label>
+              <textarea class="form-input" id="fsp-new-notes" style="height:80px; resize:none;" placeholder="Notes for the customer or general notes..."></textarea>
+            </div>
+
           </div>
           <div class="modal-footer">
                <button class="btn btn-primary" onclick="saveFspEntry()" style="background:#ef4444; border-color:#ef4444;">Create Plan Entry</button>
@@ -5127,6 +5132,11 @@
                   <div class="form-group" style="grid-column: span 2;">
                     <label class="form-label">Additional Defects / Technical Notes</label>
                     <textarea class="form-input" id="fsp-edit-defects" style="height:80px; resize:none;"></textarea>
+                  </div>
+                  
+                  <div class="form-group" style="grid-column: span 2;">
+                    <label class="form-label">Additional Notes</label>
+                    <textarea class="form-input" id="fsp-edit-notes" style="height:80px; resize:none;"></textarea>
                   </div>
                   
                   <div class="form-group" style="grid-column: span 2;">
@@ -14132,10 +14142,11 @@
         .map(el => "• " + (el.dataset.desc || el.dataset.name))
         .join("\n");
       
-      const manualNotes = document.getElementById("fsp-new-defects").value.trim();
+      const manualDefects = document.getElementById("fsp-new-defects").value.trim();
+      const additionalNotes = document.getElementById("fsp-new-notes").value.trim();
       let finalDefects = selectedDefects;
-      if (manualNotes) {
-        finalDefects = (finalDefects ? finalDefects + "\n\n" : "") + "Additional Notes:\n" + manualNotes;
+      if (manualDefects) {
+        finalDefects = (finalDefects ? finalDefects + "\n" : "") + manualDefects;
       }
 
       if (!machine) { showToast("Machine/SN is required", "error"); return; }
@@ -14169,6 +14180,7 @@
           contact_person,
           contact_number,
           defects: finalDefects, 
+          additional_notes: additionalNotes,
           status: "Proposed",
           location
         };
@@ -14242,6 +14254,8 @@
       document.getElementById("fsp-edit-status").value = r.status || "Proposed";
       document.getElementById("fsp-edit-contact").value = r.contact_person || "";
       document.getElementById("fsp-edit-contact-number").value = r.contact_number || "";
+      const editNotes = document.getElementById("fsp-edit-notes");
+      if (editNotes) editNotes.value = r.additional_notes || "";
 
       let machineInfo = (window.MACHINES_MAP && window.MACHINES_MAP[r.machine]) || {};
       const customerField = document.getElementById("fsp-edit-customer");
@@ -14314,7 +14328,7 @@ FSI ${dateFmt}
 *SCOPE OF WORK* :  
 ${scopeLines}
 *Additional Notes* :
-[To be added]
+${r.additional_notes || "[To be added]"}
 *LOCATION* : ${r.location}
 *ETA* : TBA
 *CONTACT* : ${fsiContact}`;
@@ -14389,7 +14403,8 @@ We will let you know if there are any further updates.`;
         technician: document.getElementById("fsp-edit-technician").value,
         raw_date: document.getElementById("fsp-edit-date").value,
         status: document.getElementById("fsp-edit-status").value,
-        defects: existingDefects
+        defects: existingDefects,
+        additional_notes: document.getElementById("fsp-edit-notes").value
       };
 
       if (btn) {
