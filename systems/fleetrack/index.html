@@ -2765,8 +2765,11 @@
       color: #64748b; font-size: 13px; font-weight: 600; cursor: pointer; 
       border-radius: 6px; transition: all 0.2s;
     }
+    .fsp-tab-btn:hover:not(.active) {
+      background: #fee2e2; color: #ef4444;
+    }
     .fsp-tab-btn.active {
-      background: #ffffff; color: #ef4444; box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+      background: #ef4444; color: #ffffff; box-shadow: 0 4px 6px -1px rgba(239, 68, 68, 0.3);
     }
     .fsp-tab-pane.hidden { display: none; }
 
@@ -5125,7 +5128,7 @@
              </div>
            </div>
            <div class="modal-footer" style="padding: 16px 24px; background: #f8fafc; border-top: 1px solid #e2e8f0; display:flex; gap:12px;">
-             <button class="btn btn-secondary" onclick="closeFspDetailModal()" style="flex:1;">Close</button>
+             <button class="btn" onclick="closeFspDetailModal()" style="flex:1; background:#ef4444; color:white; border:none; font-weight:700;">Close</button>
            </div>
          </div>
        </div>
