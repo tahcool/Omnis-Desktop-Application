@@ -14123,7 +14123,7 @@
           table: 'ft_service_plan',
           method: 'insert',
           params: {
-            payload: payload
+            data: payload
           }
         });
 
@@ -14294,7 +14294,7 @@ We will let you know if there are any further updates.`;
           table: 'ft_service_plan',
           method: 'update',
           params: {
-            payload: payload,
+            data: payload,
             match: name.length > 20 ? { id: name } : { frappe_name: name }
           }
         });
@@ -14903,8 +14903,8 @@ We will let you know if there are any further updates.`;
         if (filters.customer) match.customer = filters.customer;
         if (filters.status) match.status = filters.status;
         
-        let queryParams = { columns: '*', match: match, order: ['created_at', { ascending: false }] };
-        if (filters.machine) queryParams.ilike = { 'machine_name': `%${filters.machine}%` };
+        let queryParams = { columns: '*', match: match, order: { column: 'created_at', ascending: false } };
+        if (filters.machine) queryParams.ilike = [{ col: 'machine_name', pat: `%${filters.machine}%` }];
         
         const { data: rowsResult, error } = await window.electron.invoke('supabase:query', {
           table: 'ft_service_plan',
