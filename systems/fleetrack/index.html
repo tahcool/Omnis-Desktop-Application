@@ -14597,7 +14597,7 @@ We will let you know if there are any further updates.`;
           for (let i = 0; i < toUpsert.length; i += BATCH_SIZE) {
               const batch = toUpsert.slice(i, i + BATCH_SIZE);
               await window.electron.invoke('supabase:query', {
-                  table: 'ft_defect', method: 'upsert', params: {}, data: batch
+                  table: 'ft_defect', method: 'upsert', params: { options: { onConflict: 'name', ignoreDuplicates: true } }, data: batch
               });
           }
           showToast(`Synced ${toUpsert.length} defects!`, "success");
