@@ -11460,6 +11460,10 @@
         loadFieldServicePlan();
       }
 
+      if (viewId === "view-customers") {
+        loadFtCustomers();
+      }
+
       if (viewId === "view-technicians") {
         if (typeof loadTechniciansView === 'function') loadTechniciansView();
       }
