@@ -116,3 +116,6 @@
 \n- **Commit b9ebb50** (2026-08-02): fix(customer): auto-load customers when view opens
 \n- **Commit 0048803** (2026-08-03): feat(defects): change defect status from select to text input
 \n- **Commit 4b21b59** (2026-08-03): feat(defects): change status input to textarea
+\n- **Commit 339813e** (2026-08-03): chore: savepoint (restore point)
+\n- **Commit bb4f1b8** (2026-08-03): feat(dbr): add numbered rows and KPI summary cards to Daily Breakdown Report
+\n- **Commit aa3d60d** (2026-08-03): fix(dashboard): use DBR Frappe endpoint for Open Breakdowns KPI to sync exactly with report data

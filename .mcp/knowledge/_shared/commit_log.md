@@ -289,3 +289,9 @@
   Files: systems/fleetrack/index.html,
 - `4b21b59` 2026-08-03 [supabase-migration] feat(defects): change status input to textarea
   Files: systems/fleetrack/index.html,
+- `339813e` 2026-08-03 [supabase-migration] chore: savepoint (restore point)
+  Files: .mcp/knowledge/_shared/commit_log.md,.mcp/knowledge/fleetrack/session_notes.md,
+- `bb4f1b8` 2026-08-03 [supabase-migration] feat(dbr): add numbered rows and KPI summary cards to Daily Breakdown Report
+  Files: systems/fleetrack/index.html,
+- `aa3d60d` 2026-08-03 [supabase-migration] fix(dashboard): use DBR Frappe endpoint for Open Breakdowns KPI to sync exactly with report data
+  Files: systems/fleetrack/index.html,
