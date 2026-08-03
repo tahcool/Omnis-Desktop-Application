@@ -3644,7 +3644,7 @@
             onmouseover="this.style.transform='translateY(-2px)';this.style.boxShadow='0 12px 24px rgba(217,119,6,0.1)';"
             onmouseout="this.style.transform='';this.style.boxShadow='0 4px 16px rgba(217,119,6,0.06),inset 0 1px 0 rgba(255,255,255,0.65)';">
             <div style="position:absolute;right:-8px;bottom:-14px;opacity:0.1;font-size:82px;color:#d97706;transform:rotate(-10deg);pointer-events:none;line-height:1;">🔧</div>
-            <div class="stat-label" style="font-size:10px;font-weight:850;color:#b45309;text-transform:uppercase;letter-spacing:.08em;margin-bottom:8px;position:relative;z-index:1;opacity:.85;">Machines w/ Defects</div>
+            <div class="stat-label" style="font-size:10px;font-weight:850;color:#b45309;text-transform:uppercase;letter-spacing:.08em;margin-bottom:8px;position:relative;z-index:1;opacity:.85;">Open Defects</div>
             <div class="stat-value" id="kpi-machines-defects" style="color:#b45309;font-size:28px;font-weight:850;letter-spacing:-.02em;position:relative;z-index:1;">–</div>
             <div class="stat-sub" style="font-size:11px;color:#64748b;margin-top:5px;position:relative;z-index:1;">Maintenance required</div>
           </div>
@@ -8950,11 +8950,10 @@
           if (el) el.textContent = value != null ? value : "–";
         };
 
-        // 1. Active Machines
-        const { count: activeMachines, error: e1 } = await window.electron.invoke('supabase:query', {
-          table: 'ft_machine', method: 'select', params: { columns: '*', count: 'exact', head: true, match: { fleetrack_managed: 1 }, neq: ['working_status', 'Down'] }
+        // 1. Total Machines (Registry)
+        const { count: totalMachinesRegistry, error: e1 } = await window.electron.invoke('supabase:query', {
+          table: 'ft_machine', method: 'select', params: { columns: '*', count: 'exact', head: true, match: { fleetrack_managed: 1 } }
         });
-        if (!e1) setKpi("kpi-active-machines", activeMachines);
 
         // 2. Open Breakdowns & Recent Breakdowns Table
         let openBreakdowns = [];
@@ -9032,13 +9031,20 @@
           renderBreakdownLogTable(openBreakdowns);
         }
 
-        // 3. Machines w/ Defects (distinct)
+        // 3. Open Defects & Active Machines
         const { data: defects, error: e3 } = await window.electron.invoke('supabase:query', {
           table: 'ft_defect', method: 'select', params: { columns: 'machine', neq: ['status', 'Closed'] }
         });
         if (!e3 && defects) {
-          const uniqueMachines = new Set(defects.map(d => d.machine).filter(Boolean));
-          setKpi("kpi-machines-defects", uniqueMachines.size);
+          // Open Defects = Total open defect tickets
+          setKpi("kpi-machines-defects", defects.length);
+
+          // Active Machines = Total machines in registry - Machines that have open defects
+          const uniqueMachinesWithDefects = new Set(defects.map(d => d.machine).filter(Boolean));
+          if (!e1) {
+             const activeMachinesCount = Math.max(0, totalMachinesRegistry - uniqueMachinesWithDefects.size);
+             setKpi("kpi-active-machines", activeMachinesCount);
+          }
         }
 
         // 4. Field Jobs Today
