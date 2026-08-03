@@ -18751,7 +18751,33 @@ window.loadISR = async function() {
         document.getElementById('mwr-warning').textContent  = warning;
         document.getElementById('mwr-total').textContent    = withHmr.length;
 
-        tbody.innerHTML = withHmr.map(m => {
+        const groupByCust = document.getElementById('mwr-group-cust')?.checked;
+        let displayList = [...withHmr];
+        if (groupByCust) {
+          displayList.sort((a, b) => {
+            const custA = (a.customer || 'Unknown').toLowerCase();
+            const custB = (b.customer || 'Unknown').toLowerCase();
+            if (custA < custB) return -1;
+            if (custA > custB) return 1;
+            return b.since - a.since;
+          });
+        }
+
+        let html = '';
+        let currentCust = null;
+        displayList.forEach(m => {
+          if (groupByCust) {
+            const custName = m.customer || 'Unknown';
+            if (custName !== currentCust) {
+              html += `<tr class="mwr-group-header" style="background:#f1f5f9; border-top: 2px solid #cbd5e1; border-bottom: 2px solid #cbd5e1;">
+                <td colspan="7" style="padding: 10px 12px; font-weight:bold; font-size:12px; color:#334155;">
+                  🏢 ${custName}
+                </td>
+              </tr>`;
+              currentCust = custName;
+            }
+          }
+
           const isCrit  = m.cur >= CRITICAL_HMR;
           const isWarn  = m.cur >= WARNING_HMR;
           const badge   = isCrit ? rptBadge('HIGH HMR','red')
@@ -18760,8 +18786,12 @@ window.loadISR = async function() {
           const sinceLabel = m.last > 0
             ? `${Math.round(m.since)} HMR since svc`
             : `${Math.round(m.cur)} HMR total`;
-          return `<tr>
-            <td><strong>${m.customer||'—'}</strong></td>
+            
+          html += `<tr>
+            <td>
+              <strong style="${groupByCust ? 'display:none;' : ''}">${m.customer||'—'}</strong>
+              ${groupByCust ? '<span style="color:#94a3b8; font-style:italic; font-size:10px;">—</span>' : ''}
+            </td>
             <td>
               <div style="font-weight:700;">${m.model||'—'}</div>
               <div style="font-size:11px;color:#94a3b8;margin-top:2px;font-family:monospace;">SN: ${m.name||'—'}${m.mxg_fleet_no ? ` | IFN: ${m.mxg_fleet_no}` : ''}${m.fleet_no ? ` | CFN: ${m.fleet_no}` : ''}</div>
@@ -18772,7 +18802,8 @@ window.loadISR = async function() {
             <td style="font-weight:600;">${sinceLabel}</td>
             <td>${badge}</td>
           </tr>`;
-        }).join('');
+        });
+        tbody.innerHTML = html;
         initRptSort('mwr-table');
       } catch(e) {
         console.error('[MWR]', e);
@@ -18786,8 +18817,19 @@ window.loadISR = async function() {
       const cfn = document.getElementById('mwr-cfn')?.value.toLowerCase() || '';
       
       const trs = document.querySelectorAll('#mwr-tbody tr');
+      let lastHeader = null;
+      let anyVisible = false;
+      
       trs.forEach(tr => {
-         if (tr.children.length === 1) return;
+         if (tr.classList.contains('mwr-group-header') || tr.children.length === 1) {
+            if (lastHeader) {
+               lastHeader.style.display = anyVisible ? '' : 'none';
+            }
+            lastHeader = tr;
+            anyVisible = false;
+            return;
+         }
+         
          const rowCust = (tr.children[0].textContent || '').toLowerCase();
          const rowMach = (tr.children[1].textContent || '').toLowerCase();
          
@@ -18797,10 +18839,15 @@ window.loadISR = async function() {
          
          if (matchCust && matchIfn && matchCfn) {
            tr.style.display = '';
+           anyVisible = true;
          } else {
            tr.style.display = 'none';
          }
       });
+      
+      if (lastHeader) {
+         lastHeader.style.display = anyVisible ? '' : 'none';
+      }
     }
 
     // ════════════════════════════════════════════════════════
@@ -19839,7 +19886,10 @@ window.loadISR = async function() {
             <input id="mwr-cfn" type="text" placeholder="Search CFN…" oninput="filterMwrTableLocal()">
           </div>
           <div style="display:flex;align-items:flex-end;">
-            <button class="rpt-action-btn" onclick="document.getElementById('mwr-region').value='';document.getElementById('mwr-customer').value='';document.getElementById('mwr-ifn').value='';document.getElementById('mwr-cfn').value='';loadRptMwr();">Clear</button>
+            <label style="display:flex; align-items:center; gap:6px; font-size:10px; font-weight:700; color:#475569; cursor:pointer; text-transform:uppercase; margin-right: 15px; margin-bottom:10px;">
+              <input type="checkbox" id="mwr-group-cust" onchange="loadRptMwr()" style="width:14px; height:14px; accent-color:#334155;"> Group by Cust
+            </label>
+            <button class="rpt-action-btn" onclick="document.getElementById('mwr-region').value='';document.getElementById('mwr-customer').value='';document.getElementById('mwr-ifn').value='';document.getElementById('mwr-cfn').value='';document.getElementById('mwr-group-cust').checked=false;loadRptMwr();">Clear</button>
           </div>
         </div>
         <style>
