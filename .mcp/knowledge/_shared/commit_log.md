@@ -305,3 +305,19 @@
   Files: .mcp/knowledge/_shared/commit_log.md,.mcp/knowledge/fleetrack/session_notes.md,
 - `4ced388` 2026-08-03 [supabase-migration] refactor(ui): rename WSD Breakdown shortcut to Break Downs, link to DBR, remove obsolete WSD view
   Files: systems/fleetrack/index.html,
+- `c65fb4c` 2026-08-03 [supabase-migration] chore: savepoint before updating DBR PDF print format
+  Files: .mcp/knowledge/_shared/commit_log.md,.mcp/knowledge/fleetrack/session_notes.md,
+- `2518148` 2026-08-03 [supabase-migration] feat(dbr): update Print PDF format to match requested layout
+  Files: systems/fleetrack/index.html,
+- `30e2ad1` 2026-08-03 [supabase-migration] fix(dbr): resolve syntax error in printDBR template literal escaping
+  Files: systems/fleetrack/index.html,
+- `72a6014` 2026-08-03 [supabase-migration] fix(dbr): resolve ReferenceError with formatForInput in openDbrEditModal
+  Files: systems/fleetrack/index.html,
+- `a7ec366` 2026-08-03 [supabase-migration] feat(defects): add PDF print functionality matching requested layout
+  Files: systems/fleetrack/index.html,
+- `828616f` 2026-08-03 [supabase-migration] fix(defects): resolve SyntaxError in printGDR template literal escaping
+  Files: systems/fleetrack/index.html,
+- `53d9cde` 2026-08-03 [supabase-migration] fix(defects): move printGDR to global scope to resolve ReferenceError
+  Files: systems/fleetrack/index.html,
+- `84dad36` 2026-08-03 [supabase-migration] feat(defects): update severity filter to defect type and make PDF title dynamic
+  Files: systems/fleetrack/index.html,

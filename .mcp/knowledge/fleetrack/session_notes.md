@@ -123,3 +123,11 @@
 \n- **Commit 7807886** (2026-08-03): fix(dashboard): recalculate Active Machines and Open Defects KPIs
 \n- **Commit 8fc82d5** (2026-08-03): chore: savepoint before modifying WSD Breakdown shortcut
 \n- **Commit 4ced388** (2026-08-03): refactor(ui): rename WSD Breakdown shortcut to Break Downs, link to DBR, remove obsolete WSD view
+\n- **Commit c65fb4c** (2026-08-03): chore: savepoint before updating DBR PDF print format
+\n- **Commit 2518148** (2026-08-03): feat(dbr): update Print PDF format to match requested layout
+\n- **Commit 30e2ad1** (2026-08-03): fix(dbr): resolve syntax error in printDBR template literal escaping
+\n- **Commit 72a6014** (2026-08-03): fix(dbr): resolve ReferenceError with formatForInput in openDbrEditModal
+\n- **Commit a7ec366** (2026-08-03): feat(defects): add PDF print functionality matching requested layout
+\n- **Commit 828616f** (2026-08-03): fix(defects): resolve SyntaxError in printGDR template literal escaping
+\n- **Commit 53d9cde** (2026-08-03): fix(defects): move printGDR to global scope to resolve ReferenceError
+\n- **Commit 84dad36** (2026-08-03): feat(defects): update severity filter to defect type and make PDF title dynamic
