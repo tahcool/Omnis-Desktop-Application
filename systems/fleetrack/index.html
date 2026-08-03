@@ -12408,8 +12408,8 @@
       document.getElementById("db-edit-category").value = row.category || "Unscheduled";
 
       // ROW 3: ADVANCED DATES
-      document.getElementById("db-edit-ted").value = formatForInput(row.ted);
-      document.getElementById("db-edit-red").value = formatForInput(row.red);
+      document.getElementById("db-edit-ted").value = formatDateOnly(row.ted);
+      document.getElementById("db-edit-red").value = formatDateOnly(row.red);
       document.getElementById("db-edit-out-eta").value = formatDateOnly(row.out_eta);
 
       // ROW 4: OPERATIONAL
