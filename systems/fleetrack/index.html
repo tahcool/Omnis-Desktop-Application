@@ -4004,6 +4004,31 @@
             </div>
           </div>
 
+          <!-- KPI Cards Section -->
+          <div style="display:flex; gap:16px; margin-bottom:20px;">
+            <div style="flex:1; background:#f8fafc; border:1px solid #e2e8f0; border-radius:12px; padding:16px; display:flex; align-items:center; gap:12px; box-shadow:0 2px 4px rgba(0,0,0,0.02);">
+              <div style="background:#e0f2fe; color:#0284c7; width:48px; height:48px; border-radius:12px; display:flex; align-items:center; justify-content:center; font-size:24px;">🔧</div>
+              <div>
+                <div style="font-size:11px; font-weight:700; color:#64748b; text-transform:uppercase; letter-spacing:0.5px;">Open Breakdowns</div>
+                <div id="dbr-kpi-total" style="font-size:24px; font-weight:800; color:#0f172a; line-height:1.2;">0</div>
+              </div>
+            </div>
+            <div style="flex:1; background:#f8fafc; border:1px solid #e2e8f0; border-radius:12px; padding:16px; display:flex; align-items:center; gap:12px; box-shadow:0 2px 4px rgba(0,0,0,0.02);">
+              <div style="background:#fef3c7; color:#d97706; width:48px; height:48px; border-radius:12px; display:flex; align-items:center; justify-content:center; font-size:24px;">⏳</div>
+              <div>
+                <div style="font-size:11px; font-weight:700; color:#64748b; text-transform:uppercase; letter-spacing:0.5px;">Avg Days on BD</div>
+                <div id="dbr-kpi-avg-days" style="font-size:24px; font-weight:800; color:#0f172a; line-height:1.2;">0</div>
+              </div>
+            </div>
+            <div style="flex:1; background:#f8fafc; border:1px solid #e2e8f0; border-radius:12px; padding:16px; display:flex; align-items:center; gap:12px; box-shadow:0 2px 4px rgba(0,0,0,0.02);">
+              <div style="background:#fee2e2; color:#dc2626; width:48px; height:48px; border-radius:12px; display:flex; align-items:center; justify-content:center; font-size:24px;">🚨</div>
+              <div>
+                <div style="font-size:11px; font-weight:700; color:#64748b; text-transform:uppercase; letter-spacing:0.5px;">Urgent Breakdowns</div>
+                <div id="dbr-kpi-urgent" style="font-size:24px; font-weight:800; color:#0f172a; line-height:1.2;">0</div>
+              </div>
+            </div>
+          </div>
+
           <!-- Filter Bar -->
           <div class="filter-bar"
             style="background:#f8fafc; padding:16px; border-radius:12px; margin-bottom:20px; display:flex; flex-wrap:wrap; gap:16px; align-items:flex-end; border:1px solid #e2e8f0;">
@@ -4067,6 +4092,7 @@
               style="width:100%;border-collapse:collapse;font-size:11px;table-layout:auto;border:1px solid #e5e7f0;">
               <thead>
                 <tr style="background:#f02510;color:#ffffff !important;">
+                  <th style="padding:10px 8px;text-align:center;font-weight:700;border-right:1px solid rgba(255,255,255,0.2);vertical-align:bottom;color:#ffffff !important;width:40px;">#</th>
                   <th onclick="sortDbrData('customer')"
                     style="cursor:pointer;padding:10px 8px;text-align:left;font-weight:700;border-right:1px solid rgba(255,255,255,0.2);vertical-align:bottom;color:#ffffff !important;width:140px;white-space:nowrap;">
                     Customer &#x21C5;</th>
@@ -11568,7 +11594,24 @@
         return;
       }
 
-      dataToRender.forEach(row => {
+      // Update KPI Cards
+      const totalBd = dataToRender.length;
+      let totalDays = 0;
+      let urgentCount = 0;
+      dataToRender.forEach(r => {
+        totalDays += (parseInt(r.days_on_bd) || 0);
+        if (r.urgent) urgentCount++;
+      });
+      const avgDays = totalBd > 0 ? (totalDays / totalBd).toFixed(1) : 0;
+      
+      const elTotal = document.getElementById('dbr-kpi-total');
+      const elAvg = document.getElementById('dbr-kpi-avg-days');
+      const elUrgent = document.getElementById('dbr-kpi-urgent');
+      if (elTotal) elTotal.textContent = totalBd;
+      if (elAvg) elAvg.textContent = avgDays;
+      if (elUrgent) elUrgent.textContent = urgentCount;
+
+      dataToRender.forEach((row, index) => {
         const tr = document.createElement("tr");
         tr.style.cssText = "border-bottom:1px solid #e5e7f0;";
 
@@ -11608,6 +11651,7 @@
         }
 
         tr.innerHTML = `
+      <td style="${commonTdStyle}text-align:center;font-weight:700;color:#64748b;font-size:12px;">${index + 1}</td>
       <td style="${commonTdStyle}">
         <div style="font-weight:700;color:#0f172a;margin-bottom:4px;">${safeText(customer)}</div>
       ${customerRef}
