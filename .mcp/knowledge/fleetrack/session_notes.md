@@ -110,3 +110,9 @@
 \n- **Commit 208b79f** (2026-08-02): feat(fsp): implement delete button functionality
 \n- **Commit 7c737b8** (2026-08-02): feat(ui): add custom styled confirmation modal for deletions
 \n- **Commit 2af50dd** (2026-08-02): fix(ui): use classList for modal visibility instead of inline display
+\n- **Commit ad06fda** (2026-08-02): chore: savepoint (restore point)
+\n- **Commit cabcb66** (2026-08-02): feat(customer): implement Customer Management UI and CRUD operations
+\n- **Commit 50c61bd** (2026-08-02): fix(customer): add view-customers to primary showView mapping
+\n- **Commit b9ebb50** (2026-08-02): fix(customer): auto-load customers when view opens
+\n- **Commit 0048803** (2026-08-03): feat(defects): change defect status from select to text input
+\n- **Commit 4b21b59** (2026-08-03): feat(defects): change status input to textarea

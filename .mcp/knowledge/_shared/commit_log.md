@@ -274,3 +274,18 @@
   Files: systems/fleetrack/index.html,
 - `2af50dd` 2026-08-02 [supabase-migration] fix(ui): use classList for modal visibility instead of inline display
   Files: systems/fleetrack/index.html,
+- `ad06fda` 2026-08-02 [supabase-migration] chore: savepoint (restore point)
+  Files: .mcp/knowledge/_shared/commit_log.md,.mcp/knowledge/fleetrack/session_notes.md,supabase/.temp/cli-latest,supabase/migrations/20260731000002_omnis_audit_trail.sql,supabase/migrations/20260731000003_ft_service_plan_extra_fields.sql,supabase/migrations/20260802000000_ft_service_plan_contact_person.sql,temp.js,
+- `cabcb66` 2026-08-02 [supabase-migration] feat(customer): implement Customer Management UI and CRUD operations
+  Files: systems/fleetrack/index.html,
+- `50c61bd` 2026-08-02 [supabase-migration] fix(customer): add view-customers to primary showView mapping
+  Files: systems/fleetrack/index.html,
+- `b9ebb50` 2026-08-02 [supabase-migration] fix(customer): auto-load customers when view opens
+  Files: systems/fleetrack/index.html,
+\n## 2026-08-03
+- `bd51c52` 2026-08-03 [supabase-migration] chore(release): bump version to 4.2.15
+  Files: package.json,
+- `0048803` 2026-08-03 [supabase-migration] feat(defects): change defect status from select to text input
+  Files: systems/fleetrack/index.html,
+- `4b21b59` 2026-08-03 [supabase-migration] feat(defects): change status input to textarea
+  Files: systems/fleetrack/index.html,
