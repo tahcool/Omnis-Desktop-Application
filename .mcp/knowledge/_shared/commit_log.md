@@ -343,3 +343,7 @@
   Files: .mcp/knowledge/_shared/commit_log.md,.mcp/knowledge/fleetrack/session_notes.md,scripts/fix_defect_filter.js,scripts/fix_defect_filter_end_date.js,scripts/fix_scu.js,systems/fleetrack/index.html,
 - `eb18477` 2026-08-03 [supabase-migration] feat: Add sticky Log Tech Hours button to Shortcuts bar and style it teal
   Files: .mcp/knowledge/_shared/commit_log.md,.mcp/knowledge/fleetrack/session_notes.md,scripts/add_shortcut.js,scripts/add_shortcut_splice.js,scripts/fix_defects_filter_persist.js,scripts/update_btn_color.js,scripts/update_btn_color_teal.js,systems/fleetrack/index.html,
+- `a21f70a` 2026-08-03 [supabase-migration] chore: Update knowledge files
+  Files: .mcp/knowledge/_shared/commit_log.md,.mcp/knowledge/fleetrack/session_notes.md,
+- `bfdb9e4` 2026-08-03 [supabase-migration] chore: Bump version to 4.2.17
+  Files: package.json,

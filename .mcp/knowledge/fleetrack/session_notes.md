@@ -147,3 +147,4 @@
 \n- **Commit 0094baf** (2026-08-03): feat: Add auxiliary window functionality to floating action button
 \n- **Commit a01dcb9** (2026-08-03): fix: Update SCU template formatting and filter defects by end_date
 \n- **Commit eb18477** (2026-08-03): feat: Add sticky Log Tech Hours button to Shortcuts bar and style it teal
+\n- **Commit a21f70a** (2026-08-03): chore: Update knowledge files
