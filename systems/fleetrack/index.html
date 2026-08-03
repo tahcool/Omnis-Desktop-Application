@@ -18648,10 +18648,11 @@ window.loadISR = async function() {
             ? `${Math.round(m.since)} HMR since svc`
             : `${Math.round(m.cur)} HMR total`;
           return `<tr>
-            <td><strong>${m.mxg_fleet_no||'—'}</strong></td>
-            <td>${m.customer||'—'}</td>
-            <td>${m.model||'—'}</td>
-            <td style="font-family:monospace;font-size:11px;">${m.name||'—'}</td>
+            <td><strong>${m.customer||'—'}</strong></td>
+            <td>
+              <div style="font-weight:700;">${m.model||'—'}</div>
+              <div style="font-size:11px;color:#94a3b8;margin-top:2px;font-family:monospace;">SN: ${m.name||'—'} ${m.mxg_fleet_no ? `| Fleet No: ${m.mxg_fleet_no}` : ''}</div>
+            </td>
             <td>${m.region||'—'}</td>
             <td style="font-weight:700;${isCrit?'color:#b91c1c':isWarn?'color:#a16207':''}">${m.cur}</td>
             <td>${m.last > 0 ? m.last : '—'}</td>
@@ -19672,13 +19673,26 @@ window.loadISR = async function() {
             <input id="mwr-customer" type="text" placeholder="Search…" oninput="filterRptTable('mwr-table',this.value,[1])">
           </div>
         </div>
+        <style>
+          #mwr-table thead th { 
+            background: #f02510 !important; 
+            color: #ffffff !important; 
+            border-bottom: 2px solid #ef4444 !important; 
+          }
+          #mwr-table thead th:hover { color: #fef08a !important; }
+        </style>
         <div class="rpt-table-wrap">
           <table id="mwr-table" class="rpt-table">
             <thead><tr>
-              <th>Fleet No</th><th>Customer</th><th>Model</th><th>Serial No</th>
-              <th>Region</th><th>Current HMR</th><th>Last Service</th><th>HMR Since Service</th><th>Warning</th>
+              <th onclick="sortRptTable('mwr-table',0)" style="cursor:pointer;">Customer ↕</th>
+              <th onclick="sortRptTable('mwr-table',1)" style="cursor:pointer;">Machine ↕</th>
+              <th onclick="sortRptTable('mwr-table',2)" style="cursor:pointer;">Region ↕</th>
+              <th onclick="sortRptTable('mwr-table',3)" style="text-align:right;cursor:pointer;">Current HMR <span style="font-size:11px;color:#94a3b8;margin-left:4px;">↕</span></th>
+              <th onclick="sortRptTable('mwr-table',4)" style="text-align:right;cursor:pointer;">Last Service <span style="font-size:11px;color:#94a3b8;margin-left:4px;">↕</span></th>
+              <th onclick="sortRptTable('mwr-table',5)" style="text-align:right;cursor:pointer;">HMR Since Service <span style="font-size:11px;color:#94a3b8;margin-left:4px;">↕</span></th>
+              <th>Warning</th>
             </tr></thead>
-            <tbody id="mwr-tbody"><tr><td colspan="9" class="rpt-loading">Loading…</td></tr></tbody>
+            <tbody id="mwr-tbody"><tr><td colspan="7" class="rpt-loading">Loading…</td></tr></tbody>
           </table>
         </div>
       </div>
