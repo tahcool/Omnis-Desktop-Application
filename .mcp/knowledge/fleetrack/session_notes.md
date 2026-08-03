@@ -119,3 +119,5 @@
 \n- **Commit 339813e** (2026-08-03): chore: savepoint (restore point)
 \n- **Commit bb4f1b8** (2026-08-03): feat(dbr): add numbered rows and KPI summary cards to Daily Breakdown Report
 \n- **Commit aa3d60d** (2026-08-03): fix(dashboard): use DBR Frappe endpoint for Open Breakdowns KPI to sync exactly with report data
+\n- **Commit c853f29** (2026-08-03): chore: savepoint before KPI fixes
+\n- **Commit 7807886** (2026-08-03): fix(dashboard): recalculate Active Machines and Open Defects KPIs

@@ -295,3 +295,9 @@
   Files: systems/fleetrack/index.html,
 - `aa3d60d` 2026-08-03 [supabase-migration] fix(dashboard): use DBR Frappe endpoint for Open Breakdowns KPI to sync exactly with report data
   Files: systems/fleetrack/index.html,
+- `c853f29` 2026-08-03 [supabase-migration] chore: savepoint before KPI fixes
+  Files: .mcp/knowledge/_shared/commit_log.md,.mcp/knowledge/fleetrack/session_notes.md,
+- `7807886` 2026-08-03 [supabase-migration] fix(dashboard): recalculate Active Machines and Open Defects KPIs
+  Files: systems/fleetrack/index.html,
+- `7c4f989` 2026-08-03 [supabase-migration] chore: bump version to 4.2.16
+  Files: package.json,
