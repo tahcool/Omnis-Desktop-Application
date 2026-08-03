@@ -341,3 +341,5 @@
   Files: .mcp/knowledge/_shared/commit_log.md,.mcp/knowledge/fleetrack/session_notes.md,main.js,scripts/add_aux_window.js,scripts/add_aux_window_ipc.js,scripts/fix_listener.js,systems/fleetrack/index.html,
 - `a01dcb9` 2026-08-03 [supabase-migration] fix: Update SCU template formatting and filter defects by end_date
   Files: .mcp/knowledge/_shared/commit_log.md,.mcp/knowledge/fleetrack/session_notes.md,scripts/fix_defect_filter.js,scripts/fix_defect_filter_end_date.js,scripts/fix_scu.js,systems/fleetrack/index.html,
+- `eb18477` 2026-08-03 [supabase-migration] feat: Add sticky Log Tech Hours button to Shortcuts bar and style it teal
+  Files: .mcp/knowledge/_shared/commit_log.md,.mcp/knowledge/fleetrack/session_notes.md,scripts/add_shortcut.js,scripts/add_shortcut_splice.js,scripts/fix_defects_filter_persist.js,scripts/update_btn_color.js,scripts/update_btn_color_teal.js,systems/fleetrack/index.html,
