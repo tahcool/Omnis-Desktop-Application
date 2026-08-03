@@ -8957,9 +8957,20 @@
         if (!e1) setKpi("kpi-active-machines", activeMachines);
 
         // 2. Open Breakdowns & Recent Breakdowns Table
-        const { data: openBreakdowns, error: e2 } = await window.electron.invoke('supabase:query', {
-          table: 'ft_breakdown_log', method: 'select', params: { columns: '*', is: ['end_date', null] }
-        });
+        let openBreakdowns = [];
+        let e2 = null;
+        try {
+          const raw = await callFrappe(FT_BREAKDOWN_DBR_METHOD, { _ts: Date.now() }, 'GET');
+          if (raw && raw.message && raw.message.breakdowns) {
+             openBreakdowns = raw.message.breakdowns.map(r => ({
+                ...r,
+                machine: r.model || r.machine,
+                date: r.breakdown_date
+             }));
+          }
+        } catch(err) {
+          e2 = err;
+        }
         if (!e2 && openBreakdowns) {
           FT_BREAKDOWN_ROWS_OPEN = openBreakdowns;
           FT_BREAKDOWN_ROWS_ALL = openBreakdowns; // partial, but we only strictly need open for home screen
@@ -8968,23 +8979,25 @@
           setKpi("kpi-open-breakdowns", openBreakdowns.length);
           setKpi("kpi-urgent-breakdowns", urgentRows.length);
 
-          // Avg days open
-          if (openBreakdowns.length > 0) {
-            let totalMs = 0;
-            const now = new Date();
-            let valid = 0;
-            openBreakdowns.forEach(row => {
-               if (row.date || row.breakdown_date) {
-                 const d = new Date(row.date || row.breakdown_date);
-                 if (!isNaN(d)) { totalMs += (now - d); valid++; }
-               }
-            });
-            if (valid > 0) {
-               const avgDays = (totalMs / valid / (1000 * 60 * 60 * 24)).toFixed(1);
-               const sub = document.getElementById("sub-open-breakdowns");
-               if (sub) sub.textContent = "Avg days (open): " + avgDays;
+            // Avg days open
+            if (openBreakdowns.length > 0) {
+              let totalDays = 0;
+              let valid = 0;
+              openBreakdowns.forEach(row => {
+                 if (row.days_on_bd !== undefined) {
+                   totalDays += (parseInt(row.days_on_bd) || 0);
+                   valid++;
+                 } else if (row.date || row.breakdown_date) {
+                   const d = new Date(row.date || row.breakdown_date);
+                   if (!isNaN(d)) { totalDays += ((new Date() - d) / (1000 * 60 * 60 * 24)); valid++; }
+                 }
+              });
+              if (valid > 0) {
+                 const avgDays = (totalDays / valid).toFixed(1);
+                 const sub = document.getElementById("sub-open-breakdowns");
+                 if (sub) sub.textContent = "Avg days (open): " + avgDays;
+              }
             }
-          }
 
           const tbody = document.getElementById("tbl-recent-breakdowns");
           if (tbody) {
