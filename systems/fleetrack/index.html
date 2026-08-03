@@ -3386,9 +3386,7 @@
             <div class="top-nav-dropdown-item" onclick="showView('view-reports');closeAllDropdowns();" title="Daily breakdown summary for FSD-managed equipment.">
               <span class="icon" style="margin-right:8px; opacity:0.7;"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg></span>FSD Daily Breakdown
             </div>
-            <div class="top-nav-dropdown-item" onclick="showView('view-rpt-wbd');closeAllDropdowns();" title="Workshop daily breakdown report for workshop-held machines.">
-              <span class="icon" style="margin-right:8px; opacity:0.7;"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg></span>WSD Daily Breakdown
-            </div>
+
             <div class="top-nav-dropdown-item" onclick="showView('view-breakdowns');closeAllDropdowns();" title="Full activity log of Fleetrack events and status changes.">
               <span class="icon" style="margin-right:8px; opacity:0.7;"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg></span>Fleetrack Activity List
             </div>
@@ -3840,13 +3838,13 @@
                         <div style="margin-top:4px;font-size:10px;font-weight:700;color:#3b82f6;text-transform:uppercase;letter-spacing:0.5px;">STS</div>
                       </div>
           
-                      <div onclick="showView('view-rpt-wbd')" style="cursor:pointer;background:linear-gradient(145deg, #ffffff 0%, #f3e8ff 100%);border:1px solid rgba(226, 232, 240, 0.6);border-radius:16px;padding:24px 20px;display:flex;flex-direction:column;gap:12px;transition:all 0.2s cubic-bezier(0.4, 0, 0.2, 1);box-shadow:0 4px 6px -1px rgba(0, 0, 0, 0.03), 0 2px 4px -1px rgba(0, 0, 0, 0.02);" onmouseenter="this.style.boxShadow='0 12px 24px -4px rgba(139,92,246,0.15), 0 8px 16px -4px rgba(0,0,0,0.05)';this.style.borderColor='#8b5cf6';this.style.transform='translateY(-4px)';" onmouseleave="this.style.boxShadow='0 4px 6px -1px rgba(0, 0, 0, 0.03), 0 2px 4px -1px rgba(0, 0, 0, 0.02)';this.style.borderColor='rgba(226, 232, 240, 0.6)';this.style.transform='translateY(0)';">
+                      <div onclick="showView('view-reports')" style="cursor:pointer;background:linear-gradient(145deg, #ffffff 0%, #f3e8ff 100%);border:1px solid rgba(226, 232, 240, 0.6);border-radius:16px;padding:24px 20px;display:flex;flex-direction:column;gap:12px;transition:all 0.2s cubic-bezier(0.4, 0, 0.2, 1);box-shadow:0 4px 6px -1px rgba(0, 0, 0, 0.03), 0 2px 4px -1px rgba(0, 0, 0, 0.02);" onmouseenter="this.style.boxShadow='0 12px 24px -4px rgba(139,92,246,0.15), 0 8px 16px -4px rgba(0,0,0,0.05)';this.style.borderColor='#8b5cf6';this.style.transform='translateY(-4px)';" onmouseleave="this.style.boxShadow='0 4px 6px -1px rgba(0, 0, 0, 0.03), 0 2px 4px -1px rgba(0, 0, 0, 0.02)';this.style.borderColor='rgba(226, 232, 240, 0.6)';this.style.transform='translateY(0)';">
                         <div style="font-size:22px; width:44px; height:44px; display:flex; align-items:center; justify-content:center; border-radius:12px; background:rgba(0,0,0,0.04); box-shadow:inset 0 2px 4px rgba(255,255,255,0.5);">
                           <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#334155" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
                         </div>
-                        <div style="font-weight:700;font-size:14px;color:#0f172a;">WSD Breakdown</div>
-                        <div style="font-size:11px;color:#64748b;">Workshop Service Division — open breakdowns and jobs.</div>
-                        <div style="margin-top:4px;font-size:10px;font-weight:700;color:#8b5cf6;text-transform:uppercase;letter-spacing:0.5px;">WSD</div>
+                        <div style="font-weight:700;font-size:14px;color:#0f172a;">Break Downs</div>
+                        <div style="font-size:11px;color:#64748b;">Daily Breakdown Report — open breakdowns and jobs.</div>
+                        <div style="margin-top:4px;font-size:10px;font-weight:700;color:#8b5cf6;text-transform:uppercase;letter-spacing:0.5px;">DBR</div>
                       </div>
           
                       <div onclick="showView('view-rpt-wwu')" style="cursor:pointer;background:linear-gradient(145deg, #ffffff 0%, #ecfdf5 100%);border:1px solid rgba(226, 232, 240, 0.6);border-radius:16px;padding:24px 20px;display:flex;flex-direction:column;gap:12px;transition:all 0.2s cubic-bezier(0.4, 0, 0.2, 1);box-shadow:0 4px 6px -1px rgba(0, 0, 0, 0.03), 0 2px 4px -1px rgba(0, 0, 0, 0.02);" onmouseenter="this.style.boxShadow='0 12px 24px -4px rgba(16,185,129,0.15), 0 8px 16px -4px rgba(0,0,0,0.05)';this.style.borderColor='#10b981';this.style.transform='translateY(-4px)';" onmouseleave="this.style.boxShadow='0 4px 6px -1px rgba(0, 0, 0, 0.03), 0 2px 4px -1px rgba(0, 0, 0, 0.02)';this.style.borderColor='rgba(226, 232, 240, 0.6)';this.style.transform='translateY(0)';">
@@ -11401,13 +11399,7 @@
           actionLabel: "Refresh",
           action: () => loadRptSts(),
         },
-        "view-rpt-wbd": {
-          el: document.getElementById('view-rpt-wbd'),
-          title: "WSD Daily Breakdown Report",
-          subtitle: "Workshop Service Division — open breakdowns and jobs.",
-          actionLabel: "Refresh",
-          action: () => loadRptWbd(),
-        },
+
         "view-rpt-mwr": {
           el: document.getElementById('view-rpt-mwr'),
           title: "Maintenance Warning Report (MWR)",
@@ -11518,7 +11510,7 @@
       if (viewId === 'view-rpt-due-service') loadRptDueService();
       if (viewId === 'view-rpt-gdr')         loadRptGdr();
       if (viewId === 'view-rpt-sts')         loadRptSts();
-      if (viewId === 'view-rpt-wbd')         loadRptWbd();
+
       if (viewId === 'view-rpt-mwr')         loadRptMwr();
       if (viewId === 'view-rpt-wwu')         loadRptWwu();
       if (viewId === 'view-rpt-isr')         loadRptIsr();
@@ -18294,59 +18286,6 @@ window.loadISR = async function() {
       renderStsTable(filtered);
     }
 
-    // ════════════════════════════════════════════════════════
-    //  5. WSD DAILY BREAKDOWN REPORT
-    // ════════════════════════════════════════════════════════
-    async function loadRptWbd() {
-      const tbody = document.getElementById('wbd-tbody');
-      if (tbody) tbody.innerHTML = rptEmpty(8, 'Loading…');
-      try {
-        const from = document.getElementById('wbd-from')?.value || '';
-        const to   = document.getElementById('wbd-to')?.value   || '';
-        const res  = await callFrappe(FT_BREAKDOWN_DBR_METHOD,
-          { from_date: from, to_date: to, responsibility: 'WSD' }, 'GET');
-        const rows = res?.message?.breakdowns || res?.message || [];
-        const data = Array.isArray(rows) ? rows : [];
-
-        if (!data.length) { tbody.innerHTML = rptEmpty(8); return; }
-
-        let open=0, prog=0;
-        data.forEach(r => {
-          const s=(r.status||'').toLowerCase();
-          if (s==='open') open++;
-          if (s==='in progress') prog++;
-        });
-        document.getElementById('wbd-open').textContent     = open;
-        document.getElementById('wbd-progress').textContent = prog;
-        document.getElementById('wbd-total').textContent    = data.length;
-
-        const stBadge = s => {
-          const sc=(s||'').toLowerCase();
-          if (sc==='open') return rptBadge(s,'red');
-          if (sc==='in progress') return rptBadge(s,'yellow');
-          if (sc==='parts on order') return rptBadge(s,'blue');
-          if (sc==='closed') return rptBadge(s,'green');
-          return rptBadge(s,'gray');
-        };
-        const today = new Date();
-        tbody.innerHTML = data.map(r => {
-          const days = r.creation ? Math.round((today-new Date(r.creation))/86400000) : '—';
-          return `<tr>
-            <td>${r.customer||'—'}</td>
-            <td>${r.model||'—'}</td>
-            <td style="font-family:monospace;font-size:11px;">${r.machine||r.name||'—'}</td>
-            <td>${r.description||'—'}</td>
-            <td>${stBadge(r.status)}</td>
-            <td>${r.technician||'—'}</td>
-            <td>${fmtDate(r.creation)}</td>
-            <td style="font-weight:700;${days>7?'color:#b91c1c':''}">${days}</td>
-          </tr>`;
-        }).join('');
-        initRptSort('wbd-table');
-      } catch(e) {
-        if (tbody) tbody.innerHTML = rptError(8, e.message);
-      }
-    }
 
     // ════════════════════════════════════════════════════════
     //  6. MAINTENANCE WARNING REPORT (MWR)
@@ -19400,52 +19339,7 @@ window.loadISR = async function() {
     </div>
 
     <!-- ── 5. WSD DAILY BREAKDOWN REPORT ──────────────── -->
-    <div id="view-rpt-wbd" class="view-page hidden">
-      <div class="rpt-view-wrap">
-        <div class="rpt-view-header">
-          <div>
-            <h2 class="rpt-view-title">WSD Daily Breakdown Report</h2>
-            <p class="rpt-view-sub">Workshop Service Division — open breakdowns and jobs</p>
-          </div>
-          <div style="display:flex;gap:10px;align-items:center;">
-            <div class="rpt-kpi-pill" style="background:#fee2e2;color:#b91c1c;"><span id="wbd-open">—</span><label>Open</label></div>
-            <div class="rpt-kpi-pill" style="background:#fef9c3;color:#a16207;"><span id="wbd-progress">—</span><label>In Progress</label></div>
-            <div class="rpt-kpi-pill"><span id="wbd-total">—</span><label>Total</label></div>
-            <button class="rpt-action-btn" onclick="exportRptCsv('wbd-table','wsd_breakdown')">⬇ CSV</button>
-            <button class="rpt-action-btn rpt-action-primary" onclick="loadRptWbd()">↺ Refresh</button>
-          </div>
-        </div>
-        <div class="rpt-filter-bar">
-          <div class="rpt-filter-group">
-            <label>From Date</label>
-            <input type="date" id="wbd-from" onchange="loadRptWbd()">
-          </div>
-          <div class="rpt-filter-group">
-            <label>To Date</label>
-            <input type="date" id="wbd-to" onchange="loadRptWbd()">
-          </div>
-          <div class="rpt-filter-group" style="flex:2;">
-            <label>Customer / Machine</label>
-            <input id="wbd-search" type="text" placeholder="Search…" oninput="filterRptTable('wbd-table',this.value,[0,1,2])">
-          </div>
-          <div class="rpt-filter-group">
-            <label>Status</label>
-            <select id="wbd-status" onchange="filterRptTableSelect('wbd-table',this.value,4)">
-              <option value="">All</option><option>Open</option><option>In Progress</option><option>Parts on Order</option><option>Closed</option>
-            </select>
-          </div>
-        </div>
-        <div class="rpt-table-wrap">
-          <table id="wbd-table" class="rpt-table">
-            <thead><tr>
-              <th>Customer</th><th>Model</th><th>Serial No</th><th>Description</th>
-              <th>Status</th><th>Technician</th><th>Reported</th><th>Days on BD</th>
-            </tr></thead>
-            <tbody id="wbd-tbody"><tr><td colspan="8" class="rpt-loading">Loading…</td></tr></tbody>
-          </table>
-        </div>
-      </div>
-    </div>
+
 
     <!-- ── 6. MAINTENANCE WARNING REPORT (MWR) ────────── -->
     <div id="view-rpt-mwr" class="view-page hidden">
