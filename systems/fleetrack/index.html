@@ -10768,15 +10768,6 @@
       }, 500);
     }
 
-    // ---------------------------
-    // Live Filtering Setup
-    // ---------------------------
-    function setupDbrLiveFilters() {
-      const region = document.getElementById('dbr-filter-region');
-      const customer = document.getElementById('dbr-filter-customer');
-      const machine = document.getElementById('dbr-filter-machine');
-      const resp = document.getElementById('dbr-filter-responsibility');
-      const urgent = document.getElementById('dbr-filter-urgent');
     function printGDR() {
       const defectsVisible = !document.getElementById('view-defects').classList.contains('hidden');
       if (!defectsVisible) {
@@ -10937,6 +10928,16 @@
         printWin.close();
       }, 500);
     }
+
+    // ---------------------------
+    // Live Filtering Setup
+    // ---------------------------
+    function setupDbrLiveFilters() {
+      const region = document.getElementById('dbr-filter-region');
+      const customer = document.getElementById('dbr-filter-customer');
+      const machine = document.getElementById('dbr-filter-machine');
+      const resp = document.getElementById('dbr-filter-responsibility');
+      const urgent = document.getElementById('dbr-filter-urgent');
 
       let debounceTimer;
       const debouncedLoad = () => {
