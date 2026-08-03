@@ -10626,6 +10626,119 @@
       return FLEET_BASE_URL + u;
     }
 
+    function printMWR() {
+      const mwrVisible = !document.getElementById('view-rpt-mwr').classList.contains('hidden');
+      if (!mwrVisible) {
+        showToast("Please open the Maintenance Warning Report first.", "warn");
+        return;
+      }
+      
+      const userName = localStorage.getItem('ft_user_name') || 'Administrator';
+      const today = new Date().toLocaleDateString('en-GB'); // DD/MM/YYYY
+      
+      let html = `
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Maintenance Warning Report (MWR)</title>
+  <style>
+    body { font-family: sans-serif; font-size: 11px; color: #1e293b; padding: 20px; }
+    .header { display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 20px; border-bottom: 1px solid #cbd5e1; padding-bottom: 10px; }
+    .logo-container { display:flex; flex-direction:column; gap:4px; }
+    .title-block { text-align: right; display:flex; flex-direction:column; gap:10px; align-items:flex-end; }
+    .title { font-size: 18px; font-weight: 400; color: #000; }
+    .eff-pill { background: #000; color: #fff; padding: 4px; font-weight: bold; font-size: 10px; display: flex; border:1px solid #000; }
+    .eff-pill span { background: #fff; color: #000; padding: 2px 6px; margin-left: 4px; }
+    .meta-table { width: 300px; margin-bottom: 20px; font-size: 11px; color: #64748b; }
+    .meta-table td { padding: 4px 0; }
+    .meta-table strong { color: #1e293b; font-weight: 400; }
+    table.dbr-table { width: 100%; border-collapse: collapse; margin-bottom: 30px; }
+    .dbr-table th, .dbr-table td { border-bottom: 1px solid #cbd5e1; padding: 8px 6px; vertical-align: top; text-align: left; }
+    .dbr-table th { background: #E53935; color: #fff; font-weight: bold; border: none; font-size:11px; }
+    .sig-table { width: 100%; border-collapse: collapse; text-align: left; margin-top: 40px; }
+    .sig-table th { background: #E53935; color: #fff; padding: 6px; font-weight: bold; border: 1px solid #E53935; font-size:11px; text-align:center; }
+    .sig-table td { padding: 25px 6px; border: 1px solid #E53935; }
+    @media print {
+      body { -webkit-print-color-adjust: exact; print-color-adjust: exact; padding: 0; }
+    }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <div class="logo-container">
+      <img src="${window.location.origin}${window.location.pathname.replace('index.html', '')}../../assets/images/omnis-logo.png" style="height:35px;" onerror="this.style.display='none'" />
+      <img src="${window.location.origin}${window.location.pathname.replace('index.html', '')}../../assets/images/fleetrack-logo.png" style="height:15px;" onerror="this.style.display='none'" />
+    </div>
+    <div class="title-block">
+      <div class="title">Maintenance Warning Report (MWR)</div>
+      <div class="eff-pill">% Efficiency <span>15.0%</span></div>
+    </div>
+  </div>
+
+  <table class="meta-table">
+    <tr><td>Prepared by</td><td><strong>${userName}</strong></td></tr>
+    <tr><td>Date</td><td><strong>${today}</strong></td></tr>
+  </table>
+
+  <table class="dbr-table">
+    <thead>
+      <tr>
+        <th>Customer</th>
+        <th>Machine</th>
+        <th>Region</th>
+        <th style="text-align:right;">Current HMR</th>
+        <th style="text-align:right;">Last Service</th>
+        <th style="text-align:right;">HMR Since Service</th>
+        <th>Warning</th>
+      </tr>
+    </thead>
+    <tbody>`;
+
+      const trs = document.querySelectorAll('#mwr-tbody tr');
+      if (trs.length === 0 || (trs.length === 1 && trs[0].textContent.includes('Loading'))) {
+         showToast("No data to print", "warn");
+         return;
+      }
+
+      trs.forEach(tr => {
+         if (tr.style.display === 'none') return;
+         html += `<tr>${tr.innerHTML}</tr>`;
+      });
+
+      html += `
+    </tbody>
+  </table>
+
+  <table class="sig-table">
+    <thead>
+      <tr><th colspan="6" style="text-align:center;">Signatures</th></tr>
+      <tr>
+        <th style="width:16%;">FT Controller</th>
+        <th style="width:16%;">PD Controller</th>
+        <th style="width:16%;">AD Controller</th>
+        <th style="width:16%;">CSD Supervisor</th>
+        <th style="width:16%;">CSD Manager</th>
+        <th style="width:20%;">MD</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td></td><td></td><td></td><td></td><td></td><td></td>
+      </tr>
+    </tbody>
+  </table>
+</body>
+</html>`;
+
+      const pWin = window.open('', '_blank');
+      if (pWin) {
+        pWin.document.write(html);
+        pWin.document.close();
+        pWin.focus();
+        setTimeout(() => { pWin.print(); pWin.close(); }, 800);
+      }
+    }
+
     function printDBR() {
       const dbrVisible = !document.getElementById('view-reports').classList.contains('hidden');
       if (!dbrVisible) {
@@ -18651,7 +18764,7 @@ window.loadISR = async function() {
             <td><strong>${m.customer||'—'}</strong></td>
             <td>
               <div style="font-weight:700;">${m.model||'—'}</div>
-              <div style="font-size:11px;color:#94a3b8;margin-top:2px;font-family:monospace;">SN: ${m.name||'—'} ${m.mxg_fleet_no ? `| Fleet No: ${m.mxg_fleet_no}` : ''}</div>
+              <div style="font-size:11px;color:#94a3b8;margin-top:2px;font-family:monospace;">SN: ${m.name||'—'}${m.mxg_fleet_no ? ` | IFN: ${m.mxg_fleet_no}` : ''}${m.fleet_no ? ` | CFN: ${m.fleet_no}` : ''}</div>
             </td>
             <td>${m.region||'—'}</td>
             <td style="font-weight:700;${isCrit?'color:#b91c1c':isWarn?'color:#a16207':''}">${m.cur}</td>
@@ -18665,6 +18778,29 @@ window.loadISR = async function() {
         console.error('[MWR]', e);
         if (tbody) tbody.innerHTML = rptError(9, e.message);
       }
+    }
+
+    function filterMwrTableLocal() {
+      const customer = document.getElementById('mwr-customer')?.value.toLowerCase() || '';
+      const ifn = document.getElementById('mwr-ifn')?.value.toLowerCase() || '';
+      const cfn = document.getElementById('mwr-cfn')?.value.toLowerCase() || '';
+      
+      const trs = document.querySelectorAll('#mwr-tbody tr');
+      trs.forEach(tr => {
+         if (tr.children.length === 1) return;
+         const rowCust = (tr.children[0].textContent || '').toLowerCase();
+         const rowMach = (tr.children[1].textContent || '').toLowerCase();
+         
+         const matchCust = !customer || rowCust.includes(customer);
+         const matchIfn = !ifn || rowMach.includes(ifn);
+         const matchCfn = !cfn || rowMach.includes(cfn);
+         
+         if (matchCust && matchIfn && matchCfn) {
+           tr.style.display = '';
+         } else {
+           tr.style.display = 'none';
+         }
+      });
     }
 
     // ════════════════════════════════════════════════════════
@@ -19653,15 +19789,37 @@ window.loadISR = async function() {
             <p class="rpt-view-sub">Machines with pending maintenance warnings from HMR thresholds</p>
           </div>
           <div style="display:flex;gap:10px;align-items:center;">
-            <div class="rpt-kpi-pill" style="background:#fee2e2;color:#b91c1c;"><span id="mwr-critical">—</span><label>Critical</label></div>
-            <div class="rpt-kpi-pill" style="background:#fef9c3;color:#a16207;"><span id="mwr-warning">—</span><label>Warning</label></div>
-            <div class="rpt-kpi-pill"><span id="mwr-total">—</span><label>Total</label></div>
+            <!-- Critical KPI -->
+            <div class="rpt-kpi-pill" style="position:relative; background:#ffffff; border:1px solid #e2e8f0; border-radius:12px; color:#0f172a; overflow:hidden; padding:10px 18px; align-items:flex-start; min-width:100px; box-shadow:0 1px 3px rgba(0,0,0,0.05);">
+              <div style="position:absolute; right:-5px; bottom:-10px; opacity:0.05; pointer-events:none; transform:rotate(-10deg);">
+                <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#ef4444" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+              </div>
+              <label style="color:#ef4444; font-size:10px; font-weight:700; margin-bottom:2px; z-index:1; position:relative;">CRITICAL</label>
+              <span id="mwr-critical" style="font-size:24px; font-weight:800; z-index:1; position:relative;">—</span>
+            </div>
+            <!-- Warning KPI -->
+            <div class="rpt-kpi-pill" style="position:relative; background:#ffffff; border:1px solid #e2e8f0; border-radius:12px; color:#0f172a; overflow:hidden; padding:10px 18px; align-items:flex-start; min-width:100px; box-shadow:0 1px 3px rgba(0,0,0,0.05);">
+              <div style="position:absolute; right:-5px; bottom:-10px; opacity:0.05; pointer-events:none; transform:rotate(5deg);">
+                <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#f59e0b" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+              </div>
+              <label style="color:#f59e0b; font-size:10px; font-weight:700; margin-bottom:2px; z-index:1; position:relative;">WARNING</label>
+              <span id="mwr-warning" style="font-size:24px; font-weight:800; z-index:1; position:relative;">—</span>
+            </div>
+            <!-- Total KPI -->
+            <div class="rpt-kpi-pill" style="position:relative; background:#ffffff; border:1px solid #e2e8f0; border-radius:12px; color:#0f172a; overflow:hidden; padding:10px 18px; align-items:flex-start; min-width:100px; box-shadow:0 1px 3px rgba(0,0,0,0.05);">
+              <div style="position:absolute; right:-5px; bottom:-10px; opacity:0.05; pointer-events:none; transform:rotate(-5deg);">
+                <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#3b82f6" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="8" y1="6" x2="21" y2="6"></line><line x1="8" y1="12" x2="21" y2="12"></line><line x1="8" y1="18" x2="21" y2="18"></line><line x1="3" y1="6" x2="3.01" y2="6"></line><line x1="3" y1="12" x2="3.01" y2="12"></line><line x1="3" y1="18" x2="3.01" y2="18"></line></svg>
+              </div>
+              <label style="color:#3b82f6; font-size:10px; font-weight:700; margin-bottom:2px; z-index:1; position:relative;">TOTAL</label>
+              <span id="mwr-total" style="font-size:24px; font-weight:800; z-index:1; position:relative;">—</span>
+            </div>
+            <button class="rpt-action-btn" onclick="printMWR()">🖨 Print</button>
             <button class="rpt-action-btn" onclick="exportRptCsv('mwr-table','maint_warning')">⬇ CSV</button>
             <button class="rpt-action-btn rpt-action-primary" onclick="loadRptMwr()">↺ Refresh</button>
           </div>
         </div>
         <div class="rpt-filter-bar">
-          <div class="rpt-filter-group">
+          <div class="rpt-filter-group" style="flex:1;">
             <label>Region</label>
             <select id="mwr-region" onchange="loadRptMwr()">
               <option value="">All Regions</option>
@@ -19670,7 +19828,18 @@ window.loadISR = async function() {
           </div>
           <div class="rpt-filter-group" style="flex:2;">
             <label>Customer</label>
-            <input id="mwr-customer" type="text" placeholder="Search…" oninput="filterRptTable('mwr-table',this.value,[1])">
+            <input id="mwr-customer" type="text" placeholder="Search customer…" oninput="filterMwrTableLocal()">
+          </div>
+          <div class="rpt-filter-group" style="flex:1;">
+            <label>IFN (Internal Fleet No)</label>
+            <input id="mwr-ifn" type="text" placeholder="Search IFN…" oninput="filterMwrTableLocal()">
+          </div>
+          <div class="rpt-filter-group" style="flex:1;">
+            <label>CFN (Customer Fleet No)</label>
+            <input id="mwr-cfn" type="text" placeholder="Search CFN…" oninput="filterMwrTableLocal()">
+          </div>
+          <div style="display:flex;align-items:flex-end;">
+            <button class="rpt-action-btn" onclick="document.getElementById('mwr-region').value='';document.getElementById('mwr-customer').value='';document.getElementById('mwr-ifn').value='';document.getElementById('mwr-cfn').value='';loadRptMwr();">Clear</button>
           </div>
         </div>
         <style>
@@ -25169,6 +25338,10 @@ window.loadISR = async function() {
         
         <button onclick="closeExportModal(); showView('view-defects'); setTimeout(printGDR, 1500);" style="width:100%; justify-content:flex-start; font-size:14px; padding:12px; background:#f1f5f9; color:#0f172a; border:1px solid #e2e8f0; border-radius:8px; cursor:pointer; display:flex; align-items:center; gap:10px;">
           <span style="font-size:18px;">⚠️</span> <strong>General Defects Report (GDR)</strong>
+        </button>
+        
+        <button onclick="closeExportModal(); showView('view-rpt-mwr'); setTimeout(printMWR, 1500);" style="width:100%; justify-content:flex-start; font-size:14px; padding:12px; background:#f1f5f9; color:#0f172a; border:1px solid #e2e8f0; border-radius:8px; cursor:pointer; display:flex; align-items:center; gap:10px;">
+          <span style="font-size:18px;">🔔</span> <strong>Maintenance Warning Report (MWR)</strong>
         </button>
         
         <button onclick="closeExportModal(); showView('view-rpt-aftersales');" style="width:100%; justify-content:flex-start; font-size:14px; padding:12px; background:#f1f5f9; color:#0f172a; border:1px solid #e2e8f0; border-radius:8px; cursor:pointer; display:flex; align-items:center; gap:10px;">
