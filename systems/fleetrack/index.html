@@ -4494,12 +4494,12 @@
               </select>
             </div>
             <div class="rpt-filter-group">
-              <label>Severity</label>
-              <select id="filter-defect-severity" onchange="filterDefectsTable()">
+              <label>DEFECT TYPE</label>
+              <select id="filter-defect-type" onchange="filterDefectsTable()">
                 <option value="">All</option>
-                <option value="High">High</option>
-                <option value="Medium">Medium</option>
-                <option value="Low">Low</option>
+                <option value="Minor">Minor</option>
+                <option value="Major">Major</option>
+                <option value="Telematics Alert">Telematics Alert</option>
               </select>
             </div>
             <div class="rpt-filter-group">
@@ -10783,12 +10783,17 @@
 
       const userName = localStorage.getItem('ft_user_name') || 'Administrator';
       const today = new Date().toLocaleDateString('en-GB'); // DD/MM/YYYY
+      
+      const defTypeFilter = document.getElementById('filter-defect-type')?.value || '';
+      let reportTitle = "General Defects Report (GDR)";
+      if (defTypeFilter === "Major") reportTitle = "Major Defects Report";
+      if (defTypeFilter === "Telematics Alert") reportTitle = "Telematics Alert Report";
 
       let html = `
 <!DOCTYPE html>
 <html>
 <head>
-  <title>General Defects Report (GDR)</title>
+  <title>${reportTitle}</title>
   <style>
     body { font-family: sans-serif; font-size: 11px; color: #1e293b; padding: 20px; }
     .header { display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 20px; border-bottom: 1px solid #cbd5e1; padding-bottom: 10px; }
@@ -10818,7 +10823,7 @@
       <img src="${window.location.origin}${window.location.pathname.replace('index.html', '')}../../assets/images/fleetrack-logo.png" style="height:15px;" onerror="this.style.display='none'" />
     </div>
     <div class="title-block">
-      <div class="title">General Defects Report (GDR) - North</div>
+      <div class="title">${reportTitle}</div>
       <div class="eff-pill">% Efficiency <span>100.0%</span></div>
     </div>
   </div>
@@ -13857,7 +13862,7 @@
 
     function clearDefectFilters() {
       if(document.getElementById('filter-defect-status')) document.getElementById('filter-defect-status').value = '';
-      if(document.getElementById('filter-defect-severity')) document.getElementById('filter-defect-severity').value = '';
+      if(document.getElementById('filter-defect-type')) document.getElementById('filter-defect-type').value = '';
       if(document.getElementById('filter-defect-category')) document.getElementById('filter-defect-category').value = '';
       if(document.getElementById('filter-defect-machine')) document.getElementById('filter-defect-machine').value = '';
       if(document.getElementById('filter-defect-customer')) document.getElementById('filter-defect-customer').value = '';
@@ -13866,7 +13871,7 @@
 
     function filterDefectsTable() {
       const status   = (document.getElementById('filter-defect-status')?.value || '').toLowerCase();
-      const severity = (document.getElementById('filter-defect-severity')?.value || '').toLowerCase();
+      const defType  = (document.getElementById('filter-defect-type')?.value || '').toLowerCase();
       const machine  = (document.getElementById('filter-defect-machine')?.value || '').toLowerCase();
       const customer = (document.getElementById('filter-defect-customer')?.value || '').toLowerCase();
       const category = (document.getElementById('filter-defect-category')?.value || '').toLowerCase();
@@ -13874,13 +13879,13 @@
       window.FT_DEFECTS_FILTERED_DATA = (FT_DEFECTS_DATA || []).filter(r => {
         // Status is determined by presence of end_date
         const computedStatus = (r.end_date && r.end_date.trim() !== '') ? 'closed' : 'open';
-        const rSev = (r.priority || 'low').toLowerCase();
+        const rDefType = (r.defect_type || 'minor').toLowerCase();
         const rMach = ((r.machine || '') + ' ' + (r.model || '')).toLowerCase();
         const rCust = (r.customer || '').toLowerCase();
         const rCat  = (r.category || '').toLowerCase();
 
         return (!status || computedStatus === status) &&
-               (!severity || rSev === severity) &&
+               (!defType || rDefType === defType) &&
                (!machine || rMach.includes(machine)) &&
                (!customer || rCust.includes(customer)) &&
                (!category || rCat === category);
