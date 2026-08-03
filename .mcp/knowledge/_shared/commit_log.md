@@ -301,3 +301,7 @@
   Files: systems/fleetrack/index.html,
 - `7c4f989` 2026-08-03 [supabase-migration] chore: bump version to 4.2.16
   Files: package.json,
+- `8fc82d5` 2026-08-03 [supabase-migration] chore: savepoint before modifying WSD Breakdown shortcut
+  Files: .mcp/knowledge/_shared/commit_log.md,.mcp/knowledge/fleetrack/session_notes.md,
+- `4ced388` 2026-08-03 [supabase-migration] refactor(ui): rename WSD Breakdown shortcut to Break Downs, link to DBR, remove obsolete WSD view
+  Files: systems/fleetrack/index.html,

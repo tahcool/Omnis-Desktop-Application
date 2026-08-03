@@ -121,3 +121,5 @@
 \n- **Commit aa3d60d** (2026-08-03): fix(dashboard): use DBR Frappe endpoint for Open Breakdowns KPI to sync exactly with report data
 \n- **Commit c853f29** (2026-08-03): chore: savepoint before KPI fixes
 \n- **Commit 7807886** (2026-08-03): fix(dashboard): recalculate Active Machines and Open Defects KPIs
+\n- **Commit 8fc82d5** (2026-08-03): chore: savepoint before modifying WSD Breakdown shortcut
+\n- **Commit 4ced388** (2026-08-03): refactor(ui): rename WSD Breakdown shortcut to Break Downs, link to DBR, remove obsolete WSD view
