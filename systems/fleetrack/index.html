@@ -10880,32 +10880,32 @@
 
          let statusStr = safeText(r.status || "—");
          if (r.quotation_sent_date && statusStr.indexOf("Quote sent") === -1) {
-             statusStr = \`Quote sent \${new Date(r.quotation_sent_date.split(" ")[0]).toLocaleDateString('en-GB')}<br>\` + statusStr;
+             statusStr = `Quote sent ${new Date(r.quotation_sent_date.split(" ")[0]).toLocaleDateString('en-GB')}<br>` + statusStr;
          }
 
-         html += \`
+         html += `
            <tr>
              <td>
-               <div style="font-weight:400;color:#000;">\${safeText(customer)}</div>
-               \${ref ? \`<div style="font-size:10px;color:#64748b;margin-top:2px;">Ref ▶ <strong>\${safeText(ref)}</strong></div>\` : ''}
-               \${region ? \`<div style="font-size:10px;color:#64748b;margin-top:2px;">📍 \${safeText(region)}</div>\` : ''}
+               <div style="font-weight:400;color:#000;">${safeText(customer)}</div>
+               ${ref ? `<div style="font-size:10px;color:#64748b;margin-top:2px;">Ref ▶ <strong>${safeText(ref)}</strong></div>` : ''}
+               ${region ? `<div style="font-size:10px;color:#64748b;margin-top:2px;">📍 ${safeText(region)}</div>` : ''}
              </td>
              <td>
-               <div style="font-weight:400;color:#000;">\${safeText(model)}</div>
-               \${sn ? \`<div style="font-size:10px;color:#64748b;margin-top:2px;">SRN ▶ <strong>\${safeText(sn)}</strong></div>\` : ''}
-               \${fleetNo ? \`<div style="font-size:10px;color:#64748b;margin-top:2px;">Fleet No ▶ <strong>\${safeText(fleetNo)}</strong></div>\` : ''}
-               \${hmr ? \`<div style="font-size:10px;color:#64748b;margin-top:2px;">Current HMR ▶ <strong>\${safeText(hmr)}</strong></div>\` : ''}
-               \${warranty ? \`<div style="font-size:9px;color:#0f172a;font-weight:bold;margin-top:4px;background:#f1f5f9;display:inline-block;padding:2px 4px;border-radius:2px;">\${safeText(warranty)}</div>\` : ''}
+               <div style="font-weight:400;color:#000;">${safeText(model)}</div>
+               ${sn ? `<div style="font-size:10px;color:#64748b;margin-top:2px;">SRN ▶ <strong>${safeText(sn)}</strong></div>` : ''}
+               ${fleetNo ? `<div style="font-size:10px;color:#64748b;margin-top:2px;">Fleet No ▶ <strong>${safeText(fleetNo)}</strong></div>` : ''}
+               ${hmr ? `<div style="font-size:10px;color:#64748b;margin-top:2px;">Current HMR ▶ <strong>${safeText(hmr)}</strong></div>` : ''}
+               ${warranty ? `<div style="font-size:9px;color:#0f172a;font-weight:bold;margin-top:4px;background:#f1f5f9;display:inline-block;padding:2px 4px;border-radius:2px;">${safeText(warranty)}</div>` : ''}
              </td>
-             <td>\${date}</td>
-             <td>\${safeText(r.description) || "—"}</td>
-             <td>\${partsEta}</td>
-             <td>\${ted}</td>
-             <td>\${red}</td>
-             <td>\${statusStr}</td>
-             <td style="text-align:center;">\${daysOnBreakdown}</td>
+             <td>${date}</td>
+             <td>${safeText(r.description) || "—"}</td>
+             <td>${partsEta}</td>
+             <td>${ted}</td>
+             <td>${red}</td>
+             <td>${statusStr}</td>
+             <td style="text-align:center;">${daysOnBreakdown}</td>
            </tr>
-         \`;
+         `;
       });
 
       html += `
