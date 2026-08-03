@@ -5989,7 +5989,7 @@
   </div>
 
   <!-- Floating search/help bubble -->
-  <button id="search-fab">?</button>
+  <button id="search-fab" title="Open Auxiliary Screen" style="font-size:24px;">&#10697;</button>
 
   <!-- Toasts -->
   <!-- Toast Container moved to bottom for better visibility -->
@@ -11697,19 +11697,7 @@
     if (searchFab) {
       searchFab.addEventListener("click", (e) => {
         e.stopPropagation();
-        const hidden = chatWidget.classList.contains("hidden");
-        if (hidden) {
-          chatWidget.classList.remove("hidden");
-          if (!chatMessages.children.length) {
-            appendChatMessage(
-              "assistant",
-              `Hi, I'm Omnis Assist for Fleetrack.\n\nLater I'll be able to answer:\n• Open breakdowns today\n• Machines with defects\n• FSIs due tomorrow\n`
-            );
-          }
-          chatInput.focus();
-        } else {
-          chatWidget.classList.add("hidden");
-        }
+        window.electron.invoke("window:openAuxiliary", "systems/fleetrack/index.html");
       });
     }
 

@@ -1462,6 +1462,35 @@ ipcMain.handle('window:openDashboard', async (event, url) => {
 });
 
 // Close dashboard and return to login
+
+// Open Auxiliary Window without closing current window
+ipcMain.handle('window:openAuxiliary', async (event, url) => {
+  const auxWin = new BrowserWindow({
+    width: 1400,
+    height: 900,
+    frame: true,
+    autoHideMenuBar: true,
+    center: true,
+    show: false,
+    backgroundColor: '#ffffff',
+    webPreferences: {
+      webSecurity: false,
+      nodeIntegration: false,
+      contextIsolation: true,
+      webviewTag: true,
+      preload: path.join(__dirname, "assets/js/preload.js"),
+    },
+  });
+
+  auxWin.loadFile(url);
+  
+  auxWin.once('ready-to-show', () => {
+    auxWin.show();
+  });
+
+  return { ok: true };
+});
+
 ipcMain.handle('window:openLogin', async (event) => {
   createWindow(); // Opens frameless login
   

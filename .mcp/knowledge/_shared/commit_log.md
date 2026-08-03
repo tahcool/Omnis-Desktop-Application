@@ -335,3 +335,5 @@
   Files: systems/fleetrack/index.html,
 - `a9019b4` 2026-08-03 [supabase-migration] Update WWU and Defects table styling and print features
   Files: .mcp/knowledge/_shared/commit_log.md,.mcp/knowledge/fleetrack/session_notes.md,lib/database.js,systems/fleetrack/index.html,
+- `ce08ec3` 2026-08-03 [supabase-migration] feat: Add drill-down modal for Technician Hour Analytics
+  Files: .mcp/knowledge/_shared/commit_log.md,.mcp/knowledge/fleetrack/session_notes.md,scripts/fix_supabase_query.js,scripts/fix_table_header.js,scripts/import_tech_hours.js,scripts/inject_analytics.js,scripts/inject_analytics_safe.js,scripts/inject_drilldown.js,scripts/inject_mapping.js,supabase/migrations/20260803000000_ft_technician_hour_log.sql,systems/fleetrack/index.html,

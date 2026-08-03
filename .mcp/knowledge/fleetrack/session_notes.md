@@ -143,3 +143,4 @@
 ## Frappe Fleetrack API Credentials
 - **API Key**: 07660480c74686c
 - **API Secret**: 82899cba0bfdc36
+\n- **Commit ce08ec3** (2026-08-03): feat: Add drill-down modal for Technician Hour Analytics
