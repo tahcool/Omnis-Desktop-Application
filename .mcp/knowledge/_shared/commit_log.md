@@ -321,3 +321,15 @@
   Files: systems/fleetrack/index.html,
 - `84dad36` 2026-08-03 [supabase-migration] feat(defects): update severity filter to defect type and make PDF title dynamic
   Files: systems/fleetrack/index.html,
+- `290a539` 2026-08-03 [supabase-migration] chore: save MCP logs and cleanup before restore point
+  Files: .mcp/knowledge/_shared/commit_log.md,.mcp/knowledge/fleetrack/session_notes.md,
+- `b6d6ea7` 2026-08-03 [supabase-migration] feat(ui): add Export Reports modal to global shortcuts for quick printing
+  Files: systems/fleetrack/index.html,
+- `e18a653` 2026-08-03 [supabase-migration] style(mwr): theme Maintenance Warning Report to match Service Tracking Report
+  Files: systems/fleetrack/index.html,
+- `f07e5d4` 2026-08-03 [supabase-migration] feat(mwr): add IFN/CFN filters, STR KPI styling, and print template
+  Files: systems/fleetrack/index.html,
+- `6324b70` 2026-08-03 [supabase-migration] feat(mwr): add group by customer toggle and grouping logic
+  Files: systems/fleetrack/index.html,
+- `e70abea` 2026-08-03 [supabase-migration] feat(mwr): update customer grouping style to use rowspan like MR
+  Files: systems/fleetrack/index.html,

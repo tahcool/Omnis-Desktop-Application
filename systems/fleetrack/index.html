@@ -4517,6 +4517,10 @@
               <input type="text" id="filter-defect-customer" placeholder="Filter by customer..." oninput="filterDefectsTable()">
             </div>
             <div style="display:flex;align-items:flex-end;gap:10px;">
+              <label style="display:flex;align-items:center;gap:6px;font-size:11px;font-weight:700;color:#64748b;margin-bottom:8px;cursor:pointer;">
+                <input type="checkbox" id="defect-group-cust" onchange="filterDefectsTable()" style="accent-color:#f02510;cursor:pointer;">
+                GROUP BY CUST
+              </label>
               <button class="rpt-action-btn" onclick="clearDefectFilters()">Clear</button>
               <button class="rpt-action-btn" onclick="printGDR()" style="background:var(--bg-main);border:1px solid var(--border-color);color:var(--text-main);display:flex;align-items:center;gap:6px;">
                 <span>🖨️</span> Print PDF
@@ -4544,6 +4548,7 @@
               <thead>
                 <tr>
                   <th style="width:30px; text-align:center;">#</th>
+                  <th>CUSTOMER</th>
                   <th>DEFECT</th>
                   <th>MACHINE</th>
                   
@@ -4556,7 +4561,7 @@
               </thead>
               <tbody id="tbl-defects">
                 <tr>
-                  <td colspan="6" style="font-size:11px;color:#6b7280;text-align:center;padding:20px;">
+                  <td colspan="9" style="font-size:11px;color:#6b7280;text-align:center;padding:20px;">
                     Defect list will be wired to your Defects log in Fleetrack.
                   </td>
                 </tr>
@@ -10888,10 +10893,40 @@
         return;
       }
       
-      const rows = window.FT_DEFECTS_FILTERED_DATA || window.FT_DEFECTS_DATA || [];
+      let rows = window.FT_DEFECTS_FILTERED_DATA || window.FT_DEFECTS_DATA || [];
       if (rows.length === 0) {
         showToast("No defects to print.", "warn");
         return;
+      }
+
+      const groupByCust = document.getElementById('defect-group-cust')?.checked;
+      if (groupByCust) {
+          rows = [...rows].sort((a,b) => {
+              const mA = (window.MACHINES_MAP && window.MACHINES_MAP[a.machine]) || {};
+              const mB = (window.MACHINES_MAP && window.MACHINES_MAP[b.machine]) || {};
+              const cA = a.customer || mA.customer || "—";
+              const cB = b.customer || mB.customer || "—";
+              return cA.localeCompare(cB);
+          });
+      }
+
+      const customerRowSpans = {};
+      if (groupByCust) {
+        let i = 0;
+        while (i < rows.length) {
+          const mObjI = (window.MACHINES_MAP && window.MACHINES_MAP[rows[i].machine]) || {};
+          const custI = rows[i].customer || mObjI.customer || "—";
+          let count = 1;
+          for (let j = i + 1; j < rows.length; j++) {
+            const mObjJ = (window.MACHINES_MAP && window.MACHINES_MAP[rows[j].machine]) || {};
+            const custJ = rows[j].customer || mObjJ.customer || "—";
+            if (custJ === custI) count++;
+            else break;
+          }
+          customerRowSpans[i] = count;
+          for (let k = i + 1; k < i + count; k++) customerRowSpans[k] = 0;
+          i += count;
+        }
       }
 
       const userName = localStorage.getItem('ft_user_name') || 'Administrator';
@@ -10961,7 +10996,7 @@
     <tbody>
 `;
 
-      rows.forEach(r => {
+      rows.forEach((r, idx) => {
          const mObj = (window.MACHINES_MAP && window.MACHINES_MAP[r.machine]) || {};
          const rawDate = r.start_date || r.creation || "";
          const date = rawDate ? new Date(rawDate.split(" ")[0]).toLocaleDateString('en-GB') : "—";
@@ -10992,13 +11027,26 @@
              statusStr = `Quote sent ${new Date(r.quotation_sent_date.split(" ")[0]).toLocaleDateString('en-GB')}<br>` + statusStr;
          }
 
-         html += `
-           <tr>
-             <td>
+         let custHtml = "";
+         if (groupByCust) {
+           if (customerRowSpans[idx] > 0) {
+             custHtml = `<td rowspan="${customerRowSpans[idx]}" style="vertical-align:middle; text-align:center; border-right:1px solid #cbd5e1;">
                <div style="font-weight:400;color:#000;">${safeText(customer)}</div>
                ${ref ? `<div style="font-size:10px;color:#64748b;margin-top:2px;">Ref ▶ <strong>${safeText(ref)}</strong></div>` : ''}
                ${region ? `<div style="font-size:10px;color:#64748b;margin-top:2px;">📍 ${safeText(region)}</div>` : ''}
-             </td>
+             </td>`;
+           }
+         } else {
+             custHtml = `<td style="vertical-align:middle; text-align:center;">
+               <div style="font-weight:400;color:#000;">${safeText(customer)}</div>
+               ${ref ? `<div style="font-size:10px;color:#64748b;margin-top:2px;">Ref ▶ <strong>${safeText(ref)}</strong></div>` : ''}
+               ${region ? `<div style="font-size:10px;color:#64748b;margin-top:2px;">📍 ${safeText(region)}</div>` : ''}
+             </td>`;
+         }
+
+         html += `
+           <tr>
+             ${custHtml}
              <td>
                <div style="font-weight:400;color:#000;">${safeText(model)}</div>
                ${sn ? `<div style="font-size:10px;color:#64748b;margin-top:2px;">SRN ▶ <strong>${safeText(sn)}</strong></div>` : ''}
@@ -14026,18 +14074,40 @@
       }
 
       if (!rows || rows.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="8" style="text-align:center; padding:20px; color:#94a3b8;">No defects found</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="9" style="text-align:center; padding:20px; color:#94a3b8;">No defects found</td></tr>';
         return;
       }
 
-      const totalRows = rows.length;
+      let displayRows = [...rows];
+      const groupByCust = document.getElementById('defect-group-cust')?.checked;
+      if (groupByCust) {
+        displayRows.sort((a,b) => (a.customer||'').localeCompare(b.customer||''));
+      }
+
+      const totalRows = displayRows.length;
       const totalPages = Math.ceil(totalRows / PAGE_SIZE) || 1;
       if (window.DEFECTS_CURRENT_PAGE > totalPages) window.DEFECTS_CURRENT_PAGE = totalPages;
       if (window.DEFECTS_CURRENT_PAGE < 1) window.DEFECTS_CURRENT_PAGE = 1;
 
       const startIdx = (window.DEFECTS_CURRENT_PAGE - 1) * PAGE_SIZE;
       const endIdx = startIdx + PAGE_SIZE;
-      const pageRows = rows.slice(startIdx, endIdx);
+      const pageRows = displayRows.slice(startIdx, endIdx);
+
+      const customerRowSpans = {};
+      if (groupByCust) {
+        let i = 0;
+        while (i < pageRows.length) {
+          const cust = pageRows[i].customer || 'Unknown Customer';
+          let count = 1;
+          for (let j = i + 1; j < pageRows.length; j++) {
+            if ((pageRows[j].customer || 'Unknown Customer') === cust) count++;
+            else break;
+          }
+          customerRowSpans[i] = count;
+          for (let k = i + 1; k < i + count; k++) customerRowSpans[k] = 0;
+          i += count;
+        }
+      }
 
       pageRows.forEach((r, idx) => {
         const tr = document.createElement("tr");
@@ -14081,9 +14151,18 @@
             typeBg = "#fee2e2"; typeColor = "#ef4444";
         }
         
+        let custCell = "";
+        const cName = r.customer || 'Unknown Customer';
+        if (groupByCust) {
+          if (customerRowSpans[idx] > 0) {
+            custCell = `<td class="df-cell" rowspan="${customerRowSpans[idx]}" style="padding:10px 16px; font-weight:700; color:#0f172a; font-size:12px; border-right:1px solid #e2e8f0; vertical-align:middle; text-align:center; background:#f8fafc;">${cName}</td>`;
+          }
+        } else {
+          custCell = `<td class="df-cell" style="padding:10px 16px; font-weight:700; color:#0f172a; font-size:12px; vertical-align:middle; text-align:center;">${cName}</td>`;
+        }
+
         const defectHtml = `
-            <div style="font-weight:700;color:#0f172a;font-size:13px;display:flex;align-items:center;gap:8px;">
-              ${r.customer || 'Unknown Customer'}
+            <div style="display:flex;align-items:center;gap:8px;">
               <span style="background:${typeBg}; color:${typeColor}; padding:2px 8px; border-radius:12px; font-size:9px; font-weight:800; text-transform:uppercase; letter-spacing:0.5px;">${defectType}</span>
             </div>
             <div style="font-size:11px;color:#64748b;margin-top:4px;">${desc}</div>
@@ -14107,7 +14186,10 @@
             extraStatusHtml += `<div style="font-size:10px;color:#64748b;margin-top:2px;">Parts ETA: ${pDate}</div>`;
         }
         
-        const statusHtml = `<div style="font-weight:800;color:${statusColor};font-size:11px;text-transform:uppercase;">${status}</div>${extraStatusHtml}`;
+        let displayStatus = r.status || status;
+        if (displayStatus.length > 50) displayStatus = displayStatus.substring(0, 47) + '...';
+
+        const statusHtml = `<div style="font-weight:800;color:${statusColor};font-size:11px;text-transform:uppercase;">${displayStatus}</div>${extraStatusHtml}`;
         
         const tedStr = (r.ted_status === 'TBA') ? 'TBA' : ((r.ted && r.ted.trim() !== '') ? new Date(r.ted.split(" ")[0]).toLocaleDateString('en-GB', {day:'2-digit', month:'short', year:'numeric'}) : "-");
         const redStr = (r.red && r.red.trim() !== '') ? new Date(r.red.split(" ")[0]).toLocaleDateString('en-GB', {day:'2-digit', month:'short', year:'numeric'}) : "-";
@@ -14132,6 +14214,7 @@
 
         tr.innerHTML = `
           <td class="df-cell" style="padding:10px; font-weight:800; color:#94a3b8; font-size:11px; text-align:center; border-right: 1px solid #f1f5f9;">${startIdx + idx + 1}</td>
+          ${custCell}
           <td class="df-cell" style="padding:10px 16px;">${defectHtml}</td>
           <td class="df-cell" style="padding:10px 16px;">${machineHtml}</td>
           <td class="df-cell" style="padding:10px 16px;">${statusHtml}</td>
@@ -14148,7 +14231,7 @@
 
       // Pagination Controls Row
       const pagTr = document.createElement("tr");
-      pagTr.innerHTML = `<td colspan="8" style="padding:12px 16px; background:#f8fafc; border-top:1px solid #e2e8f0; border-radius:0 0 8px 8px;">
+      pagTr.innerHTML = `<td colspan="9" style="padding:12px 16px; background:#f8fafc; border-top:1px solid #e2e8f0; border-radius:0 0 8px 8px;">
         <div style="display:flex; justify-content:space-between; align-items:center;">
           <div style="font-size:11px; color:#64748b; font-weight:600;">Showing ${startIdx + 1} to ${Math.min(endIdx, totalRows)} of ${totalRows} defects</div>
           <div style="display:flex; gap:6px;">
@@ -18854,10 +18937,6 @@ window.loadISR = async function() {
       
       tbody.innerHTML = html;
       initRptSort('mwr-table');
-      } catch(e) {
-        console.error('[MWR]', e);
-        if (tbody) tbody.innerHTML = rptError(9, e.message);
-      }
     }
 
     // ════════════════════════════════════════════════════════
@@ -18876,54 +18955,8 @@ window.loadISR = async function() {
         // Show ALL machines — warranty_status may be empty string, show as 'Unknown'
         const rows = all.filter(m => m.name); // any machine with a serial number
 
-        if (!rows.length) {
-          tbody.innerHTML = rptEmpty(9, 'No machines found');
-          return;
-        }
-
-        const today = new Date();
-        let active=0, expired=0, expiring=0;
-        rows.forEach(m => {
-          const ws = (m.warranty_status||'').toLowerCase();
-          if (ws === 'under warranty') {
-            active++;
-            const expiry = m.warranty_expiry ? new Date(m.warranty_expiry) : null;
-            if (expiry && Math.round((expiry - today) / 86400000) < 90) expiring++;
-          } else if (ws === 'out of warranty') {
-            expired++;
-          }
-        });
-        document.getElementById('wwu-active').textContent   = active;
-        document.getElementById('wwu-expired').textContent  = expired;
-        document.getElementById('wwu-expiring').textContent = expiring;
-
-        tbody.innerHTML = rows.map(m => {
-          const ws     = (m.warranty_status || '').toLowerCase();
-          const expiry = m.warranty_expiry ? new Date(m.warranty_expiry) : null;
-          const daysLeft = expiry ? Math.round((expiry - today) / 86400000) : null;
-
-          const wBadge = ws === 'under warranty'   ? rptBadge('Under Warranty','green')
-                       : ws === 'out of warranty'  ? rptBadge('Out of Warranty','red')
-                       : rptBadge(m.warranty_status || 'Unknown','gray');
-
-          const daysCell = daysLeft !== null
-            ? `<span style="font-weight:700;color:${daysLeft<0?'#b91c1c':daysLeft<90?'#a16207':'#15803d'};">
-                ${daysLeft<0 ? Math.abs(daysLeft)+' days ago' : daysLeft+' days'}
-               </span>`
-            : '<span style="color:#94a3b8;">—</span>';
-
-          return `<tr>
-            <td style="font-family:monospace;font-size:11px;">${m.name||'—'}</td>
-            <td>${m.customer||'—'}</td>
-            <td>${m.model||'—'}</td>
-            <td>${m.region||'—'}</td>
-            <td>${wBadge}</td>
-            <td>${m.warranty_type||'—'}</td>
-            <td>${fmtDate(m.commission_date)}</td>
-            <td>${fmtDate(m.warranty_expiry)}</td>
-            <td>${daysCell}</td>
-          </tr>`;
-        }).join('');
+        window.FT_WWU_DATA = rows;
+        renderWwuTable();
         initRptSort('wwu-table');
       } catch(e) {
         console.error('[WWU]', e);
@@ -18931,8 +18964,260 @@ window.loadISR = async function() {
       }
     }
 
+    function renderWwuTable() {
+      const tbody = document.getElementById('wwu-tbody');
+      if (!tbody) return;
+      
+      let rows = window.FT_WWU_DATA || [];
+      const search = (document.getElementById('wwu-search')?.value || '').toLowerCase();
+      const statusFilter = (document.getElementById('wwu-status')?.value || '').toLowerCase();
+      
+      rows = rows.filter(m => {
+        const cMatch = !search || (m.customer || '').toLowerCase().includes(search);
+        const sMatch = !statusFilter || (m.warranty_status || '').toLowerCase() === statusFilter;
+        return cMatch && sMatch;
+      });
+
+      if (!rows.length) {
+        tbody.innerHTML = '<tr><td colspan="9" style="text-align:center; padding:20px; color:#94a3b8;">No machines found</td></tr>';
+        document.getElementById('wwu-active').textContent   = 0;
+        document.getElementById('wwu-expired').textContent  = 0;
+        document.getElementById('wwu-expiring').textContent = 0;
+        return;
+      }
+
+      const today = new Date();
+      let active=0, expired=0, expiring=0;
+      rows.forEach(m => {
+        const ws = (m.warranty_status||'').toLowerCase();
+        if (ws === 'under warranty') {
+          active++;
+          const expiry = m.warranty_expiry ? new Date(m.warranty_expiry) : null;
+          if (expiry && Math.round((expiry - today) / 86400000) < 90) expiring++;
+        } else if (ws === 'out of warranty') {
+          expired++;
+        }
+      });
+      document.getElementById('wwu-active').textContent   = active;
+      document.getElementById('wwu-expired').textContent  = expired;
+      document.getElementById('wwu-expiring').textContent = expiring;
+
+      const groupByCust = document.getElementById('wwu-group-cust')?.checked;
+      if (groupByCust) {
+        rows.sort((a,b) => (a.customer||'').localeCompare(b.customer||''));
+      }
+
+      const customerRowSpans = {};
+      if (groupByCust) {
+        let i = 0;
+        while (i < rows.length) {
+          const cust = rows[i].customer || 'Unknown Customer';
+          let count = 1;
+          for (let j = i + 1; j < rows.length; j++) {
+            if ((rows[j].customer || 'Unknown Customer') === cust) count++;
+            else break;
+          }
+          customerRowSpans[i] = count;
+          for (let k = i + 1; k < i + count; k++) customerRowSpans[k] = 0;
+          i += count;
+        }
+      }
+
+      tbody.innerHTML = rows.map((m, idx) => {
+        const ws     = (m.warranty_status || '').toLowerCase();
+        const expiry = m.warranty_expiry ? new Date(m.warranty_expiry) : null;
+        const daysLeft = expiry ? Math.round((expiry - today) / 86400000) : null;
+
+        const wBadge = ws === 'under warranty'   ? rptBadge('Under Warranty','green')
+                     : ws === 'out of warranty'  ? rptBadge('Out of Warranty','red')
+                     : rptBadge(m.warranty_status || 'Unknown','gray');
+
+        const daysCell = daysLeft !== null
+          ? `<span style="font-weight:700;color:${daysLeft<0?'#b91c1c':daysLeft<90?'#a16207':'#15803d'};">
+              ${daysLeft<0 ? Math.abs(daysLeft)+' days ago' : daysLeft+' days'}
+             </span>`
+          : '<span style="color:#94a3b8;">—</span>';
+
+        const cName = m.customer || '—';
+        let custCell = "";
+        if (groupByCust) {
+          if (customerRowSpans[idx] > 0) {
+            custCell = `<td rowspan="${customerRowSpans[idx]}" style="padding:10px 16px; font-weight:700; color:#0f172a; font-size:12px; border-right:1px solid #e2e8f0; vertical-align:middle; text-align:center; background:#f8fafc;">${cName}</td>`;
+          }
+        } else {
+          custCell = `<td style="padding:10px 16px; font-weight:700; color:#0f172a; font-size:12px; vertical-align:middle; text-align:center;">${cName}</td>`;
+        }
+
+        return `<tr>
+          ${custCell}
+          <td style="font-family:monospace;font-size:11px;">${m.name||'—'}</td>
+          <td>${m.model||'—'}</td>
+          <td>${m.region||'—'}</td>
+          <td>${wBadge}</td>
+          <td>${m.warranty_type||'—'}</td>
+          <td>${fmtDate(m.commission_date)}</td>
+          <td>${fmtDate(m.warranty_expiry)}</td>
+          <td>${daysCell}</td>
+        </tr>`;
+      }).join('');
+    }
+
+    function printWwu() {
+      const wwuVisible = !document.getElementById('view-rpt-wwu').classList.contains('hidden');
+      if (!wwuVisible) {
+        showToast("Please open the WWU view first.", "warn");
+        return;
+      }
+      
+      let rows = window.FT_WWU_DATA || [];
+      const search = (document.getElementById('wwu-search')?.value || '').toLowerCase();
+      const statusFilter = (document.getElementById('wwu-status')?.value || '').toLowerCase();
+      
+      rows = rows.filter(m => {
+        const cMatch = !search || (m.customer || '').toLowerCase().includes(search);
+        const sMatch = !statusFilter || (m.warranty_status || '').toLowerCase() === statusFilter;
+        return cMatch && sMatch;
+      });
+
+      if (rows.length === 0) {
+        showToast("No data to print.", "warn");
+        return;
+      }
+
+      const groupByCust = document.getElementById('wwu-group-cust')?.checked;
+      if (groupByCust) {
+          rows = [...rows].sort((a,b) => (a.customer||'').localeCompare(b.customer||''));
+      }
+
+      const customerRowSpans = {};
+      if (groupByCust) {
+        let i = 0;
+        while (i < rows.length) {
+          const cust = rows[i].customer || 'Unknown Customer';
+          let count = 1;
+          for (let j = i + 1; j < rows.length; j++) {
+            if ((rows[j].customer || 'Unknown Customer') === cust) count++;
+            else break;
+          }
+          customerRowSpans[i] = count;
+          for (let k = i + 1; k < i + count; k++) customerRowSpans[k] = 0;
+          i += count;
+        }
+      }
+
+      const userName = localStorage.getItem('ft_user_name') || 'Administrator';
+      const todayDate = new Date().toLocaleDateString('en-GB'); // DD/MM/YYYY
+      const today = new Date();
+
+      let html = `
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Weekly Warranty Update (WWU)</title>
+  <style>
+    body { font-family: sans-serif; font-size: 11px; color: #1e293b; padding: 20px; }
+    .header { display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 20px; border-bottom: 1px solid #cbd5e1; padding-bottom: 10px; }
+    .logo-container { display:flex; flex-direction:column; gap:4px; }
+    .title-block { text-align: right; display:flex; flex-direction:column; gap:10px; align-items:flex-end; }
+    .title { font-size: 18px; font-weight: 400; color: #000; }
+    .eff-pill { background: #000; color: #fff; padding: 4px; font-weight: bold; font-size: 10px; display: flex; border:1px solid #000; }
+    .eff-pill span { background: #fff; color: #000; padding: 2px 6px; margin-left: 4px; }
+    .meta-table { width: 300px; margin-bottom: 20px; font-size: 11px; color: #64748b; }
+    .meta-table td { padding: 4px 0; }
+    .meta-table strong { color: #1e293b; font-weight: 400; }
+    table.dbr-table { width: 100%; border-collapse: collapse; margin-bottom: 30px; }
+    .dbr-table th, .dbr-table td { border-bottom: 1px solid #cbd5e1; padding: 8px 6px; vertical-align: top; text-align: left; }
+    .dbr-table th { background: #E53935; color: #fff; font-weight: bold; border: none; font-size:11px; }
+    @media print {
+      body { -webkit-print-color-adjust: exact; print-color-adjust: exact; padding: 0; }
+    }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <div class="logo-container">
+      <img src="${window.location.origin}${window.location.pathname.replace('index.html', '')}../../assets/images/omnis-logo.png" style="height:35px;" onerror="this.style.display='none'" />
+      <img src="${window.location.origin}${window.location.pathname.replace('index.html', '')}../../assets/images/fleetrack-logo.png" style="height:15px;" onerror="this.style.display='none'" />
+    </div>
+    <div class="title-block">
+      <div class="title">Weekly Warranty Update (WWU)</div>
+      <div class="eff-pill">% Efficiency <span>100.0%</span></div>
+    </div>
+  </div>
+  <table class="meta-table">
+    <tr><td style="color:#94a3b8;">Prepared<br>by</td><td><strong>${userName}</strong></td></tr>
+    <tr><td style="color:#94a3b8;">Date</td><td><strong>${todayDate}</strong></td></tr>
+  </table>
+  <table class="dbr-table">
+    <thead>
+      <tr>
+        <th>Customer</th>
+        <th>Serial No</th>
+        <th>Model</th>
+        <th>Region</th>
+        <th>Warranty Status</th>
+        <th>Warranty Type</th>
+        <th>Handover Date</th>
+        <th>Expiry Date</th>
+        <th>Days Remaining</th>
+      </tr>
+    </thead>
+    <tbody>
+`;
+
+      rows.forEach((m, idx) => {
+        const ws = (m.warranty_status || '').toLowerCase();
+        const expiry = m.warranty_expiry ? new Date(m.warranty_expiry) : null;
+        const daysLeft = expiry ? Math.round((expiry - today) / 86400000) : null;
+        
+        let daysHtml = "—";
+        if (daysLeft !== null) {
+            daysHtml = `<span style="font-weight:700;color:${daysLeft<0?'#b91c1c':daysLeft<90?'#a16207':'#15803d'};">${daysLeft<0 ? Math.abs(daysLeft)+' days ago' : daysLeft+' days'}</span>`;
+        }
+
+        const customer = m.customer || "—";
+        let custHtml = "";
+        if (groupByCust) {
+          if (customerRowSpans[idx] > 0) {
+            custHtml = `<td rowspan="${customerRowSpans[idx]}" style="vertical-align:middle; text-align:center; border-right:1px solid #cbd5e1;">${safeText(customer)}</td>`;
+          }
+        } else {
+            custHtml = `<td style="vertical-align:middle; text-align:center;">${safeText(customer)}</td>`;
+        }
+
+        html += `<tr>
+          ${custHtml}
+          <td>${safeText(m.name||'—')}</td>
+          <td>${safeText(m.model||'—')}</td>
+          <td>${safeText(m.region||'—')}</td>
+          <td>${safeText(m.warranty_status||'Unknown')}</td>
+          <td>${safeText(m.warranty_type||'—')}</td>
+          <td>${fmtDate(m.commission_date)}</td>
+          <td>${fmtDate(m.warranty_expiry)}</td>
+          <td>${daysHtml}</td>
+        </tr>`;
+      });
+
+      html += `
+    </tbody>
+  </table>
+</body>
+</html>
+`;
+
+      const printWin = window.open('', '_blank');
+      printWin.document.write(html);
+      printWin.document.close();
+      printWin.focus();
+      setTimeout(() => {
+        printWin.print();
+        printWin.close();
+      }, 500);
+    }
+
     // ════════════════════════════════════════════════════════
     //  END NATIVE REPORT ENGINE
+
     // ════════════════════════════════════════════════════════
 
     
@@ -19946,7 +20231,7 @@ window.loadISR = async function() {
         <div class="rpt-filter-bar">
           <div class="rpt-filter-group">
             <label>Warranty Status</label>
-            <select id="wwu-status" onchange="filterRptTableSelect('wwu-table',this.value,4)">
+            <select id="wwu-status" onchange="renderWwuTable()">
               <option value="">All</option>
               <option value="Under Warranty">Under Warranty</option>
               <option value="Out of Warranty">Out of Warranty</option>
@@ -19959,18 +20244,39 @@ window.loadISR = async function() {
               <option>North</option><option>South</option><option>East</option><option>West</option><option>Central</option>
             </select>
           </div>
-          <div class="rpt-filter-group" style="flex:2;">
+          <div class="rpt-filter-group">
             <label>Customer</label>
-            <input id="wwu-search" type="text" placeholder="Search customer…" oninput="filterRptTable('wwu-table',this.value,[1])">
+            <input id="wwu-search" type="text" placeholder="Search customer…" oninput="renderWwuTable()">
+          </div>
+          <div style="display:flex;align-items:flex-end;gap:10px;">
+            <label style="display:flex;align-items:center;gap:6px;font-size:11px;font-weight:700;color:#64748b;margin-bottom:8px;cursor:pointer;">
+              <input type="checkbox" id="wwu-group-cust" onchange="renderWwuTable()" style="accent-color:#f02510;cursor:pointer;">
+              GROUP BY CUST
+            </label>
+            <button class="rpt-action-btn" onclick="printWwu()" style="background:var(--bg-main);border:1px solid var(--border-color);color:var(--text-main);display:flex;align-items:center;gap:6px;">
+              <span>🖨️</span> Print PDF
+            </button>
           </div>
         </div>
         <div class="rpt-table-wrap">
-          <table id="wwu-table" class="rpt-table">
+          <style>
+            #wwu-table thead th {
+              background: #f02510 !important;
+              color: #ffffff !important;
+              border-bottom: 2px solid #ef4444 !important;
+              padding: 10px 16px;
+              text-align: left;
+              font-weight: 700;
+              cursor: pointer;
+            }
+            #wwu-table thead th:hover { color: #fef08a !important; }
+          </style>
+          <table id="wwu-table" class="rpt-table" style="width:100%;border-collapse:collapse;font-size:12px;table-layout:auto;border:1px solid #e5e7f0;background:#fff;">
             <thead><tr>
-              <th>Serial No</th><th>Customer</th><th>Model</th><th>Region</th>
+              <th>Customer</th><th>Serial No</th><th>Model</th><th>Region</th>
               <th>Warranty Status</th><th>Warranty Type</th><th>Handover Date</th><th>Expiry Date</th><th>Days Remaining</th>
             </tr></thead>
-            <tbody id="wwu-tbody"><tr><td colspan="9" class="rpt-loading">Loading…</td></tr></tbody>
+            <tbody id="wwu-tbody"><tr><td colspan="9" class="rpt-loading" style="padding:20px;text-align:center;color:#6b7280;">Loading…</td></tr></tbody>
           </table>
         </div>
       </div>

@@ -131,3 +131,9 @@
 \n- **Commit 828616f** (2026-08-03): fix(defects): resolve SyntaxError in printGDR template literal escaping
 \n- **Commit 53d9cde** (2026-08-03): fix(defects): move printGDR to global scope to resolve ReferenceError
 \n- **Commit 84dad36** (2026-08-03): feat(defects): update severity filter to defect type and make PDF title dynamic
+\n- **Commit 290a539** (2026-08-03): chore: save MCP logs and cleanup before restore point
+\n- **Commit b6d6ea7** (2026-08-03): feat(ui): add Export Reports modal to global shortcuts for quick printing
+\n- **Commit e18a653** (2026-08-03): style(mwr): theme Maintenance Warning Report to match Service Tracking Report
+\n- **Commit f07e5d4** (2026-08-03): feat(mwr): add IFN/CFN filters, STR KPI styling, and print template
+\n- **Commit 6324b70** (2026-08-03): feat(mwr): add group by customer toggle and grouping logic
+\n- **Commit e70abea** (2026-08-03): feat(mwr): update customer grouping style to use rowspan like MR
