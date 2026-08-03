@@ -339,3 +339,5 @@
   Files: .mcp/knowledge/_shared/commit_log.md,.mcp/knowledge/fleetrack/session_notes.md,scripts/fix_supabase_query.js,scripts/fix_table_header.js,scripts/import_tech_hours.js,scripts/inject_analytics.js,scripts/inject_analytics_safe.js,scripts/inject_drilldown.js,scripts/inject_mapping.js,supabase/migrations/20260803000000_ft_technician_hour_log.sql,systems/fleetrack/index.html,
 - `0094baf` 2026-08-03 [supabase-migration] feat: Add auxiliary window functionality to floating action button
   Files: .mcp/knowledge/_shared/commit_log.md,.mcp/knowledge/fleetrack/session_notes.md,main.js,scripts/add_aux_window.js,scripts/add_aux_window_ipc.js,scripts/fix_listener.js,systems/fleetrack/index.html,
+- `a01dcb9` 2026-08-03 [supabase-migration] fix: Update SCU template formatting and filter defects by end_date
+  Files: .mcp/knowledge/_shared/commit_log.md,.mcp/knowledge/fleetrack/session_notes.md,scripts/fix_defect_filter.js,scripts/fix_defect_filter_end_date.js,scripts/fix_scu.js,systems/fleetrack/index.html,
