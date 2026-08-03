@@ -18751,102 +18751,112 @@ window.loadISR = async function() {
         document.getElementById('mwr-warning').textContent  = warning;
         document.getElementById('mwr-total').textContent    = withHmr.length;
 
-        const groupByCust = document.getElementById('mwr-group-cust')?.checked;
-        let displayList = [...withHmr];
-        if (groupByCust) {
-          displayList.sort((a, b) => {
-            const custA = (a.customer || 'Unknown').toLowerCase();
-            const custB = (b.customer || 'Unknown').toLowerCase();
-            if (custA < custB) return -1;
-            if (custA > custB) return 1;
-            return b.since - a.since;
-          });
-        }
-
-        let html = '';
-        let currentCust = null;
-        displayList.forEach(m => {
-          if (groupByCust) {
-            const custName = m.customer || 'Unknown';
-            if (custName !== currentCust) {
-              html += `<tr class="mwr-group-header" style="background:#f1f5f9; border-top: 2px solid #cbd5e1; border-bottom: 2px solid #cbd5e1;">
-                <td colspan="7" style="padding: 10px 12px; font-weight:bold; font-size:12px; color:#334155;">
-                  🏢 ${custName}
-                </td>
-              </tr>`;
-              currentCust = custName;
-            }
-          }
-
-          const isCrit  = m.cur >= CRITICAL_HMR;
-          const isWarn  = m.cur >= WARNING_HMR;
-          const badge   = isCrit ? rptBadge('HIGH HMR','red')
-                        : isWarn ? rptBadge('MONITOR','yellow')
-                        : rptBadge('OK','green');
-          const sinceLabel = m.last > 0
-            ? `${Math.round(m.since)} HMR since svc`
-            : `${Math.round(m.cur)} HMR total`;
-            
-          html += `<tr>
-            <td>
-              <strong style="${groupByCust ? 'display:none;' : ''}">${m.customer||'—'}</strong>
-              ${groupByCust ? '<span style="color:#94a3b8; font-style:italic; font-size:10px;">—</span>' : ''}
-            </td>
-            <td>
-              <div style="font-weight:700;">${m.model||'—'}</div>
-              <div style="font-size:11px;color:#94a3b8;margin-top:2px;font-family:monospace;">SN: ${m.name||'—'}${m.mxg_fleet_no ? ` | IFN: ${m.mxg_fleet_no}` : ''}${m.fleet_no ? ` | CFN: ${m.fleet_no}` : ''}</div>
-            </td>
-            <td>${m.region||'—'}</td>
-            <td style="font-weight:700;${isCrit?'color:#b91c1c':isWarn?'color:#a16207':''}">${m.cur}</td>
-            <td>${m.last > 0 ? m.last : '—'}</td>
-            <td style="font-weight:600;">${sinceLabel}</td>
-            <td>${badge}</td>
-          </tr>`;
-        });
-        tbody.innerHTML = html;
-        initRptSort('mwr-table');
+        window.MWR_DATA = withHmr;
+        renderMwrTable();
       } catch(e) {
         console.error('[MWR]', e);
         if (tbody) tbody.innerHTML = rptError(9, e.message);
       }
     }
 
-    function filterMwrTableLocal() {
+    function renderMwrTable() {
+      const tbody = document.getElementById('mwr-tbody');
+      if (!tbody) return;
+      if (!window.MWR_DATA) return;
+      
       const customer = document.getElementById('mwr-customer')?.value.toLowerCase() || '';
       const ifn = document.getElementById('mwr-ifn')?.value.toLowerCase() || '';
       const cfn = document.getElementById('mwr-cfn')?.value.toLowerCase() || '';
+      const groupByCust = document.getElementById('mwr-group-cust')?.checked;
       
-      const trs = document.querySelectorAll('#mwr-tbody tr');
-      let lastHeader = null;
-      let anyVisible = false;
-      
-      trs.forEach(tr => {
-         if (tr.classList.contains('mwr-group-header') || tr.children.length === 1) {
-            if (lastHeader) {
-               lastHeader.style.display = anyVisible ? '' : 'none';
-            }
-            lastHeader = tr;
-            anyVisible = false;
-            return;
-         }
-         
-         const rowCust = (tr.children[0].textContent || '').toLowerCase();
-         const rowMach = (tr.children[1].textContent || '').toLowerCase();
-         
-         const matchCust = !customer || rowCust.includes(customer);
-         const matchIfn = !ifn || rowMach.includes(ifn);
-         const matchCfn = !cfn || rowMach.includes(cfn);
-         
-         if (matchCust && matchIfn && matchCfn) {
-           tr.style.display = '';
-           anyVisible = true;
-         } else {
-           tr.style.display = 'none';
-         }
+      let filtered = window.MWR_DATA.filter(m => {
+        const rowCust = (m.customer || '').toLowerCase();
+        const rowIfn = (m.mxg_fleet_no || '').toLowerCase();
+        const rowCfn = (m.fleet_no || '').toLowerCase();
+        
+        const matchCust = !customer || rowCust.includes(customer);
+        const matchIfn = !ifn || rowIfn.includes(ifn);
+        const matchCfn = !cfn || rowCfn.includes(cfn);
+        
+        return matchCust && matchIfn && matchCfn;
       });
       
-      if (lastHeader) {
-         lastHeader.style.display = anyVisible ? '' : 'none';
+      if (groupByCust) {
+        filtered.sort((a, b) => {
+          const custA = (a.customer || 'Unknown').toLowerCase();
+          const custB = (b.customer || 'Unknown').toLowerCase();
+          if (custA < custB) return -1;
+          if (custA > custB) return 1;
+          return b.since - a.since;
+        });
+      }
+      
+      const customerRowSpans = {};
+      if (groupByCust) {
+        let i = 0;
+        while (i < filtered.length) {
+          const cust = filtered[i].customer || "Unknown";
+          let count = 1;
+          for (let j = i + 1; j < filtered.length; j++) {
+            if ((filtered[j].customer || "Unknown") === cust) count++;
+            else break;
+          }
+          customerRowSpans[i] = count;
+          for (let k = i + 1; k < i + count; k++) customerRowSpans[k] = 0;
+          i += count;
+        }
+      }
+      
+      let html = '';
+      const CRITICAL_HMR = 5000;
+      const WARNING_HMR  = 2500;
+
+      filtered.forEach((m, idx) => {
+        const isCrit  = m.cur >= CRITICAL_HMR;
+        const isWarn  = m.cur >= WARNING_HMR;
+        const badge   = isCrit ? rptBadge('HIGH HMR','red')
+                      : isWarn ? rptBadge('MONITOR','yellow')
+                      : rptBadge('OK','green');
+        const sinceLabel = m.last > 0
+          ? `${Math.round(m.since)} HMR since svc`
+          : `${Math.round(m.cur)} HMR total`;
+          
+        let custCell = "";
+        const cName = safeText(m.customer || "Unknown");
+        if (groupByCust) {
+          if (customerRowSpans[idx] > 0) {
+            custCell = `<td rowspan="${customerRowSpans[idx]}" style="padding:12px 16px; vertical-align:middle; background:#f8fafc; word-wrap:break-word; border-bottom:1px solid #e5e7eb; border-right:1px solid #e5e7eb;">
+              <div style="font-weight:800;color:#0f172a;font-size:11px;line-height:1.2;">${cName}</div>
+              <div style="font-size:9px; color:#64748b; margin-top:4px; font-weight:600;">${customerRowSpans[idx]} Machines</div>
+            </td>`;
+          }
+        } else {
+          custCell = `<td><strong>${cName}</strong></td>`;
+        }
+        
+        html += `<tr>
+          ${custCell}
+          <td>
+            <div style="font-weight:700;">${m.model||'—'}</div>
+            <div style="font-size:11px;color:#94a3b8;margin-top:2px;font-family:monospace;">SN: ${m.name||'—'}${m.mxg_fleet_no ? ` | IFN: ${m.mxg_fleet_no}` : ''}${m.fleet_no ? ` | CFN: ${m.fleet_no}` : ''}</div>
+          </td>
+          <td>${m.region||'—'}</td>
+          <td style="font-weight:700;${isCrit?'color:#b91c1c':isWarn?'color:#a16207':''}">${m.cur}</td>
+          <td>${m.last > 0 ? m.last : '—'}</td>
+          <td style="font-weight:600;">${sinceLabel}</td>
+          <td>${badge}</td>
+        </tr>`;
+      });
+      
+      if (!filtered.length) {
+         html = `<tr><td colspan="7" style="text-align:center; padding:20px; color:#64748b;">No matching machines found.</td></tr>`;
+      }
+      
+      tbody.innerHTML = html;
+      initRptSort('mwr-table');
+      } catch(e) {
+        console.error('[MWR]', e);
+        if (tbody) tbody.innerHTML = rptError(9, e.message);
       }
     }
 
@@ -19875,19 +19885,19 @@ window.loadISR = async function() {
           </div>
           <div class="rpt-filter-group" style="flex:2;">
             <label>Customer</label>
-            <input id="mwr-customer" type="text" placeholder="Search customer…" oninput="filterMwrTableLocal()">
+            <input id="mwr-customer" type="text" placeholder="Search customer…" oninput="renderMwrTable()">
           </div>
           <div class="rpt-filter-group" style="flex:1;">
             <label>IFN (Internal Fleet No)</label>
-            <input id="mwr-ifn" type="text" placeholder="Search IFN…" oninput="filterMwrTableLocal()">
+            <input id="mwr-ifn" type="text" placeholder="Search IFN…" oninput="renderMwrTable()">
           </div>
           <div class="rpt-filter-group" style="flex:1;">
             <label>CFN (Customer Fleet No)</label>
-            <input id="mwr-cfn" type="text" placeholder="Search CFN…" oninput="filterMwrTableLocal()">
+            <input id="mwr-cfn" type="text" placeholder="Search CFN…" oninput="renderMwrTable()">
           </div>
           <div style="display:flex;align-items:flex-end;">
             <label style="display:flex; align-items:center; gap:6px; font-size:10px; font-weight:700; color:#475569; cursor:pointer; text-transform:uppercase; margin-right: 15px; margin-bottom:10px;">
-              <input type="checkbox" id="mwr-group-cust" onchange="loadRptMwr()" style="width:14px; height:14px; accent-color:#334155;"> Group by Cust
+              <input type="checkbox" id="mwr-group-cust" onchange="renderMwrTable()" style="width:14px; height:14px; accent-color:#334155;"> Group by Cust
             </label>
             <button class="rpt-action-btn" onclick="document.getElementById('mwr-region').value='';document.getElementById('mwr-customer').value='';document.getElementById('mwr-ifn').value='';document.getElementById('mwr-cfn').value='';document.getElementById('mwr-group-cust').checked=false;loadRptMwr();">Clear</button>
           </div>
