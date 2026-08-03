@@ -10700,39 +10700,39 @@
          const date = r.breakdown_date ? formatDateDA(r.breakdown_date) : "—";
          const ted = r.ted ? formatDateDA(r.ted) : (r.ted_status || "—");
          const red = r.red ? formatDateDA(r.red) : "—";
-         html += \`
+         html += `
            <tr>
              <td>
-               <div style="font-weight:400;color:#000;">\${safeText(r.customer) || "—"}</div>
-               <div style="font-size:10px;color:#64748b;margin-top:2px;">Ref ▶ <strong>\${safeText(r.customer_ref) || ""}</strong></div>
-               <div style="font-size:10px;color:#64748b;margin-top:2px;">📍 \${safeText(r.region) || ""}</div>
+               <div style="font-weight:400;color:#000;">${safeText(r.customer) || "—"}</div>
+               <div style="font-size:10px;color:#64748b;margin-top:2px;">Ref ▶ <strong>${safeText(r.customer_ref) || ""}</strong></div>
+               <div style="font-size:10px;color:#64748b;margin-top:2px;">📍 ${safeText(r.region) || ""}</div>
              </td>
              <td>
-               <div style="font-weight:400;color:#000;">\${safeText(r.model) || "—"}</div>
-               <div style="font-size:10px;color:#64748b;margin-top:2px;">SRN ▶ <strong>\${safeText(r.serial_number) || ""}</strong></div>
-               <div style="font-size:10px;color:#64748b;margin-top:2px;">Fleet No ▶ <strong>\${safeText(r.fleet_no) || ""}</strong></div>
-               <div style="font-size:10px;color:#64748b;margin-top:2px;">Current HMR ▶ <strong>\${safeText(r.current_hmr) || ""}</strong></div>
-               <div style="font-size:10px;color:#64748b;margin-top:2px;">Machine Running? ▶ <strong>\${safeText(r.machine_running || 'No')}</strong></div>
-               <div style="font-size:9px;color:#0f172a;font-weight:bold;margin-top:4px;">\${safeText(r.warranty_status) || ""}</div>
+               <div style="font-weight:400;color:#000;">${safeText(r.model) || "—"}</div>
+               <div style="font-size:10px;color:#64748b;margin-top:2px;">SRN ▶ <strong>${safeText(r.serial_number) || ""}</strong></div>
+               <div style="font-size:10px;color:#64748b;margin-top:2px;">Fleet No ▶ <strong>${safeText(r.fleet_no) || ""}</strong></div>
+               <div style="font-size:10px;color:#64748b;margin-top:2px;">Current HMR ▶ <strong>${safeText(r.current_hmr) || ""}</strong></div>
+               <div style="font-size:10px;color:#64748b;margin-top:2px;">Machine Running? ▶ <strong>${safeText(r.machine_running || 'No')}</strong></div>
+               <div style="font-size:9px;color:#0f172a;font-weight:bold;margin-top:4px;">${safeText(r.warranty_status) || ""}</div>
              </td>
-             <td>\${date}</td>
-             <td>\${safeText(r.description) || "—"}</td>
-             <td>\${ted}</td>
-             <td>\${red}</td>
+             <td>${date}</td>
+             <td>${safeText(r.description) || "—"}</td>
+             <td>${ted}</td>
+             <td>${red}</td>
              <td>
-               <div style="margin-bottom:4px;">\${safeText(r.status) || "—"}</div>
-               \${r.quoted_date ? \`<div style="font-weight:bold;font-size:10px;color:#000;">Quoted:<br>\${formatDateDA(r.quoted_date)}</div>\` : ''}
+               <div style="margin-bottom:4px;">${safeText(r.status) || "—"}</div>
+               ${r.quoted_date ? `<div style="font-weight:bold;font-size:10px;color:#000;">Quoted:<br>${formatDateDA(r.quoted_date)}</div>` : ''}
              </td>
-             <td style="text-align:center;">\${r.days_on_bd || 0}</td>
+             <td style="text-align:center;">${r.days_on_bd || 0}</td>
              <td>
                <div style="font-size:10px;color:#94a3b8;">Parts ▼</div>
-               <div style="font-weight:bold;font-size:10px;margin-bottom:4px;color:#000;">\${r.parts_eta ? formatDateDA(r.parts_eta) : ''}</div>
+               <div style="font-weight:bold;font-size:10px;margin-bottom:4px;color:#000;">${r.parts_eta ? formatDateDA(r.parts_eta) : ''}</div>
                <div style="font-size:10px;color:#94a3b8;">Outwork ▼</div>
-               <div style="font-weight:bold;font-size:10px;color:#000;">\${r.out_eta ? formatDateDA(r.out_eta) : ''}</div>
+               <div style="font-weight:bold;font-size:10px;color:#000;">${r.out_eta ? formatDateDA(r.out_eta) : ''}</div>
              </td>
-             <td>\${safeText(r.supervisor_comment) || ""}</td>
+             <td>${safeText(r.supervisor_comment) || ""}</td>
            </tr>
-         \`;
+         `;
       });
 
       html += `
