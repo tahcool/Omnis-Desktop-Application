@@ -4518,6 +4518,9 @@
             </div>
             <div style="display:flex;align-items:flex-end;gap:10px;">
               <button class="rpt-action-btn" onclick="clearDefectFilters()">Clear</button>
+              <button class="rpt-action-btn" onclick="printGDR()" style="background:var(--bg-main);border:1px solid var(--border-color);color:var(--text-main);display:flex;align-items:center;gap:6px;">
+                <span>🖨️</span> Print PDF
+              </button>
               <button class="rpt-action-btn" onclick="forceSyncDefects()" style="background:#3b82f6; color:#fff; border-color:#3b82f6;">Force Sync</button>
               <button class="rpt-action-btn" id="btn-defect-new" style="background:#ef4444; color:#fff; border-color:#ef4444;" onclick="openDefectModal()">Log new defect</button>
             </div>
@@ -10774,6 +10777,166 @@
       const machine = document.getElementById('dbr-filter-machine');
       const resp = document.getElementById('dbr-filter-responsibility');
       const urgent = document.getElementById('dbr-filter-urgent');
+    function printGDR() {
+      const defectsVisible = !document.getElementById('view-defects').classList.contains('hidden');
+      if (!defectsVisible) {
+        showToast("Please open the Defects view first.", "warn");
+        return;
+      }
+      
+      const rows = window.FT_DEFECTS_FILTERED_DATA || window.FT_DEFECTS_DATA || [];
+      if (rows.length === 0) {
+        showToast("No defects to print.", "warn");
+        return;
+      }
+
+      const userName = localStorage.getItem('ft_user_name') || 'Administrator';
+      const today = new Date().toLocaleDateString('en-GB'); // DD/MM/YYYY
+
+      let html = `
+<!DOCTYPE html>
+<html>
+<head>
+  <title>General Defects Report (GDR)</title>
+  <style>
+    body { font-family: sans-serif; font-size: 11px; color: #1e293b; padding: 20px; }
+    .header { display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 20px; border-bottom: 1px solid #cbd5e1; padding-bottom: 10px; }
+    .logo-container { display:flex; flex-direction:column; gap:4px; }
+    .title-block { text-align: right; display:flex; flex-direction:column; gap:10px; align-items:flex-end; }
+    .title { font-size: 18px; font-weight: 400; color: #000; }
+    .eff-pill { background: #000; color: #fff; padding: 4px; font-weight: bold; font-size: 10px; display: flex; border:1px solid #000; }
+    .eff-pill span { background: #fff; color: #000; padding: 2px 6px; margin-left: 4px; }
+    .meta-table { width: 300px; margin-bottom: 20px; font-size: 11px; color: #64748b; }
+    .meta-table td { padding: 4px 0; }
+    .meta-table strong { color: #1e293b; font-weight: 400; }
+    table.dbr-table { width: 100%; border-collapse: collapse; margin-bottom: 30px; }
+    .dbr-table th, .dbr-table td { border-bottom: 1px solid #cbd5e1; padding: 8px 6px; vertical-align: top; text-align: left; }
+    .dbr-table th { background: #E53935; color: #fff; font-weight: bold; border: none; font-size:11px; }
+    .sig-table { width: 100%; border-collapse: collapse; text-align: left; margin-top: 40px; }
+    .sig-table th { background: #E53935; color: #fff; padding: 6px; font-weight: bold; border: 1px solid #E53935; font-size:11px; text-align:center; }
+    .sig-table td { padding: 25px 6px; border: 1px solid #E53935; }
+    @media print {
+      body { -webkit-print-color-adjust: exact; print-color-adjust: exact; padding: 0; }
+    }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <div class="logo-container">
+      <img src="${window.location.origin}${window.location.pathname.replace('index.html', '')}../../assets/images/omnis-logo.png" style="height:35px;" onerror="this.style.display='none'" />
+      <img src="${window.location.origin}${window.location.pathname.replace('index.html', '')}../../assets/images/fleetrack-logo.png" style="height:15px;" onerror="this.style.display='none'" />
+    </div>
+    <div class="title-block">
+      <div class="title">General Defects Report (GDR) - North</div>
+      <div class="eff-pill">% Efficiency <span>100.0%</span></div>
+    </div>
+  </div>
+  <table class="meta-table">
+    <tr><td style="color:#94a3b8;">Prepared<br>by</td><td><strong>${userName}</strong></td></tr>
+    <tr><td style="color:#94a3b8;">Date</td><td><strong>${today}</strong></td></tr>
+  </table>
+  <table class="dbr-table">
+    <thead>
+      <tr>
+        <th>Customer</th>
+        <th>Machine</th>
+        <th>Date</th>
+        <th>Defect</th>
+        <th>Parts ETA</th>
+        <th>TED</th>
+        <th>RED</th>
+        <th>Status</th>
+        <th style="text-align:center;">Defect Days</th>
+      </tr>
+    </thead>
+    <tbody>
+`;
+
+      rows.forEach(r => {
+         const mObj = (window.MACHINES_MAP && window.MACHINES_MAP[r.machine]) || {};
+         const rawDate = r.start_date || r.creation || "";
+         const date = rawDate ? new Date(rawDate.split(" ")[0]).toLocaleDateString('en-GB') : "—";
+         const partsEta = (r.parts_eta && r.parts_eta.trim() !== '') ? new Date(r.parts_eta.split(" ")[0]).toLocaleDateString('en-GB') : "";
+         const ted = (r.ted_status === 'TBA') ? 'TBA' : (r.ted ? new Date(r.ted.split(" ")[0]).toLocaleDateString('en-GB') : "TBA");
+         const red = (r.red && r.red.trim() !== '') ? new Date(r.red.split(" ")[0]).toLocaleDateString('en-GB') : "";
+         
+         let daysOnBreakdown = 0;
+         if (r.start_date) {
+             const start = new Date(r.start_date.split(" ")[0]);
+             const end = (r.end_date && r.end_date.trim() !== '') ? new Date(r.end_date.split(" ")[0]) : new Date();
+             const diff = Math.floor((end - start) / (1000 * 60 * 60 * 24));
+             daysOnBreakdown = diff >= 0 ? diff : 0;
+         }
+
+         const customer = r.customer || mObj.customer || "—";
+         const ref = r.customer_ref || mObj.customer_ref || ""; 
+         const region = r.region || mObj.region || "";
+
+         const model = r.model || mObj.model || "—";
+         const sn = r.machine || mObj.sn || mObj.machine_sn || "";
+         const fleetNo = r.fleet_no || mObj.fleet_no || mObj.mxg_fleet_no || "";
+         const hmr = r.current_hmr || mObj.current_hmr || "";
+         const warranty = r.warranty_status || mObj.warranty_status || "";
+
+         let statusStr = safeText(r.status || "—");
+         if (r.quotation_sent_date && statusStr.indexOf("Quote sent") === -1) {
+             statusStr = \`Quote sent \${new Date(r.quotation_sent_date.split(" ")[0]).toLocaleDateString('en-GB')}<br>\` + statusStr;
+         }
+
+         html += \`
+           <tr>
+             <td>
+               <div style="font-weight:400;color:#000;">\${safeText(customer)}</div>
+               \${ref ? \`<div style="font-size:10px;color:#64748b;margin-top:2px;">Ref ▶ <strong>\${safeText(ref)}</strong></div>\` : ''}
+               \${region ? \`<div style="font-size:10px;color:#64748b;margin-top:2px;">📍 \${safeText(region)}</div>\` : ''}
+             </td>
+             <td>
+               <div style="font-weight:400;color:#000;">\${safeText(model)}</div>
+               \${sn ? \`<div style="font-size:10px;color:#64748b;margin-top:2px;">SRN ▶ <strong>\${safeText(sn)}</strong></div>\` : ''}
+               \${fleetNo ? \`<div style="font-size:10px;color:#64748b;margin-top:2px;">Fleet No ▶ <strong>\${safeText(fleetNo)}</strong></div>\` : ''}
+               \${hmr ? \`<div style="font-size:10px;color:#64748b;margin-top:2px;">Current HMR ▶ <strong>\${safeText(hmr)}</strong></div>\` : ''}
+               \${warranty ? \`<div style="font-size:9px;color:#0f172a;font-weight:bold;margin-top:4px;background:#f1f5f9;display:inline-block;padding:2px 4px;border-radius:2px;">\${safeText(warranty)}</div>\` : ''}
+             </td>
+             <td>\${date}</td>
+             <td>\${safeText(r.description) || "—"}</td>
+             <td>\${partsEta}</td>
+             <td>\${ted}</td>
+             <td>\${red}</td>
+             <td>\${statusStr}</td>
+             <td style="text-align:center;">\${daysOnBreakdown}</td>
+           </tr>
+         \`;
+      });
+
+      html += `
+    </tbody>
+  </table>
+  <table class="sig-table">
+    <tr><th colspan="5" style="border:none; text-align:center; padding:8px;">Signatures</th></tr>
+    <tr>
+      <th>FT Controller</th>
+      <th>CSD Supervisor</th>
+      <th>CSD Manager</th>
+      <th>SRD Representative</th>
+      <th>MD</th>
+    </tr>
+    <tr>
+      <td></td><td></td><td></td><td></td><td></td>
+    </tr>
+  </table>
+</body>
+</html>
+`;
+
+      const printWin = window.open('', '_blank');
+      printWin.document.write(html);
+      printWin.document.close();
+      printWin.focus();
+      setTimeout(() => {
+        printWin.print();
+        printWin.close();
+      }, 500);
+    }
 
       let debounceTimer;
       const debouncedLoad = () => {
