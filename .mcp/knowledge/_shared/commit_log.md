@@ -333,3 +333,5 @@
   Files: systems/fleetrack/index.html,
 - `e70abea` 2026-08-03 [supabase-migration] feat(mwr): update customer grouping style to use rowspan like MR
   Files: systems/fleetrack/index.html,
+- `a9019b4` 2026-08-03 [supabase-migration] Update WWU and Defects table styling and print features
+  Files: .mcp/knowledge/_shared/commit_log.md,.mcp/knowledge/fleetrack/session_notes.md,lib/database.js,systems/fleetrack/index.html,

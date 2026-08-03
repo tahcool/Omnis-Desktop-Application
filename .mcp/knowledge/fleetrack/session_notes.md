@@ -137,3 +137,9 @@
 \n- **Commit f07e5d4** (2026-08-03): feat(mwr): add IFN/CFN filters, STR KPI styling, and print template
 \n- **Commit 6324b70** (2026-08-03): feat(mwr): add group by customer toggle and grouping logic
 \n- **Commit e70abea** (2026-08-03): feat(mwr): update customer grouping style to use rowspan like MR
+\n- **Commit a9019b4** (2026-08-03): Update WWU and Defects table styling and print features
+
+
+## Frappe Fleetrack API Credentials
+- **API Key**: 07660480c74686c
+- **API Secret**: 82899cba0bfdc36
