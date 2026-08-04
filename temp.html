@@ -1,4 +1,4 @@
-<!DOCTYPE html><html lang="en"><head>
+﻿<!DOCTYPE html><html lang="en"><head>
   <meta charset="UTF-8">
   <title>Omnis – Fleetrack Dashboard</title>
   <link rel="icon" type="image/png" href="../../assets/images/omnis-icon.png">
@@ -3484,8 +3484,8 @@
       <div class="top-nav-group" style="position:absolute; right:28px; top:50%; transform:translateY(-50%); gap:6px; flex-shrink:0;">
         <!-- Division Toggle -->
         <select id="division-toggle" onchange="window.switchDivision(this.value)" style="background: rgba(255,255,255,0.1); color: #fff; border: 1px solid rgba(255,255,255,0.2); border-radius: 8px; padding: 6px 12px; font-size: 13px; font-weight: 600; outline: none; cursor: pointer; margin-right: 10px;">
-          <option value="fleetrack" style="color: #0f172a;">Machinery Exchange</option>
-          <option value="sinopower" style="color: #0f172a;">Sinopower</option>
+          <option value="fleetrack" style="color: #0f172a;">Fleetrack</option>
+          <option value="powerstar" style="color: #0f172a;">Sinopower</option>
         </select>
 
         <!-- Settings dropdown -->
@@ -4260,7 +4260,7 @@
                   <input type="checkbox" id="mr-filter-group-cust" checked="" onchange="refreshMachineRegisterReport()" style="width:14px; height:14px; accent-color:#334155;">
                   Group by Customer
                 </label>
-                <button onclick="(function(){ document.getElementById('mr-filter-region').value=''; document.getElementById('mr-filter-customer').value=''; document.getElementById('mr-filter-model').value=''; document.getElementById('mr-filter-fleetrack').value=window.currentDivision === 'fleetrack' ? 'Yes' : ''; document.getElementById('mr-filter-warranty').value=''; document.getElementById('mr-filter-group-cust').checked=true; refreshMachineRegisterReport(); })()" style="background:#e2e8f0; color:#475569; border:none; padding:6px 12px; border-radius:6px; font-size:10px; font-weight:700; cursor:pointer; transition:background 0.2s; white-space:nowrap;" onmouseover="this.style.background='#cbd5e1'" onmouseout="this.style.background='#e2e8f0'">↺ Reset</button>
+                <button onclick="(function(){ document.getElementById('mr-filter-region').value=''; document.getElementById('mr-filter-customer').value=''; document.getElementById('mr-filter-model').value=''; document.getElementById('mr-filter-fleetrack').value='Yes'; document.getElementById('mr-filter-warranty').value=''; document.getElementById('mr-filter-group-cust').checked=true; refreshMachineRegisterReport(); })()" style="background:#e2e8f0; color:#475569; border:none; padding:6px 12px; border-radius:6px; font-size:10px; font-weight:700; cursor:pointer; transition:background 0.2s; white-space:nowrap;" onmouseover="this.style.background='#cbd5e1'" onmouseout="this.style.background='#e2e8f0'">↺ Reset</button>
               </div>
             </div>
           </div>
@@ -9956,9 +9956,6 @@
         let colMachine = `<td class="mr-machine-link" data-machine-name="${String(r.name).replace(/"/g, '&quot;')}" style="${commonTdStyle}cursor:pointer;">${machineHtml}</td>`;
 
         // --- Column 4: Service Scheduling ---
-        let metricSuffix = (r.service_tracking_metric === 'Mileage' || r.service_tracking_metric === 'Kilometers') ? 'KM' : 'HRS';
-        let metricSuffixLower = metricSuffix.toLowerCase();
-        
         let schedHtml = "";
         
         let obligation = safeText(r.service_obligation || "Not Specified");
@@ -9977,22 +9974,22 @@
         schedHtml += `  <div style="display:flex; justify-content:space-between; align-items:baseline;">
                           <span>Last Serviced:</span>
                           <div style="flex-grow:1; border-bottom:1px dotted #cbd5e1; margin:0 8px;"></div>
-                          <span style="font-weight:600;color:#0f172a;">${lastHmr} ${metricSuffix} <span style="color:#94a3b8;">(${lastDate})</span></span>
+                          <span style="font-weight:600;color:#0f172a;">${lastHmr} HRS <span style="color:#94a3b8;">(${lastDate})</span></span>
                         </div>`;
         schedHtml += `  <div style="display:flex; justify-content:space-between; align-items:baseline;">
                           <span>Next Service (${interval}H interval):</span>
                           <div style="flex-grow:1; border-bottom:1px dotted #cbd5e1; margin:0 8px;"></div>
-                          <span style="font-weight:600;color:#0f172a;">${nextHmr} ${metricSuffix} ${nextType ? '('+nextType+'H)' : ''}</span>
+                          <span style="font-weight:600;color:#0f172a;">${nextHmr} HRS ${nextType ? '('+nextType+'H)' : ''}</span>
                         </div>`;
         schedHtml += `</div>`;
         
         if (hrsRemaining != null) {
           if (isOverdue) {
-            schedHtml += `<div style="font-size:9px; font-weight:800; background:#fee2e2; color:#ef4444; padding:4px 8px; border-radius:4px; display:inline-block;">⚠ OVERDUE BY ${Math.abs(hrsRemaining).toFixed(0)} ${metricSuffix}</div>`;
+            schedHtml += `<div style="font-size:9px; font-weight:800; background:#fee2e2; color:#ef4444; padding:4px 8px; border-radius:4px; display:inline-block;">⚠ OVERDUE BY ${Math.abs(hrsRemaining).toFixed(0)} HRS</div>`;
           } else if (isDue) {
-            schedHtml += `<div style="font-size:9px; font-weight:800; background:#fef3c7; color:#d97706; padding:4px 8px; border-radius:4px; display:inline-block;">⚠ DUE IN ${Number(hrsRemaining).toFixed(0)} ${metricSuffix}</div>`;
+            schedHtml += `<div style="font-size:9px; font-weight:800; background:#fef3c7; color:#d97706; padding:4px 8px; border-radius:4px; display:inline-block;">⚠ DUE IN ${Number(hrsRemaining).toFixed(0)} HRS</div>`;
           } else {
-            schedHtml += `<div style="font-size:9px; font-weight:700; color:#10b981; padding:2px 0;">${Number(hrsRemaining).toFixed(0)} ${metricSuffixLower} remaining</div>`;
+            schedHtml += `<div style="font-size:9px; font-weight:700; color:#10b981; padding:2px 0;">${Number(hrsRemaining).toFixed(0)} hrs remaining</div>`;
           }
         } else {
             schedHtml += `<div style="font-size:9px; font-weight:600; color:#94a3b8; font-style:italic;">No schedule data</div>`;
@@ -10016,7 +10013,7 @@
                           onmouseout="this.style.textDecoration='none'; this.style.color='#2563eb';"
                           title="Click to update HMR"
                         >
-                          ${currentHmr} <span style="font-size:8px;font-weight:700;color:#64748b;background:#f1f5f9;padding:2px 4px;border-radius:4px;margin-bottom:2px; pointer-events:none;">${metricSuffix}</span>
+                          ${currentHmr} <span style="font-size:8px;font-weight:700;color:#64748b;background:#f1f5f9;padding:2px 4px;border-radius:4px;margin-bottom:2px; pointer-events:none;">HRS</span>
                         </div>`;
         
         let hmrDate = r.modified ? formatDateDA(r.modified.split(" ")[0]) : "Unknown";
@@ -10124,12 +10121,9 @@
 
         // Populate global map
         window.MACHINES_MAP = {};
-        allRows.forEach(m => {
+        FT_MACHINE_ROWS.forEach(m => {
           if (m.name) window.MACHINES_MAP[m.name] = m;
         });
-        
-        if (typeof filterDefectsTable === 'function') filterDefectsTable();
-        if (typeof loadFtDefectsDashboard === 'function') loadFtDefectsDashboard();
 
         // ── BACKGROUND SYNC: Frappe → Supabase (non-blocking, fire-and-forget) ──
         // This keeps Supabase current with the ERP. It runs silently after the
@@ -10454,7 +10448,7 @@
         };
         const currentDiv = window.currentDivision || 'fleetrack';
         // Supabase fetch
-        let query = supabase.from('ft_breakdown_logs').select('*').eq('division', currentDiv).or('breakdown_end_date.is.null');
+        let query = supabase.from('ft_breakdown_logs').select('*').eq('division', currentDiv);
         if (filters.region) query = query.ilike('region', `%${filters.region}%`);
         if (filters.customer) query = query.ilike('customer', `%${filters.customer}%`);
         if (filters.ifn) query = query.ilike('fleet_no', `%${filters.ifn}%`);
@@ -11236,206 +11230,96 @@
         </div>
       `;
 
-        
-        let mcBodyHtml = "";
+        const machineDetails = sectionBlock("Machine Details", kvGrid([
+              ["Name", doc.name],
+              ["Customer", doc.customer],
+              ["Fleet No.", doc.mxg_fleet_no || doc.fleet_no],
+              ["SN", doc.sn],
+              ["ESN", doc.esn],
+              ["Chassis Number", doc.chassis_number],
+              ["Has Telematics?", doc.has_telematics_device],
+              ["Telematics Params", doc.enabled_parameters],
+              ["Engine Type", doc.engine_type],
+              ["Operating Weight (t)", doc.operating_weight],
+              ["Bin Capacity (m3)", doc.bin_capacity],
+              ["Std Fuel Cons (L/hr)", doc.standard_fuel_consumption],
+              ["Working Voltage", doc.working_voltage],
+              ["Tyre Size", doc.tyre_size],
+              ["Unique Attachments", doc.unique_attachments_fitted],
+              ["Mobility", doc.mobility],
+            ]), true);
 
-        if (window.currentDivision === 'sinopower') {
-          const docHeader = sectionBlock("Document Header", kvGrid([
-            ["On Powertrack?", doc.on_powertrack || "Yes"],
-            ["PTZ Supplied", doc.ptz_supplied || "Yes"],
-            ["Client", doc.customer],
-            ["Handover Date", doc.handover_date],
-            ["Service Branch", doc.service_branch || "Harare"],
-            ["Region", doc.region],
-            ["Client Name", doc.customer],
-            ["Customer Fleet No.", doc.mxg_fleet_no || doc.fleet_no],
-          ]), true);
+        const warrantyDetails = sectionBlock("Warranty Details", kvGrid([
+              ["Warranty Status", doc.warranty_status],
+              ["Warranty Type", doc.warranty_type],
+              ["Period (Months)", doc.warranty_period],
+              ["Handover Date", doc.handover_date],
+              ["Expiry Date", doc.expiry_date],
+              ["Warranty Hours", doc.warranty_hours],
+            ]), true);
 
-          const truckDetails = sectionBlock("Truck Details", kvGrid([
-            ["Service Tracking Metric", doc.service_tracking_metric || "Mileage"],
-            ["Make", doc.make || "PowerSeries"],
-            ["Location", doc.location],
-            ["LBZ", doc.lbz],
-            ["Engine Type", doc.engine_type],
-            ["OEM Registered?", doc.oem_registered || "Not Specified"],
-            ["Total Running", doc.total_running_hours],
-            ["Type", doc.type],
-            ["Fleet No", doc.fleet_no],
-            ["Model", doc.model],
-            ["Reg Number", doc.reg_number || doc.chassis_number],
-          ]), true);
+        const hmr = sectionBlock("HMR", kvGrid([
+              ["Starting HMR", doc.starting_hmr],
+              ["Last HMR Date", doc.last_hmr_date],
+              ["Last Log", doc.last_hmr_log],
+              ["Current HMR", doc.current_hmr],
+              ["Total Running Hours", doc.total_running_hours],
+              ["Days Since", doc.days_since_last_hmr],
+            ]), true);
 
-          const customerFile = sectionBlock("Customer File", kvGrid([
-            ["Prepare Welcome Report", doc.prepare_welcome_report || "N/A"],
-            ["Welcome Report Status", doc.welcome_report_status || "PENDING"],
-          ]), true);
+        const initialService = sectionBlock("Initial Service Tracking", kvGrid([
+          ["Track Initial Service?", doc.track_initial_service],
+          ["Initial Service Type", doc.initial_service_type],
+          ["Initial Service Status", doc.initial_service_status],
+        ]), true);
 
-          const logging = sectionBlock("Logging", kvGrid([
-            ["Current Reading", doc.current_hmr],
-            ["Last Reading Date", doc.last_hmr_date],
-            ["Last Log", doc.last_hmr_log],
-            ["Initial Reading", doc.starting_hmr],
-            ["Days Since", doc.days_since_last_hmr],
-          ]), true);
+        const service = sectionBlock("Service Configuration", kvGrid([
+          ["Service Obligation", doc.service_obligation],
+          ["Service Interval (hrs)", doc.service_interval_hours],
+          ["Last Service Date", doc.last_service_date],
+          ["Last Service HMR", doc.last_service_hmr],
+          ["Last Service Type", doc.last_service_type],
+          ["Next Service HMR", doc.next_service_hmr],
+          ["Next Service Type", doc.next_service_type],
+          ["Hours to Service", doc.hours_remaining_to_service],
+        ]), true);
 
-          const initialService = sectionBlock("Initial Service", kvGrid([
-            ["Track initial Service", doc.track_initial_service || "No"],
-            ["Initial Service Type", doc.initial_service_type],
-            ["Initial Service Status", doc.initial_service_status || "Pending"],
-          ]), true);
+        const underCarriage = sectionBlock("Under Carriage & Specs", kvGrid([
+          ["Chain Make", doc.chain_make],
+          ["Chain Length", doc.chain_length],
+          ["Chain Width", doc.chain_width],
+          ["Sprocket LHS Teeth", doc.sproket_lhs_teeth],
+          ["Sprocket RHS Teeth", doc.sproket_rhs_teeth],
+        ]), true);
 
-          const serviceDetails = sectionBlock("Service Details", kvGrid([
-            ["Last Service Date", doc.last_service_date],
-            ["Service Interval", doc.service_interval_hours],
-            ["Last Service Reading", doc.last_service_hmr],
-            ["Last Service Type", doc.last_service_type],
-            ["Next Service Reading", doc.next_service_hmr],
-            ["Next Service Type", doc.next_service_type],
-            ["Reading to Service", doc.hours_remaining_to_service],
-          ]), true);
-
-          const warrantyDetails = sectionBlock("Warranty Details", kvGrid([
-            ["Warranty Status", doc.warranty_status || "Under Warranty"],
-            ["OEM Ref Number", doc.oem_ref_number],
-            ["Warranty Type", doc.warranty_type],
-            ["Warranty Duration (Months)", doc.warranty_period || 0],
-            ["Expiry Date", doc.expiry_date],
-            ["Expiry Reading", doc.expiry_reading || 0],
-          ]), true);
-
-          const fileLibrary = sectionBlock("File Library", kvGrid([
-            ["Compatible GET", doc.compatible_get],
-            ["Wty. Certificate", doc.wty_certificate ? `<a href="${machineAttachmentLink(doc.wty_certificate)}" target="_blank">Attach</a>` : ""],
-            ["PDI Checklist", doc.pdi_checklist ? `<a href="${machineAttachmentLink(doc.pdi_checklist)}" target="_blank">Attach</a>` : ""],
-            ["Truck Data Plate", doc.machine_data_plate ? `<a href="${machineAttachmentLink(doc.machine_data_plate)}" target="_blank">Attach</a>` : ""],
-            ["Lube Types", doc.lube_types],
-            ["Belt Dimensions", doc.belt_dimensions ? `<a href="${machineAttachmentLink(doc.belt_dimensions)}" target="_blank">Attach</a>` : ""],
-            ["HYD Filters Dimensions", doc.hyd_filters_dimensions ? `<a href="${machineAttachmentLink(doc.hyd_filters_dimensions)}" target="_blank">Attach</a>` : ""],
-            ["Engine Data Plate", doc.engine_data_plate ? `<a href="${machineAttachmentLink(doc.engine_data_plate)}" target="_blank">Attach</a>` : ""],
-            ["Filters List", doc.filters_list ? `<a href="${machineAttachmentLink(doc.filters_list)}" target="_blank">Attach</a>` : ""],
-            ["NEI Checklist", doc.nei_checklist ? `<a href="${machineAttachmentLink(doc.nei_checklist)}" target="_blank">Attach</a>` : ""],
-            ["Equipment Information Form", doc.equipment_information_form ? `<a href="${machineAttachmentLink(doc.equipment_information_form)}" target="_blank">Attach</a>` : ""],
-          ]), true);
-
-          const notes = sectionBlock("Notes", `
-      <div style="padding:4px 0;">
-        <div style="font-size:14px;font-weight:500;color:var(--text-main);white-space:pre-wrap;word-break:break-word;">
-          ${safeText(doc.notes) || "—"}
+        const consumables = sectionBlock("Consumables (Filters & Lubes)", `
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px 16px;padding:4px 0;">
+        <div style="display:flex;flex-direction:column;gap:4px;">
+          <div style="font-size:11px;font-weight:600;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.05em;">Filters List</div>
+          <div style="font-size:14px;font-weight:500;color:var(--text-main);white-space:pre-wrap;word-break:break-word;">
+            ${safeText(doc.filters_list) || "—"}
+          </div>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:4px;">
+          <div style="font-size:11px;font-weight:600;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.05em;">Lube Types</div>
+          <div style="font-size:14px;font-weight:500;color:var(--text-main);white-space:pre-wrap;word-break:break-word;">
+            ${safeText(doc.lube_types) || "—"}
+          </div>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:4px;">
+          <div style="font-size:11px;font-weight:600;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.05em;">Belt Dimensions</div>
+          <div style="font-size:14px;font-weight:500;color:var(--text-main);white-space:pre-wrap;word-break:break-word;">
+            ${safeText(doc.belt_dimensions) || "—"}
+          </div>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:4px;">
+          <div style="font-size:11px;font-weight:600;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.05em;">Hydraulic Filters</div>
+          <div style="font-size:14px;font-weight:500;color:var(--text-main);white-space:pre-wrap;word-break:break-word;">
+            ${safeText(doc.hyd_filters_dimensions) || "—"}
+          </div>
         </div>
       </div>
       `, true);
-
-          mcBodyHtml = `
-          <div id="mc-pane-overview" class="mc-tab-pane" style="display:flex;flex-direction:column;gap:10px;">
-            ${docHeader}
-            ${customerFile}
-            ${truckDetails}
-          </div>
-          <div id="mc-pane-service" class="mc-tab-pane" style="display:none;flex-direction:column;gap:10px;">
-            ${logging}
-            ${initialService}
-            ${serviceDetails}
-          </div>
-          <div id="mc-pane-warranty" class="mc-tab-pane" style="display:none;flex-direction:column;gap:10px;">
-            ${warrantyDetails}
-          </div>
-          <div id="mc-pane-library" class="mc-tab-pane" style="display:none;flex-direction:column;gap:10px;">
-            ${fileLibrary}
-            ${notes}
-          </div>
-          `;
-
-        } else {
-          const machineDetails = sectionBlock("Machine Details", kvGrid([
-                ["Name", doc.name],
-                ["Customer", doc.customer],
-                ["Fleet No.", doc.mxg_fleet_no || doc.fleet_no],
-                ["SN", doc.sn],
-                ["ESN", doc.esn],
-                ["Chassis Number", doc.chassis_number],
-                ["Has Telematics?", doc.has_telematics_device],
-                ["Telematics Params", doc.enabled_parameters],
-                ["Engine Type", doc.engine_type],
-                ["Operating Weight (t)", doc.operating_weight],
-                ["Bin Capacity (m3)", doc.bin_capacity],
-                ["Std Fuel Cons (L/hr)", doc.standard_fuel_consumption],
-                ["Working Voltage", doc.working_voltage],
-                ["Tyre Size", doc.tyre_size],
-                ["Unique Attachments", doc.unique_attachments_fitted],
-                ["Mobility", doc.mobility],
-              ]), true);
-
-          const warrantyDetails = sectionBlock("Warranty Details", kvGrid([
-                ["Warranty Status", doc.warranty_status],
-                ["Warranty Type", doc.warranty_type],
-                ["Period (Months)", doc.warranty_period],
-                ["Handover Date", doc.handover_date],
-                ["Expiry Date", doc.expiry_date],
-                ["Warranty Hours", doc.warranty_hours],
-              ]), true);
-
-          const hmr = sectionBlock("HMR", kvGrid([
-                ["Starting HMR", doc.starting_hmr],
-                ["Last HMR Date", doc.last_hmr_date],
-                ["Last Log", doc.last_hmr_log],
-                ["Current HMR", doc.current_hmr],
-                ["Total Running Hours", doc.total_running_hours],
-                ["Days Since", doc.days_since_last_hmr],
-              ]), true);
-
-          const initialService = sectionBlock("Initial Service Tracking", kvGrid([
-            ["Track Initial Service?", doc.track_initial_service],
-            ["Initial Service Type", doc.initial_service_type],
-            ["Initial Service Status", doc.initial_service_status],
-          ]), true);
-
-          const service = sectionBlock("Service Configuration", kvGrid([
-            ["Service Obligation", doc.service_obligation],
-            ["Service Interval (hrs)", doc.service_interval_hours],
-            ["Last Service Date", doc.last_service_date],
-            ["Last Service HMR", doc.last_service_hmr],
-            ["Last Service Type", doc.last_service_type],
-            ["Next Service HMR", doc.next_service_hmr],
-            ["Next Service Type", doc.next_service_type],
-            ["Hours to Service", doc.hours_remaining_to_service],
-          ]), true);
-
-          const underCarriage = sectionBlock("Under Carriage & Specs", kvGrid([
-            ["Chain Make", doc.chain_make],
-            ["Chain Length", doc.chain_length],
-            ["Chain Width", doc.chain_width],
-            ["Sprocket LHS Teeth", doc.sproket_lhs_teeth],
-            ["Sprocket RHS Teeth", doc.sproket_rhs_teeth],
-          ]), true);
-
-          const consumables = sectionBlock("Consumables (Filters & Lubes)", `
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px 16px;padding:4px 0;">
-          <div style="display:flex;flex-direction:column;gap:4px;">
-            <div style="font-size:11px;font-weight:600;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.05em;">Filters List</div>
-            <div style="font-size:14px;font-weight:500;color:var(--text-main);white-space:pre-wrap;word-break:break-word;">
-              ${safeText(doc.filters_list) || "—"}
-            </div>
-          </div>
-          <div style="display:flex;flex-direction:column;gap:4px;">
-            <div style="font-size:11px;font-weight:600;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.05em;">Lube Types</div>
-            <div style="font-size:14px;font-weight:500;color:var(--text-main);white-space:pre-wrap;word-break:break-word;">
-              ${safeText(doc.lube_types) || "—"}
-            </div>
-          </div>
-          <div style="display:flex;flex-direction:column;gap:4px;">
-            <div style="font-size:11px;font-weight:600;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.05em;">Belt Dimensions</div>
-            <div style="font-size:14px;font-weight:500;color:var(--text-main);white-space:pre-wrap;word-break:break-word;">
-              ${safeText(doc.belt_dimensions) || "—"}
-            </div>
-          </div>
-          <div style="display:flex;flex-direction:column;gap:4px;">
-            <div style="font-size:11px;font-weight:600;color:var(--text-muted);text-transform:uppercase;letter-spacing:0.05em;">Hydraulic Filters</div>
-            <div style="font-size:14px;font-weight:500;color:var(--text-main);white-space:pre-wrap;word-break:break-word;">
-              ${safeText(doc.hyd_filters_dimensions) || "—"}
-            </div>
-          </div>
-        </div>
-        `, true);
 
         const notes = sectionBlock("Notes", `
       <div style="padding:4px 0;">
@@ -11460,6 +11344,7 @@
         ];
 
         const libHtml = libLinks.map(([label, url], idx) => {
+          // Prefer Supabase Storage URL if available, else fall back to Frappe path
           const fieldKey = [
             'pdi_checklist','equipment_information_form','wty_certificate',
             'nei_checklist','machine_data_plate','engine_data_plate',
@@ -11488,29 +11373,8 @@
         const library = sectionBlock("Library", `
       <div style="display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;">
         ${libHtml}
-      </div>
+    </div>
       `, true);
-          
-          mcBodyHtml = `
-          <div id="mc-pane-overview" class="mc-tab-pane" style="display:flex;flex-direction:column;gap:10px;">
-            ${machineDetails}
-          </div>
-          <div id="mc-pane-service" class="mc-tab-pane" style="display:none;flex-direction:column;gap:10px;">
-            ${hmr}
-            ${initialService}
-            ${service}
-          </div>
-          <div id="mc-pane-warranty" class="mc-tab-pane" style="display:none;flex-direction:column;gap:10px;">
-            ${warrantyDetails}
-            ${underCarriage}
-            ${consumables}
-          </div>
-          <div id="mc-pane-library" class="mc-tab-pane" style="display:none;flex-direction:column;gap:10px;">
-            ${notes}
-            ${library}
-          </div>
-          `;
-        }
 
         if (mcBody) {
           window.mcSwitchTab = function(event, tabId) {
@@ -11530,12 +11394,27 @@
 
           mcBody.innerHTML = `
     ${top}
-      ${mcBodyHtml}
+      <div id="mc-pane-overview" class="mc-tab-pane" style="display:flex;flex-direction:column;gap:10px;">
+        ${machineDetails}
+      </div>
+      <div id="mc-pane-service" class="mc-tab-pane" style="display:none;flex-direction:column;gap:10px;">
+        ${hmr}
+        ${initialService}
+        ${service}
+      </div>
+      <div id="mc-pane-warranty" class="mc-tab-pane" style="display:none;flex-direction:column;gap:10px;">
+        ${warrantyDetails}
+        ${underCarriage}
+        ${consumables}
+      </div>
+      <div id="mc-pane-library" class="mc-tab-pane" style="display:none;flex-direction:column;gap:10px;">
+        ${notes}
+        ${library}
+      </div>
     </div> <!-- Close the right column -->
     </div> <!-- Close the grid -->
     `;
         }
-
 
       } catch (e) {
         console.error("openMachineModal error:", e);
@@ -26190,46 +26069,25 @@ window.loadISR = async function() {
 
 
 <script>
-  window.currentDivision = localStorage.getItem('omnis_active_division') || 'fleetrack';
-  
-  document.addEventListener('DOMContentLoaded', () => {
-    const dt = document.getElementById('division-toggle');
-    if (dt) dt.value = window.currentDivision;
-    
-    // Update text labels
-    const termMachine = window.currentDivision === 'sinopower' ? 'Truck' : 'Machine';
-    const termMachines = window.currentDivision === 'sinopower' ? 'Trucks' : 'Machines';
-    const termHMR = window.currentDivision === 'sinopower' ? 'Mileage' : 'HMR';
+  window.currentDivision = 'fleetrack';
+  window.switchDivision = function(div) {
+    window.currentDivision = div;
+    const termMachine = div === 'powerstar' ? 'Truck' : 'Machine';
+    const termMachines = div === 'powerstar' ? 'Trucks' : 'Machines';
+    const termHMR = div === 'powerstar' ? 'Mileage' : 'HMR';
     
     document.querySelectorAll('.term-machine').forEach(el => el.textContent = termMachine);
     document.querySelectorAll('.term-machines').forEach(el => el.textContent = termMachines);
     document.querySelectorAll('.term-hmr').forEach(el => el.textContent = termHMR);
-  });
-
-  window.switchDivision = function(div) {
-  localStorage.setItem('omnis_active_division', div);
-  window.currentDivision = div;
-  const termMachine = div === 'sinopower' ? 'Truck' : 'Machine';
-  const termMachines = div === 'sinopower' ? 'Trucks' : 'Machines';
-  const termHMR = div === 'sinopower' ? 'Mileage' : 'HMR';
-  
-  document.querySelectorAll('.term-machine').forEach(el => el.textContent = termMachine);
-  document.querySelectorAll('.term-machines').forEach(el => el.textContent = termMachines);
-  document.querySelectorAll('.term-hmr').forEach(el => el.textContent = termHMR);
-  
-  const ftFilter = document.getElementById('mr-filter-fleetrack');
-  if (ftFilter) {
-    ftFilter.value = div === 'fleetrack' ? 'Yes' : '';
-  }
-  
-  if (typeof loadDailyBreakdownReport === 'function') loadDailyBreakdownReport();
-  if (typeof loadFtCustomers === 'function') loadFtCustomers();
-  if (typeof loadFtMachineRegister === 'function') loadFtMachineRegister();
-  if (typeof filterDefectsTable === 'function') {
-      try { filterDefectsTable(); } catch(e){}
-  }
-  if (typeof loadFieldServicePlan === 'function') {
-      try { loadFieldServicePlan(); } catch(e){}
+    
+    if (typeof loadDailyBreakdownReport === 'function') loadDailyBreakdownReport();
+    if (typeof loadFtCustomers === 'function') loadFtCustomers();
+    if (typeof loadFtMachineRegister === 'function') loadFtMachineRegister();
+    if (typeof filterDefectsTable === 'function') {
+        try { filterDefectsTable(); } catch(e){}
+    }
+    if (typeof loadFieldServicePlan === 'function') {
+        try { loadFieldServicePlan(); } catch(e){}
     }
     if (typeof renderDashboardFsp === 'function') {
         try { renderDashboardFsp(); } catch(e){}
