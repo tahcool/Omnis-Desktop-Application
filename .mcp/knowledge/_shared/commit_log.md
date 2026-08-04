@@ -347,3 +347,5 @@
   Files: .mcp/knowledge/_shared/commit_log.md,.mcp/knowledge/fleetrack/session_notes.md,
 - `bfdb9e4` 2026-08-03 [supabase-migration] chore: Bump version to 4.2.17
   Files: package.json,
+- `5b99b3e` 2026-08-03 [supabase-migration] UI styling updates for buttons and module cards
+  Files: .mcp/knowledge/_shared/commit_log.md,.mcp/knowledge/fleetrack/session_notes.md,package-lock.json,package.json,scripts/add_reports_kpis.js,scripts/audit_db.js,scripts/fix_dbr_cards.js,scripts/fix_kpi_cards.js,scripts/fix_kpi_cards_visible.js,scripts/fix_nav_colors.js,scripts/fix_shortcut_btns.js,scripts/fix_shortcut_btns_cheerio.js,scripts/fix_shortcut_btns_dark.js,scripts/fix_shortcut_btns_flat.js,scripts/fix_shortcut_btns_maroon.js,scripts/fix_shortcut_btns_pastel.js,scripts/fix_shortcut_btns_rich.js,scripts/fix_shortcut_btns_rich2.js,scripts/make_nav_premium.js,scripts/resize_report_cards.js,

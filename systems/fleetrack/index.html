@@ -5,7 +5,8 @@
 
   <!-- Leaflet CSS + JS -->
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin="">
-  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+  <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin="">
+</script>
 
   <!-- Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -3481,6 +3482,11 @@
 
 
       <div class="top-nav-group" style="position:absolute; right:28px; top:50%; transform:translateY(-50%); gap:6px; flex-shrink:0;">
+        <!-- Division Toggle -->
+        <select id="division-toggle" onchange="window.switchDivision(this.value)" style="background: rgba(255,255,255,0.1); color: #fff; border: 1px solid rgba(255,255,255,0.2); border-radius: 8px; padding: 6px 12px; font-size: 13px; font-weight: 600; outline: none; cursor: pointer; margin-right: 10px;">
+          <option value="fleetrack" style="color: #0f172a;">Fleetrack</option>
+          <option value="powerstar" style="color: #0f172a;">Sinopower</option>
+        </select>
 
         <!-- Settings dropdown -->
         <div class="top-nav-dropdown">
@@ -3991,6 +3997,14 @@
               <label style="display:block; font-size:11px; font-weight:700; color:#64748b; margin-bottom:6px; text-transform:uppercase;">Machine</label>
               <input type="text" id="dbr-filter-machine" placeholder="Search machine SN/Model..." style="width:100%; padding:8px 12px; border:1px solid #cbd5e1; border-radius:8px; font-size:13px; outline:none;">
             </div>
+            <div style="flex:1; min-width:120px;">
+              <label style="display:block; font-size:11px; font-weight:700; color:#64748b; margin-bottom:6px; text-transform:uppercase;">IFN</label>
+              <input type="text" id="dbr-filter-ifn" placeholder="IFN..." style="width:100%; padding:8px 12px; border:1px solid #cbd5e1; border-radius:8px; font-size:13px; outline:none;">
+            </div>
+            <div style="flex:1; min-width:120px;">
+              <label style="display:block; font-size:11px; font-weight:700; color:#64748b; margin-bottom:6px; text-transform:uppercase;">CFN</label>
+              <input type="text" id="dbr-filter-cfn" placeholder="CFN..." style="width:100%; padding:8px 12px; border:1px solid #cbd5e1; border-radius:8px; font-size:13px; outline:none;">
+            </div>
             <div style="flex:1; min-width:140px;">
               <label style="display:block; font-size:11px; font-weight:700; color:#64748b; margin-bottom:6px; text-transform:uppercase;">Responsibility</label>
               <select id="dbr-filter-responsibility" style="width:100%; padding:8px 12px; border:1px solid #cbd5e1; border-radius:8px; font-size:13px; outline:none;">
@@ -4010,7 +4024,7 @@
             <div style="display:flex; gap:8px;">
               <button onclick="loadDailyBreakdownReport()" style="background:#334155; color:#fff; border:none; padding:9px 20px; border-radius:8px; font-size:13px; font-weight:600; cursor:pointer;">Apply
                 Filters</button>
-              <button onclick="(function(){ document.getElementById('dbr-filter-region').value=''; document.getElementById('dbr-filter-customer').value=''; document.getElementById('dbr-filter-machine').value=''; document.getElementById('dbr-filter-responsibility').value=''; document.getElementById('dbr-filter-urgent').checked=false; loadDailyBreakdownReport(); })()" style="background:#e2e8f0; color:#475569; border:none; padding:9px 20px; border-radius:8px; font-size:13px; font-weight:600; cursor:pointer;">Reset</button>
+              <button onclick="(function(){ document.getElementById('dbr-filter-region').value=''; document.getElementById('dbr-filter-customer').value=''; document.getElementById('dbr-filter-machine').value=''; document.getElementById('dbr-filter-responsibility').value=''; document.getElementById('dbr-filter-urgent').checked=false; document.getElementById('dbr-filter-ifn').value=''; document.getElementById('dbr-filter-cfn').value=''; loadDailyBreakdownReport(); })()" style="background:#e2e8f0; color:#475569; border:none; padding:9px 20px; border-radius:8px; font-size:13px; font-weight:600; cursor:pointer;">Reset</button>
             </div>
           </div>
 
@@ -4032,6 +4046,8 @@
                     TED ⇅</th>
                   <th onclick="sortDbrData('red')" style="cursor:pointer;padding:10px 8px;text-align:left;font-weight:700;border-right:1px solid rgba(255,255,255,0.2);vertical-align:bottom;color:#ffffff !important;width:100px;white-space:nowrap;">
                     RED ⇅</th>
+                  <th onclick="sortDbrData('resp')" style="cursor:pointer;padding:10px 8px;text-align:center;font-weight:700;border-right:1px solid rgba(255,255,255,0.2);vertical-align:bottom;color:#ffffff !important;width:80px;">
+                    Resp. ⇅</th>
                   <th onclick="sortDbrData('status')" style="cursor:pointer;padding:10px 8px;text-align:left;font-weight:700;border-right:1px solid rgba(255,255,255,0.2);vertical-align:bottom;color:#ffffff !important;width:160px;">
                     Status ⇅</th>
                   <th onclick="sortDbrData('days_on_bd')" style="cursor:pointer;padding:10px 8px;text-align:center;font-weight:700;border-right:1px solid rgba(255,255,255,0.2);vertical-align:bottom;color:#ffffff !important;width:90px;">
@@ -6963,6 +6979,8 @@
         customer: document.getElementById("dbr-filter-customer").value,
         machine: document.getElementById("dbr-filter-machine").value,
         responsibility: document.getElementById("dbr-filter-responsibility").value,
+        ifn: document.getElementById("dbr-filter-ifn")?.value || '',
+        cfn: document.getElementById("dbr-filter-cfn")?.value || '',
         urgent: document.getElementById("dbr-filter-urgent").checked ? 1 : 0
       };
 
@@ -7891,7 +7909,13 @@
         }
       }
 
-      const rows = window._fspRows || [];
+      let rows = window._fspRows || [];
+      const currentDiv = window.currentDivision || 'fleetrack';
+      rows = rows.filter(r => {
+        const mName = r.machine || r.machine_name;
+        const mDiv = (window.MACHINES_MAP && window.MACHINES_MAP[mName]) ? (window.MACHINES_MAP[mName].division || 'fleetrack') : 'fleetrack';
+        return mDiv === currentDiv;
+      });
       const today = new Date();
       today.setHours(0,0,0,0);
       
@@ -10083,7 +10107,9 @@
           }
         }
 
-        window.FT_MACHINE_ROWS = allRows;
+        const currentDiv = window.currentDivision || 'fleetrack';
+        window.FT_MACHINE_ROWS_ALL = allRows;
+        window.FT_MACHINE_ROWS = allRows.filter(m => (m.division || 'fleetrack') === currentDiv);
 
         // Populate global map
         window.MACHINES_MAP = {};
@@ -10407,14 +10433,47 @@
           customer: document.getElementById('dbr-filter-customer')?.value || '',
           machine: document.getElementById('dbr-filter-machine')?.value || '',
           responsibility: document.getElementById('dbr-filter-responsibility')?.value || '',
+          ifn: document.getElementById('dbr-filter-ifn')?.value || '',
+          cfn: document.getElementById('dbr-filter-cfn')?.value || '',
           urgent: document.getElementById('dbr-filter-urgent')?.checked ? 1 : 0,
           _ts: Date.now() // Force fresh fetch to bypass browser cache
         };
-        const raw = await callFrappe(FT_BREAKDOWN_DBR_METHOD, filters, 'GET', { 
-            showLoader: true, 
-            loaderMsg: "Syncing Breakdowns" 
-        });
-        const data = raw.message || {};
+        const currentDiv = window.currentDivision || 'fleetrack';
+        // Supabase fetch
+        let query = supabase.from('ft_breakdown_logs').select('*').eq('division', currentDiv);
+        if (filters.region) query = query.ilike('region', `%${filters.region}%`);
+        if (filters.customer) query = query.ilike('customer', `%${filters.customer}%`);
+        if (filters.ifn) query = query.ilike('fleet_no', `%${filters.ifn}%`);
+        if (filters.cfn) query = query.ilike('customer_ref', `%${filters.cfn}%`);
+        if (filters.machine) {
+          query = query.or(`machine.ilike.%${filters.machine}%,model.ilike.%${filters.machine}%,serial_number.ilike.%${filters.machine}%,fleet_no.ilike.%${filters.machine}%`);
+        }
+        if (filters.responsibility) {
+          if (filters.responsibility === 'FSD') {
+            query = query.or(`responsibility.ilike.%${filters.responsibility}%,responsibility.is.null,responsibility.eq.""`);
+          } else {
+            query = query.ilike('responsibility', `%${filters.responsibility}%`);
+          }
+        }
+        if (filters.urgent) query = query.eq('urgent', true);
+
+        const { data: dbData, error: dbError } = await query.order('created_at', { ascending: false });
+
+        let data = { breakdowns: (dbData || []).map(r => {
+          let bd = { ...r, name: r.frappe_name || r.id, supervisor_comment: r.manager_comments, resp: r.responsibility, end_date: r.breakdown_end_date };
+          if (bd.breakdown_date) {
+            const start = new Date(bd.breakdown_date);
+            const end = bd.breakdown_end_date ? new Date(bd.breakdown_end_date) : new Date();
+            bd.days_on_bd = Math.floor((end - start) / (1000 * 60 * 60 * 24));
+          } else {
+            bd.days_on_bd = 0;
+          }
+          return bd;
+        }), efficiency: "0.0%", can_edit_comments: true, current_user: "Admin" };
+        if (dbError) {
+          data.error = true;
+          data.traceback = dbError.message;
+        }
 
         if (data.error) {
           console.error("DBR Backend Error:", data.traceback);
@@ -12057,6 +12116,9 @@
       ${row.on_hold ? '<span style="color:#ef4444;font-weight:700;">On Hold</span>' : ted}
     </td>
     <td style="${commonTdStyle}white-space:nowrap;">${red}</td>
+    <td style="${commonTdStyle}text-align:center;">
+      <span style="display:inline-block;padding:2px 8px;background:#f1f5f9;border-radius:4px;font-size:10px;font-weight:700;color:#475569;">${safeText(row.resp || 'FSD')}</span>
+    </td>
     <td style="${commonTdStyle}min-width:140px;">
       <div style="font-weight:600;color:#1e293b;margin-bottom:4px;">${status}</div>
       ${quoted}
@@ -12085,8 +12147,13 @@
         btnEdit.onclick = function (e) {
           e.preventDefault();
           e.stopPropagation();
-          showToast("DEBUG: Direct Click on " + row.name, "info");
-          openDbrEditModal(row.name);
+          
+          try {
+            openDbrEditModal(row.name);
+            
+          } catch(err) {
+            alert("Edit Button Crash: " + err.message);
+          }
         };
 
         // Find the last cell and append button
@@ -12614,6 +12681,7 @@
     }
 
     function openDbrEditModal(name) {
+    try {
       const row = DBR_ROWS_CACHE[name];
       if (!row) {
         showToast("Row data not found", "err");
@@ -12626,7 +12694,15 @@
         showToast("DEBUG: Modal Overlay NOT FOUND!", "err");
         return;
       }
+      if (overlay.parentElement !== document.body) {
+        document.body.appendChild(overlay);
+      }
       overlay.classList.remove("hidden");
+      overlay.style.display = "flex";
+      overlay.style.visibility = "visible";
+      overlay.style.opacity = "1";
+      overlay.style.zIndex = "2147483647";
+      overlay.style.backdropFilter = "none"; // Fix for potential WebGL crash
 
       // Populate Header Info
       document.getElementById("db-edit-info").textContent = 
@@ -12681,7 +12757,11 @@
         note.style.display = "block";
         document.getElementById("db-edit-approve").style.display = "none";
       }
+    } catch(err) {
+      showToast("Edit Modal Error: " + err.message, "err", 10000);
+      console.error(err);
     }
+  }
 
     async function saveDbrEdit(isApprove) {
       if (!CURRENT_EDIT_ROW) return;
@@ -12721,16 +12801,43 @@
       btn.disabled = true;
 
       try {
-        const res = await callFrappe("/api/method/mxg_fleet_track.omnis_dashboard.ft_breakdown_dashboard.update_ft_breakdown_full", payload);
-        if (res.message && res.message.ok) {
-          showToast(isApprove ? "Breakdown Signed Off!" : "Breakdown updated successfully", "ok");
-          closeDbrEditModal();
-          loadDailyBreakdownReport(); // Reload table
-        } else {
-          const errMsg = (res.message && res.message.error) ? res.message.error : "Failed to update breakdown";
-          showToast(errMsg, "err");
-          console.error("Update failed response:", res);
-        }
+        
+      // Update in Supabase
+      const safeDate = (d) => (d && d.trim() !== '') ? d : null;
+      const updateData = {
+        description: payload.description,
+        urgent: !!payload.urgent,
+        responsibility: payload.resp,
+        ted_status: payload.ted_status,
+        category: payload.category,
+        parts_eta: payload.parts_eta,
+        on_hold: !!payload.on_hold,
+        quote_date: safeDate(payload.quote_date),
+        breakdown_end_date: safeDate(payload.end_date),
+        breakdown_date: safeDate(payload.breakdown_date),
+        ted: safeDate(payload.ted),
+        red: safeDate(payload.red),
+        out_eta: safeDate(payload.out_eta),
+        status: payload.status,
+        is_the_machine_still_running: payload.is_the_machine_still_running
+      };
+      if (payload.supervisor_comment !== undefined) updateData.manager_comments = payload.supervisor_comment;
+      if (payload.supervisor_approved) updateData.supervisor_approved = true;
+
+      let query = supabase.from('ft_breakdown_logs').update(updateData);
+      if (payload.name.includes('-') && payload.name.length > 20) {
+        query = query.eq('id', payload.name);
+      } else {
+        query = query.eq('frappe_name', payload.name);
+      }
+      const { error: updateError } = await query;
+
+      if (updateError) throw new Error(updateError.message);
+      
+      showToast(isApprove ? "Breakdown Signed Off!" : "Breakdown updated successfully", "ok");
+      closeDbrEditModal();
+      loadDailyBreakdownReport(); // Reload table
+
       } catch (e) {
         console.error(e);
         showToast("Update error: " + e.message, "err");
@@ -13257,6 +13364,7 @@
             <label style="display:block; font-size:11px; font-weight:700; color:#64748b; margin-bottom:6px; text-transform:uppercase; letter-spacing:0.05em;">Responsibility</label>
             <select id="db-edit-resp" style="width:100%; height:40px; padding:0 10px; border:1px solid #cbd5e1; border-radius:8px; font-size:13px;">
               <option value="FSD">FSD</option>
+              <option value="WSD">WSD</option>
               <option value="Customer">Customer</option>
               <option value="Workshop">Workshop</option>
             </select>
@@ -13725,14 +13833,30 @@
 
         try {
           console.log("[CreateBreakdown] Sending POST request...");
-          const res = await callFrappe('/api/method/mxg_fleet_track.omnis_dashboard.ft_breakdown_dashboard.create_ft_breakdown_log', {
-            machine, description, date, urgent, resp,
-            ted_status, category: bd_category, parts_eta, on_hold,
-            quote_date, breakdown_end_date,
-            ted, red, out_eta,
+          
+          // Save to Supabase instead of Frappe
+          const { data: insertedData, error: insertError } = await supabase.from('ft_breakdown_logs').insert([{
+            machine: machine,
+            description: description,
+            breakdown_date: date,
+            urgent: !!urgent,
+            responsibility: resp,
+            ted_status: ted_status,
+            category: bd_category,
+            parts_eta: parts_eta,
+            on_hold: !!on_hold,
+            quote_date: quote_date,
+            breakdown_end_date: breakdown_end_date,
+            ted: ted,
+            red: red,
+            out_eta: out_eta,
             is_the_machine_still_running: is_running,
             status: entry_status
-          }, 'POST');
+          }]).select();
+          
+          if (insertError) throw new Error(insertError.message);
+          const res = { message: insertedData };
+
 
           console.log("[CreateBreakdown] Response:", res);
           
@@ -13932,6 +14056,10 @@
       const category = (document.getElementById('filter-defect-category')?.value || '').toLowerCase();
 
       window.FT_DEFECTS_FILTERED_DATA = (FT_DEFECTS_DATA || []).filter(r => {
+        const currentDiv = window.currentDivision || 'fleetrack';
+        const mDiv = (window.MACHINES_MAP && window.MACHINES_MAP[r.machine]) ? (window.MACHINES_MAP[r.machine].division || 'fleetrack') : 'fleetrack';
+        if (mDiv !== currentDiv) return false;
+        
         // Status is determined by presence of end_date
         const computedStatus = (r.end_date && r.end_date.trim() !== '') ? 'closed' : 'open';
         const rDefType = (r.defect_type || 'minor').toLowerCase();
@@ -15712,7 +15840,13 @@ RECOMMENDATIONS / NEXT STEPS:
         // Check for backend errors
         if (error) throw new Error(error.message);
 
-        const rows = rowsResult || [];
+        let rows = rowsResult || [];
+        const currentDiv = window.currentDivision || 'fleetrack';
+        rows = rows.filter(r => {
+           const mName = r.machine_name || r.machine;
+           const mDiv = (window.MACHINES_MAP && window.MACHINES_MAP[mName]) ? (window.MACHINES_MAP[mName].division || 'fleetrack') : 'fleetrack';
+           return mDiv === currentDiv;
+        });
         rows.forEach(r => {
            r.name = r.frappe_name || r.id; 
            r.machine = r.machine_name || r.machine_id;
@@ -25925,4 +26059,31 @@ window.loadISR = async function() {
 
 
 
+
+<script>
+  window.currentDivision = 'fleetrack';
+  window.switchDivision = function(div) {
+    window.currentDivision = div;
+    const termMachine = div === 'powerstar' ? 'Truck' : 'Machine';
+    const termMachines = div === 'powerstar' ? 'Trucks' : 'Machines';
+    const termHMR = div === 'powerstar' ? 'Mileage' : 'HMR';
+    
+    document.querySelectorAll('.term-machine').forEach(el => el.textContent = termMachine);
+    document.querySelectorAll('.term-machines').forEach(el => el.textContent = termMachines);
+    document.querySelectorAll('.term-hmr').forEach(el => el.textContent = termHMR);
+    
+    if (typeof loadDailyBreakdownReport === 'function') loadDailyBreakdownReport();
+    if (typeof loadFtCustomers === 'function') loadFtCustomers();
+    if (typeof loadFtMachineRegister === 'function') loadFtMachineRegister();
+    if (typeof filterDefectsTable === 'function') {
+        try { filterDefectsTable(); } catch(e){}
+    }
+    if (typeof loadFieldServicePlan === 'function') {
+        try { loadFieldServicePlan(); } catch(e){}
+    }
+    if (typeof renderDashboardFsp === 'function') {
+        try { renderDashboardFsp(); } catch(e){}
+    }
+  };
+</script>
 </body></html>
