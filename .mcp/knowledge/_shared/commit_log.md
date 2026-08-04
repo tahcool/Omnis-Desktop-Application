@@ -354,3 +354,5 @@
   Files: .mcp/knowledge/_shared/commit_log.md,.mcp/knowledge/fleetrack/session_notes.md,scripts/add_aggressive_alert.js,scripts/add_alert_edit.js,scripts/add_division_toggle.js,scripts/add_ifn_cfn.js,scripts/add_try_catch_edit.js,scripts/apply_division_filters.js,scripts/apply_ifn_cfn.js,scripts/check_missing_ids.js,scripts/extract_create_modal.js,scripts/extract_create_modal2.js,scripts/extract_dbr.js,scripts/extract_filters.js,scripts/extract_modal.py,scripts/extract_views.js,scripts/fetch_sample_breakdown.js,scripts/fix_dates_edit.js,scripts/fix_days_on_bd.js,scripts/fix_division.js,
 - `605da3e` 2026-08-04 [supabase-migration] fix: sync Powerstar defects to Supabase and fix UI scrolling issues
   Files: .mcp/knowledge/_shared/commit_log.md,.mcp/knowledge/fleetrack/session_notes.md,scripts/fix_defects_dashboard.js,scripts/fix_defects_scroll.js,scripts/sync_powerstar_defects.js,systems/fleetrack/index.html,
+- `bf67e1d` 2026-08-04 [supabase-migration] Restore point before terminology change
+  Files: scripts/patch_division_persistence.js,scripts/patch_modal.js,scripts/replace_dropdown.js,systems/fleetrack/index.html,temp.html,

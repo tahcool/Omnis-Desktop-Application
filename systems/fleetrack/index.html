@@ -3605,7 +3605,7 @@
           <!-- Active Machines -->
           <div class="stat-card" style="background:linear-gradient(135deg, #ffffff 0%, #f8fafc 100%);border:1px solid #e2e8f0;border-radius:18px;box-shadow:0 4px 6px -1px rgba(0,0,0,0.03), 0 2px 4px -1px rgba(0,0,0,0.02);position:relative;overflow:hidden;transition:all .3s cubic-bezier(.4,0,.2,1);" onmouseover="this.style.transform='translateY(-2px)';this.style.boxShadow='0 10px 25px -5px rgba(0,0,0,0.05)';" onmouseout="this.style.transform='';this.style.boxShadow='0 4px 6px -1px rgba(0,0,0,0.03), 0 2px 4px -1px rgba(0,0,0,0.02)';">
             <div style="position:absolute; right:-10px; bottom:-10px; opacity:0.05; width:80px; height:80px; color:#0f172a; transform:rotate(-10deg); pointer-events:none;"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path></svg></div>
-            <div class="stat-label" style="font-size:10px;font-weight:850;color:#64748b;text-transform:uppercase;letter-spacing:.08em;margin-bottom:8px;position:relative;z-index:1;opacity:.85;">Active Machines</div>
+            <div class="stat-label" style="font-size:10px;font-weight:850;color:#64748b;text-transform:uppercase;letter-spacing:.08em;margin-bottom:8px;position:relative;z-index:1;opacity:.85;">Active <span class="term-machines">Machines</span></div>
             <div class="stat-value" id="kpi-active-machines" style="font-size:28px;font-weight:850;letter-spacing:-.02em;color:#0f172a;position:relative;z-index:1;">–</div>
             <div class="stat-sub" style="font-size:11px;color:#94a3b8;margin-top:5px;position:relative;z-index:1;">Currently in operation</div>
           </div>
@@ -3714,7 +3714,7 @@
             <!-- Add Machine — primary -->
             <button onclick="openAddMachineModal()" style="display:flex;align-items:center;justify-content:center;gap:8px;padding:10px 20px;background:#16a34a;color:#ffffff;border:1px solid #15803d;border-radius:10px;font-size:13px;font-weight:700;cursor:pointer;box-shadow:0 2px 4px rgba(22,163,74,0.15);transition:all .2s ease;white-space:nowrap;" onmouseover="this.style.background='#15803d';" onmouseout="this.style.background='#16a34a';">
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
-              Add Machine
+              Add <span class="term-machine">Machine</span>
             </button>
 
           </div>
@@ -3758,7 +3758,7 @@
                         <div style="font-size:16px; width:32px; height:32px; display:flex; align-items:center; justify-content:center; border-radius:12px; background:rgba(0,0,0,0.04); box-shadow:inset 0 2px 4px rgba(255,255,255,0.5);">
                           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#334155" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 2h6a2 2 0 0 1 2 2v16a2 2 0 0 1-2 2H9a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2z"></path><path d="M9 2v2h6V2"></path><line x1="9" y1="10" x2="15" y2="10"></line><line x1="9" y1="14" x2="15" y2="14"></line></svg>
                         </div>
-                        <div style="font-weight:700;font-size:13px;color:#0f172a;">Machine Register</div>
+                        <div style="font-weight:700;font-size:13px;color:#0f172a;"><span class="term-machine">Machine</span> Register</div>
                         <div style="font-size:10px;color:#64748b;line-height:1.2;">Full fleet — all machines, HMR &amp; warranty status.</div>
                         <div style="margin-top:2px;font-size:9px;font-weight:700;color:#ef4444;text-transform:uppercase;letter-spacing:0.5px;">REGISTER</div>
                       </div>
@@ -4124,7 +4124,7 @@
           <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:20px;padding-bottom:12px;border-bottom:1px solid #e2e8f0;">
             <div>
               <div style="display:flex;align-items:center;margin-bottom:6px;">
-                <h1 style="font-size:22px;font-weight:700;margin:0;color:#0f172a;letter-spacing:-0.2px;">Machine Registry</h1>
+                <h1 style="font-size:22px;font-weight:700;margin:0;color:#0f172a;letter-spacing:-0.2px;"><span class="term-machine">Machine</span> Registry</h1>
               </div>
               <div style="display:flex;gap:24px;font-size:12px;color:#475569;">
                 <div><span style="font-weight:600;color:#64748b;">Prepared by:</span> <span id="mr-prepared-by">System</span></div>
@@ -4135,7 +4135,7 @@
               <div style="display:flex; gap:12px;">
                 <button onclick="openAddMachineModal()" style="display:flex;align-items:center;justify-content:center;gap:8px;padding:10px 20px;background:#16a34a;color:#ffffff;border:1px solid #15803d;border-radius:10px;font-size:13px;font-weight:700;cursor:pointer;box-shadow:0 2px 4px rgba(22,163,74,0.15);transition:all .2s ease;white-space:nowrap;" onmouseover="this.style.background='#15803d';" onmouseout="this.style.background='#16a34a';" title="Add a new machine to the registry">
                   <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
-                  Add Machine
+                  Add <span class="term-machine">Machine</span>
                 </button>
                 <button onclick="window.openBulkHmrModal()" style="background:#2563eb; color:white; border:none; padding:8px 16px; border-radius:8px; font-size:13px; font-weight:700; cursor:pointer; box-shadow:0 4px 6px -1px rgba(37,99,235,0.3); white-space:nowrap; transition:all 0.2s;" onmouseover="this.style.background='#1d4ed8'; this.style.transform='translateY(-1px)'" onmouseout="this.style.background='#2563eb'; this.style.transform='translateY(0)'" title="Bulk synchronize HMR readings">
                   📥 Bulk HMR Entry
@@ -4233,7 +4233,7 @@
               
               <div style="flex:2; min-width:140px;">
                 <label style="display:block; font-size:9px; font-weight:700; color:#64748b; margin-bottom:4px; text-transform:uppercase;">Machine SN / Model</label>
-                <input type="text" id="mr-filter-model" placeholder="Search SN/Model..." oninput="refreshMachineRegisterReport()" title="Filter by serial number or model" style="width:100%; padding:6px 8px; border:1px solid #cbd5e1; border-radius:6px; font-size:11px; outline:none; box-sizing:border-box;">
+                <input type="text" id="mr-filter-model" class="term-machine-ph2" placeholder="Search SN/Model..." oninput="refreshMachineRegisterReport()" title="Filter by serial number or model" style="width:100%; padding:6px 8px; border:1px solid #cbd5e1; border-radius:6px; font-size:11px; outline:none; box-sizing:border-box;">
               </div>
               
               <div style="flex:1; min-width:100px;">
@@ -4313,7 +4313,7 @@
             <table class="data-table" style="width:100%;border-collapse:collapse;">
               <thead>
                 <tr>
-                  <th style="text-align:left;padding:12px;color:var(--text-muted);font-weight:600;font-size:12px;border-bottom:2px solid var(--glass-border);">MACHINE</th>
+                  <th style="text-align:left;padding:12px;color:var(--text-muted);font-weight:600;font-size:12px;border-bottom:2px solid var(--glass-border);"><span class="term-machine" style="text-transform:uppercase;">MACHINE</span></th>
                   <th style="text-align:left;padding:12px;color:var(--text-muted);font-weight:600;font-size:12px;border-bottom:2px solid var(--glass-border);">MODEL / SERIAL</th>
                   <th style="text-align:left;padding:12px;color:var(--text-muted);font-weight:600;font-size:12px;border-bottom:2px solid var(--glass-border);">CUSTOMER</th>
                   <th style="text-align:left;padding:12px;color:var(--text-muted);font-weight:600;font-size:12px;border-bottom:2px solid var(--glass-border);">REGION</th>
@@ -4410,8 +4410,8 @@
               </select>
             </div>
             <div class="rpt-filter-group">
-              <label>Machine / Model</label>
-              <input type="text" id="filter-defect-machine" placeholder="Filter by machine..." oninput="filterDefectsTable()">
+              <label><span class="term-machine">Machine</span> / Model</label>
+              <input type="text" id="filter-defect-machine" class="term-machine-ph" placeholder="Filter by machine..." oninput="filterDefectsTable()">
             </div>
             <div class="rpt-filter-group">
               <label>Customer</label>
@@ -4451,7 +4451,7 @@
                   <th style="width:30px; text-align:center;">#</th>
                   <th>CUSTOMER</th>
                   <th>DEFECT</th>
-                  <th>MACHINE</th>
+                  <th><span class="term-machine" style="text-transform:uppercase;">MACHINE</span></th>
                   
                   <th>STATUS</th>
                   <th>TED</th>
@@ -5695,7 +5695,7 @@
                   <th style="padding:10px 8px;text-align:left;font-weight:700;border-right:1px solid rgba(255,255,255,0.2);color:#ffffff !important;">
                     Customer</th>
                   <th style="padding:10px 8px;text-align:left;font-weight:700;border-right:1px solid rgba(255,255,255,0.2);color:#ffffff !important;">
-                    Machine / Model</th>
+                    <span class="term-machine">Machine</span> / Model</th>
                   <th style="padding:10px 8px;text-align:left;font-weight:700;border-right:1px solid rgba(255,255,255,0.2);color:#ffffff !important;">
                     Technician</th>
                   <th style="padding:10px 8px;text-align:left;font-weight:700;border-right:1px solid rgba(255,255,255,0.2);color:#ffffff !important;">
@@ -9824,7 +9824,7 @@
                   <th style="padding:10px 8px;text-align:center;font-weight:700;color:#ffffff !important;border-bottom:2px solid #ef4444;width:36px;">#</th>
                   <th style="padding:10px 16px;text-align:left;font-weight:700;color:#ffffff !important;border-bottom:2px solid #ef4444;width:140px;">CUSTOMER</th>
                   <th style="padding:10px 16px;text-align:center;font-weight:700;color:#ffffff !important;border-bottom:2px solid #ef4444;width:60px;">IMG</th>
-                  <th style="padding:10px 16px;text-align:left;font-weight:700;color:#ffffff !important;border-bottom:2px solid #ef4444;width:160px;">MACHINE</th>
+                  <th style="padding:10px 16px;text-align:left;font-weight:700;color:#ffffff !important;border-bottom:2px solid #ef4444;width:160px;"><span class="term-machine" style="text-transform:uppercase;">MACHINE</span></th>
                   <th style="padding:10px 16px;text-align:left;font-weight:700;color:#ffffff !important;border-bottom:2px solid #ef4444;width:240px;">SERVICE SCHEDULING</th>
                   <th style="padding:10px 16px;text-align:right;font-weight:700;color:#ffffff !important;border-bottom:2px solid #ef4444;width:120px;">CONDITION</th>
                 </tr>
@@ -20106,7 +20106,7 @@ window.loadISR = async function() {
       <div class="rpt-view-wrap">
         <div class="rpt-view-header">
           <div>
-            <h2 class="rpt-view-title">FT Machine Register</h2>
+            <h2 class="rpt-view-title">FT <span class="term-machine">Machine</span> Register</h2>
             <p class="rpt-view-sub">Full fleet — all machines, customers, HMR and warranty status</p>
           </div>
           <div style="display:flex;gap:10px;align-items:center;">
@@ -24130,7 +24130,7 @@ window.loadISR = async function() {
   <div id="am-panel">
     <div class="am-header">
       <div class="am-header-title">
-        <span id="am-header-label">Add Machine</span>
+        <span id="am-header-label">Add <span class="term-machine">Machine</span></span>
       </div>
       <button class="am-header-close" onclick="closeAddMachineModal()" title="Close">✕</button>
     </div>
@@ -24761,7 +24761,7 @@ window.loadISR = async function() {
     AM_EDIT_MODE = false;
     AM_EDIT_NAME = '';
     resetForm();
-    document.getElementById('am-header-label').textContent = 'Add Machine';
+    document.getElementById('am-header-label').innerHTML = 'Add <span class="term-machine">Machine</span>';
     document.getElementById('am-save-label').textContent = 'Create Machine';
     document.getElementById('am-f-name').readOnly = false;
     document.getElementById('am-warning').style.display = 'none';
@@ -26204,6 +26204,12 @@ window.loadISR = async function() {
     document.querySelectorAll('.term-machine').forEach(el => el.textContent = termMachine);
     document.querySelectorAll('.term-machines').forEach(el => el.textContent = termMachines);
     document.querySelectorAll('.term-hmr').forEach(el => el.textContent = termHMR);
+    document.querySelectorAll('.term-machine-ph').forEach(el => {
+      if (el.placeholder) el.placeholder = "Filter by " + termMachine.toLowerCase() + "...";
+    });
+    // Wait, the mr-filter-model says "Search SN/Model..." we can change it to "Search SN/Truck..." if needed, 
+    // but the user said "on fillter on the table it should be Truck / Model". We handled the label above.
+    
   });
 
   window.switchDivision = function(div) {
