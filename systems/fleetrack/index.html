@@ -9204,11 +9204,19 @@
 
     async function loadFtDefectsDashboard() {
       try {
-        const res = await callFrappe(FT_DEFECTS_METHOD, {});
-        const rows = Array.isArray(res.message) ? res.message
-                   : Array.isArray(res)          ? res : [];
-        // Count machines with open defects
-        const openDefects = rows.filter(d => (d.status || "").toLowerCase() === "open");
+        if (!window.supabase) return;
+        const { data: rows, error } = await window.supabase.from('ft_defect').select('machine, status, end_date');
+        if (error) throw error;
+        
+        const currentDiv = window.currentDivision || 'fleetrack';
+        const openDefects = (rows || []).filter(d => {
+            const statusStr = (d.status || "").toLowerCase();
+            const isOpen = statusStr === 'open' || (!d.end_date && statusStr !== 'closed');
+            if (!isOpen) return false;
+            
+            const mDiv = (window.MACHINES_MAP && window.MACHINES_MAP[d.machine]) ? (window.MACHINES_MAP[d.machine].division || 'fleetrack') : 'fleetrack';
+            return mDiv === currentDiv;
+        });
         const uniqueMachines = new Set(openDefects.map(d => d.machine)).size;
         const el = document.getElementById("kpi-machines-defects");
         if (el) el.textContent = uniqueMachines;
@@ -14177,17 +14185,17 @@
         const cName = r.customer || 'Unknown Customer';
         if (groupByCust) {
           if (customerRowSpans[idx] > 0) {
-            custCell = `<td class="df-cell" rowspan="${customerRowSpans[idx]}" style="padding:10px 16px; font-weight:700; color:#0f172a; font-size:12px; border-right:1px solid #e2e8f0; vertical-align:middle; text-align:center; background:#f8fafc;">${cName}</td>`;
+            custCell = `<td class="df-cell" rowspan="${customerRowSpans[idx]}" style="padding:10px 16px; font-weight:700; color:#0f172a; font-size:12px; border-right:1px solid #e2e8f0; vertical-align:middle; text-align:center; background:#f8fafc; max-width:140px; white-space:normal; word-wrap:break-word;">${cName}</td>`;
           }
         } else {
-          custCell = `<td class="df-cell" style="padding:10px 16px; font-weight:700; color:#0f172a; font-size:12px; vertical-align:middle; text-align:center;">${cName}</td>`;
+          custCell = `<td class="df-cell" style="padding:10px 16px; font-weight:700; color:#0f172a; font-size:12px; vertical-align:middle; text-align:center; max-width:140px; white-space:normal; word-wrap:break-word;">${cName}</td>`;
         }
 
         const defectHtml = `
             <div style="display:flex;align-items:center;gap:8px;">
               <span style="background:${typeBg}; color:${typeColor}; padding:2px 8px; border-radius:12px; font-size:9px; font-weight:800; text-transform:uppercase; letter-spacing:0.5px;">${defectType}</span>
             </div>
-            <div style="font-size:11px;color:#64748b;margin-top:4px;">${desc}</div>
+            <div style="font-size:11px;color:#64748b;margin-top:4px; max-width:250px; white-space:normal; word-wrap:break-word; line-height:1.4;">${desc}</div>
         `;
 
         const machineModel = r.model || r.oem || 'Unknown Machine';
@@ -14211,7 +14219,7 @@
         let displayStatus = r.status || status;
         if (displayStatus.length > 50) displayStatus = displayStatus.substring(0, 47) + '...';
 
-        const statusHtml = `<div style="font-weight:800;color:${statusColor};font-size:11px;text-transform:uppercase;">${displayStatus}</div>${extraStatusHtml}`;
+        const statusHtml = `<div style="font-weight:800;color:${statusColor};font-size:11px;text-transform:uppercase; max-width:180px; white-space:normal; word-wrap:break-word; line-height:1.4;">${displayStatus}</div>${extraStatusHtml}`;
         
         const tedStr = (r.ted_status === 'TBA') ? 'TBA' : ((r.ted && r.ted.trim() !== '') ? new Date(r.ted.split(" ")[0]).toLocaleDateString('en-GB', {day:'2-digit', month:'short', year:'numeric'}) : "-");
         const redStr = (r.red && r.red.trim() !== '') ? new Date(r.red.split(" ")[0]).toLocaleDateString('en-GB', {day:'2-digit', month:'short', year:'numeric'}) : "-";
@@ -26083,6 +26091,9 @@ window.loadISR = async function() {
     }
     if (typeof renderDashboardFsp === 'function') {
         try { renderDashboardFsp(); } catch(e){}
+    }
+    if (typeof loadFtDefectsDashboard === 'function') {
+        try { loadFtDefectsDashboard(); } catch(e){}
     }
   };
 </script>
