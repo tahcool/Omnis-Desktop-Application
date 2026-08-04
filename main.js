@@ -792,7 +792,13 @@ ipcMain.handle('supabase:query', async (event, { table, method, params, data }) 
       if (params.order) query = query.order(params.order.column, { ascending: params.order.ascending ?? true });
       if (params.limit) query = query.limit(params.limit);
       if (params.range) query = query.range(params.range.from, params.range.to);
-      if (params.or) query = query.or(params.or);
+      if (params.or) {
+        if (Array.isArray(params.or)) {
+          params.or.forEach(val => query = query.or(val));
+        } else {
+          query = query.or(params.or);
+        }
+      }
 
 
     } else if (method === 'getOne') {

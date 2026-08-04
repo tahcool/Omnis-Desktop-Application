@@ -3485,7 +3485,7 @@
         <!-- Division Toggle -->
         <select id="division-toggle" onchange="window.switchDivision(this.value)" style="background: rgba(255,255,255,0.1); color: #fff; border: 1px solid rgba(255,255,255,0.2); border-radius: 8px; padding: 6px 12px; font-size: 13px; font-weight: 600; outline: none; cursor: pointer; margin-right: 10px;">
           <option value="fleetrack" style="color: #0f172a;">Fleetrack</option>
-          <option value="powerstar" style="color: #0f172a;">Sinopower</option>
+          <option value="sinopower" style="color: #0f172a;">Sinopower</option>
         </select>
 
         <!-- Settings dropdown -->
@@ -4260,7 +4260,7 @@
                   <input type="checkbox" id="mr-filter-group-cust" checked="" onchange="refreshMachineRegisterReport()" style="width:14px; height:14px; accent-color:#334155;">
                   Group by Customer
                 </label>
-                <button onclick="(function(){ document.getElementById('mr-filter-region').value=''; document.getElementById('mr-filter-customer').value=''; document.getElementById('mr-filter-model').value=''; document.getElementById('mr-filter-fleetrack').value='Yes'; document.getElementById('mr-filter-warranty').value=''; document.getElementById('mr-filter-group-cust').checked=true; refreshMachineRegisterReport(); })()" style="background:#e2e8f0; color:#475569; border:none; padding:6px 12px; border-radius:6px; font-size:10px; font-weight:700; cursor:pointer; transition:background 0.2s; white-space:nowrap;" onmouseover="this.style.background='#cbd5e1'" onmouseout="this.style.background='#e2e8f0'">↺ Reset</button>
+                <button onclick="(function(){ document.getElementById('mr-filter-region').value=''; document.getElementById('mr-filter-customer').value=''; document.getElementById('mr-filter-model').value=''; document.getElementById('mr-filter-fleetrack').value=window.currentDivision === 'fleetrack' ? 'Yes' : ''; document.getElementById('mr-filter-warranty').value=''; document.getElementById('mr-filter-group-cust').checked=true; refreshMachineRegisterReport(); })()" style="background:#e2e8f0; color:#475569; border:none; padding:6px 12px; border-radius:6px; font-size:10px; font-weight:700; cursor:pointer; transition:background 0.2s; white-space:nowrap;" onmouseover="this.style.background='#cbd5e1'" onmouseout="this.style.background='#e2e8f0'">↺ Reset</button>
               </div>
             </div>
           </div>
@@ -9956,6 +9956,9 @@
         let colMachine = `<td class="mr-machine-link" data-machine-name="${String(r.name).replace(/"/g, '&quot;')}" style="${commonTdStyle}cursor:pointer;">${machineHtml}</td>`;
 
         // --- Column 4: Service Scheduling ---
+        let metricSuffix = (r.service_tracking_metric === 'Mileage' || r.service_tracking_metric === 'Kilometers') ? 'KM' : 'HRS';
+        let metricSuffixLower = metricSuffix.toLowerCase();
+        
         let schedHtml = "";
         
         let obligation = safeText(r.service_obligation || "Not Specified");
@@ -9974,22 +9977,22 @@
         schedHtml += `  <div style="display:flex; justify-content:space-between; align-items:baseline;">
                           <span>Last Serviced:</span>
                           <div style="flex-grow:1; border-bottom:1px dotted #cbd5e1; margin:0 8px;"></div>
-                          <span style="font-weight:600;color:#0f172a;">${lastHmr} HRS <span style="color:#94a3b8;">(${lastDate})</span></span>
+                          <span style="font-weight:600;color:#0f172a;">${lastHmr} ${metricSuffix} <span style="color:#94a3b8;">(${lastDate})</span></span>
                         </div>`;
         schedHtml += `  <div style="display:flex; justify-content:space-between; align-items:baseline;">
                           <span>Next Service (${interval}H interval):</span>
                           <div style="flex-grow:1; border-bottom:1px dotted #cbd5e1; margin:0 8px;"></div>
-                          <span style="font-weight:600;color:#0f172a;">${nextHmr} HRS ${nextType ? '('+nextType+'H)' : ''}</span>
+                          <span style="font-weight:600;color:#0f172a;">${nextHmr} ${metricSuffix} ${nextType ? '('+nextType+'H)' : ''}</span>
                         </div>`;
         schedHtml += `</div>`;
         
         if (hrsRemaining != null) {
           if (isOverdue) {
-            schedHtml += `<div style="font-size:9px; font-weight:800; background:#fee2e2; color:#ef4444; padding:4px 8px; border-radius:4px; display:inline-block;">⚠ OVERDUE BY ${Math.abs(hrsRemaining).toFixed(0)} HRS</div>`;
+            schedHtml += `<div style="font-size:9px; font-weight:800; background:#fee2e2; color:#ef4444; padding:4px 8px; border-radius:4px; display:inline-block;">⚠ OVERDUE BY ${Math.abs(hrsRemaining).toFixed(0)} ${metricSuffix}</div>`;
           } else if (isDue) {
-            schedHtml += `<div style="font-size:9px; font-weight:800; background:#fef3c7; color:#d97706; padding:4px 8px; border-radius:4px; display:inline-block;">⚠ DUE IN ${Number(hrsRemaining).toFixed(0)} HRS</div>`;
+            schedHtml += `<div style="font-size:9px; font-weight:800; background:#fef3c7; color:#d97706; padding:4px 8px; border-radius:4px; display:inline-block;">⚠ DUE IN ${Number(hrsRemaining).toFixed(0)} ${metricSuffix}</div>`;
           } else {
-            schedHtml += `<div style="font-size:9px; font-weight:700; color:#10b981; padding:2px 0;">${Number(hrsRemaining).toFixed(0)} hrs remaining</div>`;
+            schedHtml += `<div style="font-size:9px; font-weight:700; color:#10b981; padding:2px 0;">${Number(hrsRemaining).toFixed(0)} ${metricSuffixLower} remaining</div>`;
           }
         } else {
             schedHtml += `<div style="font-size:9px; font-weight:600; color:#94a3b8; font-style:italic;">No schedule data</div>`;
@@ -10013,7 +10016,7 @@
                           onmouseout="this.style.textDecoration='none'; this.style.color='#2563eb';"
                           title="Click to update HMR"
                         >
-                          ${currentHmr} <span style="font-size:8px;font-weight:700;color:#64748b;background:#f1f5f9;padding:2px 4px;border-radius:4px;margin-bottom:2px; pointer-events:none;">HRS</span>
+                          ${currentHmr} <span style="font-size:8px;font-weight:700;color:#64748b;background:#f1f5f9;padding:2px 4px;border-radius:4px;margin-bottom:2px; pointer-events:none;">${metricSuffix}</span>
                         </div>`;
         
         let hmrDate = r.modified ? formatDateDA(r.modified.split(" ")[0]) : "Unknown";
@@ -10448,7 +10451,7 @@
         };
         const currentDiv = window.currentDivision || 'fleetrack';
         // Supabase fetch
-        let query = supabase.from('ft_breakdown_logs').select('*').eq('division', currentDiv);
+        let query = supabase.from('ft_breakdown_logs').select('*').eq('division', currentDiv).or('breakdown_end_date.is.null');
         if (filters.region) query = query.ilike('region', `%${filters.region}%`);
         if (filters.customer) query = query.ilike('customer', `%${filters.customer}%`);
         if (filters.ifn) query = query.ilike('fleet_no', `%${filters.ifn}%`);
@@ -26071,23 +26074,28 @@ window.loadISR = async function() {
 <script>
   window.currentDivision = 'fleetrack';
   window.switchDivision = function(div) {
-    window.currentDivision = div;
-    const termMachine = div === 'powerstar' ? 'Truck' : 'Machine';
-    const termMachines = div === 'powerstar' ? 'Trucks' : 'Machines';
-    const termHMR = div === 'powerstar' ? 'Mileage' : 'HMR';
-    
-    document.querySelectorAll('.term-machine').forEach(el => el.textContent = termMachine);
-    document.querySelectorAll('.term-machines').forEach(el => el.textContent = termMachines);
-    document.querySelectorAll('.term-hmr').forEach(el => el.textContent = termHMR);
-    
-    if (typeof loadDailyBreakdownReport === 'function') loadDailyBreakdownReport();
-    if (typeof loadFtCustomers === 'function') loadFtCustomers();
-    if (typeof loadFtMachineRegister === 'function') loadFtMachineRegister();
-    if (typeof filterDefectsTable === 'function') {
-        try { filterDefectsTable(); } catch(e){}
-    }
-    if (typeof loadFieldServicePlan === 'function') {
-        try { loadFieldServicePlan(); } catch(e){}
+  window.currentDivision = div;
+  const termMachine = div === 'sinopower' ? 'Truck' : 'Machine';
+  const termMachines = div === 'sinopower' ? 'Trucks' : 'Machines';
+  const termHMR = div === 'sinopower' ? 'Mileage' : 'HMR';
+  
+  document.querySelectorAll('.term-machine').forEach(el => el.textContent = termMachine);
+  document.querySelectorAll('.term-machines').forEach(el => el.textContent = termMachines);
+  document.querySelectorAll('.term-hmr').forEach(el => el.textContent = termHMR);
+  
+  const ftFilter = document.getElementById('mr-filter-fleetrack');
+  if (ftFilter) {
+    ftFilter.value = div === 'fleetrack' ? 'Yes' : '';
+  }
+  
+  if (typeof loadDailyBreakdownReport === 'function') loadDailyBreakdownReport();
+  if (typeof loadFtCustomers === 'function') loadFtCustomers();
+  if (typeof loadFtMachineRegister === 'function') loadFtMachineRegister();
+  if (typeof filterDefectsTable === 'function') {
+      try { filterDefectsTable(); } catch(e){}
+  }
+  if (typeof loadFieldServicePlan === 'function') {
+      try { loadFieldServicePlan(); } catch(e){}
     }
     if (typeof renderDashboardFsp === 'function') {
         try { renderDashboardFsp(); } catch(e){}

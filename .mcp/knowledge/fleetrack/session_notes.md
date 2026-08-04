@@ -150,3 +150,4 @@
 \n- **Commit a21f70a** (2026-08-03): chore: Update knowledge files
 \n- **Commit 5b99b3e** (2026-08-03): UI styling updates for buttons and module cards
 \n- **Commit 91404c4** (2026-08-04): feat: Integrate Sinopower division, data segmentation, and UI filters
+\n- **Commit 605da3e** (2026-08-04): fix: sync Powerstar defects to Supabase and fix UI scrolling issues
