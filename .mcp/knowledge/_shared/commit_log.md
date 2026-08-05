@@ -356,3 +356,5 @@
   Files: .mcp/knowledge/_shared/commit_log.md,.mcp/knowledge/fleetrack/session_notes.md,scripts/fix_defects_dashboard.js,scripts/fix_defects_scroll.js,scripts/sync_powerstar_defects.js,systems/fleetrack/index.html,
 - `bf67e1d` 2026-08-04 [supabase-migration] Restore point before terminology change
   Files: scripts/patch_division_persistence.js,scripts/patch_modal.js,scripts/replace_dropdown.js,systems/fleetrack/index.html,temp.html,
+- `278307c` 2026-08-04 [supabase-migration] Restore point: UI terminology updates applied
+  Files: .mcp/knowledge/_shared/commit_log.md,.mcp/knowledge/fleetrack/session_notes.md,scripts/check_terminology.js,scripts/fix_newlines.js,scripts/fix_newlines2.js,scripts/patch_terminology.js,scripts/patch_terminology_2.js,systems/fleetrack/index.html,
