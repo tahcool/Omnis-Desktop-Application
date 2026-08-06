@@ -155,3 +155,4 @@
 \n- **Commit 278307c** (2026-08-04): Restore point: UI terminology updates applied
 \n- **Commit baeabd9** (2026-08-05): Create restore point before modifying responsibility filter
 \n- **Commit 1a39434** (2026-08-06): Fix Desktop App closed breakdowns display and sync script mapping
+\n- **Commit 1ea406b** (2026-08-06): chore: restore point for fleetrack dashboard fixes
