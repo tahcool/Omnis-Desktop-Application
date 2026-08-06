@@ -4075,6 +4075,10 @@
                   <label for="dbr-filter-urgent" style="font-size:13px; font-weight:600; color:#475569; cursor:pointer; white-space:nowrap;">Urgent Only</label>
                 </div>
                 <div style="display:flex; align-items:center; gap:8px;">
+                  <input type="checkbox" id="dbr-group-customer" onchange="renderDailyBreakdownReport(CURRENT_DBR_ROWS, true)" style="width:16px; height:16px; cursor:pointer; accent-color:#f02510;">
+                  <label for="dbr-group-customer" style="font-size:13px; font-weight:700; color:#64748b; cursor:pointer; white-space:nowrap; text-transform:uppercase;">GROUP BY CUST</label>
+                </div>
+                <div style="display:flex; align-items:center; gap:8px;">
                   <input type="checkbox" id="dbr-filter-closed" style="width:16px; height:16px; cursor:pointer;">
                   <label for="dbr-filter-closed" style="font-size:13px; font-weight:600; color:#475569; cursor:pointer; white-space:nowrap;">Include Closed</label>
                 </div>
@@ -4083,7 +4087,7 @@
             <div style="display:flex; gap:8px;">
               <button onclick="loadDailyBreakdownReport()" style="background:#334155; color:#fff; border:none; padding:9px 20px; border-radius:8px; font-size:13px; font-weight:600; cursor:pointer;">Apply
                 Filters</button>
-              <button onclick="(function(){ document.getElementById('dbr-filter-region').value=''; document.getElementById('dbr-filter-customer').value=''; document.getElementById('dbr-filter-machine').value=''; document.getElementById('dbr-filter-responsibility').value=''; document.getElementById('dbr-filter-urgent').checked=false; document.getElementById('dbr-filter-closed').checked=false; document.getElementById('dbr-filter-ifn').value=''; document.getElementById('dbr-filter-cfn').value=''; loadDailyBreakdownReport(); })()" style="background:#e2e8f0; color:#475569; border:none; padding:9px 20px; border-radius:8px; font-size:13px; font-weight:600; cursor:pointer;">Reset</button>
+              <button onclick="(function(){ document.getElementById('dbr-filter-region').value=''; document.getElementById('dbr-filter-customer').value=''; document.getElementById('dbr-filter-machine').value=''; document.getElementById('dbr-filter-responsibility').value=''; document.getElementById('dbr-filter-urgent').checked=false; document.getElementById('dbr-filter-closed').checked=false; document.getElementById('dbr-group-customer').checked=false; document.getElementById('dbr-filter-ifn').value=''; document.getElementById('dbr-filter-cfn').value=''; loadDailyBreakdownReport(); })()" style="background:#e2e8f0; color:#475569; border:none; padding:9px 20px; border-radius:8px; font-size:13px; font-weight:600; cursor:pointer;">Reset</button>
             </div>
           </div>
 
@@ -12266,9 +12270,30 @@
       if (elAvg) elAvg.textContent = avgDays;
       if (elUrgent) elUrgent.textContent = urgentCount;
 
+      const isGrouped = document.getElementById("dbr-group-customer")?.checked;
+      if (isGrouped) {
+          dataToRender.sort((a,b) => (a.customer||'').localeCompare(b.customer||''));
+      }
+
       // Slice for pagination
       const startIndex = (DBR_PAGE - 1) * DBR_PAGE_SIZE;
       const paginatedData = dataToRender.slice(startIndex, startIndex + DBR_PAGE_SIZE);
+
+      const customerRowSpans = {};
+      if (isGrouped) {
+          let i = 0;
+          while (i < paginatedData.length) {
+              const cust = paginatedData[i].customer || 'Unknown Customer';
+              let count = 1;
+              for (let j = i + 1; j < paginatedData.length; j++) {
+                  if ((paginatedData[j].customer || 'Unknown Customer') === cust) count++;
+                  else break;
+              }
+              customerRowSpans[i] = count;
+              for (let k = i + 1; k < i + count; k++) customerRowSpans[k] = 0;
+              i += count;
+          }
+      }
 
       paginatedData.forEach((row, i) => {
         const index = startIndex + i;
@@ -12310,15 +12335,28 @@
           tr.classList.add("urgent-row");
         }
 
+        let custCell = "";
+        const cName = safeText(customer);
+        if (isGrouped) {
+            if (customerRowSpans[i] > 0) {
+                custCell = `<td rowspan="${customerRowSpans[i]}" style="padding:12px 16px; vertical-align:middle; background:#fcfcfc; word-wrap:break-word; border-bottom:1px solid #e5e7eb; border-right:1px solid #e5e7eb; min-width:140px;">
+                    <div style="font-weight:800;color:#0f172a;font-size:12px;line-height:1.2;">${cName}</div>
+                    <div style="font-size:10px; color:#64748b; margin-top:4px; font-weight:600;">${customerRowSpans[i]} Breakdowns</div>
+                </td>`;
+            }
+        } else {
+            custCell = `<td style="${commonTdStyle}">
+                <div style="font-weight:700;color:#0f172a;margin-bottom:4px;">${cName}</div>
+                ${customerRef}
+                ${region}
+            </td>`;
+        }
+
         tr.innerHTML = `
       <td style="${commonTdStyle}text-align:center;font-weight:700;color:#64748b;font-size:12px;">${index + 1}</td>
+      ${custCell}
       <td style="${commonTdStyle}">
-        <div style="font-weight:700;color:#0f172a;margin-bottom:4px;">${safeText(customer)}</div>
-      ${customerRef}
-      ${region}
-    </td>
-    <td style="${commonTdStyle}">
-      <div style="font-weight:700;color:#0f172a;margin-bottom:4px;">${safeText(machine)}</div>
+        <div style="font-weight:700;color:#0f172a;margin-bottom:4px;">${safeText(machine)}</div>
       ${sn}
       ${fleetNo}
       ${hmr}
