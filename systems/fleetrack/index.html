@@ -13138,11 +13138,11 @@
       btn.disabled = true;
 
       try {
-        let query = supabase.from('ft_breakdown_logs').delete();
+        let query;
         if (CURRENT_EDIT_ROW.id) {
-          query = query.eq('id', CURRENT_EDIT_ROW.id);
+          query = supabase.from('ft_breakdown_logs').delete().eq('id', CURRENT_EDIT_ROW.id);
         } else {
-          query = query.eq('frappe_name', CURRENT_EDIT_ROW.name);
+          query = supabase.from('ft_breakdown_logs').delete().eq('frappe_name', CURRENT_EDIT_ROW.name);
         }
         const { error } = await query;
         if (error) throw error;
@@ -13220,11 +13220,11 @@
       if (payload.supervisor_comment !== undefined) updateData.manager_comments = payload.supervisor_comment;
       if (payload.supervisor_approved) updateData.supervisor_approved = true;
 
-      let query = supabase.from('ft_breakdown_logs').update(updateData);
+      let query;
       if (CURRENT_EDIT_ROW.id) {
-        query = query.eq('id', CURRENT_EDIT_ROW.id);
+        query = supabase.from('ft_breakdown_logs').update(updateData).eq('id', CURRENT_EDIT_ROW.id);
       } else {
-        query = query.eq('frappe_name', CURRENT_EDIT_ROW.name);
+        query = supabase.from('ft_breakdown_logs').update(updateData).eq('frappe_name', CURRENT_EDIT_ROW.name);
       }
       
       const { error: updateError } = await query;
