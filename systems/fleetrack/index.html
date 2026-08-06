@@ -10532,11 +10532,7 @@
             query = query.or(`machine.ilike.%${filters.machine}%,model.ilike.%${filters.machine}%,serial_number.ilike.%${filters.machine}%,fleet_no.ilike.%${filters.machine}%`);
           }
           if (filters.responsibility) {
-            if (filters.responsibility === 'FSD') {
-              query = query.or(`responsibility.ilike.%${filters.responsibility}%,responsibility.is.null,responsibility.eq.""`);
-            } else {
-              query = query.ilike('responsibility', `%${filters.responsibility}%`);
-            }
+            query = query.ilike('responsibility', `%${filters.responsibility}%`);
           }
           if (filters.urgent) query = query.eq('urgent', true);
 
