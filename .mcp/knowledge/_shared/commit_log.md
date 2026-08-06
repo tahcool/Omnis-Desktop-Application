@@ -378,3 +378,5 @@
   Files: .mcp/knowledge/_shared/commit_log.md,.mcp/knowledge/fleetrack/session_notes.md,systems/fleetrack/index.html,
 - `7a2a3fe` 2026-08-06 [supabase-migration] chore: bump version to 4.2.18
   Files: .mcp/knowledge/_shared/commit_log.md,.mcp/knowledge/fleetrack/session_notes.md,package.json,
+- `78d21bf` 2026-08-06 [supabase-migration] chore: swap Machine and Defect columns in Defects table
+  Files: .mcp/knowledge/_shared/commit_log.md,.mcp/knowledge/fleetrack/session_notes.md,systems/fleetrack/index.html,
