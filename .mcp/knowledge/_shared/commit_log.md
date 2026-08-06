@@ -374,3 +374,5 @@
   Files: .mcp/knowledge/_shared/commit_log.md,.mcp/knowledge/fleetrack/session_notes.md,systems/fleetrack/index.html,
 - `2b7119d` 2026-08-06 [supabase-migration] fix: always show machine data labels (SN, Fleet, HMR) even when blank, and restore Ref/Region to grouped customer cell
   Files: .mcp/knowledge/_shared/commit_log.md,.mcp/knowledge/fleetrack/session_notes.md,systems/fleetrack/index.html,
+- `15a001c` 2026-08-06 [supabase-migration] fix: populate missing DBR fields by falling back to MACHINES_MAP for latest machine registry data
+  Files: .mcp/knowledge/_shared/commit_log.md,.mcp/knowledge/fleetrack/session_notes.md,systems/fleetrack/index.html,
