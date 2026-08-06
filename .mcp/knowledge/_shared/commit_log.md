@@ -376,3 +376,5 @@
   Files: .mcp/knowledge/_shared/commit_log.md,.mcp/knowledge/fleetrack/session_notes.md,systems/fleetrack/index.html,
 - `15a001c` 2026-08-06 [supabase-migration] fix: populate missing DBR fields by falling back to MACHINES_MAP for latest machine registry data
   Files: .mcp/knowledge/_shared/commit_log.md,.mcp/knowledge/fleetrack/session_notes.md,systems/fleetrack/index.html,
+- `7a2a3fe` 2026-08-06 [supabase-migration] chore: bump version to 4.2.18
+  Files: .mcp/knowledge/_shared/commit_log.md,.mcp/knowledge/fleetrack/session_notes.md,package.json,

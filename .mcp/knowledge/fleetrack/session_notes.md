@@ -161,3 +161,4 @@
 \n- **Commit 8bd25c6** (2026-08-06): fix: print DBR table ordering, conditionally show machine data, and implement customer rowspan grouping in print view
 \n- **Commit 2b7119d** (2026-08-06): fix: always show machine data labels (SN, Fleet, HMR) even when blank, and restore Ref/Region to grouped customer cell
 \n- **Commit 15a001c** (2026-08-06): fix: populate missing DBR fields by falling back to MACHINES_MAP for latest machine registry data
+\n- **Commit 7a2a3fe** (2026-08-06): chore: bump version to 4.2.18
