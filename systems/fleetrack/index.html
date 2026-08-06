@@ -10931,10 +10931,14 @@
          const ted = r.ted ? formatDateDA(r.ted) : (r.ted_status || "—");
          const red = r.red ? formatDateDA(r.red) : "—";
 
+         const mObj = window.MACHINES_MAP?.[r.machine] || {};
+         const cName = safeText(r.customer || mObj.customer) || "—";
+         const cRefStr = safeText(r.customer_ref || mObj.customer_ref);
+         const cRegionStr = safeText(r.region || mObj.region);
+         
          let custCell = "";
-         const cName = safeText(r.customer) || "—";
-         const cRef = r.customer_ref ? `<div style="font-size:10px;color:#64748b;margin-top:2px;">Ref ▶ <strong>${safeText(r.customer_ref)}</strong></div>` : "";
-         const cRegion = r.region ? `<div style="font-size:10px;color:#64748b;margin-top:2px;">📍 ${safeText(r.region)}</div>` : "";
+         const cRef = cRefStr ? `<div style="font-size:10px;color:#64748b;margin-top:2px;">Ref ▶ <strong>${cRefStr}</strong></div>` : "";
+         const cRegion = cRegionStr ? `<div style="font-size:10px;color:#64748b;margin-top:2px;">📍 ${cRegionStr}</div>` : "";
          
          if (isGrouped) {
              if (customerRowSpans[idx] > 0) {
@@ -10952,11 +10956,17 @@
              </td>`;
          }
 
-         const srnHtml = `<div style="font-size:10px;color:#64748b;margin-top:2px;">SRN ▶ <strong>${safeText(r.serial_number) || ""}</strong></div>`;
-         const fleetHtml = `<div style="font-size:10px;color:#64748b;margin-top:2px;">Fleet No ▶ <strong>${safeText(r.fleet_no) || ""}</strong></div>`;
-         const hmrHtml = `<div style="font-size:10px;color:#64748b;margin-top:2px;">Current HMR ▶ <strong>${safeText(r.current_hmr) || ""}</strong></div>`;
+         const cModelStr = safeText(r.model || mObj.model);
+         const cSnStr = safeText(r.serial_number || r.machine || mObj.sn || mObj.machine_sn);
+         const cFleetStr = safeText(r.fleet_no || mObj.fleet_no || mObj.mxg_fleet_no);
+         const cHmrStr = safeText(r.current_hmr || mObj.current_hmr || mObj.hmr);
+         const cWtyStr = safeText(r.warranty_status || mObj.warranty_status);
+
+         const srnHtml = `<div style="font-size:10px;color:#64748b;margin-top:2px;">SRN ▶ <strong>${cSnStr || ""}</strong></div>`;
+         const fleetHtml = `<div style="font-size:10px;color:#64748b;margin-top:2px;">Fleet No ▶ <strong>${cFleetStr || ""}</strong></div>`;
+         const hmrHtml = `<div style="font-size:10px;color:#64748b;margin-top:2px;">Current HMR ▶ <strong>${cHmrStr || ""}</strong></div>`;
          const machineRunningHtml = `<div style="font-size:10px;color:#64748b;margin-top:2px;">Machine Running? ▶ <strong>${safeText(r.machine_running || 'No')}</strong></div>`;
-         const warrantyHtml = r.warranty_status ? `<div style="font-size:9px;color:#0f172a;font-weight:bold;margin-top:4px;">${safeText(r.warranty_status)}</div>` : "";
+         const warrantyHtml = cWtyStr ? `<div style="font-size:9px;color:#0f172a;font-weight:bold;margin-top:4px;">${cWtyStr}</div>` : "";
 
          html += `
            <tr>
@@ -12360,19 +12370,28 @@
         const tr = document.createElement("tr");
         tr.style.cssText = "border-bottom:1px solid #e5e7f0;";
 
-        // Map snake_case to format
-        const customer = row.customer || "—";
-        const customerRef = row.customer_ref ? `<div style="font-size:10px;color:var(--text-muted);">Ref: <strong>${safeText(row.customer_ref)}</strong></div>` : "";
-        const region = row.region ? `<div style="font-size:10px;color:var(--text-muted);">${safeText(row.region)}</div>` : "";
+        const mObj = window.MACHINES_MAP?.[row.machine] || {};
 
-        const machine = row.model || "—";
-        const sn = `<div style="font-size:10px;color:var(--text-muted);">SN: <strong>${safeText(row.serial_number) || ""}</strong></div>`;
-        const fleetNo = `<div style="font-size:10px;color:var(--text-muted);">Fleet: <strong>${safeText(row.fleet_no) || ""}</strong></div>`;
-        const hmr = `<div style="font-size:10px;color:var(--text-muted);">HMR: <strong>${safeText(row.current_hmr) || ""}</strong></div>`;
+        const customer = row.customer || mObj.customer || "—";
+        const cRefStr = safeText(row.customer_ref || mObj.customer_ref);
+        const cRegionStr = safeText(row.region || mObj.region);
+
+        const customerRef = cRefStr ? `<div style="font-size:10px;color:var(--text-muted);">Ref: <strong>${cRefStr}</strong></div>` : "";
+        const region = cRegionStr ? `<div style="font-size:10px;color:var(--text-muted);">${cRegionStr}</div>` : "";
+
+        const machine = row.model || mObj.model || "—";
+        const snStr = safeText(row.serial_number || row.machine || mObj.sn || mObj.machine_sn);
+        const fleetNoStr = safeText(row.fleet_no || mObj.fleet_no || mObj.mxg_fleet_no);
+        const hmrStr = safeText(row.current_hmr || mObj.current_hmr || mObj.hmr);
+        const wtyStr = safeText(row.warranty_status || mObj.warranty_status);
+
+        const sn = `<div style="font-size:10px;color:var(--text-muted);">SN: <strong>${snStr || ""}</strong></div>`;
+        const fleetNo = `<div style="font-size:10px;color:var(--text-muted);">Fleet: <strong>${fleetNoStr || ""}</strong></div>`;
+        const hmr = `<div style="font-size:10px;color:var(--text-muted);">HMR: <strong>${hmrStr || ""}</strong></div>`;
 
         let wtyBadge = "";
-        if (row.warranty_status && row.warranty_status !== "Out of Warranty" && row.warranty_status !== "N/A") {
-          wtyBadge = `<span style="font-size:9px;background:#fee2e2;color:#ef4444;padding:2px 4px;border-radius:4px;display:inline-block;margin-top:2px;">${safeText(row.warranty_status)}</span>`;
+        if (wtyStr && wtyStr !== "Out of Warranty" && wtyStr !== "N/A") {
+          wtyBadge = `<span style="font-size:9px;background:#fee2e2;color:#ef4444;padding:2px 4px;border-radius:4px;display:inline-block;margin-top:2px;">${wtyStr}</span>`;
         }
 
         const date = row.breakdown_date ? formatDateDA(row.breakdown_date) : "—";
