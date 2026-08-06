@@ -158,3 +158,4 @@
 \n- **Commit 1ea406b** (2026-08-06): chore: restore point for fleetrack dashboard fixes
 \n- **Commit 0669eef** (2026-08-06): chore: restore point before FSD filter fix
 \n- **Commit 84509c6** (2026-08-06): fix: use rowspan for DBR customer grouping instead of accordion style
+\n- **Commit 8bd25c6** (2026-08-06): fix: print DBR table ordering, conditionally show machine data, and implement customer rowspan grouping in print view

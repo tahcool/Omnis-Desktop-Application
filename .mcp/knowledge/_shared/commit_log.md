@@ -370,3 +370,5 @@
   Files: .mcp/knowledge/_shared/commit_log.md,.mcp/knowledge/fleetrack/session_notes.md,scripts/fix_dates.js,scripts/fix_dates_2.js,scripts/test_frappe.js,scripts/test_frappe2.js,scripts/test_frappe3.js,scripts/test_frappe4.js,scripts/test_frappe5.js,scripts/test_frappe_real.js,
 - `84509c6` 2026-08-06 [supabase-migration] fix: use rowspan for DBR customer grouping instead of accordion style
   Files: systems/fleetrack/index.html,
+- `8bd25c6` 2026-08-06 [supabase-migration] fix: print DBR table ordering, conditionally show machine data, and implement customer rowspan grouping in print view
+  Files: .mcp/knowledge/_shared/commit_log.md,.mcp/knowledge/fleetrack/session_notes.md,systems/fleetrack/index.html,

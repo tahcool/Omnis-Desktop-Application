@@ -10952,10 +10952,10 @@
              </td>`;
          }
 
-         const srnHtml = r.serial_number ? `<div style="font-size:10px;color:#64748b;margin-top:2px;">SRN ▶ <strong>${safeText(r.serial_number)}</strong></div>` : "";
-         const fleetHtml = r.fleet_no ? `<div style="font-size:10px;color:#64748b;margin-top:2px;">Fleet No ▶ <strong>${safeText(r.fleet_no)}</strong></div>` : "";
-         const hmrHtml = r.current_hmr ? `<div style="font-size:10px;color:#64748b;margin-top:2px;">Current HMR ▶ <strong>${safeText(r.current_hmr)}</strong></div>` : "";
-         const machineRunningHtml = r.machine_running ? `<div style="font-size:10px;color:#64748b;margin-top:2px;">Machine Running? ▶ <strong>${safeText(r.machine_running)}</strong></div>` : "";
+         const srnHtml = `<div style="font-size:10px;color:#64748b;margin-top:2px;">SRN ▶ <strong>${safeText(r.serial_number) || ""}</strong></div>`;
+         const fleetHtml = `<div style="font-size:10px;color:#64748b;margin-top:2px;">Fleet No ▶ <strong>${safeText(r.fleet_no) || ""}</strong></div>`;
+         const hmrHtml = `<div style="font-size:10px;color:#64748b;margin-top:2px;">Current HMR ▶ <strong>${safeText(r.current_hmr) || ""}</strong></div>`;
+         const machineRunningHtml = `<div style="font-size:10px;color:#64748b;margin-top:2px;">Machine Running? ▶ <strong>${safeText(r.machine_running || 'No')}</strong></div>`;
          const warrantyHtml = r.warranty_status ? `<div style="font-size:9px;color:#0f172a;font-weight:bold;margin-top:4px;">${safeText(r.warranty_status)}</div>` : "";
 
          html += `
@@ -12366,9 +12366,9 @@
         const region = row.region ? `<div style="font-size:10px;color:var(--text-muted);">${safeText(row.region)}</div>` : "";
 
         const machine = row.model || "—";
-        const sn = row.serial_number ? `<div style="font-size:10px;color:var(--text-muted);">SN: ${safeText(row.serial_number)}</div>` : "";
-        const fleetNo = row.fleet_no ? `<div style="font-size:10px;color:var(--text-muted);">Fleet: <strong>${safeText(row.fleet_no)}</strong></div>` : "";
-        const hmr = row.current_hmr ? `<div style="font-size:10px;color:var(--text-muted);">HMR: ${safeText(row.current_hmr)}</div>` : "";
+        const sn = `<div style="font-size:10px;color:var(--text-muted);">SN: <strong>${safeText(row.serial_number) || ""}</strong></div>`;
+        const fleetNo = `<div style="font-size:10px;color:var(--text-muted);">Fleet: <strong>${safeText(row.fleet_no) || ""}</strong></div>`;
+        const hmr = `<div style="font-size:10px;color:var(--text-muted);">HMR: <strong>${safeText(row.current_hmr) || ""}</strong></div>`;
 
         let wtyBadge = "";
         if (row.warranty_status && row.warranty_status !== "Out of Warranty" && row.warranty_status !== "N/A") {
@@ -12401,6 +12401,8 @@
             if (customerRowSpans[i] > 0) {
                 custCell = `<td rowspan="${customerRowSpans[i]}" style="padding:12px 16px; vertical-align:middle; background:#fcfcfc; word-wrap:break-word; border-bottom:1px solid #e5e7eb; border-right:1px solid #e5e7eb; min-width:140px;">
                     <div style="font-weight:800;color:#0f172a;font-size:12px;line-height:1.2;">${cName}</div>
+                    ${customerRef}
+                    ${region}
                     <div style="font-size:10px; color:#64748b; margin-top:4px; font-weight:600;">${customerRowSpans[i]} Breakdowns</div>
                 </td>`;
             }
