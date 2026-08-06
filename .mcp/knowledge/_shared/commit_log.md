@@ -380,3 +380,5 @@
   Files: .mcp/knowledge/_shared/commit_log.md,.mcp/knowledge/fleetrack/session_notes.md,package.json,
 - `78d21bf` 2026-08-06 [supabase-migration] chore: swap Machine and Defect columns in Defects table
   Files: .mcp/knowledge/_shared/commit_log.md,.mcp/knowledge/fleetrack/session_notes.md,systems/fleetrack/index.html,
+- `94130b5` 2026-08-06 [supabase-migration] chore: save uncommitted knowledge base changes
+  Files: .mcp/knowledge/_shared/commit_log.md,.mcp/knowledge/fleetrack/session_notes.md,

@@ -163,3 +163,4 @@
 \n- **Commit 15a001c** (2026-08-06): fix: populate missing DBR fields by falling back to MACHINES_MAP for latest machine registry data
 \n- **Commit 7a2a3fe** (2026-08-06): chore: bump version to 4.2.18
 \n- **Commit 78d21bf** (2026-08-06): chore: swap Machine and Defect columns in Defects table
+\n- **Commit 94130b5** (2026-08-06): chore: save uncommitted knowledge base changes
