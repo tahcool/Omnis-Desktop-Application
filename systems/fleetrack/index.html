@@ -11177,6 +11177,7 @@
       const machine = document.getElementById('dbr-filter-machine');
       const resp = document.getElementById('dbr-filter-responsibility');
       const urgent = document.getElementById('dbr-filter-urgent');
+      const closed = document.getElementById('dbr-filter-closed');
 
       let debounceTimer;
       const debouncedLoad = () => {
@@ -11189,6 +11190,7 @@
       if (region) region.addEventListener('change', () => loadDailyBreakdownReport());
       if (resp) resp.addEventListener('change', () => loadDailyBreakdownReport());
       if (urgent) urgent.addEventListener('change', () => loadDailyBreakdownReport());
+      if (closed) closed.addEventListener('change', () => loadDailyBreakdownReport());
 
       if (customer) customer.addEventListener('input', debouncedLoad);
       if (machine) machine.addEventListener('input', debouncedLoad);
@@ -12252,14 +12254,12 @@
       }
 
       // Update KPI Cards
-      const totalBd = dataToRender.filter(r => !r.end_date).length;
+      const totalBd = dataToRender.length;
       let totalDays = 0;
       let urgentCount = 0;
       dataToRender.forEach(r => {
-        if (!r.end_date) {
-          totalDays += (parseInt(r.days_on_bd) || 0);
-          if (r.urgent) urgentCount++;
-        }
+        totalDays += (parseInt(r.days_on_bd) || 0);
+        if (r.urgent) urgentCount++;
       });
       const avgDays = totalBd > 0 ? (totalDays / totalBd).toFixed(1) : 0;
       

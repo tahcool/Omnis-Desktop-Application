@@ -154,3 +154,4 @@
 \n- **Commit bf67e1d** (2026-08-04): Restore point before terminology change
 \n- **Commit 278307c** (2026-08-04): Restore point: UI terminology updates applied
 \n- **Commit baeabd9** (2026-08-05): Create restore point before modifying responsibility filter
+\n- **Commit 1a39434** (2026-08-06): Fix Desktop App closed breakdowns display and sync script mapping

@@ -361,3 +361,6 @@
 \n## 2026-08-05
 - `baeabd9` 2026-08-05 [supabase-migration] Create restore point before modifying responsibility filter
   Files: .mcp/knowledge/_shared/commit_log.md,.mcp/knowledge/fleetrack/session_notes.md,scripts/add_gradient.js,scripts/fix_gradient.js,scripts/glow_cards.js,scripts/spice_timeline.js,scripts/spice_up.js,scripts/timeline_days.js,systems/fleetrack/index.html,
+\n## 2026-08-06
+- `1a39434` 2026-08-06 [supabase-migration] Fix Desktop App closed breakdowns display and sync script mapping
+  Files: .mcp/knowledge/_shared/commit_log.md,.mcp/knowledge/fleetrack/session_notes.md,.mcp/server.js,add_frappe_mcp.js,fix_responsibility.js,main.js,omnis-tablet/App.tsx,omnis-tablet/fix_dashboard.js,omnis-tablet/fix_dashboard_2.js,omnis-tablet/src/api/supabaseClient.ts,omnis-tablet/src/components/MachineSearch.tsx,omnis-tablet/src/screens/BreakdownsScreen.tsx,omnis-tablet/src/screens/DashboardScreen.tsx,omnis-tablet/src/screens/DefectsScreen.tsx,omnis-tablet/src/screens/FleetrackDashboardScreen.tsx,omnis-tablet/src/screens/InitialServiceReportScreen.tsx,omnis-tablet/src/screens/LoginScreen.tsx,omnis-tablet/src/screens/MachineRegistryScreen.tsx,omnis-tablet/src/screens/SalestackCustomersScreen.tsx,omnis-tablet/src/screens/ServiceTrackingScreen.tsx,
