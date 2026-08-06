@@ -10890,24 +10890,84 @@
     <tbody>
 `;
 
-      CURRENT_DBR_ROWS.forEach(r => {
+      let rowsToPrint = [...CURRENT_DBR_ROWS];
+      const isGrouped = document.getElementById('dbr-group-customer')?.checked;
+      
+      if (isGrouped) {
+          rowsToPrint.sort((a,b) => {
+              const cA = a.customer || '';
+              const cB = b.customer || '';
+              if (cA.localeCompare(cB) !== 0) return cA.localeCompare(cB);
+              const daysA = parseInt(a.days_on_bd) || 0;
+              const daysB = parseInt(b.days_on_bd) || 0;
+              return daysB - daysA;
+          });
+      } else {
+          rowsToPrint.sort((a,b) => {
+              const daysA = parseInt(a.days_on_bd) || 0;
+              const daysB = parseInt(b.days_on_bd) || 0;
+              return daysB - daysA;
+          });
+      }
+
+      const customerRowSpans = {};
+      if (isGrouped) {
+          let i = 0;
+          while (i < rowsToPrint.length) {
+              const cust = rowsToPrint[i].customer || 'Unknown Customer';
+              let count = 1;
+              for (let j = i + 1; j < rowsToPrint.length; j++) {
+                  if ((rowsToPrint[j].customer || 'Unknown Customer') === cust) count++;
+                  else break;
+              }
+              customerRowSpans[i] = count;
+              for (let k = i + 1; k < i + count; k++) customerRowSpans[k] = 0;
+              i += count;
+          }
+      }
+
+      rowsToPrint.forEach((r, idx) => {
          const date = r.breakdown_date ? formatDateDA(r.breakdown_date) : "—";
          const ted = r.ted ? formatDateDA(r.ted) : (r.ted_status || "—");
          const red = r.red ? formatDateDA(r.red) : "—";
+
+         let custCell = "";
+         const cName = safeText(r.customer) || "—";
+         const cRef = r.customer_ref ? `<div style="font-size:10px;color:#64748b;margin-top:2px;">Ref ▶ <strong>${safeText(r.customer_ref)}</strong></div>` : "";
+         const cRegion = r.region ? `<div style="font-size:10px;color:#64748b;margin-top:2px;">📍 ${safeText(r.region)}</div>` : "";
+         
+         if (isGrouped) {
+             if (customerRowSpans[idx] > 0) {
+                 custCell = `<td rowspan="${customerRowSpans[idx]}" style="vertical-align:middle; background:#fcfcfc;">
+                     <div style="font-weight:400;color:#000;">${cName}</div>
+                     ${cRef}
+                     ${cRegion}
+                 </td>`;
+             }
+         } else {
+             custCell = `<td>
+                 <div style="font-weight:400;color:#000;">${cName}</div>
+                 ${cRef}
+                 ${cRegion}
+             </td>`;
+         }
+
+         const srnHtml = r.serial_number ? `<div style="font-size:10px;color:#64748b;margin-top:2px;">SRN ▶ <strong>${safeText(r.serial_number)}</strong></div>` : "";
+         const fleetHtml = r.fleet_no ? `<div style="font-size:10px;color:#64748b;margin-top:2px;">Fleet No ▶ <strong>${safeText(r.fleet_no)}</strong></div>` : "";
+         const hmrHtml = r.current_hmr ? `<div style="font-size:10px;color:#64748b;margin-top:2px;">Current HMR ▶ <strong>${safeText(r.current_hmr)}</strong></div>` : "";
+         const machineRunningHtml = r.machine_running ? `<div style="font-size:10px;color:#64748b;margin-top:2px;">Machine Running? ▶ <strong>${safeText(r.machine_running)}</strong></div>` : "";
+         const warrantyHtml = r.warranty_status ? `<div style="font-size:9px;color:#0f172a;font-weight:bold;margin-top:4px;">${safeText(r.warranty_status)}</div>` : "";
+
          html += `
            <tr>
-             <td>
-               <div style="font-weight:400;color:#000;">${safeText(r.customer) || "—"}</div>
-               <div style="font-size:10px;color:#64748b;margin-top:2px;">Ref ▶ <strong>${safeText(r.customer_ref) || ""}</strong></div>
-               <div style="font-size:10px;color:#64748b;margin-top:2px;">📍 ${safeText(r.region) || ""}</div>
-             </td>
+             ${custCell}
              <td>
                <div style="font-weight:400;color:#000;">${safeText(r.model) || "—"}</div>
-               <div style="font-size:10px;color:#64748b;margin-top:2px;">SRN ▶ <strong>${safeText(r.serial_number) || ""}</strong></div>
-               <div style="font-size:10px;color:#64748b;margin-top:2px;">Fleet No ▶ <strong>${safeText(r.fleet_no) || ""}</strong></div>
-               <div style="font-size:10px;color:#64748b;margin-top:2px;">Current HMR ▶ <strong>${safeText(r.current_hmr) || ""}</strong></div>
-               <div style="font-size:10px;color:#64748b;margin-top:2px;">Machine Running? ▶ <strong>${safeText(r.machine_running || 'No')}</strong></div>
-               <div style="font-size:9px;color:#0f172a;font-weight:bold;margin-top:4px;">${safeText(r.warranty_status) || ""}</div>
+               ${srnHtml}
+               ${fleetHtml}
+               ${hmrHtml}
+               ${machineRunningHtml}
+               ${warrantyHtml}
              </td>
              <td>${date}</td>
              <td>${safeText(r.description) || "—"}</td>
