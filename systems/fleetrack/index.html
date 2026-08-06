@@ -4069,16 +4069,21 @@
             </div>
             <div style="min-width:110px;">
               <label style="display:block; font-size:11px; font-weight:700; color:transparent; margin-bottom:6px; text-transform:uppercase; user-select:none;">Status</label>
-              <div style="display:flex; align-items:center; gap:8px; height:35px;">
-                <input type="checkbox" id="dbr-filter-urgent" style="width:16px; height:16px; cursor:pointer;">
-                <label for="dbr-filter-urgent" style="font-size:13px; font-weight:600; color:#475569; cursor:pointer; white-space:nowrap;">Urgent
-                  Only</label>
+              <div style="display:flex; align-items:center; gap:16px; height:35px;">
+                <div style="display:flex; align-items:center; gap:8px;">
+                  <input type="checkbox" id="dbr-filter-urgent" style="width:16px; height:16px; cursor:pointer;">
+                  <label for="dbr-filter-urgent" style="font-size:13px; font-weight:600; color:#475569; cursor:pointer; white-space:nowrap;">Urgent Only</label>
+                </div>
+                <div style="display:flex; align-items:center; gap:8px;">
+                  <input type="checkbox" id="dbr-filter-closed" style="width:16px; height:16px; cursor:pointer;">
+                  <label for="dbr-filter-closed" style="font-size:13px; font-weight:600; color:#475569; cursor:pointer; white-space:nowrap;">Include Closed</label>
+                </div>
               </div>
             </div>
             <div style="display:flex; gap:8px;">
               <button onclick="loadDailyBreakdownReport()" style="background:#334155; color:#fff; border:none; padding:9px 20px; border-radius:8px; font-size:13px; font-weight:600; cursor:pointer;">Apply
                 Filters</button>
-              <button onclick="(function(){ document.getElementById('dbr-filter-region').value=''; document.getElementById('dbr-filter-customer').value=''; document.getElementById('dbr-filter-machine').value=''; document.getElementById('dbr-filter-responsibility').value=''; document.getElementById('dbr-filter-urgent').checked=false; document.getElementById('dbr-filter-ifn').value=''; document.getElementById('dbr-filter-cfn').value=''; loadDailyBreakdownReport(); })()" style="background:#e2e8f0; color:#475569; border:none; padding:9px 20px; border-radius:8px; font-size:13px; font-weight:600; cursor:pointer;">Reset</button>
+              <button onclick="(function(){ document.getElementById('dbr-filter-region').value=''; document.getElementById('dbr-filter-customer').value=''; document.getElementById('dbr-filter-machine').value=''; document.getElementById('dbr-filter-responsibility').value=''; document.getElementById('dbr-filter-urgent').checked=false; document.getElementById('dbr-filter-closed').checked=false; document.getElementById('dbr-filter-ifn').value=''; document.getElementById('dbr-filter-cfn').value=''; loadDailyBreakdownReport(); })()" style="background:#e2e8f0; color:#475569; border:none; padding:9px 20px; border-radius:8px; font-size:13px; font-weight:600; cursor:pointer;">Reset</button>
             </div>
           </div>
 
@@ -4115,11 +4120,6 @@
                 </tr>
               </thead>
               <tbody id="dbr-tbody">
-                <tr>
-                  <td colspan="10" style="padding:40px;text-align:center;color:#94a3b8;font-size:12px;">
-                    Loading urgent breakdowns...
-                  </td>
-                </tr>
               </tbody>
             </table>
           </div>
@@ -7630,6 +7630,8 @@
     // --- GLOBAL STATE ---
     let CURRENT_MACHINE_REGISTER = [];
     let CURRENT_DBR_ROWS = [];
+    let DBR_PAGE = 1;
+    const DBR_PAGE_SIZE = 50;
     let DBR_ROWS_CACHE = {};
     let CAN_EDIT_COMMENTS = false; // Global flag for permissions
     let CURRENT_SERVER_USER = "Unknown";
@@ -10495,6 +10497,8 @@
       }
 
       setSyncState("syncing");
+      DBR_PAGE = 1;
+      if (window.showOmnisLoader) window.showOmnisLoader('Loading breakdowns...');
       try {
         const filters = {
           region: document.getElementById('dbr-filter-region')?.value || '',
@@ -10504,28 +10508,53 @@
           ifn: document.getElementById('dbr-filter-ifn')?.value || '',
           cfn: document.getElementById('dbr-filter-cfn')?.value || '',
           urgent: document.getElementById('dbr-filter-urgent')?.checked ? 1 : 0,
+          includeClosed: document.getElementById('dbr-filter-closed')?.checked ? 1 : 0,
           _ts: Date.now() // Force fresh fetch to bypass browser cache
         };
         const currentDiv = window.currentDivision || 'fleetrack';
         // Supabase fetch
-        let query = supabase.from('ft_breakdown_logs').select('*').eq('division', currentDiv).or('breakdown_end_date.is.null');
-        if (filters.region) query = query.ilike('region', `%${filters.region}%`);
-        if (filters.customer) query = query.ilike('customer', `%${filters.customer}%`);
-        if (filters.ifn) query = query.ilike('fleet_no', `%${filters.ifn}%`);
-        if (filters.cfn) query = query.ilike('customer_ref', `%${filters.cfn}%`);
-        if (filters.machine) {
-          query = query.or(`machine.ilike.%${filters.machine}%,model.ilike.%${filters.machine}%,serial_number.ilike.%${filters.machine}%,fleet_no.ilike.%${filters.machine}%`);
-        }
-        if (filters.responsibility) {
-          if (filters.responsibility === 'FSD') {
-            query = query.or(`responsibility.ilike.%${filters.responsibility}%,responsibility.is.null,responsibility.eq.""`);
+        let dbData = [];
+        let dbError = null;
+        let limit = 1000;
+        let offset = 0;
+        let hasMore = true;
+
+        while (hasMore) {
+          let query = supabase.from('ft_breakdown_logs').select('*').eq('division', currentDiv);
+          if (!filters.includeClosed) {
+            query = query.or('breakdown_end_date.is.null');
+          }
+          if (filters.region) query = query.ilike('region', `%${filters.region}%`);
+          if (filters.customer) query = query.ilike('customer', `%${filters.customer}%`);
+          if (filters.ifn) query = query.ilike('fleet_no', `%${filters.ifn}%`);
+          if (filters.cfn) query = query.ilike('customer_ref', `%${filters.cfn}%`);
+          if (filters.machine) {
+            query = query.or(`machine.ilike.%${filters.machine}%,model.ilike.%${filters.machine}%,serial_number.ilike.%${filters.machine}%,fleet_no.ilike.%${filters.machine}%`);
+          }
+          if (filters.responsibility) {
+            if (filters.responsibility === 'FSD') {
+              query = query.or(`responsibility.ilike.%${filters.responsibility}%,responsibility.is.null,responsibility.eq.""`);
+            } else {
+              query = query.ilike('responsibility', `%${filters.responsibility}%`);
+            }
+          }
+          if (filters.urgent) query = query.eq('urgent', true);
+
+          const { data: pageData, error } = await query.order('created_at', { ascending: false }).range(offset, offset + limit - 1);
+
+          if (error) {
+            dbError = error;
+            break;
+          }
+
+          if (pageData && pageData.length > 0) {
+            dbData = dbData.concat(pageData);
+            offset += limit;
+            if (pageData.length < limit) hasMore = false;
           } else {
-            query = query.ilike('responsibility', `%${filters.responsibility}%`);
+            hasMore = false;
           }
         }
-        if (filters.urgent) query = query.eq('urgent', true);
-
-        const { data: dbData, error: dbError } = await query.order('created_at', { ascending: false });
 
         let data = { breakdowns: (dbData || []).map(r => {
           let bd = { ...r, name: r.frappe_name || r.id, supervisor_comment: r.manager_comments, resp: r.responsibility, end_date: r.breakdown_end_date };
@@ -10660,6 +10689,7 @@
         console.error("loadDailyBreakdownReport error:", e);
         showToast("DBR Connection Error.", "err", 4500);
       } finally {
+        if (window.hideOmnisLoader) window.hideOmnisLoader();
         refreshOnlineState();
       }
     }
@@ -12222,12 +12252,14 @@
       }
 
       // Update KPI Cards
-      const totalBd = dataToRender.length;
+      const totalBd = dataToRender.filter(r => !r.end_date).length;
       let totalDays = 0;
       let urgentCount = 0;
       dataToRender.forEach(r => {
-        totalDays += (parseInt(r.days_on_bd) || 0);
-        if (r.urgent) urgentCount++;
+        if (!r.end_date) {
+          totalDays += (parseInt(r.days_on_bd) || 0);
+          if (r.urgent) urgentCount++;
+        }
       });
       const avgDays = totalBd > 0 ? (totalDays / totalBd).toFixed(1) : 0;
       
@@ -12238,7 +12270,12 @@
       if (elAvg) elAvg.textContent = avgDays;
       if (elUrgent) elUrgent.textContent = urgentCount;
 
-      dataToRender.forEach((row, index) => {
+      // Slice for pagination
+      const startIndex = (DBR_PAGE - 1) * DBR_PAGE_SIZE;
+      const paginatedData = dataToRender.slice(startIndex, startIndex + DBR_PAGE_SIZE);
+
+      paginatedData.forEach((row, i) => {
+        const index = startIndex + i;
         const tr = document.createElement("tr");
         tr.style.cssText = "border-bottom:1px solid #e5e7f0;";
 
@@ -12346,9 +12383,36 @@
         tbody.appendChild(tr);
       });
 
+      // Pagination Controls Row
+      const totalPages = Math.ceil(dataToRender.length / DBR_PAGE_SIZE) || 1;
+      const pagTr = document.createElement("tr");
+      pagTr.innerHTML = `
+        <td colspan="10" style="padding:12px 16px; background:#f8fafc; border-top:1px solid #e2e8f0; border-radius:0 0 8px 8px;">
+          <div style="display:flex; justify-content:space-between; align-items:center;">
+            <div style="font-size:12px; color:#64748b; font-weight:600;">
+              Page ${DBR_PAGE} of ${totalPages} (${dataToRender.length} total)
+            </div>
+            <div style="display:flex; gap:8px;">
+              <button onclick="changeDbrPage(-1)" ${DBR_PAGE <= 1 ? 'disabled style="opacity:0.5;cursor:not-allowed;"' : 'style="cursor:pointer;"'} class="tiny-btn">Previous</button>
+              <button onclick="changeDbrPage(1)" ${DBR_PAGE >= totalPages ? 'disabled style="opacity:0.5;cursor:not-allowed;"' : 'style="cursor:pointer;"'} class="tiny-btn">Next</button>
+            </div>
+          </div>
+        </td>
+      `;
+      tbody.appendChild(pagTr);
+
       const dbrDate = document.getElementById("dbr-date");
       if (dbrDate) dbrDate.textContent = new Date().toLocaleDateString("en-GB");
     }
+    
+    window.changeDbrPage = function(delta) {
+      const maxPage = Math.ceil(CURRENT_DBR_ROWS.length / DBR_PAGE_SIZE) || 1;
+      const newPage = DBR_PAGE + delta;
+      if (newPage >= 1 && newPage <= maxPage) {
+        DBR_PAGE = newPage;
+        renderDailyBreakdownReport(CURRENT_DBR_ROWS, true); // true = skipStateUpdate
+      }
+    };
 
     // DBR Sorting State
     let DBR_SORT_COL = null;
@@ -12854,6 +12918,7 @@
 
       document.getElementById("db-edit-save").addEventListener("click", () => saveDbrEdit(false));
       document.getElementById("db-edit-approve").addEventListener("click", () => saveDbrEdit(true));
+      document.getElementById("db-edit-delete").addEventListener("click", deleteDbrEntry);
     }
 
     function formatDateOnly(dateStr) {
@@ -12889,11 +12954,11 @@
 
       // Populate Header Info
       document.getElementById("db-edit-info").textContent = 
-        `${row.machine || 'Machine'} | User: ${CURRENT_SERVER_USER} | Access: ${CAN_EDIT_COMMENTS ? 'Manager' : 'Read-Only'}`;
+        `${row.model || row.machine || 'Machine'} | User: ${CURRENT_SERVER_USER} | Access: ${CAN_EDIT_COMMENTS ? 'Manager' : 'Read-Only'}`;
 
       // Populate Metadata Fields
       document.getElementById("db-edit-customer").value = row.customer || "";
-      document.getElementById("db-edit-machine").value = row.machine || "";
+      document.getElementById("db-edit-machine").value = row.model || row.machine || "";
       document.getElementById("db-edit-sn").value = row.serial_number || "-";
       document.getElementById("db-edit-fleet").value = row.fleet_no || "-";
 
@@ -12945,6 +13010,33 @@
       console.error(err);
     }
   }
+
+    async function deleteDbrEntry() {
+      if (!CURRENT_EDIT_ROW) return;
+      if (!confirm(`??? WARNING: DELETION IS PERMANENT ???\n\nAre you sure you want to permanently delete the breakdown log for ${CURRENT_EDIT_ROW.model || CURRENT_EDIT_ROW.machine || 'Unknown Machine'} (${CURRENT_EDIT_ROW.customer || 'Unknown Customer'})?\n\nThis action cannot be undone.`)) {
+        return;
+      }
+      
+      const btn = document.getElementById("db-edit-delete");
+      const originalText = btn.textContent;
+      btn.textContent = "Deleting...";
+      btn.disabled = true;
+
+      try {
+        const { error } = await supabase.from('ft_breakdown_logs').delete().eq('id', CURRENT_EDIT_ROW.id);
+        if (error) throw error;
+        
+        showToast("Breakdown log deleted successfully.", "ok");
+        closeDbrEditModal();
+        loadDailyBreakdownReport(); // Refresh list
+      } catch (err) {
+        console.error("Delete Error:", err);
+        showToast("Failed to delete: " + err.message, "err");
+      } finally {
+        btn.textContent = originalText;
+        btn.disabled = false;
+      }
+    }
 
     async function saveDbrEdit(isApprove) {
       if (!CURRENT_EDIT_ROW) return;
@@ -13007,12 +13099,8 @@
       if (payload.supervisor_comment !== undefined) updateData.manager_comments = payload.supervisor_comment;
       if (payload.supervisor_approved) updateData.supervisor_approved = true;
 
-      let query = supabase.from('ft_breakdown_logs').update(updateData);
-      if (payload.name.includes('-') && payload.name.length > 20) {
-        query = query.eq('id', payload.name);
-      } else {
-        query = query.eq('frappe_name', payload.name);
-      }
+      let query = supabase.from('ft_breakdown_logs').update(updateData).eq('id', CURRENT_EDIT_ROW.id);
+      
       const { error: updateError } = await query;
 
       if (updateError) throw new Error(updateError.message);
@@ -13584,7 +13672,7 @@
         <div style="display:grid; grid-template-columns: 1fr 1fr 1fr; gap:16px; margin-bottom:16px;">
           <div>
             <label style="display:block; font-size:11px; font-weight:700; color:#64748b; margin-bottom:6px; text-transform:uppercase; letter-spacing:0.05em;">Parts ETA</label>
-            <input type="text" id="db-edit-eta" placeholder="e.g. 12 Jan 2026" style="width:100%; height:38px; padding:0 10px; border:1px solid #cbd5e1; border-radius:8px; font-size:13px;">
+            <input type="date" id="db-edit-eta" style="width:100%; height:38px; padding:0 10px; border:1px solid #cbd5e1; border-radius:8px; font-size:13px; color:#475569;">
           </div>
           <div>
             <label style="display:block; font-size:11px; font-weight:700; color:#64748b; margin-bottom:6px; text-transform:uppercase; letter-spacing:0.05em;">Machine Still Running?</label>
@@ -13627,6 +13715,7 @@
 
       <!-- Footer -->
       <div style="padding:16px 24px; background:#f8fafc; border-top:1px solid #f1f5f9; display:flex; justify-content:flex-end; gap:12px;">
+        <button id="db-edit-delete" style="margin-right:auto; padding:10px 20px; border:none; background:#ef4444; color:white; border-radius:8px; font-size:13px; font-weight:700; cursor:pointer; box-shadow:0 1px 2px rgba(0,0,0,0.05); transition:background 0.2s;">? Delete</button>
         <button id="db-edit-cancel" style="padding:10px 20px; border:1px solid #cbd5e1; background:white; color:#475569; border-radius:8px; font-size:13px; font-weight:600; cursor:pointer; transition:background 0.2s;">Cancel</button>
         <button id="db-edit-save" style="padding:10px 24px; border:none; background:#2563eb; color:white; border-radius:8px; font-size:13px; font-weight:700; cursor:pointer; box-shadow:0 1px 2px rgba(0,0,0,0.05); transition:background 0.2s;">Save Changes</button>
         <button id="db-edit-approve" style="padding:10px 24px; border:none; background:#10b981; color:white; border-radius:8px; font-size:13px; font-weight:700; cursor:pointer; display:none; box-shadow:0 1px 2px rgba(0,0,0,0.05); transition:background 0.2s;">
@@ -17897,7 +17986,7 @@ RECOMMENDATIONS / NEXT STEPS:
         'name','machine','column_break_2','oem','customer','breakdown_date','location',
         'breakdown_details_section','column_break_8','description','status','days_on_bd',
         'end_date','model','fleetrack_managed','warranty_status','parts_eta','ted','red',
-        'fsb','resp','section_break_19','last_col_br_oeta','section_break_17','dobd_col_br',
+        'fsb','resp','responsibility','section_break_19','last_col_br_oeta','section_break_17','dobd_col_br',
         'oeta_col_br','out_eta','section_break_27','on_hold','ted_status','bd_duration',
         'category','created_at','updated_at'
       ]),
@@ -17926,6 +18015,10 @@ RECOMMENDATIONS / NEXT STEPS:
             if (!allowedCols || allowedCols.has('updated_at'))  out['updated_at']  = v;
             if (!allowedCols || allowedCols.has('modified_at')) out['modified_at'] = v;
           }
+          continue;
+        }
+        if (k === 'resp' || k === 'responsibility') {
+          if (v && (!allowedCols || allowedCols.has('responsibility'))) out['responsibility'] = v;
           continue;
         }
         // Apply whitelist if provided — skip unknown columns
@@ -26244,6 +26337,9 @@ window.loadISR = async function() {
 
 
 <script>
+  // Auto-injected Frappe API Credentials
+  localStorage.setItem('ft_api_key', '07660480c74686c');
+  localStorage.setItem('ft_api_secret', 'b43fd8b40ca211b');
   window.currentDivision = localStorage.getItem('omnis_active_division') || 'fleetrack';
   
   document.addEventListener('DOMContentLoaded', () => {

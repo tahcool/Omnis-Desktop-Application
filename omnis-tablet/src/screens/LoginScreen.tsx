@@ -19,6 +19,12 @@ export default function LoginScreen({ navigation }: any) {
   const [showPassword, setShowPassword] = useState(false);
   const [rememberMe, setRememberMe]     = useState(false);
 
+  const FLEETRACK_EMAILS = [
+    'mxgfleetrack.brighton@machinery-exchange.com',
+    'barry@industrial-exchange.group',
+    'mxgfleetrack.bruce@machinery-exchange.com'
+  ];
+
   const handleLogin = async () => {
     if (!username || !password) {
       Alert.alert('Error', 'Please enter both email and password');
@@ -33,10 +39,17 @@ export default function LoginScreen({ navigation }: any) {
       if (error) {
         Alert.alert('Login Failed', error.message || 'Invalid credentials');
       } else if (data.user) {
+        let targetScreen = 'MainApp';
+        let screenParams = undefined;
+
+        if (FLEETRACK_EMAILS.includes(username.trim().toLowerCase())) {
+          screenParams = { screen: 'Fleetrack Dashboard' };
+        }
+
         if (password.trim() === 'ChangeMe@2026') {
           navigation.replace('ForceResetPassword');
         } else {
-          navigation.replace('MainApp');
+          navigation.replace(targetScreen, screenParams);
         }
       }
     } catch (error: any) {

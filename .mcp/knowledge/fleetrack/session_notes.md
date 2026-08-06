@@ -153,3 +153,4 @@
 \n- **Commit 605da3e** (2026-08-04): fix: sync Powerstar defects to Supabase and fix UI scrolling issues
 \n- **Commit bf67e1d** (2026-08-04): Restore point before terminology change
 \n- **Commit 278307c** (2026-08-04): Restore point: UI terminology updates applied
+\n- **Commit baeabd9** (2026-08-05): Create restore point before modifying responsibility filter

@@ -10,23 +10,32 @@ import { BlurView } from 'expo-blur';
 import * as ScreenOrientation from 'expo-screen-orientation';
 import { useFocusEffect } from '@react-navigation/native';
 
-export default function DashboardScreen({ navigation }: any) {
+export default function FleetrackDashboardScreen({ navigation }: any) {
   const insets = useSafeAreaInsets();
   const [pendingSyncs, setPendingSyncs] = useState(0);
   const [userName, setUserName] = useState('Administrator');
   const [greeting, setGreeting] = useState('Good morning');
   const [currentDate, setCurrentDate] = useState('');
   const [lateOrders, setLateOrders] = useState(0);
+  const [spDefectsOpen, setSpDefectsOpen] = useState(0);
+  const [spDefectsTotal, setSpDefectsTotal] = useState(0);
+  const [spBreakdownsActive, setSpBreakdownsActive] = useState(0);
+  const [spBreakdownsTotal, setSpBreakdownsTotal] = useState(0);
+  const [mxDefectsOpen, setMxDefectsOpen] = useState(0);
+  const [mxDefectsTotal, setMxDefectsTotal] = useState(0);
+  const [mxBreakdownsActive, setMxBreakdownsActive] = useState(0);
+  const [mxBreakdownsTotal, setMxBreakdownsTotal] = useState(0);
   const [openEnquiries, setOpenEnquiries] = useState(0);
   const [overdueVisits, setOverdueVisits] = useState(0);
   const [alertDismissed, setAlertDismissed] = useState(false);
+  const [fabModalVisible, setFabModalVisible] = useState(false);
   const screenWidth = Dimensions.get('window').width;
 
   // Animated values for progress bars (0→1 on mount)
-  const spMtdAnim = useRef(new Animated.Value(0)).current;
-  const spYtdAnim = useRef(new Animated.Value(0)).current;
-  const mxMtdAnim = useRef(new Animated.Value(0)).current;
-  const mxYtdAnim = useRef(new Animated.Value(0)).current;
+  const spDefectAnim = useRef(new Animated.Value(0)).current;
+  const spBreakdownAnim = useRef(new Animated.Value(0)).current;
+  const mxDefectAnim = useRef(new Animated.Value(0)).current;
+  const mxBreakdownAnim = useRef(new Animated.Value(0)).current;
 
   useEffect(() => {
     registerForPushNotificationsAsync();
@@ -61,12 +70,7 @@ export default function DashboardScreen({ navigation }: any) {
     fetchUser();
 
     // Animate progress bars in on mount
-    Animated.stagger(120, [
-      Animated.timing(spMtdAnim, { toValue: 0.25, duration: 900, useNativeDriver: false }),
-      Animated.timing(spYtdAnim, { toValue: 0.41, duration: 900, useNativeDriver: false }),
-      Animated.timing(mxMtdAnim, { toValue: 0.22, duration: 900, useNativeDriver: false }),
-      Animated.timing(mxYtdAnim, { toValue: 0.55, duration: 900, useNativeDriver: false }),
-    ]).start();
+    
 
     // Fetch live counts on mount (also called from useFocusEffect on every return)
   }, []);
@@ -74,7 +78,74 @@ export default function DashboardScreen({ navigation }: any) {
   // ── Refresh pills on every screen focus ───────────────────────────────────
   const fetchCounts = React.useCallback(async () => {
     try {
-      const { count: lateCount } = await supabase
+
+      // Fetch machines for mapping
+      let allMachines = [];
+      let mFrom = 0;
+      const mStep = 1000;
+      while (true) {
+        const { data: mRes } = await supabase.from('ft_machine').select('name, sn, division').range(mFrom, mFrom + mStep - 1);
+        if (!mRes || mRes.length === 0) break;
+        allMachines = [...allMachines, ...mRes];
+        if (mRes.length < mStep) break;
+        mFrom += mStep;
+      }
+      const getDivision = (nameOrSn) => {
+        if (!nameOrSn) return 'fleetrack';
+        const match = allMachines.find(m => m.name === nameOrSn || m.sn === nameOrSn);
+        return match?.division?.toLowerCase() || 'fleetrack';
+      };
+
+      // Fetch Defects
+      let defects = [];
+      let dFrom = 0;
+      const dStep = 1000;
+      while (true) {
+        const { data: dRes } = await supabase.from('ft_defect').select('status, machine, customer').range(dFrom, dFrom + dStep - 1);
+        if (!dRes || dRes.length === 0) break;
+        defects = [...defects, ...dRes];
+        if (dRes.length < dStep) break;
+        dFrom += dStep;
+      }
+      
+      const spDefects = defects.filter(d => getDivision(d.machine) === 'sinopower' || (d.customer && d.customer.toLowerCase().includes('sinopower')));
+      const mxDefects = defects.filter(d => !spDefects.includes(d));
+
+      const spOpenD = spDefects.filter(d => d.status && d.status.toLowerCase() !== 'closed').length;
+      setSpDefectsOpen(spOpenD);
+      setSpDefectsTotal(spDefects.length);
+      Animated.timing(spDefectAnim, { toValue: spDefects.length > 0 ? (spDefects.length - spOpenD) / spDefects.length : 0, duration: 900, useNativeDriver: false }).start();
+
+      const mxOpenD = mxDefects.filter(d => d.status && d.status.toLowerCase() !== 'closed').length;
+      setMxDefectsOpen(mxOpenD);
+      setMxDefectsTotal(mxDefects.length);
+      Animated.timing(mxDefectAnim, { toValue: mxDefects.length > 0 ? (mxDefects.length - mxOpenD) / mxDefects.length : 0, duration: 900, useNativeDriver: false }).start();
+
+      // Fetch Breakdowns
+      let breakdowns = [];
+      let bFrom = 0;
+      const bStep = 1000;
+      while (true) {
+        const { data: bRes } = await supabase.from('ft_breakdown_logs').select('status, breakdown_end_date, division, machine').range(bFrom, bFrom + bStep - 1);
+        if (!bRes || bRes.length === 0) break;
+        breakdowns = [...breakdowns, ...bRes];
+        if (bRes.length < bStep) break;
+        bFrom += bStep;
+      }
+
+      const spBreakdowns = breakdowns.filter(b => (b.division && b.division.toLowerCase() === 'sinopower') || getDivision(b.machine) === 'sinopower');
+      const mxBreakdowns = breakdowns.filter(b => !spBreakdowns.includes(b));
+
+      const spActiveB = spBreakdowns.filter(b => b.breakdown_end_date === null && (!b.status || (b.status.toLowerCase() !== 'resolved' && b.status.toLowerCase() !== 'closed'))).length;
+      setSpBreakdownsActive(spActiveB);
+      setSpBreakdownsTotal(spBreakdowns.length);
+      Animated.timing(spBreakdownAnim, { toValue: spBreakdowns.length > 0 ? (spBreakdowns.length - spActiveB) / spBreakdowns.length : 0, duration: 900, useNativeDriver: false }).start();
+
+      const mxActiveB = mxBreakdowns.filter(b => b.breakdown_end_date === null && (!b.status || (b.status.toLowerCase() !== 'resolved' && b.status.toLowerCase() !== 'closed'))).length;
+      setMxBreakdownsActive(mxActiveB);
+      setMxBreakdownsTotal(mxBreakdowns.length);
+      Animated.timing(mxBreakdownAnim, { toValue: mxBreakdowns.length > 0 ? (mxBreakdowns.length - mxActiveB) / mxBreakdowns.length : 0, duration: 900, useNativeDriver: false }).start();
+const { count: lateCount } = await supabase
         .from('fmb_report_machines')
         .select('id', { count: 'exact', head: true })
         .lt('days_left', 0);
@@ -214,10 +285,10 @@ export default function DashboardScreen({ navigation }: any) {
           {circuitPattern}
         </View>
         <ScrollView style={{ flex: 1 }} contentContainerStyle={styles.content} bounces={false} scrollEnabled={false}>
-          
-          {/* Top Header Row: Red Profile Card + KPIs */}
+
+        {/* Top Header Row: Red Profile Card + KPIs */}
         <LinearGradient
-          colors={['#4c110d', '#8b2219', '#6b1a14']}
+          colors={['#3d0b09', '#6d1612', '#52110d']}
           start={{ x: 0, y: 0 }}
           end={{ x: 1, y: 1 }}
           style={[styles.headerCard, { paddingTop: insets.top + 10 }]}
@@ -249,14 +320,6 @@ export default function DashboardScreen({ navigation }: any) {
                 <Text style={[styles.greeting, { textAlign: 'left' }]}>{greeting}, {userName}! 👋</Text>
                 <Text style={[styles.roleText, { textAlign: 'left' }]}>{currentDate}</Text>
                 <View style={[styles.quickActionRow, { justifyContent: 'flex-start', flexWrap: 'wrap', marginTop: 6 }]}>
-                  <TouchableOpacity style={styles.quickActionBtn}>
-                    <Ionicons name="flash" size={12} color="#fff" />
-                    <Text style={styles.quickActionText}>Efficiency</Text>
-                  </TouchableOpacity>
-                  <TouchableOpacity style={styles.quickActionBtn}>
-                    <Ionicons name="bar-chart" size={12} color="#fff" />
-                    <Text style={styles.quickActionText}>Month End</Text>
-                  </TouchableOpacity>
                   <TouchableOpacity 
                     style={styles.quickActionBtn}
                     onPress={() => navigation.navigate('Inbox')}
@@ -277,11 +340,11 @@ export default function DashboardScreen({ navigation }: any) {
                     )}
                   </TouchableOpacity>
                   <TouchableOpacity 
-                    style={[styles.quickActionBtn, { backgroundColor: '#ea580c', borderColor: '#c2410c' }]}
-                    onPress={() => navigation.navigate('Fleetrack Dashboard')}
+                    style={[styles.quickActionBtn, { backgroundColor: '#f59e0b', borderColor: '#f59e0b' }]}
+                    onPress={() => navigation.navigate('Dashboard')}
                   >
-                    <Ionicons name="car-sport" size={12} color="#fff" />
-                    <Text style={styles.quickActionText}>Fleetrack</Text>
+                    <Ionicons name="swap-horizontal" size={12} color="#fff" />
+                    <Text style={[styles.quickActionText, { color: '#ffffff' }]}>Salestrack</Text>
                   </TouchableOpacity>
                 </View>
               </View>
@@ -315,223 +378,176 @@ export default function DashboardScreen({ navigation }: any) {
             </View>
           </View>
 
-          {/* Compact status strip inside header */}
-          <View style={styles.headerStatusRow}>
-            <TouchableOpacity
-              style={[styles.headerStatusPill, { borderColor: lateOrders > 0 ? '#fca5a5' : 'rgba(255,255,255,0.3)' }]}
-              onPress={() => navigation.navigate('Order Tracking')}
-            >
-              <View style={[styles.headerStatusDot, { backgroundColor: lateOrders > 0 ? '#ef4444' : '#4ade80' }]} />
-              <Text style={styles.headerStatusText}>
-                {lateOrders > 0 ? `${lateOrders} Late Order${lateOrders !== 1 ? 's' : ''}` : 'Orders On Track'}
-              </Text>
-            </TouchableOpacity>
-
-            <TouchableOpacity
-              style={[styles.headerStatusPill, { borderColor: openEnquiries > 0 ? '#fcd34d' : 'rgba(255,255,255,0.3)' }]}
-              onPress={() => navigation.navigate('Customer Enquiries')}
-            >
-              <View style={[styles.headerStatusDot, { backgroundColor: openEnquiries > 0 ? '#f59e0b' : '#4ade80' }]} />
-              <Text style={styles.headerStatusText}>
-                {openEnquiries > 0 ? `${openEnquiries} Open Enquir${openEnquiries !== 1 ? 'ies' : 'y'}` : 'No Open Enquiries'}
-              </Text>
-            </TouchableOpacity>
-
-            <TouchableOpacity
-              style={[styles.headerStatusPill, { borderColor: overdueVisits > 0 ? '#fca5a5' : 'rgba(255,255,255,0.3)' }]}
-              onPress={() => navigation.navigate('Salestrack Customers')}
-            >
-              <View style={[styles.headerStatusDot, { backgroundColor: overdueVisits > 0 ? '#ef4444' : '#4ade80' }]} />
-              <Text style={styles.headerStatusText}>
-                {overdueVisits > 0 ? `${overdueVisits} Overdue Visit${overdueVisits !== 1 ? 's' : ''}` : 'Visits On Track'}
-              </Text>
-            </TouchableOpacity>
-          </View>
         </LinearGradient>
 
         <View style={styles.innerContent}>
 
           {/* Performance Cards Row */}
           <View style={styles.performanceRow}>
-            {/* Sinopower Card */}
-            <LinearGradient
-              colors={['#4c110d', '#8b2219', '#6b1a14']}
-              start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }}
-              style={styles.perfCard}
-            >
-              {/* Watermark pattern icon */}
-              <View style={{ position: 'absolute', right: -16, bottom: -20, opacity: 0.08 }} pointerEvents="none">
-                <Ionicons name="trending-up" size={140} color="#ffffff" />
-              </View>
-              {/* Diagonal dot pattern strip */}
-              <View style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, opacity: 0.04 }} pointerEvents="none">
-                {[...Array(6)].map((_, r) => [...Array(10)].map((_, c) => (
-                  <View key={`${r}-${c}`} style={{ position: 'absolute', left: c * 22 - 10, top: r * 22 - 10, width: 3, height: 3, borderRadius: 2, backgroundColor: '#fff' }} />
-                )))}
-              </View>
-              <View style={styles.perfHeader}>
-                <View>
-                  <Text style={[styles.perfTitle, { color: '#ffffff' }]}>SINOPOWER</Text>
-                  <Text style={styles.perfSubtitle}>MTD & YTD PERFORMANCE</Text>
+<LinearGradient
+                colors={['#4c110d', '#8b2219', '#6b1a14']}
+                start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }}
+                style={styles.perfCard}
+              >
+                <View style={{ position: 'absolute', right: -16, bottom: -20, opacity: 0.08 }} pointerEvents="none">
+                  <Ionicons name="trending-up" size={140} color="#ffffff" />
                 </View>
-                <View style={[styles.perfIconContainer, { backgroundColor: 'rgba(255,255,255,0.15)' }]}>
-                  <Ionicons name="trending-up" size={14} color="#ffffff" />
+                <View style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, opacity: 0.04 }} pointerEvents="none">
+                  {[...Array(6)].map((_, r) => [...Array(10)].map((_, c) => (
+                    <View key={`sp-${r}-${c}`} style={{ position: 'absolute', left: c * 22 - 10, top: r * 22 - 10, width: 3, height: 3, borderRadius: 2, backgroundColor: '#fff' }} />
+                  )))}
                 </View>
-              </View>
-              
-              <View style={styles.perfBody}>
-                <View style={styles.perfBlock}>
-                  <Text style={styles.perfBlockTitle}>MONTH TO DATE</Text>
-                  <View style={styles.perfBlockValues}>
-                    <Text style={styles.perfValue}>4</Text>
-                    <Text style={styles.perfTarget}>/ 15</Text>
+                <View style={styles.perfHeader}>
+                  <View>
+                    <Text style={[styles.perfTitle, { color: '#ffffff' }]}>SINOPOWER</Text>
+                    <Text style={styles.perfSubtitle}>DEFECTS & BREAKDOWNS</Text>
                   </View>
-                  <View style={styles.perfBarBg}>
-                    <Animated.View style={[styles.perfBarFill, {
-                      width: spMtdAnim.interpolate({ inputRange: [0, 1], outputRange: ['0%', '100%'] }),
-                      backgroundColor: 'rgba(255,255,255,0.82)',
-                    }]} />
-                  </View>
-                  <View style={styles.perfBlockFooter}>
-                    <Text style={[styles.perfPct, { color: '#ffffff' }]}>25%</Text>
-                    <Text style={styles.perfNote}>Need 11 more</Text>
+                  <View style={[styles.perfIconContainer, { backgroundColor: 'rgba(255,255,255,0.15)' }]}>
+                    <Ionicons name="trending-up" size={14} color="#ffffff" />
                   </View>
                 </View>
                 
-                <View style={styles.perfDivider} />
-                
-                <View style={styles.perfBlock}>
-                  <Text style={styles.perfBlockTitle}>YEAR TO DATE</Text>
-                  <View style={styles.perfBlockValues}>
-                    <Text style={styles.perfValue}>79</Text>
-                    <Text style={styles.perfTarget}>/ 192</Text>
+                <View style={styles.perfBody}>
+                  {/* Defects */}
+                  <View style={styles.perfBlock}>
+                    <Text style={styles.perfBlockTitle}>DEFECTS</Text>
+                    <View style={styles.perfBlockValues}>
+                      <Text style={styles.perfValue}>{spDefectsOpen}</Text>
+                      <Text style={styles.perfTarget}>/ {spDefectsTotal}</Text>
+                    </View>
+                    <View style={styles.perfBarBg}>
+                      <Animated.View style={[styles.perfBarFill, {
+                        width: spDefectAnim.interpolate({ inputRange: [0, 1], outputRange: ['0%', '100%'] }),
+                        backgroundColor: 'rgba(255,255,255,0.82)',
+                      }]} />
+                    </View>
+                    <View style={styles.perfBlockFooter}>
+                      <Text style={[styles.perfPct, { color: '#ffffff' }]}>{spDefectsTotal > 0 ? Math.round(((spDefectsTotal - spDefectsOpen)/spDefectsTotal)*100) : 0}%</Text>
+                      <Text style={styles.perfNote}>Efficiency (Closed)</Text>
+                    </View>
                   </View>
-                  <View style={styles.perfBarBg}>
-                    <Animated.View style={[styles.perfBarFill, {
-                      width: spYtdAnim.interpolate({ inputRange: [0, 1], outputRange: ['0%', '100%'] }),
-                      backgroundColor: 'rgba(255,255,255,0.82)',
-                    }]} />
-                  </View>
-                  <View style={styles.perfBlockFooter}>
-                    <Text style={[styles.perfPct, { color: '#ffffff' }]}>41%</Text>
-                    <Text style={styles.perfNote}>Need 113 more</Text>
+                  
+                  <View style={styles.perfDivider} />
+                  
+                  {/* Breakdowns */}
+                  <View style={styles.perfBlock}>
+                    <Text style={styles.perfBlockTitle}>BREAKDOWNS</Text>
+                    <View style={styles.perfBlockValues}>
+                      <Text style={styles.perfValue}>{spBreakdownsActive}</Text>
+                      <Text style={styles.perfTarget}>/ {spBreakdownsTotal}</Text>
+                    </View>
+                    <View style={styles.perfBarBg}>
+                      <Animated.View style={[styles.perfBarFill, {
+                        width: spBreakdownAnim.interpolate({ inputRange: [0, 1], outputRange: ['0%', '100%'] }),
+                        backgroundColor: 'rgba(255,255,255,0.82)',
+                      }]} />
+                    </View>
+                    <View style={styles.perfBlockFooter}>
+                      <Text style={[styles.perfPct, { color: '#ffffff' }]}>{spBreakdownsTotal > 0 ? Math.round(((spBreakdownsTotal - spBreakdownsActive)/spBreakdownsTotal)*100) : 0}%</Text>
+                      <Text style={styles.perfNote}>Efficiency (Resolved)</Text>
+                    </View>
                   </View>
                 </View>
-              </View>
-            </LinearGradient>
+              </LinearGradient>
 
-            {/* Machinery Exchange Card */}
-            <LinearGradient
-              colors={['#6b1a14', '#8b2219', '#4c110d']}
-              start={{ x: 1, y: 0 }} end={{ x: 0, y: 1 }}
-              style={styles.perfCard}
-            >
-              {/* Watermark pattern icon */}
-              <View style={{ position: 'absolute', right: -16, bottom: -20, opacity: 0.08 }} pointerEvents="none">
-                <Ionicons name="construct" size={140} color="#ffffff" />
-              </View>
-              {/* Diagonal dot pattern strip */}
-              <View style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, opacity: 0.04 }} pointerEvents="none">
-                {[...Array(6)].map((_, r) => [...Array(10)].map((_, c) => (
-                  <View key={`${r}-${c}`} style={{ position: 'absolute', left: c * 22 - 10, top: r * 22 - 10, width: 3, height: 3, borderRadius: 2, backgroundColor: '#fff' }} />
-                )))}
-              </View>
-              <View style={styles.perfHeader}>
-                <View>
-                  <Text style={[styles.perfTitle, { color: '#ffffff' }]}>MACHINERY EXCHANGE</Text>
-                  <Text style={styles.perfSubtitle}>MTD & YTD PERFORMANCE</Text>
+              {/* Machinery Exchange Card */}
+              <LinearGradient
+                colors={['#4c110d', '#8b2219', '#6b1a14']}
+                start={{ x: 1, y: 0 }} end={{ x: 0, y: 1 }}
+                style={styles.perfCard}
+              >
+                <View style={{ position: 'absolute', right: -16, bottom: -20, opacity: 0.08 }} pointerEvents="none">
+                  <Ionicons name="construct" size={140} color="#ffffff" />
                 </View>
-                <View style={[styles.perfIconContainer, { backgroundColor: 'rgba(255,255,255,0.15)' }]}>
-                  <Ionicons name="trending-up" size={14} color="#ffffff" />
+                <View style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, opacity: 0.04 }} pointerEvents="none">
+                  {[...Array(6)].map((_, r) => [...Array(10)].map((_, c) => (
+                    <View key={`mx-${r}-${c}`} style={{ position: 'absolute', left: c * 22 - 10, top: r * 22 - 10, width: 3, height: 3, borderRadius: 2, backgroundColor: '#fff' }} />
+                  )))}
                 </View>
-              </View>
-              
-              <View style={styles.perfBody}>
-                <View style={styles.perfBlock}>
-                  <Text style={styles.perfBlockTitle}>MONTH TO DATE</Text>
-                  <View style={styles.perfBlockValues}>
-                    <Text style={styles.perfValue}>4</Text>
-                    <Text style={styles.perfTarget}>/ 18</Text>
+                <View style={styles.perfHeader}>
+                  <View>
+                    <Text style={[styles.perfTitle, { color: '#ffffff' }]}>MACHINERY EXCHANGE</Text>
+                    <Text style={styles.perfSubtitle}>DEFECTS & BREAKDOWNS</Text>
                   </View>
-                  <View style={styles.perfBarBg}>
-                    <Animated.View style={[styles.perfBarFill, {
-                      width: mxMtdAnim.interpolate({ inputRange: [0, 1], outputRange: ['0%', '100%'] }),
-                      backgroundColor: 'rgba(255,255,255,0.82)',
-                    }]} />
-                  </View>
-                  <View style={styles.perfBlockFooter}>
-                    <Text style={[styles.perfPct, { color: '#ffffff' }]}>22%</Text>
-                    <Text style={styles.perfNote}>Need 14 more</Text>
+                  <View style={[styles.perfIconContainer, { backgroundColor: 'rgba(255,255,255,0.15)' }]}>
+                    <Ionicons name="construct" size={14} color="#ffffff" />
                   </View>
                 </View>
                 
-                <View style={styles.perfDivider} />
-                
-                <View style={styles.perfBlock}>
-                  <Text style={styles.perfBlockTitle}>YEAR TO DATE</Text>
-                  <View style={styles.perfBlockValues}>
-                    <Text style={styles.perfValue}>119</Text>
-                    <Text style={styles.perfTarget}>/ 215</Text>
+                <View style={styles.perfBody}>
+                  {/* Defects */}
+                  <View style={styles.perfBlock}>
+                    <Text style={styles.perfBlockTitle}>DEFECTS</Text>
+                    <View style={styles.perfBlockValues}>
+                      <Text style={styles.perfValue}>{mxDefectsOpen}</Text>
+                      <Text style={styles.perfTarget}>/ {mxDefectsTotal}</Text>
+                    </View>
+                    <View style={styles.perfBarBg}>
+                      <Animated.View style={[styles.perfBarFill, {
+                        width: mxDefectAnim.interpolate({ inputRange: [0, 1], outputRange: ['0%', '100%'] }),
+                        backgroundColor: 'rgba(255,255,255,0.82)',
+                      }]} />
+                    </View>
+                    <View style={styles.perfBlockFooter}>
+                      <Text style={[styles.perfPct, { color: '#ffffff' }]}>{mxDefectsTotal > 0 ? Math.round(((mxDefectsTotal - mxDefectsOpen)/mxDefectsTotal)*100) : 0}%</Text>
+                      <Text style={styles.perfNote}>Efficiency (Closed)</Text>
+                    </View>
                   </View>
-                  <View style={styles.perfBarBg}>
-                    <Animated.View style={[styles.perfBarFill, {
-                      width: mxYtdAnim.interpolate({ inputRange: [0, 1], outputRange: ['0%', '100%'] }),
-                      backgroundColor: 'rgba(255,255,255,0.82)',
-                    }]} />
-                  </View>
-                  <View style={styles.perfBlockFooter}>
-                    <Text style={[styles.perfPct, { color: '#ffffff' }]}>55%</Text>
-                    <Text style={styles.perfNote}>Need 96 more</Text>
+
+                  <View style={styles.perfDivider} />
+                  
+                  {/* Breakdowns */}
+                  <View style={styles.perfBlock}>
+                    <Text style={styles.perfBlockTitle}>BREAKDOWNS</Text>
+                    <View style={styles.perfBlockValues}>
+                      <Text style={styles.perfValue}>{mxBreakdownsActive}</Text>
+                      <Text style={styles.perfTarget}>/ {mxBreakdownsTotal}</Text>
+                    </View>
+                    <View style={styles.perfBarBg}>
+                      <Animated.View style={[styles.perfBarFill, {
+                        width: mxBreakdownAnim.interpolate({ inputRange: [0, 1], outputRange: ['0%', '100%'] }),
+                        backgroundColor: 'rgba(255,255,255,0.82)',
+                      }]} />
+                    </View>
+                    <View style={styles.perfBlockFooter}>
+                      <Text style={[styles.perfPct, { color: '#ffffff' }]}>{mxBreakdownsTotal > 0 ? Math.round(((mxBreakdownsTotal - mxBreakdownsActive)/mxBreakdownsTotal)*100) : 0}%</Text>
+                      <Text style={styles.perfNote}>Efficiency (Resolved)</Text>
+                    </View>
                   </View>
                 </View>
-              </View>
-            </LinearGradient>
+              </LinearGradient>
+            </View>
+
           </View>
-
-        </View>
-
-        {/* Quick Access Bar — single flat row of square buttons */}
+          
+{/* Quick Access Bar — single flat row of square buttons */}
         <View style={styles.shortcutsFlat}>
-          <TouchableOpacity style={styles.shortcutSquare} onPress={() => navigation.navigate('Salestrack Customers')}>
+          <TouchableOpacity style={styles.shortcutSquare} onPress={() => navigation.navigate('Breakdowns')}>
             <LinearGradient colors={['rgba(255,255,255,0.11)', 'rgba(255,255,255,0)']} start={{ x: 0, y: 0 }} end={{ x: 0, y: 1 }} style={StyleSheet.absoluteFill as any} />
-            <Ionicons name="people-circle" size={18} color="#ffffff" />
-            <Text style={styles.shortcutSquareText} numberOfLines={1}>Customers</Text>
+            <Ionicons name="warning" size={18} color="#ffffff" />
+            <Text style={styles.shortcutSquareText} numberOfLines={1}>Breakdowns</Text>
           </TouchableOpacity>
-          <TouchableOpacity style={styles.shortcutSquare} onPress={() => navigation.navigate('Order Tracking')}>
+          <TouchableOpacity style={styles.shortcutSquare} onPress={() => navigation.navigate('Defects')}>
             <LinearGradient colors={['rgba(255,255,255,0.11)', 'rgba(255,255,255,0)']} start={{ x: 0, y: 0 }} end={{ x: 0, y: 1 }} style={StyleSheet.absoluteFill as any} />
-            <Ionicons name="cube" size={18} color="#ffffff" />
-            <Text style={styles.shortcutSquareText} numberOfLines={1}>Orders</Text>
+            <Ionicons name="bug" size={18} color="#ffffff" />
+            <Text style={styles.shortcutSquareText} numberOfLines={1}>Defects</Text>
           </TouchableOpacity>
-          <TouchableOpacity style={styles.shortcutSquare} onPress={() => navigation.navigate('Customer Fleets')}>
+          <TouchableOpacity style={styles.shortcutSquare} onPress={() => navigation.navigate('Service Tracking')}>
             <LinearGradient colors={['rgba(255,255,255,0.11)', 'rgba(255,255,255,0)']} start={{ x: 0, y: 0 }} end={{ x: 0, y: 1 }} style={StyleSheet.absoluteFill as any} />
-            <Ionicons name="car-sport" size={18} color="#ffffff" />
-            <Text style={styles.shortcutSquareText} numberOfLines={1}>Fleet</Text>
+            <Ionicons name="build" size={18} color="#ffffff" />
+            <Text style={styles.shortcutSquareText} numberOfLines={1}>Service Tracking</Text>
           </TouchableOpacity>
-          <TouchableOpacity style={styles.shortcutSquare} onPress={() => navigation.navigate('Customer Enquiries')}>
+          <TouchableOpacity style={styles.shortcutSquare} onPress={() => navigation.navigate('Initial Service Report')}>
             <LinearGradient colors={['rgba(255,255,255,0.11)', 'rgba(255,255,255,0)']} start={{ x: 0, y: 0 }} end={{ x: 0, y: 1 }} style={StyleSheet.absoluteFill as any} />
-            <Ionicons name="clipboard" size={18} color="#ffffff" />
-            <Text style={styles.shortcutSquareText} numberOfLines={1}>Enquiries</Text>
+            <Ionicons name="document-text" size={18} color="#ffffff" />
+            <Text style={styles.shortcutSquareText} numberOfLines={1}>ISR</Text>
           </TouchableOpacity>
-          <TouchableOpacity style={styles.shortcutSquare} onPress={() => navigation.navigate('Certificates')}>
+          <TouchableOpacity style={styles.shortcutSquare} onPress={() => navigation.navigate('Machine Registry')}>
             <LinearGradient colors={['rgba(255,255,255,0.11)', 'rgba(255,255,255,0)']} start={{ x: 0, y: 0 }} end={{ x: 0, y: 1 }} style={StyleSheet.absoluteFill as any} />
-            <Ionicons name="school" size={18} color="#ffffff" />
-            <Text style={styles.shortcutSquareText} numberOfLines={1}>Training</Text>
+            <Ionicons name="cog" size={18} color="#ffffff" />
+            <Text style={styles.shortcutSquareText} numberOfLines={1}>Registry</Text>
           </TouchableOpacity>
-          <TouchableOpacity style={styles.shortcutSquare} onPress={() => navigation.navigate('Training Library')}>
-            <LinearGradient colors={['rgba(255,255,255,0.11)', 'rgba(255,255,255,0)']} start={{ x: 0, y: 0 }} end={{ x: 0, y: 1 }} style={StyleSheet.absoluteFill as any} />
-            <Ionicons name="book" size={18} color="#ffffff" />
-            <Text style={styles.shortcutSquareText} numberOfLines={1}>Library</Text>
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.shortcutSquare} onPress={() => navigation.navigate('Visit History')}>
-            <LinearGradient colors={['rgba(255,255,255,0.11)', 'rgba(255,255,255,0)']} start={{ x: 0, y: 0 }} end={{ x: 0, y: 1 }} style={StyleSheet.absoluteFill as any} />
-            <Ionicons name="time" size={18} color="#ffffff" />
-            <Text style={styles.shortcutSquareText} numberOfLines={1}>My Visits</Text>
-          </TouchableOpacity>
-          <TouchableOpacity style={styles.shortcutSquare} onPress={() => navigation.navigate('Aftersales')}>
-            <LinearGradient colors={['rgba(255,255,255,0.11)', 'rgba(255,255,255,0)']} start={{ x: 0, y: 0 }} end={{ x: 0, y: 1 }} style={StyleSheet.absoluteFill as any} />
-            <Ionicons name="clipboard-outline" size={18} color="#f59e0b" />
-            <Text style={styles.shortcutSquareText} numberOfLines={1}>Aftersales</Text>
-          </TouchableOpacity>
+
         </View>
 
 
@@ -559,10 +575,44 @@ export default function DashboardScreen({ navigation }: any) {
       {/* Floating Action Button */}
       <TouchableOpacity 
         style={[styles.fab, { bottom: Math.max(32, insets.bottom + 20) }]} 
-        onPress={() => navigation.navigate('Log Activity')}
+        onPress={() => setFabModalVisible(true)}
       >
         <Ionicons name="add" size={32} color="#ffffff" />
       </TouchableOpacity>
+
+      {/* FAB Modal for Fleetrack Actions */}
+      {fabModalVisible && (
+        <TouchableOpacity 
+          style={StyleSheet.absoluteFill as any} 
+          activeOpacity={1} 
+          onPress={() => setFabModalVisible(false)}
+        >
+          <BlurView intensity={30} tint="dark" style={StyleSheet.absoluteFill as any}>
+            <View style={{ flex: 1, justifyContent: 'flex-end', alignItems: 'flex-end', paddingRight: 32, paddingBottom: Math.max(32, insets.bottom + 20) + 74 }}>
+              <View style={{ gap: 12, alignItems: 'flex-end' }}>
+                <TouchableOpacity style={styles.fabOptionItem} onPress={() => { setFabModalVisible(false); navigation.navigate('Breakdowns'); }}>
+                  <Text style={styles.fabOptionText}>Add Breakdown</Text>
+                  <View style={styles.fabOptionIcon}>
+                    <Ionicons name="warning" size={20} color="#ffffff" />
+                  </View>
+                </TouchableOpacity>
+                <TouchableOpacity style={styles.fabOptionItem} onPress={() => { setFabModalVisible(false); navigation.navigate('Defects'); }}>
+                  <Text style={styles.fabOptionText}>Add Defect</Text>
+                  <View style={styles.fabOptionIcon}>
+                    <Ionicons name="bug" size={20} color="#ffffff" />
+                  </View>
+                </TouchableOpacity>
+                <TouchableOpacity style={styles.fabOptionItem} onPress={() => { setFabModalVisible(false); navigation.navigate('Service Tracking'); }}>
+                  <Text style={styles.fabOptionText}>Add Service Plan</Text>
+                  <View style={styles.fabOptionIcon}>
+                    <Ionicons name="build" size={20} color="#ffffff" />
+                  </View>
+                </TouchableOpacity>
+              </View>
+            </View>
+          </BlurView>
+        </TouchableOpacity>
+      )}
     </View>
   );
 }
@@ -1128,5 +1178,33 @@ const styles = StyleSheet.create({
     height: 32,
     backgroundColor: '#e2e8f0',
     marginHorizontal: 16,
+  },
+  fabOptionItem: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+  },
+  fabOptionText: {
+    color: '#ffffff',
+    fontSize: 16,
+    fontWeight: '700',
+    backgroundColor: 'rgba(0,0,0,0.6)',
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 8,
+    overflow: 'hidden',
+  },
+  fabOptionIcon: {
+    width: 48,
+    height: 48,
+    borderRadius: 24,
+    backgroundColor: '#8b2219',
+    justifyContent: 'center',
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.3,
+    shadowRadius: 8,
+    elevation: 8,
   },
 });

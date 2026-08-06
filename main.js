@@ -492,7 +492,7 @@ ipcMain.handle("frappe:request", async (event, { url, method, data, headers, syn
     let requestData = data;
     let requestHeaders = headers || {};
 
-    if (cookieHeader) {
+    if (cookieHeader && !requestHeaders['Authorization']) {
       requestHeaders['Cookie'] = cookieHeader;
     }
 

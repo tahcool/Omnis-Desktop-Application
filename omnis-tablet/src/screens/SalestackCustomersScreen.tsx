@@ -246,7 +246,7 @@ export default function SalestackCustomersScreen({ navigation }: any) {
       <View style={styles.card}>
         {isHotLead && (
           <View style={{ backgroundColor: '#ef4444', padding: 4, alignItems: 'center', borderTopLeftRadius: 10, borderTopRightRadius: 10 }}>
-            <Text style={{ color: '#fff', fontSize: 10, fontWeight: 'bold', textTransform: 'uppercase' }}>🔥 Hot Lead - Open Quote > $10k - Visit ASAP</Text>
+            <Text style={{ color: '#fff', fontSize: 10, fontWeight: 'bold', textTransform: 'uppercase' }}>🔥 Hot Lead - Open Quote &gt; $10k - Visit ASAP</Text>
           </View>
         )}
         {/* ── Customer header ── */}

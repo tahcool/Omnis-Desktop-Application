@@ -63,7 +63,7 @@ async function sync() {
     parts_eta: l.parts_eta || null,
     on_hold: l.on_hold == 1,
     quote_date: l.quote_date || null,
-    breakdown_end_date: l.breakdown_end_date || null,
+    breakdown_end_date: l.end_date || l.breakdown_end_date || null,
     ted: l.ted || null,
     red: l.red || null,
     out_eta: l.out_eta || null,

@@ -20,3 +20,14 @@ entrypoint = "./functions/ai-marketing-assistant/index.ts"
 # Specifies static files to be bundled with the function. Supports glob patterns.
 # For example, if you want to serve static HTML pages in your function:
 # static_files = [ "./functions/ai-marketing-assistant/*.html" ]
+
+[functions.notify-new-record]
+enabled = true
+verify_jwt = false
+import_map = "./functions/notify-new-record/deno.json"
+# Uncomment to specify a custom file path to the entrypoint.
+# Supported file extensions are: .ts, .js, .mjs, .jsx, .tsx
+entrypoint = "./functions/notify-new-record/index.ts"
+# Specifies static files to be bundled with the function. Supports glob patterns.
+# For example, if you want to serve static HTML pages in your function:
+# static_files = [ "./functions/notify-new-record/*.html" ]

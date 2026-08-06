@@ -20,6 +20,12 @@ import LogActivityScreen from './src/screens/LogActivityScreen';
 import VisitHistoryScreen from './src/screens/VisitHistoryScreen';
 import CustomerEnquiriesScreen from './src/screens/CustomerEnquiriesScreen';
 import AfterSalesScreen from './src/screens/AfterSalesScreen';
+import FleetrackDashboardScreen from './src/screens/FleetrackDashboardScreen';
+import BreakdownsScreen from './src/screens/BreakdownsScreen';
+import DefectsScreen from './src/screens/DefectsScreen';
+import ServiceTrackingScreen from './src/screens/ServiceTrackingScreen';
+import InitialServiceReportScreen from './src/screens/InitialServiceReportScreen';
+import MachineRegistryScreen from './src/screens/MachineRegistryScreen';
 import { frappe } from './src/api/frappe';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { initDB } from './src/database/db';
@@ -51,6 +57,12 @@ function DrawerNavigator() {
       <Drawer.Screen name="Visit History" component={VisitHistoryScreen} />
       <Drawer.Screen name="Customer Enquiries" component={CustomerEnquiriesScreen} />
       <Drawer.Screen name="Aftersales" component={AfterSalesScreen} />
+      <Drawer.Screen name="Fleetrack Dashboard" component={FleetrackDashboardScreen} />
+      <Drawer.Screen name="Breakdowns" component={BreakdownsScreen} />
+      <Drawer.Screen name="Defects" component={DefectsScreen} />
+      <Drawer.Screen name="Service Tracking" component={ServiceTrackingScreen} />
+      <Drawer.Screen name="Initial Service Report" component={InitialServiceReportScreen} />
+      <Drawer.Screen name="Machine Registry" component={MachineRegistryScreen} />
     </Drawer.Navigator>
   );
 }

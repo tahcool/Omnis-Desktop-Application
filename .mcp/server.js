@@ -22,6 +22,11 @@ const ROOT = path.join(__dirname, '..');
 const KNOWLEDGE = path.join(__dirname, 'knowledge');
 
 // ── Supabase client (service role) ──────────────────────────────────────────
+
+// --- Frappe API Credentials ---
+const FRAPPE_URL = 'https://fleetrack.machinery-exchange.com';
+const FRAPPE_API_KEY = '07660480c74686c';
+const FRAPPE_API_SECRET = 'b43fd8b40ca211b';
 const SUPABASE_URL = 'https://pfqaeewmlwfayxbgmuaq.supabase.co';
 const SERVICE_KEY  = 'sb_' + 'secret_QDTpvp_agRT3cuB9nXrfPw_I9fZHEOc';
 const sb = createClient(SUPABASE_URL, SERVICE_KEY, { auth: { persistSession: false } });
@@ -561,6 +566,26 @@ server.tool(
 // ─────────────────────────────────────────────────────────────────────────────
 // Start server
 // ─────────────────────────────────────────────────────────────────────────────
+
+// --- TOOL: query_frappe ---
+server.tool(
+  'query_frappe',
+  'Execute a GET request against the Frappe API using the saved credentials.',
+  { endpoint: z.string().describe('The Frappe API endpoint (e.g., "/api/resource/FT Breakdown Log")') },
+  async ({ endpoint }) => {
+    try {
+      const url = `${FRAPPE_URL}${endpoint.startsWith('/') ? endpoint : '/' + endpoint}`;
+      const res = await fetch(url, {
+        headers: { 'Authorization': `token ${FRAPPE_API_KEY}:${FRAPPE_API_SECRET}`, 'Accept': 'application/json' }
+      });
+      const data = await res.json();
+      return { content: [{ type: 'text', text: JSON.stringify(data, null, 2).substring(0, 5000) }] };
+    } catch (e) {
+      return { content: [{ type: 'text', text: `Frappe API error: ${e.message}` }] };
+    }
+  }
+);
+
 const transport = new StdioServerTransport();
 await server.connect(transport);
 console.error('[Omnis MCP] Server running');

@@ -1,0 +1,1 @@
+fetch('https://fleetrack.machinery-exchange.com/api/resource/FT%20Breakdown%20Log?limit_page_length=1&fields=["name","resp"]', { headers: { 'Authorization': 'token 07660480c74686c:82899cba0bfdc36' } }).then(r => r.json()).then(j => console.log(j)).catch(e => console.error(e));

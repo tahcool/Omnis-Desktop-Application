@@ -358,3 +358,6 @@
   Files: scripts/patch_division_persistence.js,scripts/patch_modal.js,scripts/replace_dropdown.js,systems/fleetrack/index.html,temp.html,
 - `278307c` 2026-08-04 [supabase-migration] Restore point: UI terminology updates applied
   Files: .mcp/knowledge/_shared/commit_log.md,.mcp/knowledge/fleetrack/session_notes.md,scripts/check_terminology.js,scripts/fix_newlines.js,scripts/fix_newlines2.js,scripts/patch_terminology.js,scripts/patch_terminology_2.js,systems/fleetrack/index.html,
+\n## 2026-08-05
+- `baeabd9` 2026-08-05 [supabase-migration] Create restore point before modifying responsibility filter
+  Files: .mcp/knowledge/_shared/commit_log.md,.mcp/knowledge/fleetrack/session_notes.md,scripts/add_gradient.js,scripts/fix_gradient.js,scripts/glow_cards.js,scripts/spice_timeline.js,scripts/spice_up.js,scripts/timeline_days.js,systems/fleetrack/index.html,

@@ -3,7 +3,7 @@ import * as SecureStore from 'expo-secure-store';
 
 const SUPABASE_URL = 'https://pfqaeewmlwfayxbgmuaq.supabase.co';
 // This is the anon/public key used across the app
-const SUPABASE_ANON_KEY = 'sb_secret_QDTpvp_agRT3cuB9nXrfPw_I9fZHEOc';
+const SUPABASE_ANON_KEY = 'sb_secret_JZwRYG9k0mZ9x86o92O5sA__fuofVcU';
 
 // Custom SecureStore adapter so Supabase sessions persist across app restarts
 const ExpoSecureStoreAdapter = {

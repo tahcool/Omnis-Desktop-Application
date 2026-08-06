@@ -10445,53 +10445,86 @@
           customer: document.getElementById('dbr-filter-customer')?.value || '',
           machine: document.getElementById('dbr-filter-machine')?.value || '',
           responsibility: document.getElementById('dbr-filter-responsibility')?.value || '',
-          urgent: document.getElementById('dbr-filter-urgent')?.checked ? 1 : 0,
-          _ts: Date.now() // Force fresh fetch to bypass browser cache
+          urgent: document.getElementById('dbr-filter-urgent')?.checked ? 1 : 0
         };
-        const raw = await callFrappe(FT_BREAKDOWN_DBR_METHOD, filters, 'GET', { 
-            showLoader: true, 
-            loaderMsg: "Syncing Breakdowns" 
-        });
-        const data = raw.message || {};
 
-        if (data.error) {
-          console.error("DBR Backend Error:", data.traceback);
-          showToast("DBR Error: Check debug area", "err", 4500);
+        let breakdowns = [];
+        let canEditComments = true;
+        let currentUser = "Administrator";
+        let efficiency = "0.0%";
 
-          const efficiencyEl = document.getElementById('dbr-efficiency');
-          if (efficiencyEl) efficiencyEl.textContent = "BACKEND ERROR";
+        if (window.electron && window.electron.invoke) {
+          const payload = {
+            table: 'ft_breakdown_log', // Switch to correct singular table
+            method: 'select',
+            params: {
+              order: { column: 'breakdown_date', ascending: false }
+            }
+          };
 
-          const debugContainer = document.getElementById('dbr-debug-container');
-          const debugText = document.getElementById('dbr-debug-text');
-          if (debugContainer && debugText && data.traceback) {
-            debugContainer.classList.remove('hidden');
-            debugText.textContent = data.traceback;
+          const raw = await window.electron.invoke('supabase:query', payload);
+          if (!raw.ok) {
+            throw new Error(raw.error || "Failed to fetch from Supabase");
           }
 
-          const tbody = document.getElementById("dbr-tbody");
-          if (tbody) {
-            tbody.innerHTML = `<tr>
-      <td colspan="10" style="padding:40px;text-align:center;color:#ef4444;font-size:12px;font-weight:600;">Error
-        loading data. See traceback below.</td>
-    </tr>`;
+          breakdowns = raw.data || [];
+          
+          if (filters.region && filters.region !== 'All Regions') {
+             breakdowns = breakdowns.filter(b => b.region === filters.region);
           }
-          return;
+          if (filters.customer) {
+             const lowerCust = filters.customer.toLowerCase();
+             breakdowns = breakdowns.filter(b => b.customer && b.customer.toLowerCase().includes(lowerCust));
+          }
+          if (filters.machine) {
+             const lowerMach = filters.machine.toLowerCase();
+             breakdowns = breakdowns.filter(b => 
+                (b.machine && b.machine.toLowerCase().includes(lowerMach)) || 
+                (b.model && b.model.toLowerCase().includes(lowerMach)) ||
+                (b.serial_number && b.serial_number.toLowerCase().includes(lowerMach))
+             );
+          }
+          if (filters.responsibility && filters.responsibility !== 'All Regions') {
+             breakdowns = breakdowns.filter(b => (b.resp || b.responsibility) === filters.responsibility);
+          }
+          if (filters.urgent) {
+             breakdowns = breakdowns.filter(b => b.urgent || b.on_hold); // on_hold is proxy for urgent
+          }
+
+          // Map quote_date to quoted_date as it's used by the table renderer
+          breakdowns = breakdowns.map(b => ({
+             ...b,
+             quoted_date: b.quote_date
+          }));
+
+        } else {
+          // Fallback to Frappe if Supabase Electron bridge isn't available
+          const raw = await callFrappe(FT_BREAKDOWN_DBR_METHOD, { ...filters, _ts: Date.now() }, 'GET', { 
+              showLoader: true, 
+              loaderMsg: "Syncing Breakdowns" 
+          });
+          const data = raw.message || {};
+          
+          if (data.error) {
+            console.error("DBR Backend Error:", data.traceback);
+            showToast("DBR Error: Check debug area", "err", 4500);
+            return;
+          }
+          breakdowns = data.breakdowns || [];
+          canEditComments = !!data.can_edit_comments;
+          currentUser = data.current_user || "Guest";
+          efficiency = data.efficiency || "0.0%";
         }
 
         // Hide debug if it was shown
         const debugContainer = document.getElementById('dbr-debug-container');
         if (debugContainer) debugContainer.classList.add('hidden');
 
-        const breakdowns = data.breakdowns || [];
         // Cache rows for modal use
         breakdowns.forEach(r => { if (r.name) DBR_ROWS_CACHE[r.name] = r; });
 
-        CAN_EDIT_COMMENTS = !!data.can_edit_comments; // data.can_edit_comments is sent from backend
-        // DEBUG ALERT
-        // alert("DEBUG: Permissions Loaded. Can Edit Comments: " + CAN_EDIT_COMMENTS);
-        CURRENT_SERVER_USER = data.current_user || "Guest";
-
-        const efficiency = data.efficiency || "0.0%";
+        CAN_EDIT_COMMENTS = canEditComments;
+        CURRENT_SERVER_USER = currentUser;
 
         // Update efficiency display
         const efficiencyEl = document.getElementById('dbr-efficiency');
