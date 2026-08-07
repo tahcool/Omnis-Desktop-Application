@@ -5150,9 +5150,11 @@
         <button onclick="closeLogHoursModal()" style="background:none; border:none; color:#94a3b8; cursor:pointer; font-size:24px;">×</button>
       </div>
       <div style="padding: 24px; display: grid; gap: 16px;">
-        <div>
+        <div style="position:relative;">
           <label style="display:block; margin-bottom:6px; font-size:12px; font-weight:600; color:#475569;">Technician</label>
-          <input type="text" id="lh-technician" readonly="" style="width:100%; padding:10px 12px; border:1px solid #cbd5e1; border-radius:8px; font-size:14px; outline:none; background:#f8fafc;">
+          <input type="hidden" id="lh-technician">
+          <input type="text" id="lh-technician-search" onfocus="document.getElementById('lh-technician-drop').style.display='block'; fspTechSearch('', 'lh-technician', 'lh-technician-drop');" oninput="fspTechSearch(this.value, 'lh-technician', 'lh-technician-drop');" autocomplete="off" placeholder="Search technician..." style="width:100%; padding:10px 12px; border:1px solid #cbd5e1; border-radius:8px; font-size:14px; outline:none; background:#f8fafc;">
+          <ul id="lh-technician-drop" style="display:none; position:absolute; top:100%; left:0; right:0; background:#fff; border:1px solid #e2e8f0; border-radius:6px; z-index:999; max-height:200px; overflow-y:auto; list-style:none; padding:0; margin:4px 0 0 0; box-shadow:0 10px 15px -3px rgba(0,0,0,0.1);"></ul>
         </div>
         <div>
           <label style="display:block; margin-bottom:6px; font-size:12px; font-weight:600; color:#475569;">Date</label>
@@ -11064,7 +11066,8 @@
               const mB = (window.MACHINES_MAP && window.MACHINES_MAP[b.machine]) || {};
               const cA = a.customer || mA.customer || "—";
               const cB = b.customer || mB.customer || "—";
-              return cA.localeCompare(cB);
+              const custCmp = cA.localeCompare(cB);
+              return custCmp !== 0 ? custCmp : (a.machine||'').localeCompare(b.machine||'');
           });
       }
 
@@ -11083,6 +11086,27 @@
           }
           customerRowSpans[i] = count;
           for (let k = i + 1; k < i + count; k++) customerRowSpans[k] = 0;
+          i += count;
+        }
+      }
+
+      const machineRowSpans = {};
+      if (groupByCust) {
+        let i = 0;
+        while (i < rows.length) {
+          const mObjI = (window.MACHINES_MAP && window.MACHINES_MAP[rows[i].machine]) || {};
+          const custI = rows[i].customer || mObjI.customer || "—";
+          const machI = rows[i].machine || "—";
+          let count = 1;
+          for (let j = i + 1; j < rows.length; j++) {
+            const mObjJ = (window.MACHINES_MAP && window.MACHINES_MAP[rows[j].machine]) || {};
+            const custJ = rows[j].customer || mObjJ.customer || "—";
+            const machJ = rows[j].machine || "—";
+            if (custJ === custI && machJ === machI) count++;
+            else break;
+          }
+          machineRowSpans[i] = count;
+          for (let k = i + 1; k < i + count; k++) machineRowSpans[k] = 0;
           i += count;
         }
       }
@@ -11204,16 +11228,27 @@
              </td>`;
          }
 
+         let machHtml = "";
+         const machineInnerHtml = `
+                <div style="font-weight:400;color:#000;">${safeText(model)}</div>
+                ${sn ? `<div style="font-size:10px;color:#64748b;margin-top:2px;">SRN ▶ <strong>${safeText(sn)}</strong></div>` : ''}
+                ${fleetNo ? `<div style="font-size:10px;color:#64748b;margin-top:2px;">Fleet No ▶ <strong>${safeText(fleetNo)}</strong></div>` : ''}
+                ${hmr ? `<div style="font-size:10px;color:#64748b;margin-top:2px;">Current HMR ▶ <strong>${safeText(hmr)}</strong></div>` : ''}
+                ${warranty ? `<div style="font-size:9px;color:#0f172a;font-weight:bold;margin-top:4px;background:#f1f5f9;display:inline-block;padding:2px 4px;border-radius:2px;">${safeText(warranty)}</div>` : ''}
+         `;
+         
+         if (groupByCust) {
+            if (machineRowSpans[idx] > 0) {
+               machHtml = `<td rowspan="${machineRowSpans[idx]}" style="vertical-align:middle; border-right:1px solid #cbd5e1;">${machineInnerHtml}</td>`;
+            }
+         } else {
+            machHtml = `<td>${machineInnerHtml}</td>`;
+         }
+
          html += `
            <tr>
              ${custHtml}
-             <td>
-               <div style="font-weight:400;color:#000;">${safeText(model)}</div>
-               ${sn ? `<div style="font-size:10px;color:#64748b;margin-top:2px;">SRN ▶ <strong>${safeText(sn)}</strong></div>` : ''}
-               ${fleetNo ? `<div style="font-size:10px;color:#64748b;margin-top:2px;">Fleet No ▶ <strong>${safeText(fleetNo)}</strong></div>` : ''}
-               ${hmr ? `<div style="font-size:10px;color:#64748b;margin-top:2px;">Current HMR ▶ <strong>${safeText(hmr)}</strong></div>` : ''}
-               ${warranty ? `<div style="font-size:9px;color:#0f172a;font-weight:bold;margin-top:4px;background:#f1f5f9;display:inline-block;padding:2px 4px;border-radius:2px;">${safeText(warranty)}</div>` : ''}
-             </td>
+             ${machHtml}
              <td>${date}</td>
              <td>${safeText(r.description) || "—"}</td>
              <td>${partsEta}</td>
@@ -14533,7 +14568,10 @@
       let displayRows = [...rows];
       const groupByCust = document.getElementById('defect-group-cust')?.checked;
       if (groupByCust) {
-        displayRows.sort((a,b) => (a.customer||'').localeCompare(b.customer||''));
+        displayRows.sort((a,b) => {
+            const cmp = (a.customer||'').localeCompare(b.customer||'');
+            return cmp !== 0 ? cmp : (a.machine||'').localeCompare(b.machine||'');
+        });
       }
 
       const totalRows = displayRows.length;
@@ -14557,6 +14595,23 @@
           }
           customerRowSpans[i] = count;
           for (let k = i + 1; k < i + count; k++) customerRowSpans[k] = 0;
+          i += count;
+        }
+      }
+
+      const machineRowSpans = {};
+      if (groupByCust) {
+        let i = 0;
+        while (i < pageRows.length) {
+          const mach = pageRows[i].machine || 'Unknown Machine';
+          const cust = pageRows[i].customer || 'Unknown Customer';
+          let count = 1;
+          for (let j = i + 1; j < pageRows.length; j++) {
+            if ((pageRows[j].machine || 'Unknown Machine') === mach && (pageRows[j].customer || 'Unknown Customer') === cust) count++;
+            else break;
+          }
+          machineRowSpans[i] = count;
+          for (let k = i + 1; k < i + count; k++) machineRowSpans[k] = 0;
           i += count;
         }
       }
@@ -14621,10 +14676,19 @@
         `;
 
         const machineModel = r.model || r.oem || 'Unknown Machine';
-        const machineHtml = `
+        const machineInnerHtml = `
             <div style="font-weight:700;color:#0f172a;font-size:13px;">${machineModel}</div>
             <div style="font-size:11px;color:#64748b;margin-top:2px;">SN: ${r.machine || ''}</div>
         `;
+        
+        let machCell = "";
+        if (groupByCust) {
+          if (machineRowSpans[idx] > 0) {
+            machCell = `<td class="df-cell" rowspan="${machineRowSpans[idx]}" style="padding:10px 16px; border-right:1px solid #e2e8f0; vertical-align:middle; background:#f8fafc;">${machineInnerHtml}</td>`;
+          }
+        } else {
+          machCell = `<td class="df-cell" style="padding:10px 16px;">${machineInnerHtml}</td>`;
+        }
 
         const statusColor = s === 'closed' ? '#22c55e' : (s === 'open' ? '#3b82f6' : '#64748b');
         
@@ -14667,7 +14731,7 @@
         tr.innerHTML = `
           <td class="df-cell" style="padding:10px; font-weight:800; color:#94a3b8; font-size:11px; text-align:center; border-right: 1px solid #f1f5f9;">${startIdx + idx + 1}</td>
           ${custCell}
-          <td class="df-cell" style="padding:10px 16px;">${machineHtml}</td>
+          ${machCell}
           <td class="df-cell" style="padding:10px 16px;">${defectHtml}</td>
           <td class="df-cell" style="padding:10px 16px;">${statusHtml}</td>
           <td class="df-cell" style="color:#0f172a; padding:10px 16px; font-size:11px; font-weight:500;">${tedStr}</td>
@@ -14709,7 +14773,12 @@
     }
 
     function openLogHoursModal(techName) {
-      document.getElementById('lh-technician').value = techName;
+      document.getElementById('lh-technician').value = techName || '';
+      const searchInput = document.getElementById('lh-technician-search');
+      if (searchInput) {
+        searchInput.value = techName || '';
+        searchInput.readOnly = !!techName;
+      }
       document.getElementById('lh-date').value = new Date().toISOString().split('T')[0];
       document.getElementById('lh-productive').value = '0.0';
       document.getElementById('lh-travel').value = '0.0';
@@ -15996,6 +16065,7 @@ RECOMMENDATIONS / NEXT STEPS:
       if(cu) cu.value = '';
       if(md) md.value = '';
     }
+    
     async function submitDefect() {
       const id = document.getElementById("defect-id").value;
       const machine = document.getElementById("defect-machine-search").dataset.selectedName || document.getElementById("defect-machine-search").value;
@@ -26240,7 +26310,7 @@ window.loadISR = async function() {
   </script>
 
   <!-- Custom Prompt Modal for Delete -->
-  <div id="modal-delete-prompt" class="modal-overlay hidden" style="position:fixed; top:0; left:0; right:0; bottom:0; background:rgba(15,23,42,0.6); backdrop-filter:blur(4px); z-index:99999; display:none; align-items:center; justify-content:center;">
+  <div id="modal-delete-prompt" class="modal-overlay" style="position:fixed; top:0; left:0; right:0; bottom:0; background:rgba(15,23,42,0.6); backdrop-filter:blur(4px); z-index:99999; display:none; align-items:center; justify-content:center;">
     <div style="background:#fff; border-radius:12px; width:400px; max-width:90%; box-shadow:0 20px 25px -5px rgba(0,0,0,0.1), 0 8px 10px -6px rgba(0,0,0,0.1); overflow:hidden;">
       <div style="padding:16px 20px; background:#b91c1c; display:flex; justify-content:space-between; align-items:center;">
         <div style="color:#fff; font-size:15px; font-weight:700;">Authorize Deletion</div>
@@ -26542,4 +26612,5 @@ window.loadISR = async function() {
     }
   };
 </script>
+<div id="toast-wrap" class="toast-container"></div>
 </body></html>
