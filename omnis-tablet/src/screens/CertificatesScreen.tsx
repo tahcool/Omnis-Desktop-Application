@@ -3,9 +3,63 @@ import { View, Text, StyleSheet, ScrollView, TouchableOpacity, TextInput } from 
 import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
-import { StatusBar } from 'react-native';
+import { StatusBar, Alert } from 'react-native';
+import { supabase } from '../api/supabaseClient';
 
 export default function CertificatesScreen({ navigation }: any) {
+  const [operatorName, setOperatorName] = React.useState('');
+  const [idNumber, setIdNumber] = React.useState('');
+  const [machineType, setMachineType] = React.useState('');
+  const [trainingDuration, setTrainingDuration] = React.useState('');
+  const [completionDate, setCompletionDate] = React.useState('');
+  const [specialMention, setSpecialMention] = React.useState('');
+  const [recentCerts, setRecentCerts] = React.useState<any[]>([]);
+
+  React.useEffect(() => {
+    fetchRecentCerts();
+  }, []);
+
+  const fetchRecentCerts = async () => {
+    const { data, error } = await supabase
+      .from('ft_operator_certificates')
+      .select('*')
+      .order('created_at', { ascending: false })
+      .limit(10);
+    if (data) setRecentCerts(data);
+  };
+
+  const handleGenerate = async () => {
+    if (!operatorName || !idNumber || !machineType || !completionDate) {
+      Alert.alert('Error', 'Please fill in all required fields.');
+      return;
+    }
+
+    const refNum = completionDate.replace(/\//g, '') + '/' + Math.floor(Math.random() * 10000);
+
+    const { error } = await supabase.from('ft_operator_certificates').insert([{
+      operator_name: operatorName,
+      id_number: idNumber,
+      machine_type: machineType,
+      training_duration: trainingDuration,
+      completion_date: completionDate,
+      special_mention: specialMention,
+      cert_ref_number: refNum
+    }]);
+
+    if (error) {
+      Alert.alert('Error', 'Failed to generate certificate.');
+      console.error(error);
+    } else {
+      Alert.alert('Success', 'Certificate generated successfully.');
+      setOperatorName('');
+      setIdNumber('');
+      setMachineType('');
+      setTrainingDuration('');
+      setCompletionDate('');
+      setSpecialMention('');
+      fetchRecentCerts();
+    }
+  };
   const insets = useSafeAreaInsets();
 
   return (
@@ -59,22 +113,22 @@ export default function CertificatesScreen({ navigation }: any) {
             <View style={styles.row}>
               <View style={styles.halfCol}>
                 <Text style={styles.label}>Operator Name *</Text>
-                <TextInput style={styles.input} placeholder="e.g. John Doe" placeholderTextColor="#cbd5e1" />
+                <TextInput style={styles.input} placeholder="e.g. John Doe" placeholderTextColor="#cbd5e1" value={operatorName} onChangeText={setOperatorName} />
               </View>
               <View style={styles.halfCol}>
                 <Text style={styles.label}>ID Number *</Text>
-                <TextInput style={styles.input} placeholder="e.g. 63-1234567 A 12" placeholderTextColor="#cbd5e1" />
+                <TextInput style={styles.input} placeholder="e.g. 63-1234567 A 12" placeholderTextColor="#cbd5e1" value={idNumber} onChangeText={setIdNumber} />
               </View>
             </View>
 
             <View style={styles.row}>
               <View style={styles.halfCol}>
                 <Text style={styles.label}>Machine Type *</Text>
-                <TextInput style={styles.input} placeholder="e.g. Excavator ZX210" placeholderTextColor="#cbd5e1" />
+                <TextInput style={styles.input} placeholder="e.g. Excavator ZX210" placeholderTextColor="#cbd5e1" value={machineType} onChangeText={setMachineType} />
               </View>
               <View style={styles.halfCol}>
                 <Text style={styles.label}>Training Duration</Text>
-                <TextInput style={styles.input} placeholder="12 day" placeholderTextColor="#cbd5e1" />
+                <TextInput style={styles.input} placeholder="12 day" placeholderTextColor="#cbd5e1" value={trainingDuration} onChangeText={setTrainingDuration} />
               </View>
             </View>
 
@@ -82,18 +136,18 @@ export default function CertificatesScreen({ navigation }: any) {
               <View style={styles.halfCol}>
                 <Text style={styles.label}>Completion Date *</Text>
                 <View style={styles.inputIconWrapper}>
-                  <TextInput style={styles.input} placeholder="dd/mm/yyyy" placeholderTextColor="#cbd5e1" />
+                  <TextInput style={styles.input} placeholder="yyyy-mm-dd" placeholderTextColor="#cbd5e1" value={completionDate} onChangeText={setCompletionDate} />
                   <Ionicons name="calendar-outline" size={20} color="#0f172a" style={styles.inputIcon} />
                 </View>
               </View>
               <View style={styles.halfCol}>
                 <Text style={styles.label}>Special Mention (Optional)</Text>
-                <TextInput style={styles.input} placeholder="e.g. With distinction" placeholderTextColor="#cbd5e1" />
+                <TextInput style={styles.input} placeholder="e.g. With distinction" placeholderTextColor="#cbd5e1" value={specialMention} onChangeText={setSpecialMention} />
               </View>
             </View>
 
             <View style={styles.generateButtonContainer}>
-              <TouchableOpacity style={styles.generateButton}>
+              <TouchableOpacity style={styles.generateButton} onPress={handleGenerate}>
                 <Ionicons name="print" size={18} color="#ffffff" style={{marginRight: 8}} />
                 <Text style={styles.generateButtonText}>Generate & Print</Text>
               </TouchableOpacity>
@@ -118,17 +172,12 @@ export default function CertificatesScreen({ navigation }: any) {
                 <Text style={styles.recentBoxTitle}>Recent Certificates</Text>
               </View>
 
-              {[
-                { name: 'NYONI', machine: 'Shantui Wheel Loaders', id: '25/06/2026/4359' },
-                { name: 'GWINI', machine: 'Shantui Wheel Loaders', id: '25/06/2026/9231' },
-                { name: 'MUNENGE', machine: 'Shantui Wheel Loaders', id: '25/06/2026/8436' },
-                { name: 'MABHENA', machine: 'Shantui Wheel Loaders', id: '25/06/2026/6180' }
-              ].map((cert, idx) => (
+              {recentCerts.map((cert: any, idx: number) => (
                 <View key={idx} style={styles.recentItem}>
-                  <Text style={styles.recentName}>{cert.name}</Text>
+                  <Text style={styles.recentName}>{cert.operator_name}</Text>
                   <View style={styles.recentDetails}>
-                    <Text style={styles.recentMachine}>{cert.machine}</Text>
-                    <Text style={styles.recentId}>{cert.id}</Text>
+                    <Text style={styles.recentMachine}>{cert.machine_type}</Text>
+                    <Text style={styles.recentId}>{cert.cert_ref_number}</Text>
                   </View>
                 </View>
               ))}

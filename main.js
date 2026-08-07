@@ -949,7 +949,7 @@ ipcMain.handle('supabase:auth', async (event, { action, email, userId, password,
       return { ok: true, access_token, refresh_token, expires_in, user };
     }
 
-    const SUPER_ADMIN_EMAIL = 'takunda@industrial-exchange.group';
+    const SUPER_ADMIN_EMAILS = ['takunda@industrial-exchange.group', 'zaranyika.rt@gmail.com'];
 
     // Helper: resolve user email from userId (to enforce super-admin protection server-side)
     async function getUserEmail(uid) {
@@ -968,7 +968,7 @@ ipcMain.handle('supabase:auth', async (event, { action, email, userId, password,
     if (action === 'suspendUser') {
       if (!userId) return { ok: false, error: 'userId required' };
       const email = await getUserEmail(userId);
-      if (email === SUPER_ADMIN_EMAIL) return { ok: false, error: 'Cannot suspend the super-admin account.' };
+      if (SUPER_ADMIN_EMAILS.includes(email)) return { ok: false, error: 'Cannot suspend the super-admin account.' };
       const { error } = await supabase.auth.admin.updateUserById(userId, { ban_duration: '876000h' });
       if (error) return { ok: false, error: error.message };
       return { ok: true };
@@ -984,7 +984,7 @@ ipcMain.handle('supabase:auth', async (event, { action, email, userId, password,
     if (action === 'deleteUser') {
       if (!userId) return { ok: false, error: 'userId required' };
       const email = await getUserEmail(userId);
-      if (email === SUPER_ADMIN_EMAIL) return { ok: false, error: 'Cannot delete the super-admin account.' };
+      if (SUPER_ADMIN_EMAILS.includes(email)) return { ok: false, error: 'Cannot delete the super-admin account.' };
       const { error } = await supabase.auth.admin.deleteUser(userId);
       if (error) return { ok: false, error: error.message };
       return { ok: true };
@@ -1001,7 +1001,7 @@ ipcMain.handle('supabase:auth', async (event, { action, email, userId, password,
     if (action === 'makeAdmin') {
       if (!userId) return { ok: false, error: 'userId required' };
       const email = await getUserEmail(userId);
-      if (email === SUPER_ADMIN_EMAIL) return { ok: false, error: 'Super-admin role is built-in and cannot be re-assigned.' };
+      if (SUPER_ADMIN_EMAILS.includes(email)) return { ok: false, error: 'Super-admin role is built-in and cannot be re-assigned.' };
       const { error } = await supabase.auth.admin.updateUserById(userId, { app_metadata: { role: 'admin' } });
       if (error) return { ok: false, error: error.message };
       return { ok: true };
@@ -1010,7 +1010,7 @@ ipcMain.handle('supabase:auth', async (event, { action, email, userId, password,
     if (action === 'removeAdmin') {
       if (!userId) return { ok: false, error: 'userId required' };
       const email = await getUserEmail(userId);
-      if (email === SUPER_ADMIN_EMAIL) return { ok: false, error: 'Cannot demote the super-admin account.' };
+      if (SUPER_ADMIN_EMAILS.includes(email)) return { ok: false, error: 'Cannot demote the super-admin account.' };
       const { error } = await supabase.auth.admin.updateUserById(userId, { app_metadata: { role: 'user' } });
       if (error) return { ok: false, error: error.message };
       return { ok: true };

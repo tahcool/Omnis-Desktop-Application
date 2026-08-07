@@ -13,12 +13,14 @@ serve(async (req) => {
     const table = payload.table;
     const record = payload.record;
     
-    if (!record || payload.type !== 'INSERT') {
-      return new Response(JSON.stringify({ message: "Not an insert or missing record" }), { status: 200 })
+    if (!record || (payload.type !== 'INSERT' && payload.type !== 'UPDATE')) {
+      return new Response(JSON.stringify({ message: "Not an insert/update or missing record" }), { status: 200 })
     }
 
     let title = 'New Notification';
     let body = 'A new record was added.';
+    // include full record in push data for modal rendering
+    const pushData = { table, recordId: record.id || record.name, fullRecord: record };
 
     if (table === 'ft_machine') {
       const sn = record.sn || record.name || 'Unknown';
@@ -26,16 +28,28 @@ serve(async (req) => {
       const customer = record.customer || 'Unknown Customer';
       title = `New Machine Registered`;
       body = `${customer} | ${model} (SN: ${sn})`;
-    } else if (table === 'ft_breakdown') {
-      const sn = record.sn || 'Unknown SN';
-      const desc = record.description || record.reported_issue || 'New breakdown reported';
+    } else if (table === 'ft_breakdown' || table === 'ft_breakdown_logs' || table === 'ft_breakdown_log') {
+      const sn = record.sn || record.machine || 'Unknown SN';
+      const desc = record.description || record.reported_issue || record.reported_problem || 'New breakdown reported';
       title = `New Breakdown Reported`;
       body = `[${sn}] - ${desc}`;
-    } else if (table === 'ft_defect') {
-      const sn = record.sn || 'Unknown SN';
+    } else if (table === 'ft_defect' || table === 'ft_defects_log' || table === 'ft_defect_log') {
+      const sn = record.sn || record.machine || 'Unknown SN';
       const desc = record.defect || record.description || 'New defect added';
       title = `New Defect Added`;
       body = `[${sn}] - ${desc}`;
+    } else if (table === 'fmb_reports') {
+      title = `Order Updated`;
+      body = `Order ${record.name || record.id} was updated. Status: ${record.status || 'Changed'}`;
+    } else if (table === 'frappe_group_sales') {
+      title = `New Sales Entry`;
+      body = `Sale for ${record.customer || 'Unknown'} - ${record.item || record.model || 'Item'}`;
+    } else if (table === 'stock_inventory') {
+      title = `New Stock Added`;
+      body = `${record.name || 'Stock Item'} added to inventory.`;
+    } else if (table === 'aftersales_handover') {
+      title = `New Aftersales Record`;
+      body = `Aftersales for Order ${record.order_id || 'Unknown'}`;
     } else {
       return new Response(JSON.stringify({ message: `Ignoring table: ${table}` }), { status: 200 })
     }
@@ -65,7 +79,7 @@ serve(async (req) => {
       sound: 'default',
       title,
       body,
-      data: { table, recordId: record.id || record.name },
+      data: pushData,
     }));
 
     // Send to Expo

@@ -80,7 +80,7 @@ export default function FleetrackDashboardScreen({ navigation }: any) {
     try {
 
       // Fetch machines for mapping
-      let allMachines = [];
+      let allMachines: any[] = [];
       let mFrom = 0;
       const mStep = 1000;
       while (true) {
@@ -97,7 +97,7 @@ export default function FleetrackDashboardScreen({ navigation }: any) {
       };
 
       // Fetch Defects
-      let defects = [];
+      let defects: any[] = [];
       let dFrom = 0;
       const dStep = 1000;
       while (true) {
@@ -111,18 +111,18 @@ export default function FleetrackDashboardScreen({ navigation }: any) {
       const spDefects = defects.filter(d => getDivision(d.machine) === 'sinopower' || (d.customer && d.customer.toLowerCase().includes('sinopower')));
       const mxDefects = defects.filter(d => !spDefects.includes(d));
 
-      const spOpenD = spDefects.filter(d => d.status && d.status.toLowerCase() !== 'closed').length;
+      const spOpenD = spDefects.filter(d => d.status && d.status.toLowerCase() !== 'closed' && d.status.toLowerCase() !== 'resolved').length;
       setSpDefectsOpen(spOpenD);
       setSpDefectsTotal(spDefects.length);
       Animated.timing(spDefectAnim, { toValue: spDefects.length > 0 ? (spDefects.length - spOpenD) / spDefects.length : 0, duration: 900, useNativeDriver: false }).start();
 
-      const mxOpenD = mxDefects.filter(d => d.status && d.status.toLowerCase() !== 'closed').length;
+      const mxOpenD = mxDefects.filter(d => d.status && d.status.toLowerCase() !== 'closed' && d.status.toLowerCase() !== 'resolved').length;
       setMxDefectsOpen(mxOpenD);
       setMxDefectsTotal(mxDefects.length);
       Animated.timing(mxDefectAnim, { toValue: mxDefects.length > 0 ? (mxDefects.length - mxOpenD) / mxDefects.length : 0, duration: 900, useNativeDriver: false }).start();
 
       // Fetch Breakdowns
-      let breakdowns = [];
+      let breakdowns: any[] = [];
       let bFrom = 0;
       const bStep = 1000;
       while (true) {
@@ -413,7 +413,7 @@ const { count: lateCount } = await supabase
                     <Text style={styles.perfBlockTitle}>DEFECTS</Text>
                     <View style={styles.perfBlockValues}>
                       <Text style={styles.perfValue}>{spDefectsOpen}</Text>
-                      <Text style={styles.perfTarget}>/ {spDefectsTotal}</Text>
+                      <Text style={styles.perfTarget}> Open</Text>
                     </View>
                     <View style={styles.perfBarBg}>
                       <Animated.View style={[styles.perfBarFill, {
@@ -423,7 +423,7 @@ const { count: lateCount } = await supabase
                     </View>
                     <View style={styles.perfBlockFooter}>
                       <Text style={[styles.perfPct, { color: '#ffffff' }]}>{spDefectsTotal > 0 ? Math.round(((spDefectsTotal - spDefectsOpen)/spDefectsTotal)*100) : 0}%</Text>
-                      <Text style={styles.perfNote}>Efficiency (Closed)</Text>
+                      <Text style={styles.perfNote}>Resolution Rate</Text>
                     </View>
                   </View>
                   
@@ -434,7 +434,7 @@ const { count: lateCount } = await supabase
                     <Text style={styles.perfBlockTitle}>BREAKDOWNS</Text>
                     <View style={styles.perfBlockValues}>
                       <Text style={styles.perfValue}>{spBreakdownsActive}</Text>
-                      <Text style={styles.perfTarget}>/ {spBreakdownsTotal}</Text>
+                      <Text style={styles.perfTarget}> Active</Text>
                     </View>
                     <View style={styles.perfBarBg}>
                       <Animated.View style={[styles.perfBarFill, {
@@ -444,7 +444,7 @@ const { count: lateCount } = await supabase
                     </View>
                     <View style={styles.perfBlockFooter}>
                       <Text style={[styles.perfPct, { color: '#ffffff' }]}>{spBreakdownsTotal > 0 ? Math.round(((spBreakdownsTotal - spBreakdownsActive)/spBreakdownsTotal)*100) : 0}%</Text>
-                      <Text style={styles.perfNote}>Efficiency (Resolved)</Text>
+                      <Text style={styles.perfNote}>Resolution Rate</Text>
                     </View>
                   </View>
                 </View>

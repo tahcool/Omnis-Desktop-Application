@@ -303,7 +303,7 @@ export default function CustomerEnquiriesScreen() {
       // Trigger Edge function
       fetch('https://pfqaeewmlwfayxbgmuaq.supabase.co/functions/v1/process-email-queue', {
         method: 'POST',
-        headers: { 'Authorization': `Bearer sb_secret_QDTpvp_agRT3cuB9nXrfPw_I9fZHEOc`, 'Content-Type': 'application/json' },
+        headers: { 'Authorization': `Bearer sb_secret_JZwRYG9k0mZ9x86o92O5sA__fuofVcU`, 'Content-Type': 'application/json' },
         body: JSON.stringify({}),
       }).catch(e => console.log('Edge trigger silent catch:', e));
 
@@ -541,7 +541,7 @@ export default function CustomerEnquiriesScreen() {
 
     fetch('https://pfqaeewmlwfayxbgmuaq.supabase.co/functions/v1/process-email-queue', {
       method: 'POST',
-      headers: { 'Authorization': `Bearer sb_secret_QDTpvp_agRT3cuB9nXrfPw_I9fZHEOc`, 'Content-Type': 'application/json' },
+      headers: { 'Authorization': `Bearer sb_secret_JZwRYG9k0mZ9x86o92O5sA__fuofVcU`, 'Content-Type': 'application/json' },
       body: JSON.stringify({}),
     }).catch(e => console.log('Edge trigger silent catch:', e));
 

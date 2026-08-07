@@ -247,6 +247,19 @@ export default function LogActivityScreen() {
     setEnquiryItems([blankItem()]);
   };
 
+  const handleTopicsChange = (text: string) => {
+    if (text === '' && topics === '• ') {
+      setTopics('');
+      return;
+    }
+    let formattedText = text;
+    if (formattedText.length > 0 && !formattedText.startsWith('• ')) {
+      formattedText = '• ' + formattedText.replace(/^[-*•]\s*/, '');
+    }
+    formattedText = formattedText.replace(/\n([^•\n])/g, '\n• $1');
+    setTopics(formattedText);
+  };
+
   // ── Image pickers (Max 5 photos) ──────────────────────────────────────────
 
   const pickVisitImage = async () => {
@@ -420,19 +433,27 @@ const generateVisitEmailHtml = (params: {
   <html>
   <head>
     <meta charset="utf-8">
+    <style>
+      :root { color-scheme: light dark; }
+      .logo-dark { display: none !important; }
+      @media (prefers-color-scheme: dark) {
+        .logo-light { display: none !important; }
+        .logo-dark { display: inline-block !important; }
+      }
+    </style>
   </head>
   <body style="font-family: Arial, sans-serif; color: #1e293b; background-color: #f8fafc; margin: 0; padding: 20px;">
     <div style="max-width: 680px; margin: 0 auto; background: #ffffff; border-radius: 12px; overflow: hidden; border: 1px solid #e2e8f0; box-shadow: 0 4px 10px rgba(0,0,0,0.04);">
       
-      <!-- Header Banner with Omnis Logo -->
-      <div style="background: linear-gradient(135deg, #4c110d 0%, #8b2219 50%, #6b1a14 100%); padding: 26px 20px; text-align: center;">
-        <div style="margin-bottom: 8px;">
-          <img src="https://pfqaeewmlwfayxbgmuaq.supabase.co/storage/v1/object/public/public-assets/logos/omnis-logo-white.png" alt="OMNIS" style="max-height: 52px; width: auto; max-width: 220px;" />
+      <!-- Header Banner with IEG Logo -->
+      <div style="background-color: #212121; padding: 26px 20px; text-align: center; border-bottom: 4px solid #8b2219;">
+        <div style="margin-bottom: 16px;">
+          <img src="https://pfqaeewmlwfayxbgmuaq.supabase.co/storage/v1/object/public/public-assets/logos/proudly-ieg-logo-white-3x.png" alt="IEG" style="max-height: 120px; width: auto; max-width: 100%;" />
         </div>
-        <h2 style="color: #ffffff; font-size: 15px; margin: 6px 0 0 0; font-weight: 700; text-transform: uppercase; letter-spacing: 1px;">
+        <h2 style="color: #ffffff; font-size: 16px; margin: 6px 0 0 0; font-weight: 800; text-transform: uppercase; letter-spacing: 1px;">
           ${headerReportTitle}
         </h2>
-        <p style="color: rgba(255,255,255,0.85); font-size: 12px; margin: 4px 0 0 0;">
+        <p style="color: #9ca3af; font-size: 12px; margin: 4px 0 0 0; font-weight: 600;">
           ${customerName} • ${visitDate}
         </p>
       </div>
@@ -471,7 +492,14 @@ const generateVisitEmailHtml = (params: {
               </tr>
               <tr>
                 <td style="padding: 10px 16px; border-bottom: 1px solid #e2e8f0; font-weight: 700; background: #f8fafc; color: #475569;">Topics Discussed</td>
-                <td style="padding: 10px 16px; border-bottom: 1px solid #e2e8f0; color: #0f172a; line-height: 1.5;">${topics}</td>
+                <td style="padding: 10px 16px; border-bottom: 1px solid #e2e8f0; color: #0f172a; line-height: 1.5;">
+                  <ul style="margin: 0; padding-left: 20px; color: #0f172a;">
+                    ${topics.split('\n').map(line => line.trim()).filter(line => line.length > 0).map(line => {
+                      const text = line.replace(/^[•\-\*]\s*/, '');
+                      return `<li style="margin-bottom: 4px;">${text}</li>`;
+                    }).join('')}
+                  </ul>
+                </td>
               </tr>
               ${opportunities ? `
               <tr>
@@ -495,7 +523,10 @@ const generateVisitEmailHtml = (params: {
         </p>
 
         <div style="margin-top: 28px; padding-top: 16px; border-top: 1px solid #e2e8f0; font-size: 12px; color: #64748b; text-align: center;">
-          <p style="margin: 0 0 4px 0; font-weight: 600;">Omnis Activity & Fleet Management System</p>
+          <div style="display: inline-block; background: #1e293b; padding: 6px 12px; border-radius: 4px; margin-bottom: 8px;">
+            <img src="https://pfqaeewmlwfayxbgmuaq.supabase.co/storage/v1/object/public/public-assets/logos/omnis-logo-white.png" alt="OMNIS" style="max-height: 12px; width: auto; opacity: 0.9; vertical-align: middle;" />
+          </div>
+          <p style="margin: 0 0 4px 0; font-weight: 600;">Activity & Fleet Management System</p>
           <p style="margin: 0; color: #94a3b8;">Automated visit report dispatch</p>
         </div>
       </div>
@@ -515,7 +546,7 @@ const generateVisitEmailHtml = (params: {
     setSubmitting(true);
     try {
       const supabaseUrl = Constants.expoConfig?.extra?.supabaseUrl || 'https://pfqaeewmlwfayxbgmuaq.supabase.co';
-      const anonKey = Constants.expoConfig?.extra?.supabaseAnonKey || 'sb_secret_QDTpvp_agRT3cuB9nXrfPw_I9fZHEOc';
+      const anonKey = Constants.expoConfig?.extra?.supabaseAnonKey || 'sb_secret_JZwRYG9k0mZ9x86o92O5sA__fuofVcU';
       const { data: { user } } = await supabase.auth.getUser();
 
       const metaName = user?.user_metadata?.full_name || user?.user_metadata?.name || user?.user_metadata?.display_name;
@@ -545,6 +576,7 @@ const generateVisitEmailHtml = (params: {
       const targetDepartments = Array.from(targetDeptSet);
 
       const payload: any = {
+        email_sent:       true,
         visit_date:       new Date().toISOString().split('T')[0],
         salesperson:      salesRepDisplayName,
         customer:         customerName,
@@ -669,21 +701,33 @@ const generateVisitEmailHtml = (params: {
             created_by: user?.email || 'Mobile User',
           });
 
-          // Trigger edge function for immediate background sending
-          fetch(`${supabaseUrl}/functions/v1/process-email-queue`, {
-            method: 'POST',
-            headers: {
-              'Authorization': `Bearer ${anonKey}`,
-              'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({}),
-          }).catch(e => console.log('Edge trigger silent catch:', e));
+          // Trigger edge function for immediate background sending and await result
+          try {
+            const edgeRes = await fetch(`${supabaseUrl}/functions/v1/process-email-queue`, {
+              method: 'POST',
+              headers: {
+                'Authorization': `Bearer ${anonKey}`,
+                'Content-Type': 'application/json',
+              },
+              body: JSON.stringify({}),
+            });
+            if (edgeRes.ok) {
+              Alert.alert('Success', `${visitType} visit logged and email dispatched successfully!`);
+            } else {
+              Alert.alert('Error', `${visitType} visit logged, but email dispatch failed. Please check your connection or contact support.`);
+            }
+          } catch (e) {
+            console.log('Edge trigger silent catch:', e);
+            Alert.alert('Error', `${visitType} visit logged, but email dispatch failed. Please check your connection or contact support.`);
+          }
+        } else {
+          Alert.alert('Success', `${visitType} visit logged successfully!`);
         }
       } catch (e) {
         console.error('[LogActivity] Failed to queue visit email:', e);
+        Alert.alert('Warning', `${visitType} visit logged, but email queuing failed.`);
       }
 
-      Alert.alert('Success', `${visitType} visit logged successfully!`);
       resetForm();
       navigation.goBack();
     } catch (error: any) {
@@ -812,7 +856,7 @@ const generateEnquiryEmailHtml = (params: {
     setSubmitting(true);
     try {
       const supabaseUrl = Constants.expoConfig?.extra?.supabaseUrl || 'https://pfqaeewmlwfayxbgmuaq.supabase.co';
-      const anonKey = Constants.expoConfig?.extra?.supabaseAnonKey || 'sb_secret_QDTpvp_agRT3cuB9nXrfPw_I9fZHEOc';
+      const anonKey = Constants.expoConfig?.extra?.supabaseAnonKey || 'sb_secret_JZwRYG9k0mZ9x86o92O5sA__fuofVcU';
       const { data: { user } } = await supabase.auth.getUser();
 
       const metaName = user?.user_metadata?.full_name || user?.user_metadata?.name || user?.user_metadata?.display_name;
@@ -884,14 +928,23 @@ const generateEnquiryEmailHtml = (params: {
         created_by: salesRepDisplayName,
       });
 
-      // Trigger background dispatch
-      fetch(`${supabaseUrl}/functions/v1/process-email-queue`, {
-        method: 'POST',
-        headers: { 'Authorization': `Bearer ${anonKey}`, 'Content-Type': 'application/json' },
-        body: JSON.stringify({}),
-      }).catch(e => console.log('Edge trigger silent catch:', e));
+      // Trigger background dispatch and await result
+      try {
+        const edgeRes = await fetch(`${supabaseUrl}/functions/v1/process-email-queue`, {
+          method: 'POST',
+          headers: { 'Authorization': `Bearer ${anonKey}`, 'Content-Type': 'application/json' },
+          body: JSON.stringify({}),
+        });
+        if (edgeRes.ok) {
+          Alert.alert('Success', 'Customer enquiry saved and notification emailed successfully!');
+        } else {
+          Alert.alert('Error', 'Enquiry saved, but email dispatch failed. Please check your connection or contact support.');
+        }
+      } catch (e) {
+        console.log('Edge trigger silent catch:', e);
+        Alert.alert('Error', 'Enquiry saved, but email dispatch failed. Please check your connection or contact support.');
+      }
 
-      Alert.alert('Success', 'Customer enquiry saved and notification emailed successfully!');
       resetForm();
       navigation.goBack();
     } catch (error: any) {
@@ -1006,7 +1059,7 @@ const generateEnquiryEmailHtml = (params: {
               placeholderTextColor="#94a3b8"
               multiline
               value={topics}
-              onChangeText={setTopics}
+              onChangeText={handleTopicsChange}
             />
 
             {/* Opportunities */}

@@ -50,10 +50,13 @@ export default function VisitHistoryScreen() {
   const fetchVisits = async () => {
     try {
       const { data: { user } } = await supabase.auth.getUser();
-      const salesperson = user?.email || 'Mobile User';
+      const metaName = user?.user_metadata?.full_name || user?.user_metadata?.name || user?.user_metadata?.display_name;
+      const formattedEmailName = (user?.email || '').split('@')[0].split(/[._-]/).map((w: string) => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase()).join(' ');
+      const salesRepDisplayName = metaName?.trim() || formattedEmailName || 'Representative';
+      const fallbackEmail = user?.email || 'Mobile User';
 
       const supabaseUrl = Constants.expoConfig?.extra?.supabaseUrl || 'https://pfqaeewmlwfayxbgmuaq.supabase.co';
-      const anonKey = Constants.expoConfig?.extra?.supabaseAnonKey || 'sb_secret_QDTpvp_agRT3cuB9nXrfPw_I9fZHEOc';
+      const anonKey = Constants.expoConfig?.extra?.supabaseAnonKey || 'sb_secret_JZwRYG9k0mZ9x86o92O5sA__fuofVcU';
 
       const headers = {
         'apikey': anonKey,
@@ -65,7 +68,7 @@ export default function VisitHistoryScreen() {
       const safeFetch = async (table: string): Promise<any[]> => {
         try {
           const res = await fetch(
-            `${supabaseUrl}/rest/v1/${table}?salesperson=eq.${encodeURIComponent(salesperson)}`,
+            `${supabaseUrl}/rest/v1/${table}?or=(salesperson.eq.${encodeURIComponent(salesRepDisplayName)},salesperson.eq.${encodeURIComponent(fallbackEmail)})`,
             { headers }
           );
           if (!res.ok) {
@@ -121,7 +124,10 @@ export default function VisitHistoryScreen() {
       list = list.filter(v =>
         v.customer?.toLowerCase().includes(q) ||
         v.type?.toLowerCase().includes(q) ||
-        v.topics_discussed?.toLowerCase().includes(q)
+        (v.topics_discussed && v.topics_discussed.toLowerCase().includes(q)) ||
+        (v.findings && v.findings.toLowerCase().includes(q)) ||
+        (v.opportunities && v.opportunities.toLowerCase().includes(q)) ||
+        (v.action_notes && v.action_notes.toLowerCase().includes(q))
       );
     }
     return list;
@@ -131,8 +137,8 @@ export default function VisitHistoryScreen() {
 
   const openEditModal = (visit: any) => {
     setSelectedVisit(visit);
-    setTopics(visit.topics_discussed || '');
-    setOpportunities(visit.opportunities || '');
+    setTopics(visit.type === 'PSV' ? (visit.findings || '') : (visit.topics_discussed || ''));
+    setOpportunities(visit.type === 'PSV' ? (visit.action_notes || '') : (visit.opportunities || ''));
     setActionRequired(visit.action_required || false);
     setFollowUpDate(visit.follow_up_date ? new Date(visit.follow_up_date) : null);
     setNotes(visit.notes || '');
@@ -143,16 +149,22 @@ export default function VisitHistoryScreen() {
     setSaving(true);
     try {
       const supabaseUrl = Constants.expoConfig?.extra?.supabaseUrl || 'https://pfqaeewmlwfayxbgmuaq.supabase.co';
-      const anonKey = Constants.expoConfig?.extra?.supabaseAnonKey || 'sb_secret_QDTpvp_agRT3cuB9nXrfPw_I9fZHEOc';
+      const anonKey = Constants.expoConfig?.extra?.supabaseAnonKey || 'sb_secret_JZwRYG9k0mZ9x86o92O5sA__fuofVcU';
 
       const payload: any = {
-        topics_discussed: topics,
-        opportunities,
         action_required: actionRequired,
         notes,
         updated_at: new Date().toISOString(),
         follow_up_date: actionRequired && followUpDate ? followUpDate.toISOString().split('T')[0] : null,
       };
+
+      if (selectedVisit.type === 'PSV') {
+        payload.findings = topics;
+        payload.action_notes = opportunities;
+      } else {
+        payload.topics_discussed = topics;
+        payload.opportunities = opportunities;
+      }
 
       const table = selectedVisit.type === 'PSV' ? 'psv_logs' : 'cdv_logs';
       const res = await fetch(`${supabaseUrl}/rest/v1/${table}?id=eq.${selectedVisit.id}`, {
@@ -191,7 +203,7 @@ export default function VisitHistoryScreen() {
   const deleteVisit = async (visit: any) => {
     try {
       const supabaseUrl = Constants.expoConfig?.extra?.supabaseUrl || 'https://pfqaeewmlwfayxbgmuaq.supabase.co';
-      const anonKey = Constants.expoConfig?.extra?.supabaseAnonKey || 'sb_secret_QDTpvp_agRT3cuB9nXrfPw_I9fZHEOc';
+      const anonKey = Constants.expoConfig?.extra?.supabaseAnonKey || 'sb_secret_JZwRYG9k0mZ9x86o92O5sA__fuofVcU';
 
       const table = visit.type === 'PSV' ? 'psv_logs' : 'cdv_logs';
       const res = await fetch(`${supabaseUrl}/rest/v1/${table}?id=eq.${visit.id}`, {
@@ -239,17 +251,30 @@ export default function VisitHistoryScreen() {
           </View>
         </View>
 
-        <Text style={styles.customerName}>{visit.customer}</Text>
+        <View style={{ flexDirection: 'row', alignItems: 'center', marginBottom: 6, paddingLeft: 8 }}>
+          <Text style={[styles.customerName, { marginBottom: 0, paddingLeft: 0, flexShrink: 1 }]} numberOfLines={1}>
+            {visit.customer}
+          </Text>
+          {visit.email_sent && (
+            <View style={{ backgroundColor: '#dcfce7', paddingHorizontal: 6, paddingVertical: 2, borderRadius: 4, marginLeft: 8 }}>
+              <Text style={{ color: '#15803d', fontSize: 9, fontWeight: 'bold' }}>Email Sent</Text>
+            </View>
+          )}
+        </View>
 
         <View style={styles.infoRow}>
           <Ionicons name="chatbubbles-outline" size={12} color="#64748b" />
-          <Text style={styles.infoText} numberOfLines={2}>{visit.topics_discussed}</Text>
+          <Text style={styles.infoText} numberOfLines={2}>
+            {visit.type === 'PSV' ? (visit.findings || 'No findings reported') : (visit.topics_discussed || 'No topics discussed')}
+          </Text>
         </View>
 
-        {visit.opportunities ? (
+        {(visit.type === 'PSV' ? visit.action_notes : visit.opportunities) ? (
           <View style={styles.infoRow}>
             <Ionicons name="trending-up-outline" size={12} color="#64748b" />
-            <Text style={styles.infoText} numberOfLines={1}>{visit.opportunities}</Text>
+            <Text style={styles.infoText} numberOfLines={1}>
+              {visit.type === 'PSV' ? visit.action_notes : visit.opportunities}
+            </Text>
           </View>
         ) : null}
 

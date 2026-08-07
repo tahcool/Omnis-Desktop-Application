@@ -249,14 +249,6 @@ export default function DashboardScreen({ navigation }: any) {
                 <Text style={[styles.greeting, { textAlign: 'left' }]}>{greeting}, {userName}! 👋</Text>
                 <Text style={[styles.roleText, { textAlign: 'left' }]}>{currentDate}</Text>
                 <View style={[styles.quickActionRow, { justifyContent: 'flex-start', flexWrap: 'wrap', marginTop: 6 }]}>
-                  <TouchableOpacity style={styles.quickActionBtn}>
-                    <Ionicons name="flash" size={12} color="#fff" />
-                    <Text style={styles.quickActionText}>Efficiency</Text>
-                  </TouchableOpacity>
-                  <TouchableOpacity style={styles.quickActionBtn}>
-                    <Ionicons name="bar-chart" size={12} color="#fff" />
-                    <Text style={styles.quickActionText}>Month End</Text>
-                  </TouchableOpacity>
                   <TouchableOpacity 
                     style={styles.quickActionBtn}
                     onPress={() => navigation.navigate('Inbox')}
@@ -313,39 +305,6 @@ export default function DashboardScreen({ navigation }: any) {
                 Unified Intelligence
               </Text>
             </View>
-          </View>
-
-          {/* Compact status strip inside header */}
-          <View style={styles.headerStatusRow}>
-            <TouchableOpacity
-              style={[styles.headerStatusPill, { borderColor: lateOrders > 0 ? '#fca5a5' : 'rgba(255,255,255,0.3)' }]}
-              onPress={() => navigation.navigate('Order Tracking')}
-            >
-              <View style={[styles.headerStatusDot, { backgroundColor: lateOrders > 0 ? '#ef4444' : '#4ade80' }]} />
-              <Text style={styles.headerStatusText}>
-                {lateOrders > 0 ? `${lateOrders} Late Order${lateOrders !== 1 ? 's' : ''}` : 'Orders On Track'}
-              </Text>
-            </TouchableOpacity>
-
-            <TouchableOpacity
-              style={[styles.headerStatusPill, { borderColor: openEnquiries > 0 ? '#fcd34d' : 'rgba(255,255,255,0.3)' }]}
-              onPress={() => navigation.navigate('Customer Enquiries')}
-            >
-              <View style={[styles.headerStatusDot, { backgroundColor: openEnquiries > 0 ? '#f59e0b' : '#4ade80' }]} />
-              <Text style={styles.headerStatusText}>
-                {openEnquiries > 0 ? `${openEnquiries} Open Enquir${openEnquiries !== 1 ? 'ies' : 'y'}` : 'No Open Enquiries'}
-              </Text>
-            </TouchableOpacity>
-
-            <TouchableOpacity
-              style={[styles.headerStatusPill, { borderColor: overdueVisits > 0 ? '#fca5a5' : 'rgba(255,255,255,0.3)' }]}
-              onPress={() => navigation.navigate('Salestrack Customers')}
-            >
-              <View style={[styles.headerStatusDot, { backgroundColor: overdueVisits > 0 ? '#ef4444' : '#4ade80' }]} />
-              <Text style={styles.headerStatusText}>
-                {overdueVisits > 0 ? `${overdueVisits} Overdue Visit${overdueVisits !== 1 ? 's' : ''}` : 'Visits On Track'}
-              </Text>
-            </TouchableOpacity>
           </View>
         </LinearGradient>
 
@@ -502,7 +461,7 @@ export default function DashboardScreen({ navigation }: any) {
             <Ionicons name="cube" size={18} color="#ffffff" />
             <Text style={styles.shortcutSquareText} numberOfLines={1}>Orders</Text>
           </TouchableOpacity>
-          <TouchableOpacity style={styles.shortcutSquare} onPress={() => navigation.navigate('Customer Fleets')}>
+          <TouchableOpacity style={styles.shortcutSquare} onPress={() => navigation.navigate('Salestrack Customers')}>
             <LinearGradient colors={['rgba(255,255,255,0.11)', 'rgba(255,255,255,0)']} start={{ x: 0, y: 0 }} end={{ x: 0, y: 1 }} style={StyleSheet.absoluteFill as any} />
             <Ionicons name="car-sport" size={18} color="#ffffff" />
             <Text style={styles.shortcutSquareText} numberOfLines={1}>Fleet</Text>
@@ -515,7 +474,7 @@ export default function DashboardScreen({ navigation }: any) {
           <TouchableOpacity style={styles.shortcutSquare} onPress={() => navigation.navigate('Certificates')}>
             <LinearGradient colors={['rgba(255,255,255,0.11)', 'rgba(255,255,255,0)']} start={{ x: 0, y: 0 }} end={{ x: 0, y: 1 }} style={StyleSheet.absoluteFill as any} />
             <Ionicons name="school" size={18} color="#ffffff" />
-            <Text style={styles.shortcutSquareText} numberOfLines={1}>Training</Text>
+            <Text style={styles.shortcutSquareText} numberOfLines={1}>Certificates</Text>
           </TouchableOpacity>
           <TouchableOpacity style={styles.shortcutSquare} onPress={() => navigation.navigate('Training Library')}>
             <LinearGradient colors={['rgba(255,255,255,0.11)', 'rgba(255,255,255,0)']} start={{ x: 0, y: 0 }} end={{ x: 0, y: 1 }} style={StyleSheet.absoluteFill as any} />

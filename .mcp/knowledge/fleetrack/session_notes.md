@@ -164,3 +164,5 @@
 \n- **Commit 7a2a3fe** (2026-08-06): chore: bump version to 4.2.18
 \n- **Commit 78d21bf** (2026-08-06): chore: swap Machine and Defect columns in Defects table
 \n- **Commit 94130b5** (2026-08-06): chore: save uncommitted knowledge base changes
+\n- **Commit d1ffa5b** (2026-08-06): fix: use frappe_name fallback for save and delete breakdown modal actions
+\n- **Commit 1dad0aa** (2026-08-06): fix: chain eq method inline for save and delete breakdown actions to resolve TypeError

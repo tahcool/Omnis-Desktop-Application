@@ -23239,16 +23239,16 @@ window.loadISR = async function() {
 // ══════════════════════════════════════════════════════════
 (function() {
 
-  const SUPER_ADMIN_EMAIL = 'takunda@industrial-exchange.group';
+  const SUPER_ADMIN_EMAILS = ['takunda@industrial-exchange.group', 'zaranyika.rt@gmail.com'];
   let UM_USERS = [];
 
-  function isSuperAdmin(u) { return u.email?.toLowerCase() === SUPER_ADMIN_EMAIL.toLowerCase(); }
+  function isSuperAdmin(u) { return u.email && SUPER_ADMIN_EMAILS.some(e => e.toLowerCase() === u.email.toLowerCase()); }
   function isAdmin(u) { return isSuperAdmin(u) || u.app_metadata?.role === 'admin'; }
 
   // ── Show nav item for admin/super-admin ──────────────────
   function initAdminFeatures(email) {
     if (!email) return;
-    if (email.toLowerCase() === SUPER_ADMIN_EMAIL.toLowerCase()) {
+    if (SUPER_ADMIN_EMAILS.some(e => e.toLowerCase() === email.toLowerCase())) {
       const ddItem = document.getElementById('dd-user-mgmt-item');
       if (ddItem) ddItem.style.display = '';
     }
@@ -23271,7 +23271,7 @@ window.loadISR = async function() {
 
   function checkCurrentUserIsAdmin(email) {
     if (!email) return false;
-    return email.toLowerCase() === SUPER_ADMIN_EMAIL.toLowerCase();
+    return SUPER_ADMIN_EMAILS.some(e => e.toLowerCase() === email.toLowerCase());
   }
 
   // Run immediately (scripts at bottom of body, DOM already parsed)
@@ -23298,7 +23298,7 @@ window.loadISR = async function() {
         var key = localStorage.key(i);
         var val = localStorage.getItem(key) || '';
         // Check if it's a JSON session object containing user.email
-        if (val.indexOf('"email"') !== -1 || val.indexOf(SUPER_ADMIN_EMAIL) !== -1) {
+        if (val.indexOf('"email"') !== -1 || SUPER_ADMIN_EMAILS.some(e => val.indexOf(e) !== -1)) {
           console.log('[UserMgmt] Found admin email hint in key:', key);
           // Try to parse as JSON session
           try {
@@ -23310,7 +23310,7 @@ window.loadISR = async function() {
             if (foundEmail && checkCurrentUserIsAdmin(foundEmail)) { revealUserMgmtNav(); console.log('[UserMgmt] Revealed via localStorage scan'); return; }
           } catch(pe) {
             // Plain string match
-            if (val.toLowerCase().indexOf(SUPER_ADMIN_EMAIL.toLowerCase()) !== -1) {
+            if (SUPER_ADMIN_EMAILS.some(e => val.toLowerCase().indexOf(e.toLowerCase()) !== -1)) {
               revealUserMgmtNav(); console.log('[UserMgmt] Revealed via plain string match'); return;
             }
           }

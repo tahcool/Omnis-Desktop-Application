@@ -40,7 +40,7 @@ function MachineDetailModal({ machine, visible, onClose }: { machine: any; visib
   const brand = modelParts[0] || '';
   const modelCode = modelParts.length > 1 ? modelParts.slice(1).join('-') : (machine.model || '—');
 
-  const DetailRow = ({ label, value, valueColor }: { label: string; value: string; valueColor?: string }) => (
+  const DetailRow = ({ label, value, valueColor }: { label: string; value: string | null | undefined; valueColor?: string }) => (
     <View style={dStyles.detailRow}>
       <Text style={dStyles.detailLabel}>{label}</Text>
       <Text style={[dStyles.detailValue, valueColor ? { color: valueColor } : {}]}>{value || '—'}</Text>

@@ -382,3 +382,7 @@
   Files: .mcp/knowledge/_shared/commit_log.md,.mcp/knowledge/fleetrack/session_notes.md,systems/fleetrack/index.html,
 - `94130b5` 2026-08-06 [supabase-migration] chore: save uncommitted knowledge base changes
   Files: .mcp/knowledge/_shared/commit_log.md,.mcp/knowledge/fleetrack/session_notes.md,
+- `d1ffa5b` 2026-08-06 [supabase-migration] fix: use frappe_name fallback for save and delete breakdown modal actions
+  Files: .mcp/knowledge/_shared/commit_log.md,.mcp/knowledge/fleetrack/session_notes.md,systems/fleetrack/index.html,
+- `1dad0aa` 2026-08-06 [supabase-migration] fix: chain eq method inline for save and delete breakdown actions to resolve TypeError
+  Files: systems/fleetrack/index.html,

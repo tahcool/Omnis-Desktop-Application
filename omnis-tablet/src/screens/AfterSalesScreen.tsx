@@ -165,7 +165,7 @@ function buildHtmlEmail(rec: any, allCc: string[]) {
                         <td style="padding:16px 20px;text-align:left;font-size:15px;color:#334155;vertical-align:top;border-bottom:1px solid #e2e8f0;">${rec.warranty_end_date || 'N/A'}</td>
                     </tr>
                     <tr>
-                        <td style="padding:16px 20px;text-align:left;font-size:15px;color:#334155;vertical-align:top;font-weight:bold;background:#f8fafc;">Service Plan</td>
+                        <td style="padding:16px 20px;text-align:left;font-size:15px;color:#334155;vertical-align:top;font-weight:bold;background:#f8fafc;">Warranty</td>
                         <td style="padding:16px 20px;text-align:left;font-size:15px;color:#334155;vertical-align:top;">${rec.service_plan || 'N/A'}</td>
                     </tr>
                 </tbody>
@@ -543,11 +543,13 @@ export default function AfterSalesScreen() {
       });
       
       if (error) throw error;
+      await supabase.from('aftersales_handover').update({ email_sent: true }).eq('id', item.id);
       Alert.alert('Email Queued', 'The HTML handover report has been queued and will be sent shortly.');
+      fetchRecords();
     } catch (e: any) {
       Alert.alert('Error Queuing Email', e.message);
     }
-  }, [selectedCcCompanies, selectedDepts, isNewProduct]);
+  }, [selectedCcCompanies, selectedDepts, isNewProduct, fetchRecords]);
 
   const renderItem = useCallback(({ item }: { item: any }) => {
     const av  = getAvatar(item.company || '');
@@ -569,7 +571,12 @@ export default function AfterSalesScreen() {
             <View style={{ flex: 1, marginLeft: 12 }}>
               <View style={styles.cardTitleRow}>
                 <Text style={styles.cardCompany} numberOfLines={1}>{item.company || 'Unknown Company'}</Text>
-                <View style={[styles.statusBadge, { backgroundColor: sc.bg, borderColor: sc.border }]}>
+                {item.email_sent && (
+                  <View style={{ backgroundColor: '#dcfce7', paddingHorizontal: 6, paddingVertical: 2, borderRadius: 4, marginLeft: 6 }}>
+                    <Text style={{ color: '#15803d', fontSize: 9, fontWeight: 'bold' }}>Email Sent</Text>
+                  </View>
+                )}
+                <View style={[styles.statusBadge, { backgroundColor: sc.bg, borderColor: sc.border, marginLeft: item.email_sent ? 6 : 0 }]}>
                   <Text style={[styles.statusText, { color: sc.text }]}>{item.status || 'Pending'}</Text>
                 </View>
               </View>
@@ -602,7 +609,7 @@ export default function AfterSalesScreen() {
                   ['Email', item.email_address], ['CC', item.additional_email],
                   ['Address', item.physical_address], ['Date of Sale', item.date_of_sale],
                   ['Warranty', item.warranty_applicable], ['Start', item.warranty_start_date],
-                  ['End', item.warranty_end_date], ['Service Plan', item.service_plan],
+                  ['End', item.warranty_end_date], ['Warranty', item.service_plan],
                   ['Training', item.training_done], ['Salesperson', item.handover_salesperson],
                   ['Location', item.location],
                 ].map(([l, v]) => v ? (
@@ -892,7 +899,7 @@ export default function AfterSalesScreen() {
                 <View style={styles.rowGap} />
                 <DateField label="Warranty End" value={form.warranty_end_date} onSelect={v => setField('warranty_end_date', v)} placeholder="YYYY-MM-DD" half />
               </View>
-              <FormField label="Service Plan" value={form.service_plan} onChangeText={v => setField('service_plan', v)} placeholder="e.g. 1000hr / 12-month" />
+              <FormField label="Warranty" value={form.service_plan} onChangeText={v => setField('service_plan', v)} placeholder="e.g. 1000hr / 12-month" />
 
               {/* ── Training ── */}
               <Text style={styles.sectionHeading}>Training</Text>

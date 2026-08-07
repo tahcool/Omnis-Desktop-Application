@@ -41,6 +41,9 @@ export default function SalestackCustomersScreen({ navigation }: any) {
 
   const [customers, setCustomers]   = useState<any[]>([]);
   const [quotes, setQuotes]         = useState<any[]>([]);
+  const [machines, setMachines]       = useState<any[]>([]);
+  const [breakdowns, setBreakdowns]   = useState<any[]>([]);
+  const [defects, setDefects]         = useState<any[]>([]);
   const [items, setItems]           = useState<any[]>([]);
   const [loading, setLoading]       = useState(true);
   const [refreshing, setRefreshing] = useState(false);
@@ -84,8 +87,9 @@ export default function SalestackCustomersScreen({ navigation }: any) {
       const { data: { user } } = await supabase.auth.getUser();
       setCurrentUser(user);
 
+
       // ── Step 1: Customers + Quotes in PARALLEL (biggest speedup) ──────────
-      const [allCustomers, allQuotes] = await Promise.all([
+      const [allCustomers, allQuotes, allBreakdowns, allDefects] = await Promise.all([
         paginate((from, to) =>
           supabase
             .from('customers')
@@ -93,7 +97,7 @@ export default function SalestackCustomersScreen({ navigation }: any) {
             .neq('customer_name', '.')
             .neq('customer_name', '')
             .order('customer_name')
-            .range(from, to)
+            .range(from, to) as any
         ),
         paginate((from, to) =>
           supabase
@@ -101,12 +105,40 @@ export default function SalestackCustomersScreen({ navigation }: any) {
             .select('name, customer_name, transaction_date, grand_total, status, company, custom_sales_person, currency, valid_till, title')
             .gte('transaction_date', cutoff)
             .order('transaction_date', { ascending: false })
-            .range(from, to)
+            .range(from, to) as any
         ),
+        paginate((from, to) =>
+          supabase
+            .from('ft_breakdown_log')
+            .select('*')
+            .range(from, to) as any
+        ),
+        paginate((from, to) =>
+          supabase
+            .from('ft_defect')
+            .select('*')
+            .range(from, to) as any
+        )
       ]);
+
+      let allMachines = [];
+      try {
+        const res = await fetch(
+          'https://fleetrack.machinery-exchange.com/api/method/mxg_fleet_track.omnis_dashboard.ft_breakdown_dashboard.get_ft_machine_register',
+          { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({}) }
+        );
+        const data = await res.json();
+        allMachines = data.message ? (Array.isArray(data.message) ? data.message : Object.values(data.message)) : [];
+      } catch (err) {
+        console.error('Failed to fetch machines:', err);
+      }
 
       setCustomers(allCustomers);
       setQuotes(allQuotes);
+      setBreakdowns(allBreakdowns);
+      setDefects(allDefects);
+      setMachines(allMachines);
+
       setLoading(false);      // ← UI unlocks here; items still loading in background
       setRefreshing(false);
 
@@ -162,17 +194,34 @@ export default function SalestackCustomersScreen({ navigation }: any) {
     return g;
   }, [items]);
 
+
   const getQuotes = (name: string): any[] => {
     if (!name) return [];
     const exact = quotesByCustomer[name.trim()];
     if (exact) return exact;
-    // fallback fuzzy
     const lower = name.toLowerCase();
-    const fuzzy = Object.keys(quotesByCustomer).find(k =>
-      k.toLowerCase().includes(lower) || lower.includes(k.toLowerCase())
-    );
+    const fuzzy = Object.keys(quotesByCustomer).find(k => k.toLowerCase().includes(lower) || lower.includes(k.toLowerCase()));
     return fuzzy ? quotesByCustomer[fuzzy] : [];
   };
+
+  const getMachines = (name: string): any[] => {
+    if (!name) return [];
+    const nLower = name.trim().toLowerCase();
+    return machines.filter(m => (m.customer || '').trim().toLowerCase() === nLower);
+  };
+
+  const getBreakdowns = (name: string): any[] => {
+    if (!name) return [];
+    const nLower = name.trim().toLowerCase();
+    return breakdowns.filter(b => (b.customer || '').trim().toLowerCase() === nLower && !['fixed', 'complete', 'resolved', 'closed'].some(s => (b.status||'').toLowerCase().includes(s)));
+  };
+
+  const getDefects = (name: string): any[] => {
+    if (!name) return [];
+    const nLower = name.trim().toLowerCase();
+    return defects.filter(d => (d.customer || '').trim().toLowerCase() === nLower && !['fixed', 'complete', 'resolved', 'closed'].some(s => (d.status||'').toLowerCase().includes(s)));
+  };
+
 
   // ── Available filter options ──────────────────────────────────────────────
 
@@ -322,29 +371,32 @@ export default function SalestackCustomersScreen({ navigation }: any) {
           </View>
         </View>
 
+
         {/* ── Quotes accordion ── */}
         {custQuotes.length > 0 && (
           <>
-            <TouchableOpacity style={styles.accordionToggle} onPress={() => toggle(c.id)} activeOpacity={0.7}>
+            <TouchableOpacity style={styles.accordionToggle} onPress={() => toggle(c.id + '_q')} activeOpacity={0.7}>
               <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
                 <Ionicons name="document-text-outline" size={13} color="#8b2219" />
                 <Text style={styles.accordionLabel}>Recent Quotes ({custQuotes.length})</Text>
               </View>
-              <Ionicons name={isOpen ? 'chevron-up' : 'chevron-down'} size={15} color="#64748b" />
+              <Ionicons name={expanded[c.id + '_q'] ? 'chevron-up' : 'chevron-down'} size={15} color="#64748b" />
             </TouchableOpacity>
 
-            {isOpen && custQuotes.map((q, qi) => {
+            {expanded[c.id + '_q'] && custQuotes.map((q, qi) => {
               const sc = QUOTE_COLORS[q.status] || QUOTE_COLORS.Draft;
               const isExpired = q.valid_till && new Date(q.valid_till) < new Date() && q.status !== 'Ordered';
+              const companyColor = (q.company||'').includes('Sinopower') ? '#eab308' : '#8b2219';
               return (
                 <View key={qi} style={[styles.quoteRow, qi === custQuotes.length - 1 && { borderBottomWidth: 0 }]}>
-                  {/* left accent bar */}
                   <View style={[styles.quoteAccent, { backgroundColor: sc.bar }]} />
-
                   <View style={styles.quoteBody}>
                     <View style={styles.quoteTop}>
                       <View style={{ flex: 1 }}>
-                        <Text style={styles.quoteName}>{q.name}</Text>
+                        <View style={{flexDirection: 'row', alignItems: 'center', gap: 4, marginBottom: 2}}>
+                           <View style={{backgroundColor: companyColor, paddingHorizontal: 4, paddingVertical: 2, borderRadius: 4}}><Text style={{color:'#fff', fontSize: 8, fontWeight:'bold'}}>{q.company}</Text></View>
+                           <Text style={styles.quoteName}>{q.name}</Text>
+                        </View>
                         <Text style={styles.quoteDate}>{fmtDate(q.transaction_date)}</Text>
                       </View>
                       <View style={{ alignItems: 'flex-end', gap: 4 }}>
@@ -353,8 +405,6 @@ export default function SalestackCustomersScreen({ navigation }: any) {
                         </View>
                       </View>
                     </View>
-
-                    {/* Items list */}
                     {(itemsByQuote[q.name] || []).length > 0 && (
                       <View style={styles.itemsList}>
                         {(itemsByQuote[q.name] || []).map((item: any, ii: number) => (
@@ -369,48 +419,89 @@ export default function SalestackCustomersScreen({ navigation }: any) {
                             </View>
                             <View style={{ alignItems: 'flex-end' }}>
                               <Text style={styles.itemQty}>{Number(item.qty || 1).toFixed(0)} unit{Number(item.qty) !== 1 ? 's' : ''}</Text>
-                              {item.amount ? (
-                                <Text style={{ fontSize: 11, color: '#475569', fontWeight: '500', marginTop: 2 }}>
-                                  {fmtAmount(item.amount, q.currency)}
-                                </Text>
-                              ) : null}
                             </View>
                           </View>
                         ))}
                       </View>
                     )}
-
-                    <View style={styles.quoteBottom}>
-                      {q.custom_sales_person ? (
-                        <View style={styles.qMeta}>
-                          <Ionicons name="person-outline" size={10} color="#94a3b8" />
-                          <Text style={styles.qMetaText}>{q.custom_sales_person}</Text>
-                        </View>
-                      ) : null}
-                      {q.valid_till ? (
-                        <View style={styles.qMeta}>
-                          <Ionicons name="calendar-outline" size={10} color={isExpired ? '#ef4444' : '#94a3b8'} />
-                          <Text style={[styles.qMetaText, isExpired && { color: '#ef4444' }]}>
-                            Valid till {fmtDate(q.valid_till, true)}{isExpired ? ' · Expired' : ''}
-                          </Text>
-                        </View>
-                      ) : null}
-                      {q.company ? (
-                        <View style={styles.qMeta}>
-                          <Ionicons name="business-outline" size={10} color="#94a3b8" />
-                          <Text style={styles.qMetaText}>{q.company}</Text>
-                        </View>
-                      ) : null}
-                    </View>
                   </View>
                 </View>
               );
             })}
           </>
         )}
+
+        {/* ── Machines accordion ── */}
+        {getMachines(c.customer_name).length > 0 && (
+          <>
+            <TouchableOpacity style={styles.accordionToggle} onPress={() => toggle(c.id + '_m')} activeOpacity={0.7}>
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+                <Ionicons name="car-sport" size={13} color="#8b2219" />
+                <Text style={styles.accordionLabel}>Machines ({getMachines(c.customer_name).length})</Text>
+              </View>
+              <Ionicons name={expanded[c.id + '_m'] ? 'chevron-up' : 'chevron-down'} size={15} color="#64748b" />
+            </TouchableOpacity>
+            {expanded[c.id + '_m'] && getMachines(c.customer_name).map((m, mi) => (
+                <View key={mi} style={styles.quoteRow}>
+                    <View style={[styles.quoteAccent, { backgroundColor: '#10b981' }]} />
+                    <View style={styles.quoteBody}>
+                        <Text style={styles.quoteName}>{m.equipment_number} - {m.model}</Text>
+                        <Text style={styles.quoteDate}>{m.equipment_type} | {m.branch}</Text>
+                    </View>
+                </View>
+            ))}
+          </>
+        )}
+
+        {/* ── Breakdowns accordion ── */}
+        {getBreakdowns(c.customer_name).length > 0 && (
+          <>
+            <TouchableOpacity style={styles.accordionToggle} onPress={() => toggle(c.id + '_b')} activeOpacity={0.7}>
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+                <Ionicons name="alert-circle" size={13} color="#ef4444" />
+                <Text style={styles.accordionLabel}>Open Breakdowns ({getBreakdowns(c.customer_name).length})</Text>
+              </View>
+              <Ionicons name={expanded[c.id + '_b'] ? 'chevron-up' : 'chevron-down'} size={15} color="#64748b" />
+            </TouchableOpacity>
+            {expanded[c.id + '_b'] && getBreakdowns(c.customer_name).map((b, bi) => (
+                <View key={bi} style={styles.quoteRow}>
+                    <View style={[styles.quoteAccent, { backgroundColor: '#ef4444' }]} />
+                    <View style={styles.quoteBody}>
+                        <Text style={styles.quoteName}>{b.name} - {b.machine}</Text>
+                        <Text style={styles.quoteDate}>{b.description}</Text>
+                        <Text style={{fontSize: 10, color: '#ef4444', marginTop: 2, fontWeight: 'bold'}}>{b.status}</Text>
+                    </View>
+                </View>
+            ))}
+          </>
+        )}
+
+        {/* ── Defects accordion ── */}
+        {getDefects(c.customer_name).length > 0 && (
+          <>
+            <TouchableOpacity style={styles.accordionToggle} onPress={() => toggle(c.id + '_d')} activeOpacity={0.7}>
+              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+                <Ionicons name="construct" size={13} color="#f59e0b" />
+                <Text style={styles.accordionLabel}>Open Defects ({getDefects(c.customer_name).length})</Text>
+              </View>
+              <Ionicons name={expanded[c.id + '_d'] ? 'chevron-up' : 'chevron-down'} size={15} color="#64748b" />
+            </TouchableOpacity>
+            {expanded[c.id + '_d'] && getDefects(c.customer_name).map((d, di) => (
+                <View key={di} style={styles.quoteRow}>
+                    <View style={[styles.quoteAccent, { backgroundColor: '#f59e0b' }]} />
+                    <View style={styles.quoteBody}>
+                        <Text style={styles.quoteName}>{d.name} - {d.machine}</Text>
+                        <Text style={styles.quoteDate}>{d.description}</Text>
+                        <Text style={{fontSize: 10, color: '#f59e0b', marginTop: 2, fontWeight: 'bold'}}>{d.status}</Text>
+                    </View>
+                </View>
+            ))}
+          </>
+        )}
       </View>
     );
   };
+
 
   return (
     <View style={styles.container}>

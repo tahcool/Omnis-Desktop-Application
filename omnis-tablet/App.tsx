@@ -29,6 +29,8 @@ import MachineRegistryScreen from './src/screens/MachineRegistryScreen';
 import { frappe } from './src/api/frappe';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { initDB } from './src/database/db';
+import * as Notifications from 'expo-notifications';
+import NotificationDetailModal from './src/components/NotificationDetailModal';
 
 const Stack = createNativeStackNavigator();
 const Drawer = createDrawerNavigator();
@@ -70,6 +72,7 @@ function DrawerNavigator() {
 export default function App() {
   const [isReady, setIsReady] = useState(false);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [selectedNotificationData, setSelectedNotificationData] = useState<any>(null);
 
   useEffect(() => {
     const checkStatus = async () => {
@@ -81,6 +84,18 @@ export default function App() {
       setIsReady(true);
     };
     checkStatus();
+
+    // Listen for users tapping on push notifications
+    const subscription = Notifications.addNotificationResponseReceivedListener(response => {
+      const notif = response.notification.request.content;
+      setSelectedNotificationData({
+        title: notif.title,
+        body: notif.body,
+        ...(notif.data || {}),
+      });
+    });
+
+    return () => subscription.remove();
   }, []);
 
   if (!isReady) {
@@ -106,6 +121,12 @@ export default function App() {
           ) : null}
         </Stack.Navigator>
       </NavigationContainer>
+
+      <NotificationDetailModal 
+        visible={!!selectedNotificationData} 
+        data={selectedNotificationData}
+        onClose={() => setSelectedNotificationData(null)} 
+      />
     </SafeAreaProvider>
   );
 }

@@ -9274,7 +9274,22 @@
             const isOpen = statusStr === 'open' || (!d.end_date && statusStr !== 'closed');
             if (!isOpen) return false;
             
-            const mDiv = (window.MACHINES_MAP && window.MACHINES_MAP[d.machine]) ? (window.MACHINES_MAP[d.machine].division || 'fleetrack') : 'fleetrack';
+            let mDiv = 'fleetrack';
+            const mObj = (window.MACHINES_MAP && window.MACHINES_MAP[d.machine]) || {};
+            mDiv = mObj.division || 'fleetrack';
+            
+            if (mDiv === 'fleetrack') {
+                const custLower = (d.customer || mObj.customer || '').toLowerCase();
+                const modelLower = (d.model || mObj.model || '').toLowerCase();
+                const oemLower = (d.oem || mObj.oem || '').toLowerCase();
+                const machineLower = (d.machine || '').toLowerCase();
+                
+                const isSinopower = custLower.includes('sinopower') || 
+                                    ['foton', 'sinotruk', 'howo', 'powerstar', 'powerseries', 'spt', 'sino', 'faw', 'shacman', 'van body', 'henred', 'triaxle', 'trailer', 'yutong', 'beaver', 'bus'].some(brand => 
+                                        modelLower.includes(brand) || oemLower.includes(brand) || machineLower.includes(brand)
+                                    );
+                if (isSinopower) mDiv = 'sinopower';
+            }
             return mDiv === currentDiv;
         });
         const uniqueMachines = new Set(openDefects.map(d => d.machine)).size;
@@ -11111,7 +11126,9 @@
   <div class="header">
     <div class="logo-container">
       <img src="${window.location.origin}${window.location.pathname.replace('index.html', '')}../../assets/images/omnis-logo.png" style="height:35px;" onerror="this.style.display='none'" />
-      <img src="${window.location.origin}${window.location.pathname.replace('index.html', '')}../../assets/images/fleetrack-logo.png" style="height:15px;" onerror="this.style.display='none'" />
+      ${window.currentDivision === 'sinopower' 
+        ? '<img src="' + window.location.origin + window.location.pathname.replace('index.html', '') + '../../assets/images/SPZ Full Logo (White)@3x.png" style="height:25px; filter:invert(1);" onerror="this.style.display=\'none\'" />'
+        : '<img src="' + window.location.origin + window.location.pathname.replace('index.html', '') + '../../assets/images/fleetrack-logo.png" style="height:15px;" onerror="this.style.display=\'none\'" />'}
     </div>
     <div class="title-block">
       <div class="title">${reportTitle}</div>
@@ -11127,7 +11144,7 @@
       <tr>
         <th>Customer</th>
         <th>Machine</th>
-        <th>Technician Name</th>
+        <th>Reported Date</th>
         <th>Defect</th>
         <th>Parts ETA</th>
         <th>TED</th>
@@ -13140,9 +13157,9 @@
       try {
         let query;
         if (CURRENT_EDIT_ROW.id) {
-          query = supabase.from('ft_breakdown_logs').delete().eq('id', CURRENT_EDIT_ROW.id);
+          query = supabase.from('ft_breakdown_logs').delete({ match: { id: CURRENT_EDIT_ROW.id } });
         } else {
-          query = supabase.from('ft_breakdown_logs').delete().eq('frappe_name', CURRENT_EDIT_ROW.name);
+          query = supabase.from('ft_breakdown_logs').delete({ match: { frappe_name: CURRENT_EDIT_ROW.name } });
         }
         const { error } = await query;
         if (error) throw error;
@@ -13222,9 +13239,9 @@
 
       let query;
       if (CURRENT_EDIT_ROW.id) {
-        query = supabase.from('ft_breakdown_logs').update(updateData).eq('id', CURRENT_EDIT_ROW.id);
+        query = supabase.from('ft_breakdown_logs').update(updateData, { match: { id: CURRENT_EDIT_ROW.id } });
       } else {
-        query = supabase.from('ft_breakdown_logs').update(updateData).eq('frappe_name', CURRENT_EDIT_ROW.name);
+        query = supabase.from('ft_breakdown_logs').update(updateData, { match: { frappe_name: CURRENT_EDIT_ROW.name } });
       }
       
       const { error: updateError } = await query;
@@ -14455,7 +14472,22 @@
 
       window.FT_DEFECTS_FILTERED_DATA = (FT_DEFECTS_DATA || []).filter(r => {
         const currentDiv = window.currentDivision || 'fleetrack';
-        const mDiv = (window.MACHINES_MAP && window.MACHINES_MAP[r.machine]) ? (window.MACHINES_MAP[r.machine].division || 'fleetrack') : 'fleetrack';
+        let mDiv = 'fleetrack';
+        const mObj = (window.MACHINES_MAP && window.MACHINES_MAP[r.machine]) || {};
+        mDiv = mObj.division || 'fleetrack';
+        
+        if (mDiv === 'fleetrack') {
+            const custLower = (r.customer || mObj.customer || '').toLowerCase();
+            const modelLower = (r.model || mObj.model || '').toLowerCase();
+            const oemLower = (r.oem || mObj.oem || '').toLowerCase();
+            const machineLower = (r.machine || '').toLowerCase();
+            
+            const isSinopower = custLower.includes('sinopower') || 
+                                ['foton', 'sinotruk', 'howo', 'powerstar', 'powerseries', 'spt', 'sino', 'faw', 'shacman', 'van body', 'henred', 'triaxle', 'trailer', 'yutong', 'beaver', 'bus'].some(brand => 
+                                    modelLower.includes(brand) || oemLower.includes(brand) || machineLower.includes(brand)
+                                );
+            if (isSinopower) mDiv = 'sinopower';
+        }
         if (mDiv !== currentDiv) return false;
         
         // Status is determined by presence of end_date
@@ -15940,18 +15972,7 @@ RECOMMENDATIONS / NEXT STEPS:
         document.getElementById("defect-ted").value = "";
         document.getElementById("defect-red").value = "";
 
-        if (preselectedMachine) {
-          const pm = window.MACHINES_MAP?.[preselectedMachine];
-          if (pm) {
-            const displayLabel = (pm.model ? pm.model + '  ' : '') + (pm.name || preselectedMachine);
-            mSearch.value = displayLabel;
-            mSearch.dataset.selectedName = preselectedMachine;
-            if (typeof _fillDefectMachineInfo === 'function') _fillDefectMachineInfo(preselectedMachine);
-          } else {
-            mSearch.value = preselectedMachine;
-            mSearch.dataset.selectedName = preselectedMachine;
-          }
-        }
+
       }
     }
 
@@ -23633,16 +23654,16 @@ window.loadISR = async function() {
 // ══════════════════════════════════════════════════════════
 (function() {
 
-  const SUPER_ADMIN_EMAIL = 'takunda@industrial-exchange.group';
+  const SUPER_ADMIN_EMAILS = ['takunda@industrial-exchange.group', 'zaranyika.rt@gmail.com'];
   let UM_USERS = [];
 
-  function isSuperAdmin(u) { return u.email?.toLowerCase() === SUPER_ADMIN_EMAIL.toLowerCase(); }
+  function isSuperAdmin(u) { return u.email && SUPER_ADMIN_EMAILS.some(e => e.toLowerCase() === u.email.toLowerCase()); }
   function isAdmin(u) { return isSuperAdmin(u) || u.app_metadata?.role === 'admin'; }
 
   // ── Show nav item for admin/super-admin ──────────────────
   function initAdminFeatures(email) {
     if (!email) return;
-    if (email.toLowerCase() === SUPER_ADMIN_EMAIL.toLowerCase()) {
+    if (SUPER_ADMIN_EMAILS.some(e => e.toLowerCase() === email.toLowerCase())) {
       const ddItem = document.getElementById('dd-user-mgmt-item');
       if (ddItem) ddItem.style.display = '';
     }
@@ -23665,7 +23686,7 @@ window.loadISR = async function() {
 
   function checkCurrentUserIsAdmin(email) {
     if (!email) return false;
-    return email.toLowerCase() === SUPER_ADMIN_EMAIL.toLowerCase();
+    return SUPER_ADMIN_EMAILS.some(e => e.toLowerCase() === email.toLowerCase());
   }
 
   // Run immediately (scripts at bottom of body, DOM already parsed)
@@ -23692,7 +23713,7 @@ window.loadISR = async function() {
         var key = localStorage.key(i);
         var val = localStorage.getItem(key) || '';
         // Check if it's a JSON session object containing user.email
-        if (val.indexOf('"email"') !== -1 || val.indexOf(SUPER_ADMIN_EMAIL) !== -1) {
+        if (val.indexOf('"email"') !== -1 || SUPER_ADMIN_EMAILS.some(e => val.indexOf(e) !== -1)) {
           console.log('[UserMgmt] Found admin email hint in key:', key);
           // Try to parse as JSON session
           try {
@@ -23704,7 +23725,7 @@ window.loadISR = async function() {
             if (foundEmail && checkCurrentUserIsAdmin(foundEmail)) { revealUserMgmtNav(); console.log('[UserMgmt] Revealed via localStorage scan'); return; }
           } catch(pe) {
             // Plain string match
-            if (val.toLowerCase().indexOf(SUPER_ADMIN_EMAIL.toLowerCase()) !== -1) {
+            if (SUPER_ADMIN_EMAILS.some(e => val.toLowerCase().indexOf(e.toLowerCase()) !== -1)) {
               revealUserMgmtNav(); console.log('[UserMgmt] Revealed via plain string match'); return;
             }
           }
