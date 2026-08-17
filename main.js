@@ -1259,18 +1259,18 @@ ipcMain.handle('storage:upload', async (event, { bucket, path, base64Data, conte
 });
 
 // ✅ Ensure Supabase Storage buckets exist
-(async () => {
-  for (const [bucket, isPublic] of [['machine-library', true], ['machine-images', true]]) {
-    try {
-      const { error } = await supabase.storage.createBucket(bucket, { public: isPublic });
-      if (error && !error.message?.includes('already exists')) {
-        console.warn(`[Storage] ${bucket} bucket create warning:`, error.message);
-      } else {
-        console.log(`[Storage] ${bucket} bucket ready`);
-      }
-    } catch (e) { /* ignore */ }
-  }
-})();
+// (async () => {
+//   for (const [bucket, isPublic] of [['machine-library', true], ['machine-images', true]]) {
+//     try {
+//       const { error } = await supabase.storage.createBucket(bucket, { public: isPublic });
+//       if (error && !error.message?.includes('already exists')) {
+//         console.warn(`[Storage] ${bucket} bucket create warning:`, error.message);
+//       } else {
+//         console.log(`[Storage] ${bucket} bucket ready`);
+//       }
+//     } catch (e) { /* ignore */ }
+//   }
+// })();
 
 // ✅ Download a file from Frappe as base64
 // Uses Electron net.request (Chromium network stack — shares session, cookies, proxy)

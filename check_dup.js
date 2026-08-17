@@ -1,0 +1,1 @@
+const fs = require('fs'); const html = fs.readFileSync('c:/Users/Administrator/omnis/systems/fleetrack/index.html', 'utf8'); const ids = [...html.matchAll(/id=["'](defect-[a-zA-Z0-9-]+)["']/g)].map(m => m[1]); const counts = {}; ids.forEach(id => counts[id] = (counts[id] || 0) + 1); const dups = Object.keys(counts).filter(id => counts[id] > 1); console.log('Duplicates:', dups);

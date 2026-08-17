@@ -386,3 +386,8 @@
   Files: .mcp/knowledge/_shared/commit_log.md,.mcp/knowledge/fleetrack/session_notes.md,systems/fleetrack/index.html,
 - `1dad0aa` 2026-08-06 [supabase-migration] fix: chain eq method inline for save and delete breakdown actions to resolve TypeError
   Files: systems/fleetrack/index.html,
+\n## 2026-08-07
+- `b0ad365` 2026-08-07 [supabase-migration] Update Sinopower brand filtering and print headers
+  Files: .mcp/knowledge/_shared/commit_log.md,.mcp/knowledge/fleetrack/session_notes.md,add_push_triggers.sql,add_super_admin.js,fix_dbr_grouping.js,fix_dbr_rowspan.js,inject_grouping_logic.js,main.js,omnis-tablet/App.tsx,omnis-tablet/src/components/NotificationDetailModal.tsx,omnis-tablet/src/screens/AfterSalesScreen.tsx,omnis-tablet/src/screens/CertificatesScreen.tsx,omnis-tablet/src/screens/CustomerEnquiriesScreen.tsx,omnis-tablet/src/screens/CustomerFleetsScreen.tsx,omnis-tablet/src/screens/DashboardScreen.tsx,omnis-tablet/src/screens/FleetrackDashboardScreen.tsx,omnis-tablet/src/screens/LogActivityScreen.tsx,omnis-tablet/src/screens/SalestackCustomersScreen.tsx,omnis-tablet/src/screens/VisitHistoryScreen.tsx,omnis-web-deploy/systems/fleetrack/index.html,
+- `3038ef7` 2026-08-07 [supabase-migration] Fix UI silent failures, restore toast-wrap, and bump version
+  Files: package.json,systems/fleetrack/index.html,
