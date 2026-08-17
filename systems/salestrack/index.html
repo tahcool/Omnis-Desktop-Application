@@ -8548,14 +8548,11 @@
               style="border:none; background:transparent; font-size:12px; font-weight:700; color:#334155; outline:none; width:115px;">
           </div>
 
-          <button id="ol-defects-report-btn" class="btn-secondary" onclick="if(window.openDefectsReport) window.openDefectsReport();"
+          <button id="ol-str-report-btn" class="btn-secondary" onclick="if(window.openSTRReport) window.openSTRReport();"
             style="padding:0 20px; border-radius:10px; font-weight:800; height: 42px; font-size: 12px; text-transform:uppercase; letter-spacing:0.02em; margin-right:8px; background:#f8fafc; color:#334155; border:1px solid #cbd5e1;">
-            <i class="fas fa-exclamation-triangle" style="margin-right:8px;"></i> Defects Report
+            <i class="fas fa-chart-line" style="margin-right:8px;"></i> STR Report
           </button>
-          <button id="ol-training-report-btn" class="btn-secondary" onclick="if(window.openTrainingReport) window.openTrainingReport();"
-            style="padding:0 20px; border-radius:10px; font-weight:800; height: 42px; font-size: 12px; text-transform:uppercase; letter-spacing:0.02em; margin-right:8px; background:#f8fafc; color:#334155; border:1px solid #cbd5e1;">
-            <i class="fas fa-user-graduate" style="margin-right:8px;"></i> Training
-          </button>
+          
           <button id="ol-add-tracking-btn" class="btn-primary" onclick="if(window.openAddTrackingModal) window.openAddTrackingModal();"
             style="padding:0 20px; border-radius:10px; font-weight:800; height: 42px; font-size: 12px; text-transform:uppercase; letter-spacing:0.02em; margin-right:8px; background:#800000; color:#fff; border:none; box-shadow: 0 4px 12px rgba(128,0,0,0.2);">
             <i class="fas fa-plus" style="margin-right:8px;"></i> Add Tracking
@@ -18533,16 +18530,16 @@ thead th { padding:11px 12px; font-size:10px; font-weight:800; color:#fff; text-
 
         try {
           let res;
-          if (machineId.startsWith('TRACK-')) {
-            let dbId = machineId.startsWith('TRACK-M-') ? machineId.split('-')[2] : machineId.split('-')[1];
-            let dbField = field;
-            if (field === 'revised_handover_date') dbField = 'revised_handover';
+            if (machineId.startsWith('TRACK-')) {
+              let dbId = machineId.startsWith('TRACK-M-') ? machineId.substring(8) : machineId.substring(6);
+              let dbField = field;
+              if (field === 'revised_handover_date') dbField = 'revised_handover';
 
-            res = await window.electron.invoke('supabase:query', {
-              table: 'omnis_tracking_orders',
-              method: 'update',
-              params: { data: { [dbField]: newVal }, filters: { id: dbId } }
-            });
+              res = await window.electron.invoke('supabase:query', {
+                table: 'omnis_tracking_orders',
+                method: 'update',
+                params: { data: { [dbField]: newVal }, id: dbId }
+              });
           } else {
             const baseUrl = window.CURRENT_SYSTEM ? window.CURRENT_SYSTEM.baseUrl : "https://salestrack.powerstar.co.zw";
             let rawRes = await window.callFrappeSequenced(baseUrl, "powerstar_salestrack.omnis_dashboard.update_fmb_machine_field", {
@@ -18552,6 +18549,23 @@ thead th { padding:11px 12px; font-size:10px; font-weight:800; color:#fff; text-
             });
             let payload = rawRes.message || rawRes;
             res = { ok: payload && payload.ok, error: payload?.error };
+
+            if (res.ok) {
+                try {
+                    let dbField = field;
+                    if (field === 'revised_handover_date') dbField = 'revised_date';
+                    await window.electron.invoke('supabase:query', {
+                        table: 'order_machines',
+                        method: 'update',
+                        params: { 
+                            data: { [dbField]: newVal },
+                            match: { frappe_row_id: machineId }
+                        }
+                    });
+                } catch(e) {
+                    console.error("Failed to mirror update to Supabase:", e);
+                }
+            }
           }
 
           if (res && res.ok !== false) {

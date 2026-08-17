@@ -168,3 +168,4 @@
 \n- **Commit 1dad0aa** (2026-08-06): fix: chain eq method inline for save and delete breakdown actions to resolve TypeError
 \n- **Commit b0ad365** (2026-08-07): Update Sinopower brand filtering and print headers
 \n- **Commit 3038ef7** (2026-08-07): Fix UI silent failures, restore toast-wrap, and bump version
+\n- **Commit c62eb52** (2026-08-17): Restore point before salestrack contacts fix

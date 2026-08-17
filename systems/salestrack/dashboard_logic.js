@@ -4001,7 +4001,7 @@ window.OmnisDashboardV6 = class OmnisDashboardV6 {
         toast.style.color = 'white';
         toast.style.fontWeight = '700';
         toast.style.fontSize = '13px';
-        toast.style.zIndex = '100000';
+        toast.style.zIndex = '2147483647';
         toast.style.boxShadow = '0 10px 15px -3px rgba(0,0,0,0.1)';
         toast.style.background = type === 'success' ? '#10b981' : (type === 'error' ? '#ef4444' : '#3b82f6');
         toast.textContent = msg;
@@ -6184,24 +6184,53 @@ window.OmnisDashboardV6 = class OmnisDashboardV6 {
         // Show loading state first
         this.openListModal("Loading Order Details...", `<div style="padding:20px; text-align:center;">Fetching details...</div>`);
 
-        const sys = window.getCurrentSystem ? window.getCurrentSystem() : { baseUrl: "https://salestrack.powerstar.co.zw" };
         let fullDoc = null;
 
         try {
-            if (!reportId.startsWith('TRACK-')) {
-                // 1. Fetch Full Doc via Custom Backend (Admin Perms)
-                const res = await window.callFrappeSequenced(sys.baseUrl, "powerstar_salestrack.omnis_dashboard.get_order_details", {
-                    report_id: reportId
+            if (window.electron) {
+                // Fetch from Supabase
+                const sbRes = await window.electron.invoke('supabase:query', {
+                    table: 'fmb_reports',
+                    method: 'select',
+                    params: { 
+                        columns: '*, order_machines(*), order_contacts(*)',
+                        filters: { frappe_id: reportId }
+                    }
                 });
-                const payload = res.message || res;
-                if (payload.ok) {
-                    fullDoc = payload.data;
-                } else {
-                    console.error("Fetch Error:", payload.error);
+
+                if (sbRes.ok && sbRes.data && sbRes.data.length > 0) {
+                    const row = sbRes.data[0];
+                    
+                    // Map to fullDoc structure
+                    fullDoc = {
+                        name: row.frappe_id,
+                        db_id: row.id, // Store for saving
+                        customer_name: row.customer_id,
+                        status: row.status,
+                        is_payment_terms: row.is_payment_terms ? 1 : 0,
+                        machines: (row.order_machines || []).map(m => ({
+                            name: m.frappe_row_id || m.id,
+                            db_id: m.id,
+                            item: m.item_code,
+                            qty: m.quantity,
+                            target_handover_date: m.target_date,
+                            revised_handover_date: m.revised_date,
+                            notes: m.notes,
+                            images_one: m.image_1_url,
+                            image_two: m.image_2_url
+                        })),
+                        contacts: (row.order_contacts || []).map(c => ({
+                            name: c.id, // we map id to name
+                            name1: c.name,
+                            salutation: c.salutation,
+                            phone_number: c.phone,
+                            email_address: c.email
+                        }))
+                    };
                 }
             }
         } catch (e) {
-            console.error("Failed to fetch full doc", e);
+            console.error("Failed to fetch full doc from Supabase", e);
         }
 
         // Find basic info from pre-loaded list (OPTIONAL if fullDoc is found)
@@ -6400,7 +6429,10 @@ window.OmnisDashboardV6 = class OmnisDashboardV6 {
                <div style="display:flex; flex-direction:column; gap:12px;">
                     <div style="display:flex; justify-content:space-between; align-items:center;">
                         <div style="font-size:14px; font-weight:700; color:#334155;">CONTACTS</div>
-                        <button onclick="salestrack.addContactRow()" style="font-size:12px; background:#ffffff; color:#0f172a; border:1px solid #cbd5e1; padding:6px 12px; border-radius:6px; font-weight:600; cursor:pointer; box-shadow:0 1px 2px rgba(0,0,0,0.05); transition:all 0.2s;">+ Add Contact</button>
+                        <div>
+                            <button onclick="salestrack.loadPastContacts(event)" style="font-size:12px; background:#f0f9ff; color:#0369a1; border:1px solid #bae6fd; padding:6px 12px; border-radius:6px; font-weight:600; cursor:pointer; margin-right: 8px; box-shadow:0 1px 2px rgba(0,0,0,0.05); transition:all 0.2s;"><i class="fas fa-history" style="margin-right:4px;"></i> Load Past Contacts</button>
+                            <button onclick="salestrack.addContactRow()" style="font-size:12px; background:#ffffff; color:#0f172a; border:1px solid #cbd5e1; padding:6px 12px; border-radius:6px; font-weight:600; cursor:pointer; box-shadow:0 1px 2px rgba(0,0,0,0.05); transition:all 0.2s;">+ Add Contact</button>
+                        </div>
                     </div>
                     
                     <div style="border:1px solid #e2e8f0; border-radius:8px; overflow:hidden; background:white; box-shadow:0 1px 2px rgba(0,0,0,0.05);">
@@ -6447,6 +6479,9 @@ window.OmnisDashboardV6 = class OmnisDashboardV6 {
                      <!-- Right: Standard Actions -->
                      <div style="display:flex; gap:12px; flex-wrap:wrap; align-items:center;">
                         <span id="auto-save-indicator" style="font-size:12px; font-weight:700; color:#10b981; margin-right:8px; opacity:0; transition:opacity 0.3s;">&#10003; Auto-saved</span>
+                        <button id="btn-save-order-changes" onclick="salestrack.saveOrderFull('${(reportId || '').replace(/'/g, "\\'")}', '${(machineId || '').replace(/'/g, "\\'")}', false)" style="padding:12px 24px; background:#10b981; color:white; border:none; border-radius:8px; font-size:14px; font-weight:700; cursor:pointer; display:flex; align-items:center; gap:8px; box-shadow:0 10px 15px -3px rgba(16, 185, 129, 0.25); transition:all 0.2s;">
+                            <i class="fas fa-save"></i> Save Details
+                        </button>
                         <button onclick="salestrack.closeListModal()" style="padding:12px 24px; border:1px solid #cbd5e1; background:white; color:#475569; border-radius:8px; font-size:14px; font-weight:600; cursor:pointer;">Close</button>
                         <button id="btn-send-email-update" onclick="salestrack.initEmailUpdate('${(reportId || '').replace(/'/g, "\\'").replace(/"/g, '&quot;')}')" style="padding:12px 24px; background:#1d4ed8; color:white; border:none; border-radius:8px; font-size:14px; font-weight:700; cursor:pointer; display:flex; align-items:center; gap:8px; box-shadow:0 10px 15px -3px rgba(29, 78, 216, 0.25); transition:all 0.2s;">
                            <span style="font-size:18px;">&#128231;</span> Send Email
@@ -6477,8 +6512,8 @@ window.OmnisDashboardV6 = class OmnisDashboardV6 {
                     this.saveOrderFull(reportId, machineId, false);
                 }, 800);
             };
-            modalBody.addEventListener('input', triggerSave);
-            modalBody.addEventListener('change', triggerSave);
+            // modalBody.addEventListener('input', triggerSave);
+            // modalBody.addEventListener('change', triggerSave);
         }
 
         const btnDeleteConfirm = document.getElementById('btn-confirm-delete-order');
@@ -6540,6 +6575,66 @@ window.OmnisDashboardV6 = class OmnisDashboardV6 {
         this.refreshContactsTable();
     }
 
+    async loadPastContacts(event) {
+        if (!this._currentFullDoc || !this._currentFullDoc.customer_name) {
+            this.showToast("No customer identified for this order.", "warning");
+            return;
+        }
+
+        const btn = event.currentTarget;
+        const originalHtml = btn.innerHTML;
+        btn.innerHTML = `<i class="fas fa-spinner fa-spin"></i> Loading...`;
+        btn.disabled = true;
+
+        try {
+            const res = await window.electron.invoke('supabase:query', {
+                method: 'select',
+                table: 'fmb_reports',
+                params: {
+                    columns: 'id, order_contacts(salutation, name, phone, email)',
+                    filters: { customer_id: this._currentFullDoc.customer_name }
+                }
+            });
+
+            if (!res.ok || !res.data) throw new Error("Failed to fetch past contacts");
+
+            let pastContacts = [];
+            res.data.forEach(report => {
+                if (report.order_contacts && Array.isArray(report.order_contacts)) {
+                    report.order_contacts.forEach(c => {
+                        if (c.name && c.name.length === 36 && c.name.includes('-')) return;
+                        
+                        const exists = pastContacts.find(p => p.name1 === c.name || (c.email && p.email_address === c.email));
+                        if (!exists && (c.name || c.email || c.phone)) {
+                            pastContacts.push({
+                                salutation: c.salutation || '',
+                                name1: c.name || '',
+                                phone_number: c.phone || '',
+                                email_address: c.email || ''
+                            });
+                        }
+                    });
+                }
+            });
+
+            const newContacts = pastContacts.filter(p => !this._tempContacts.find(t => t.name1 === p.name1 && t.email_address === p.email_address));
+
+            if (newContacts.length === 0) {
+                this.showToast("No new past contacts found for this customer.", "info");
+            } else {
+                this._tempContacts.push(...newContacts);
+                this.refreshContactsTable();
+                this.showToast(`Loaded ${newContacts.length} past contact(s).`, "success");
+            }
+        } catch (e) {
+            console.error(e);
+            this.showToast("Error loading past contacts.", "error");
+        } finally {
+            btn.innerHTML = originalHtml;
+            btn.disabled = false;
+        }
+    }
+
     // Remove Contact
     removeContactRow(index) {
         if (this._tempContacts) {
@@ -6567,7 +6662,7 @@ window.OmnisDashboardV6 = class OmnisDashboardV6 {
             : this._tempContacts.map((c, i) => `
                 <tr style="background:${i % 2 === 0 ? '#ffffff' : '#f8fafc'}; border-bottom:1px solid #e2e8f0;">
                     <td style="padding:8px;"><input type="text" data-idx="${i}" data-field="salutation" value="${c.salutation || ''}" placeholder="Title" style="width:100%; padding:8px; border:1px solid #e2e8f0; border-radius:6px; font-size:13px; background:white;"></td>
-                    <td style="padding:8px;"><input type="text" data-idx="${i}" data-field="name1" value="${c.name1 || c.name || ''}" placeholder="Name" style="width:100%; padding:8px; border:1px solid #e2e8f0; border-radius:6px; font-size:13px; background:white;"></td>
+                    <td style="padding:8px;"><input type="text" data-idx="${i}" data-field="name1" value="${c.name1 || ''}" placeholder="Name" style="width:100%; padding:8px; border:1px solid #e2e8f0; border-radius:6px; font-size:13px; background:white;"></td>
                     <td style="padding:8px;"><input type="text" data-idx="${i}" data-field="phone_number" value="${c.phone_number || ''}" placeholder="Phone" style="width:100%; padding:8px; border:1px solid #e2e8f0; border-radius:6px; font-size:13px; background:white;"></td>
                     <td style="padding:8px;"><input type="text" data-idx="${i}" data-field="email_address" value="${c.email_address || ''}" placeholder="Email" style="width:100%; padding:8px; border:1px solid #e2e8f0; border-radius:6px; font-size:13px; background:white;"></td>
                     <td style="text-align:center;">
@@ -6659,79 +6754,110 @@ window.OmnisDashboardV6 = class OmnisDashboardV6 {
         if (btn) { btn.textContent = "Saving..."; btn.disabled = true; }
 
         try {
-            const sys = window.getCurrentSystem ? window.getCurrentSystem() : { baseUrl: "https://salestrack.powerstar.co.zw" };
+            if (window.electron) {
+                // 1. Prepare Parent
+                let orderRec = (window.olOrdersData || []).find(o => o.report_id === reportId);
+                let safeCompany = orderRec ? orderRec.company : (this._currentFullDoc?.company || this._currentFullDoc?.frappe_quotation?.company || "");
 
-            let orderRec = (window.olOrdersData || []).find(o => o.report_id === reportId);
-            let safeCompany = orderRec ? orderRec.company : (this._currentFullDoc?.company || this._currentFullDoc?.frappe_quotation?.company || "");
+                const rawOwner = (this._currentFullDoc?.owner || "").toLowerCase();
+                const rawCompany = (safeCompany || "").toLowerCase();
+                let companyTag = "Sinopower"; 
+                if (rawOwner.includes("machinery") || rawCompany.includes("machinery")) {
+                    companyTag = "Machinery Exchange";
+                } else if (rawOwner.includes("sinopower") || rawCompany.includes("sinopower")) {
+                    companyTag = "Sinopower";
+                }
 
-            const params = {
-                report_id: reportId || "",
-                machine_id: machineId || "",
-                status: status || "",
-                is_payment_terms: is_payment_terms,
-                company: safeCompany,
-                owner: this._currentFullDoc?.owner || "",
-                contacts: this._tempContacts || [],
-                machines: machinesUpdates,
-                new_machines: newMachines,
-                deleted_machines: this._tempDeletedMachines || []
-            };
+                const parentPayload = {
+                    frappe_id: reportId,
+                    status: status,
+                    is_payment_terms: is_payment_terms === true,
+                    customer_id: this._currentFullDoc?.customer_name || 'Unknown',
+                    company: companyTag
+                };
 
-            if (reportId && reportId.startsWith('TRACK-')) {
-                const dbId = reportId.replace('TRACK-', '');
-                const mainMachine = params.machines && params.machines.length > 0 ? params.machines[0] : null;
-                
-                if (mainMachine) {
-                    const updateData = {
-                        status: params.status,
-                        target_handover: mainMachine.target_handover_date || null,
-                        revised_handover: mainMachine.revised_handover_date || null,
-                        actual_handover: mainMachine.actual_handover_date || null,
-                        notes: mainMachine.notes || null,
-                        qty: mainMachine.qty || 1
-                    };
-                    
-                    if (window.electron) {
-                        const updateRes = await window.electron.invoke('supabase:query', {
-                            table: 'omnis_tracking_orders',
-                            method: 'update',
-                            params: { data: updateData, id: dbId }
-                        });
-                        
-                        if (!updateRes.ok) throw new Error("Supabase Update Failed: " + (updateRes.error || "Unknown"));
+                let parentId = this._currentFullDoc?.db_id;
+
+                // Upsert Parent
+                if (parentId) {
+                    parentPayload.id = parentId;
+                }
+                const upsertRes = await window.electron.invoke('supabase:query', {
+                    table: 'fmb_reports',
+                    method: 'upsert',
+                    params: { data: parentPayload }
+                });
+
+                if (!upsertRes.ok) throw new Error("Supabase Parent Sync Error: " + JSON.stringify(upsertRes.error));
+
+                if (!parentId) {
+                    const freshRes = await window.electron.invoke('supabase:query', {
+                        table: 'fmb_reports',
+                        method: 'select',
+                        params: { columns: 'id', filters: { frappe_id: reportId } }
+                    });
+                    if (freshRes.ok && freshRes.data && freshRes.data.length > 0) {
+                        parentId = freshRes.data[0].id;
                     }
                 }
-                
-                this.showToast("Tracking Order Saved", "success");
-                
-                const indicator = document.getElementById('auto-save-indicator');
-                if (indicator) { indicator.innerHTML = '&#10003; Auto-saved'; indicator.style.color = '#10b981'; setTimeout(() => { if(indicator.innerHTML.includes('Auto-saved')) indicator.style.opacity = '0'; }, 2000); }
 
-                if (closeAfter) {
-                    this.closeListModal();
-                    const refreshBtn = document.getElementById('ol-refresh-btn');
-                    if (refreshBtn) refreshBtn.click();
-                    else if (window.loadOrdersList) window.loadOrdersList(true);
-                } else {
-                    if (window.loadOrdersList) window.loadOrdersList(true);
+                if (!parentId) throw new Error("Could not retrieve Supabase ID for order");
+
+                // 2. Sync Machines
+                const allMachines = [...machinesUpdates, ...newMachines];
+                
+                await window.electron.invoke('supabase:query', {
+                    table: 'order_machines',
+                    method: 'delete',
+                    params: { filters: { order_id: parentId } }
+                });
+
+                if (allMachines.length > 0) {
+                    const machinePayloads = allMachines.map(m => ({
+                        order_id: parentId,
+                        frappe_row_id: m.name || ('NEW-' + Math.random().toString(36).substr(2, 9)),
+                        item_code: m.item,
+                        serial_no: m.serial_no,
+                        quantity: m.qty || 1,
+                        target_date: m.target_handover_date || null,
+                        revised_date: m.revised_handover_date || null,
+                        notes: m.notes,
+                        image_1_url: m.images_one,
+                        image_2_url: m.image_two
+                    }));
+                    
+                    await window.electron.invoke('supabase:query', {
+                        table: 'order_machines',
+                        method: 'insert',
+                        params: { data: machinePayloads }
+                    });
                 }
-                
-                if (btn) { btn.textContent = "Save Changes"; btn.disabled = false; }
-                return;
-            }
 
-            const res = await window.callFrappeSequenced(sys.baseUrl || "https://salestrack.powerstar.co.zw", "powerstar_salestrack.omnis_dashboard.update_order_details_v2", params);
-            const payload = res.message || res;
-            if (payload && payload.ok) {
+                // 3. Sync Contacts
+                await window.electron.invoke('supabase:query', {
+                    table: 'order_contacts',
+                    method: 'delete',
+                    params: { filters: { order_id: parentId } }
+                });
+
+                if (this._tempContacts && this._tempContacts.length > 0) {
+                    const contactPayloads = this._tempContacts.map(c => ({
+                        order_id: parentId,
+                        salutation: c.salutation,
+                        name: c.name1 || '',
+                        phone: c.phone_number,
+                        email: c.email_address
+                    }));
+                    
+                    await window.electron.invoke('supabase:query', {
+                        table: 'order_contacts',
+                        method: 'insert',
+                        params: { data: contactPayloads }
+                    });
+                }
+
                 this.showToast("Order Saved Successfully", "success");
 
-                // --- Supabase Dual-Write ---
-                try {
-                    await this.syncToSupabase(reportId, params);
-                } catch(err) {
-                    console.error("[Supabase Sync Error]", err);
-                }
-
                 const indicator = document.getElementById('auto-save-indicator');
                 if (indicator) { indicator.innerHTML = '&#10003; Auto-saved'; indicator.style.color = '#10b981'; setTimeout(() => { if(indicator.innerHTML.includes('Auto-saved')) indicator.style.opacity = '0'; }, 2000); }
 
@@ -6743,10 +6869,11 @@ window.OmnisDashboardV6 = class OmnisDashboardV6 {
                 } else {
                     if (window.loadOrdersList) window.loadOrdersList(true);
                 }
+                
+                if (btn) { btn.innerHTML = '<i class="fas fa-save"></i> Save Details'; btn.disabled = false; }
             } else {
-                throw new Error("Save Failed: " + (payload?.error || JSON.stringify(payload)));
+                throw new Error("Cannot save: Desktop environment (window.electron) not found.");
             }
-
         } catch (e) {
             console.error("Save Error", e);
             alert("Error saving: " + e.message);
@@ -6835,7 +6962,7 @@ window.OmnisDashboardV6 = class OmnisDashboardV6 {
                 const contactPayloads = params.contacts.map(c => ({
                     order_id: supaParentId,
                     salutation: c.salutation,
-                    name: c.name1 || c.name,
+                    name: c.name1 || '',
                     phone: c.phone_number,
                     email: c.email_address
                 }));
@@ -6855,7 +6982,7 @@ window.OmnisDashboardV6 = class OmnisDashboardV6 {
             toast = document.createElement('div');
             toast.id = 'dash-toast';
             toast.style.cssText = `
-                position: fixed; bottom: 20px; right: 20px; z-index: 99999;
+                position: fixed; bottom: 20px; right: 20px; z-index: 2147483647;
                 background: #1e293b; color: white; padding: 12px 24px;
                 border-radius: 8px; font-size: 14px; font-weight: 600;
                 box-shadow: 0 4px 6px rgba(0,0,0,0.1);
@@ -6976,6 +7103,37 @@ window.OmnisDashboardV6 = class OmnisDashboardV6 {
                         });
                     } catch (e) {
                         console.warn("Failed to delete linked tracking order from Supabase:", e);
+                    }
+                    
+                    // Also delete from fmb_reports (Supabase source of truth)
+                    try {
+                        const parentIdRes = await window.electron.invoke('supabase:query', {
+                            table: 'fmb_reports',
+                            method: 'select',
+                            params: { columns: 'id', filters: { frappe_id: reportId } }
+                        });
+                        
+                        if (parentIdRes && parentIdRes.data && parentIdRes.data.length > 0) {
+                            const parentId = parentIdRes.data[0].id;
+                            
+                            await window.electron.invoke('supabase:query', {
+                                table: 'order_machines',
+                                method: 'delete',
+                                params: { match: { order_id: parentId } }
+                            });
+                            await window.electron.invoke('supabase:query', {
+                                table: 'order_contacts',
+                                method: 'delete',
+                                params: { match: { order_id: parentId } }
+                            });
+                            await window.electron.invoke('supabase:query', {
+                                table: 'fmb_reports',
+                                method: 'delete',
+                                params: { match: { id: parentId } }
+                            });
+                        }
+                    } catch (e) {
+                        console.warn("Failed to delete from fmb_reports:", e);
                     }
                 }
                 
@@ -8781,6 +8939,7 @@ window.OmnisDashboardV6 = class OmnisDashboardV6 {
         
         const overlay = document.getElementById('defects-modal-overlay');
         if (!overlay) return;
+        document.body.appendChild(overlay);
         
         document.getElementById('defect-machine-name').textContent = machineName;
         
@@ -8834,7 +8993,7 @@ window.OmnisDashboardV6 = class OmnisDashboardV6 {
                                 <span style="font-size:10px; font-weight:700; color:#94a3b8; display:block; margin-bottom:4px;">${dateStr}</span>
                                 ${d.description}
                             </div>
-                            <button onclick="salestrack.markDefectClosed(${d.id}, '${machineName.replace(/'/g, "\\'")}', '${orderId.replace(/'/g, "\\'")}')" title="Remove" style="background:#fef2f2; border:1px solid #fecaca; border-radius:6px; padding:6px 10px; font-size:12px; font-weight:600; cursor:pointer; color:#ef4444; flex-shrink:0; transition:all 0.2s hover:bg-red-50;"><i class="fas fa-trash"></i></button>
+                            <button onclick="salestrack.markDefectClosed('${d.name}', '${machineName.replace(/'/g, "\\'")}', '${orderId.replace(/'/g, "\\'")}')" title="Remove" style="background:#fef2f2; border:1px solid #fecaca; border-radius:6px; padding:6px 10px; font-size:12px; font-weight:600; cursor:pointer; color:#ef4444; flex-shrink:0; transition:all 0.2s hover:bg-red-50;"><i class="fas fa-trash"></i></button>
                         </div>
                     </td>
                 </tr>
@@ -8886,6 +9045,7 @@ window.OmnisDashboardV6 = class OmnisDashboardV6 {
             
             // Reload table
             this.loadDefectsForMachine(machineName, orderId);
+            if (window.refreshSTRReportIfOpen) window.refreshSTRReportIfOpen();
             
         } catch(e) {
             console.error("Save defect error:", e);
@@ -8903,11 +9063,12 @@ window.OmnisDashboardV6 = class OmnisDashboardV6 {
             const res = await window.electron.invoke('supabase:query', {
                 table: 'ft_defect',
                 method: 'update',
-                params: { data: { status: 'Closed', closed_date: new Date().toISOString().split('T')[0] }, match: { id: defectId } }
+                params: { data: { status: 'Closed' }, match: { name: defectId }, skipSelect: true }
             });
             
             if (res.error) throw new Error(res.error);
             this.loadDefectsForMachine(machineName, orderId);
+            if (window.refreshSTRReportIfOpen) window.refreshSTRReportIfOpen();
         } catch(e) {
             console.error("Close defect error:", e);
             alert("Error removing defect: " + e.message);

@@ -23,20 +23,24 @@ window.DashboardTimeline = (function() {
             try {
                 if (window.electron) {
                     const orderRes = await window.electron.invoke('supabase:query', {
-                        table: 'omnis_tracking_orders', method: 'select'
+                        table: 'fmb_reports', method: 'select',
+                        params: { columns: '*, order_machines(*)' }
                     });
                     if (orderRes.ok && orderRes.data) {
-                        orderRes.data.forEach(o => {
-                            if (o.target_handover) {
-                                rawEvents.push({
-                                    type: 'order',
-                                    date: new Date(o.target_handover),
-                                    title: `Delivery: ${o.item_name || o.machine || o.machine_model || o.linked_sale_name || 'Machine'}`,
-                                    customer: o.customer || o.customer_name || 'N/A',
-                                    desc: `Handover Target`,
-                                    raw: o
-                                });
-                            }
+                        orderRes.data.forEach(order => {
+                            const machines = order.order_machines || [];
+                            machines.forEach(o => {
+                                if (o.target_date) {
+                                    rawEvents.push({
+                                        type: 'order',
+                                        date: new Date(o.target_date),
+                                        title: `Delivery: ${o.item_code || 'Machine'}`,
+                                        customer: order.customer_id || 'N/A',
+                                        desc: `Handover Target`,
+                                        raw: Object.assign({}, o, { order: order })
+                                    });
+                                }
+                            });
                         });
                     }
                 }

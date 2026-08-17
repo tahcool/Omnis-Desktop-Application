@@ -818,7 +818,7 @@ ipcMain.handle('supabase:query', async (event, { table, method, params, data }) 
       if (params.name) query = query.eq('name', params.name);
       else if (params.id) query = query.eq('id', params.id);
       else if (params.match) query = query.match(params.match);
-      query = query.select();
+      if (!params.skipSelect) query = query.select();
 
     } else if (method === 'upsert') {
       query = query.upsert(params.data || data, params.options || {}).select();

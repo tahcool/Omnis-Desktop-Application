@@ -169,29 +169,68 @@ async function loadOrdersList(force = false) {
     if (info) info.innerHTML = `<i class="fas fa-sync fa-spin"></i> Fetching <strong>${company || "All Companies"}</strong>...`;
 
     try {
-        const base = sys.baseUrl.replace(/\/$/, "");
-        const method = "powerstar_salestrack.omnis_dashboard.get_weekly_gsm_report";
-        const args = {
-            company: '',
-            from_date: fromDate,
-            to_date: toDate
-        };
+        // Fetch all orders from Supabase (Now the Source of Truth)
+        let sbRes = await window.electron.invoke('supabase:query', {
+            table: 'fmb_reports',
+            method: 'select',
+            params: { columns: '*, order_machines(*)' }
+        });
 
-        const res = await window.callFrappeSequenced(base, method, args);
-        const data = res.message || res;
+        let ordersList = [];
         
-        let ordersList = (data && data.current_orders) ? data.current_orders : [];
-        
-        // Fetch Tracking Orders from Supabase (Now the Source of Truth for new sales)
-        try {
-            if (window.electron) {
-                let trackRes = await window.electron.invoke('supabase:query', {
-                    table: 'omnis_tracking_orders', method: 'select'
-                });
-                if (trackRes.ok && trackRes.data) {
-                    trackRes.data.forEach(t => {
+        if (sbRes.ok && sbRes.data) {
+            sbRes.data.forEach(order => {
+
+
+                const machines = order.order_machines || [];
+                if (machines.length === 0) {
+                    // Create a dummy row so the order still shows up if it has no machines
+                    ordersList.push({
+                        report_id: order.frappe_id,
+                        machine_id: 'NONE-' + order.id,
+                        customer: order.customer_id || 'Unknown',
+                        machine: 'No Machine Assigned',
+                        item: 'Unknown',
+                        qty: 0,
+                        status: order.status || 'Internal Tracking',
+                        notes: '',
+                        internal_notes: '',
+                        target_handover: null,
+                        revised_handover: null,
+                        actual_handover: null,
+                        order_date: order.order_date,
+                        company: order.company || 'Sinopower',
+                        is_payment_terms: order.is_payment_terms,
+                        is_tracking_only: false,
+                        days_left: "-"
+                    });
+                } else {
+                    machines.forEach(m => {
+                        let actual_handover = null;
+                        let clean_notes = m.notes || '';
+                        
+                        // Check for injected markers
+                        let is_completed = false;
+                        if (clean_notes.includes("[ACTUAL_HANDOVER:")) {
+                            const match = clean_notes.match(/\[ACTUAL_HANDOVER:([^\]]+)\]/);
+                            if (match) {
+                                actual_handover = match[1];
+                                clean_notes = clean_notes.replace(/\[ACTUAL_HANDOVER:[^\]]+\]\s*/, '');
+                                is_completed = true;
+                            }
+                        }
+                        if (clean_notes.includes("[COMPLETED]")) {
+                            is_completed = true;
+                            clean_notes = clean_notes.replace(/\[COMPLETED\]\s*/, '');
+                        }
+                        
+                        // **CRITICAL MATCH FOR FRAPPE BEHAVIOR**:
+                        // The original get_weekly_gsm_report ALWAYS excluded machines with an actual_handover_date or completed status.
+                        // This dashboard is exclusively for active/pending tracking.
+                        // UPDATE: User requested to show all historic orders, so we no longer exclude them.
+                        
                         let days_left = 0;
-                        let targetDateStr = t.target_handover; // Strict requirement: use target date, ignore revised
+                        let targetDateStr = m.target_date;
                         if (targetDateStr) {
                             const target = new Date(targetDateStr);
                             target.setHours(0,0,0,0);
@@ -203,58 +242,31 @@ async function loadOrdersList(force = false) {
                         }
                         
                         ordersList.push({
-                            report_id: 'TRACK-' + t.id,
-                            machine_id: 'TRACK-M-' + t.id,
-                            customer: t.customer,
-                            machine: t.machine || `${t.brand || ''} ${t.model || ''}`.trim(),
-                            qty: t.qty,
-                            status: t.status,
-                            notes: t.notes,
-                            internal_notes: t.internal_notes,
-                            target_handover: t.target_handover,
-                            revised_handover: t.revised_handover,
-                            actual_handover: t.actual_handover,
-                            order_date: t.order_date,
-                            committed_lead_time: t.committed_lead_time,
-                            company: t.company,
-                            is_tracking_only: false, // It is the main tracking now
+                            report_id: order.frappe_id,
+                            machine_id: m.frappe_row_id || m.id,
+                            customer: order.customer_id || 'Unknown',
+                            machine: m.item_code || 'Unknown Machine', // Can be enriched with item_name later
+                            item: m.item_code,
+                            qty: m.quantity || 1,
+                            status: order.status || 'Internal Tracking',
+                            notes: clean_notes,
+                            internal_notes: m.internal_notes || '',
+                            target_handover: m.target_date,
+                            revised_handover: m.revised_date,
+                            actual_handover: actual_handover,
+                            order_date: order.order_date,
+                            company: order.company || 'Sinopower',
+                            is_payment_terms: order.is_payment_terms,
+                            is_tracking_only: false,
                             days_left: days_left
                         });
                     });
                 }
-            }
-        } catch (e) { console.error('[OrdersLogic] Failed to fetch tracking orders', e); }
+            });
+        }
 
-        if (ordersList.length > 0) {
-            
-            // Augment with Supabase Payment Terms status & Company
-            // Track which orders have a Supabase company override — these are the source of truth
-            const supabaseAssigned = new Set();
-            try {
-                let sbRes = await window.electron.invoke('supabase:query', {
-                    table: 'fmb_reports', method: 'select', params:{columns:'frappe_id, is_payment_terms, company, status'}
-                });
-                if(sbRes.ok && sbRes.data) {
-                    const termsSet = new Set(sbRes.data.filter(d => d.is_payment_terms === true || d.is_payment_terms === 'true').map(d => d.frappe_id));
-                    const compMap = new Map();
-                    const statusMap = new Map();
-                    sbRes.data.forEach(d => { 
-                        if (d.company) compMap.set(d.frappe_id, d.company); 
-                        if (d.status) statusMap.set(d.frappe_id, d.status);
-                    });
-                    
-                    ordersList.forEach(o => {
-                        o.is_payment_terms = termsSet.has(o.report_id);
-                        if (compMap.has(o.report_id)) {
-                            o.company = compMap.get(o.report_id);
-                            supabaseAssigned.add(o.report_id); // Mark as Supabase-sourced
-                        }
-                        if (statusMap.has(o.report_id)) {
-                            o.status = statusMap.get(o.report_id); // Override Frappe status
-                        }
-                    });
-                }
-            } catch(e) { console.error('[OrdersLogic] Failed to augment terms from Supabase', e); }
+
+    if (ordersList.length > 0) {
 
             // Fetch Defect Counts
             try {
@@ -311,11 +323,8 @@ async function loadOrdersList(force = false) {
                 return "Unassigned";
             };
 
-            // Only normalize orders NOT already assigned by Supabase (Supabase is source of truth)
             ordersList.forEach(o => {
-                if (!supabaseAssigned.has(o.report_id)) {
-                    o.company = normalizeCompany(o.company);
-                }
+                o.company = normalizeCompany(o.company);
             });
 
             if (window.appendMissingCompanyFilters) {
@@ -1023,7 +1032,13 @@ function renderOrdersList() {
                  title="Double-click to edit internal notes"
                  ondblclick="editOrderField(this, '${safeMachineId}', 'internal_notes', '${escapeJs(r.internal_notes)}')">
               <span class="cell-label">Internal Notes</span>
-              <div class="ai-internal-notes-pill">${r.internal_notes || "—"}</div>
+              <div class="ai-internal-notes-pill">
+                  ${r.internal_notes ? 
+                      '<ul style="margin:0; padding-left:16px; text-align:left;">' + 
+                      r.internal_notes.split('\n').filter(p => p.trim() !== '').map(p => '<li>' + p.trim() + '</li>').join('') + 
+                      '</ul>' 
+                      : "—"}
+              </div>
             </div>
 
             <div class="ai-order-cell" style="text-align:center;" onclick="window.dashManager.openOrderModal('${safeReportId}', '${safeMachineId}')">
@@ -1187,6 +1202,14 @@ if (document.readyState === "loading") {
 
 window._cachedDefectsData = [];
 
+window.refreshSTRReportIfOpen = function() {
+    const listModal = document.getElementById('dash-generic-modal');
+    const titleEl = document.getElementById('dash-generic-title');
+    if (listModal && !listModal.classList.contains('hidden') && titleEl && titleEl.innerText.includes('Sales Tracking Report')) {
+        window.openSTRReport();
+    }
+};
+
 window.openDefectsReport = async function() {
     if (!window.salestrack || !window.salestrack.openListModal) {
         alert("Modal functionality not ready.");
@@ -1248,7 +1271,7 @@ window.openDefectsReport = async function() {
                     </div>
                 </div>
                 <div style="display:flex; gap:12px; margin-bottom: 2px;">
-                    <button onclick="window.renderDefectsReport()" style="padding:10px 16px; background:#f1f5f9; color:#475569; border:1px solid #cbd5e1; border-radius:8px; cursor:pointer; font-weight:600;"><i class="fas fa-sync-alt" style="margin-right:6px;"></i> Refresh</button>
+                    <button onclick="window.openDefectsReport()" style="padding:10px 16px; background:#f1f5f9; color:#475569; border:1px solid #cbd5e1; border-radius:8px; cursor:pointer; font-weight:600;"><i class="fas fa-sync-alt" style="margin-right:6px;"></i> Refresh</button>
                     <button onclick="window.printReportContent('Order Defects Report')" style="padding:10px 16px; background:#0f172a; color:white; border:none; border-radius:8px; cursor:pointer; font-weight:700;"><i class="fas fa-print" style="margin-right:6px;"></i> Print PDF</button>
                 </div>
             </div>
@@ -1341,6 +1364,36 @@ window.triggerEditDefect = function(machine, orderId, customer) {
     window.salestrack.openDefectsModal(machine, orderId, customer);
 };
 
+window.resolveDefect = async function(defectId) {
+    if (!confirm("Are you sure you want to mark this defect as resolved?")) return;
+    try {
+        if (!window.electron) throw new Error("Electron not available");
+        const res = await window.electron.invoke('supabase:query', {
+            table: 'ft_defect',
+            method: 'update',
+            params: { data: { status: 'Closed' }, match: { name: defectId }, skipSelect: true }
+        });
+        
+        if (res.error) throw new Error(res.error);
+        
+        if (window.showToast) window.showToast("Defect marked as resolved", "success");
+        
+        // Remove from cached data
+        if (window._cachedDefectsData) {
+            window._cachedDefectsData = window._cachedDefectsData.filter(d => d.name !== defectId);
+        }
+        
+        // Re-render table
+        if (window.openSTRReport) window.openSTRReport();
+        
+        // Optional: refresh dashboard to update defect counters
+        if (window.loadOrdersList) window.loadOrdersList(true);
+    } catch(e) {
+        console.error("Resolve defect error:", e);
+        alert("Error resolving defect: " + e.message);
+    }
+};
+
 window.renderDefectsReport = function() {
     const container = document.getElementById('defects-report-table-container');
     if (!container) return;
@@ -1421,9 +1474,9 @@ window.renderDefectsReport = function() {
                 let date = d.start_date || (d.created_at ? d.created_at.substring(0, 10) : '-');
                 
                 // Safe JSON encode for arguments to avoid quote hell
-                let encMachine = encodeURIComponent(machine);
-                let encOrder = encodeURIComponent(d.order_id || '');
-                let encCustomer = encodeURIComponent(customer);
+                let encMachine = encodeURIComponent(machine).replace(/'/g, "%27");
+                let encOrder = encodeURIComponent(d.order_id || '').replace(/'/g, "%27");
+                let encCustomer = encodeURIComponent(customer).replace(/'/g, "%27");
 
                 tableHtml += `
             <tr style="border-bottom:1px solid #e2e8f0; transition:background 0.2s;" onmouseover="this.style.background='#fafaf9'" onmouseout="this.style.background='white'">
@@ -1432,6 +1485,7 @@ window.renderDefectsReport = function() {
                 <td style="padding:8px 12px; vertical-align:middle;">
                     <div style="display:flex; flex-direction:row; gap:8px; align-items:center; justify-content:flex-start;">
                         <span style="font-size:11px; color:#991b1b; font-weight:700; white-space:nowrap; background:#fee2e2; padding:4px 8px; border-radius:4px;"><i class="far fa-calendar-alt" style="margin-right:4px;"></i> ${date}</span>
+                        <button onclick="window.resolveDefect('${d.name}')" style="background:transparent; border:none; padding:4px; font-size:14px; color:#10b981; cursor:pointer; transition:color 0.2s;" onmouseover="this.style.color='#059669'" onmouseout="this.style.color='#10b981'" title="Mark as Resolved"><i class="fas fa-check-circle"></i></button>
                         <button onclick="window.triggerEditDefect(decodeURIComponent('${encMachine}'), decodeURIComponent('${encOrder}'), decodeURIComponent('${encCustomer}'))" style="background:transparent; border:none; padding:4px; font-size:14px; color:#64748b; cursor:pointer; transition:color 0.2s;" onmouseover="this.style.color='#0f172a'" onmouseout="this.style.color='#64748b'" title="Edit Defect"><i class="fas fa-pencil-alt"></i></button>
                     </div>
                 </td>
@@ -1444,6 +1498,149 @@ window.renderDefectsReport = function() {
     tableHtml += `</tbody></table>`;
     container.innerHTML = tableHtml;
 };
+
+function getOrCreateTrainingOverlay() {
+    let overlay = document.getElementById('training-modal-overlay');
+    if (!overlay) {
+        overlay = document.createElement('div');
+        overlay.id = 'training-modal-overlay';
+        overlay.style = 'position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(15,23,42,0.6); display:flex; align-items:center; justify-content:center; z-index:9999999; backdrop-filter:blur(4px);';
+        overlay.classList.add('hidden');
+        overlay.innerHTML = `
+            <div style="background:white; width:500px; max-width:90%; border-radius:12px; box-shadow:0 20px 25px -5px rgba(0,0,0,0.1); overflow:hidden; display:flex; flex-direction:column; font-family:'Inter', sans-serif;">
+                <div style="padding:16px 20px; background:#f8fafc; border-bottom:1px solid #e2e8f0; display:flex; justify-content:space-between; align-items:center;">
+                    <h3 style="margin:0; font-size:16px; color:#0f172a;"><i class="fas fa-edit" style="color:#0891b2; margin-right:8px;"></i> Edit Training</h3>
+                    <button onclick="document.getElementById('training-modal-overlay').classList.add('hidden')" style="background:transparent; border:none; font-size:18px; color:#64748b; cursor:pointer;"><i class="fas fa-times"></i></button>
+                </div>
+                <div style="padding:20px; display:flex; flex-direction:column; gap:16px;">
+                    <input type="hidden" id="edit-training-name">
+                    
+                    <div style="display:flex; flex-direction:column; gap:6px;">
+                        <label style="font-size:12px; font-weight:600; color:#475569;">Location</label>
+                        <input type="text" id="edit-training-location" style="padding:10px; border:1px solid #cbd5e1; border-radius:6px; font-size:13px; outline:none;" placeholder="Site Name">
+                    </div>
+                    
+                    <div style="display:flex; gap:16px;">
+                        <div style="display:flex; flex-direction:column; gap:6px; flex:1;">
+                            <label style="font-size:12px; font-weight:600; color:#475569;">Training Date</label>
+                            <input type="date" id="edit-training-date" style="padding:10px; border:1px solid #cbd5e1; border-radius:6px; font-size:13px; outline:none;">
+                        </div>
+                        <div style="display:flex; flex-direction:column; gap:6px; flex:1;">
+                            <label style="font-size:12px; font-weight:600; color:#475569;">No. of Operators</label>
+                            <input type="number" id="edit-training-operators" min="1" style="padding:10px; border:1px solid #cbd5e1; border-radius:6px; font-size:13px; outline:none;">
+                        </div>
+                    </div>
+                    
+                    <div style="display:flex; flex-direction:column; gap:6px;">
+                        <label style="font-size:12px; font-weight:600; color:#475569;">Trainer Name</label>
+                        <input type="text" id="edit-training-trainer" style="padding:10px; border:1px solid #cbd5e1; border-radius:6px; font-size:13px; outline:none;" placeholder="John Doe">
+                    </div>
+                    
+                    <div style="display:flex; flex-direction:column; gap:6px;">
+                        <label style="font-size:12px; font-weight:600; color:#475569;">Status</label>
+                        <select id="edit-training-status" style="padding:10px; border:1px solid #cbd5e1; border-radius:6px; font-size:13px; outline:none; background:white;">
+                            <option value="Planned">Planned</option>
+                            <option value="Done">Done</option>
+                        </select>
+                    </div>
+                </div>
+                <div style="padding:16px 20px; background:#f8fafc; border-top:1px solid #e2e8f0; display:flex; justify-content:flex-end; gap:12px;">
+                    <button onclick="document.getElementById('training-modal-overlay').classList.add('hidden')" style="padding:8px 16px; border:1px solid #cbd5e1; background:white; color:#475569; border-radius:6px; font-size:13px; font-weight:600; cursor:pointer;">Cancel</button>
+                    <button onclick="window.saveEditedTraining()" style="padding:8px 16px; background:#0891b2; color:white; border:none; border-radius:6px; font-size:13px; font-weight:700; cursor:pointer;"><i class="fas fa-save" style="margin-right:6px;"></i> Save Changes</button>
+                </div>
+            </div>
+        `;
+        document.body.appendChild(overlay);
+    }
+    return overlay;
+}
+
+window.triggerEditTraining = function(trainingName) {
+    if (!window._cachedTrainingsData) return;
+    const t = window._cachedTrainingsData.find(x => x.id === trainingName || x.name === trainingName);
+    if (!t) return;
+    
+    const overlay = getOrCreateTrainingOverlay();
+    
+    document.getElementById('edit-training-name').value = t.name || '';
+    document.getElementById('edit-training-location').value = t.location || '';
+    document.getElementById('edit-training-date').value = t.training_date ? t.training_date.substring(0, 10) : '';
+    document.getElementById('edit-training-operators').value = t.number_of_operators || 1;
+    document.getElementById('edit-training-trainer').value = t.trainer_name || '';
+    document.getElementById('edit-training-status').value = t.status || 'Planned';
+    
+    overlay.classList.remove('hidden');
+};
+
+window.saveEditedTraining = async function() {
+    const tName = document.getElementById('edit-training-name').value;
+    const location = document.getElementById('edit-training-location').value;
+    const tDate = document.getElementById('edit-training-date').value;
+    const operators = document.getElementById('edit-training-operators').value;
+    const trainer = document.getElementById('edit-training-trainer').value;
+    const status = document.getElementById('edit-training-status').value;
+    
+    try {
+        const res = await window.electron.invoke('supabase:query', {
+            table: 'ft_operator_training',
+            method: 'update',
+            params: {
+                data: {
+                    location: location,
+                    training_date: tDate,
+                    number_of_operators: parseInt(operators),
+                    trainer_name: trainer,
+                    status: status
+                },
+                match: { id: tName },
+                skipSelect: true
+            }
+        });
+        
+        if (res.error) throw new Error(res.error);
+        
+        document.getElementById('training-modal-overlay').classList.add('hidden');
+        if (window.openTrainingReport) window.openSTRReport();
+    } catch(e) {
+        console.error(e);
+        alert("Error saving training: " + e.message);
+    }
+};
+
+window.completeTraining = async function(trainingName) {
+    if (!confirm("Mark this training as Done?")) return;
+    try {
+        const res = await window.electron.invoke('supabase:query', {
+            table: 'ft_operator_training',
+            method: 'update',
+            params: { data: { status: 'Done' }, match: { id: trainingName }, skipSelect: true }
+        });
+        if (res.error) throw new Error(res.error);
+        
+        if (window.openTrainingReport) window.openSTRReport();
+    } catch(e) {
+        alert("Error updating training: " + e.message);
+    }
+};
+
+window.deleteTraining = async function(trainingName) {
+    if (!confirm("Are you sure you want to delete this training? This cannot be undone.")) return;
+    try {
+        const res = await window.electron.invoke('supabase:query', {
+            table: 'ft_operator_training',
+            method: 'delete',
+            params: { match: { id: trainingName }, skipSelect: true }
+        });
+        if (res.error) throw new Error(res.error);
+        
+        if (window.openTrainingReport) window.openSTRReport();
+    } catch(e) {
+        alert("Error deleting training: " + e.message);
+    }
+};
+
+
+window._cachedTrainingsData = [];
 window.openTrainingReport = async function() {
     if (!window.salestrack || !window.salestrack.openListModal) {
         alert("Modal functionality not ready.");
@@ -1468,6 +1665,7 @@ window.openTrainingReport = async function() {
     }
 
     let trainings = res.data;
+    window._cachedTrainingsData = trainings;
     
     // Filter by Company dropdown if active
     const tCompanyEl = document.getElementById("ol-company");
@@ -1493,12 +1691,12 @@ window.openTrainingReport = async function() {
             <table style="width:100%; border-collapse:collapse; font-size:13px; text-align:left;">
                 <thead style="background:#f1f5f9; color:#475569; font-weight:700; text-transform:uppercase; font-size:11px; letter-spacing:0.05em;">
                     <tr>
-                        <th style="padding:16px; border-bottom:1px solid #e2e8f0; width:20%;">Customer / Order</th>
-                        <th style="padding:16px; border-bottom:1px solid #e2e8f0; width:20%;">Machine</th>
-                        <th style="padding:16px; border-bottom:1px solid #e2e8f0; width:20%;">Location</th>
-                        <th style="padding:16px; border-bottom:1px solid #e2e8f0; width:15%;">Trainer</th>
-                        <th style="padding:16px; border-bottom:1px solid #e2e8f0; width:10%; text-align:center;">Operators</th>
-                        <th style="padding:16px; border-bottom:1px solid #e2e8f0; width:15%;">Date</th>
+                        <th style="padding:12px 16px; border:1px solid #cbd5e1; width:20%;">Customer / Order</th>
+                        <th style="padding:12px 16px; border:1px solid #cbd5e1; width:20%;">Machine</th>
+                        <th style="padding:12px 16px; border:1px solid #cbd5e1; width:20%;">Location</th>
+                        <th style="padding:12px 16px; border:1px solid #cbd5e1; width:15%;">Trainer</th>
+                        <th style="padding:12px 16px; border:1px solid #cbd5e1; width:10%; text-align:center;">Operators</th>
+                        <th style="padding:12px 16px; border:1px solid #cbd5e1; width:15%;">Date / Actions</th>
                     </tr>
                 </thead>
                 <tbody>`;
@@ -1508,16 +1706,23 @@ window.openTrainingReport = async function() {
         
         html += `
             <tr style="border-bottom:1px solid #e2e8f0; transition:background 0.2s;" onmouseover="this.style.background='#ecfeff'" onmouseout="this.style.background='white'">
-                <td style="padding:16px; font-weight:700; color:#334155; vertical-align:middle;">${customer}</td>
-                <td style="padding:16px; font-weight:600; color:#0f172a; vertical-align:middle;">${t.machine || '-'}</td>
+                <td style="padding:16px; font-weight:700; color:#334155; vertical-align:middle; border:1px solid #e2e8f0;">${customer}</td>
+                <td style="padding:16px; font-weight:600; color:#0f172a; vertical-align:middle; border:1px solid #e2e8f0;">${t.machine || '-'}</td>
                 <td style="padding:16px; color:#475569; vertical-align:middle;">
                     <i class="fas fa-map-marker-alt" style="color:#ef4444; margin-right:4px;"></i> ${t.location || '-'}
                 </td>
-                <td style="padding:16px; color:#475569; vertical-align:middle;">${t.trainer_name || '-'}</td>
-                <td style="padding:16px; color:#0f172a; font-weight:700; text-align:center; vertical-align:middle;">${t.number_of_operators || 1}</td>
+                <td style="padding:16px; color:#475569; vertical-align:middle; border:1px solid #e2e8f0;">${t.trainer_name || '-'}</td>
+                <td style="padding:16px; color:#0f172a; font-weight:700; text-align:center; vertical-align:middle; border:1px solid #e2e8f0;">${t.number_of_operators || 1}</td>
                 <td style="padding:16px; vertical-align:middle;">
-                    <div style="background:#ecfeff; color:#0891b2; font-weight:700; padding:6px 10px; border-radius:6px; display:inline-block; border:1px solid #a5f3fc;">
-                        ${t.training_date ? t.training_date.substring(0, 10) : '-'}
+                    <div style="display:flex; flex-direction:row; gap:8px; align-items:center;">
+                        <span style="font-size:11px; color:#0891b2; font-weight:700; white-space:nowrap; background:#ecfeff; padding:4px 8px; border-radius:4px; border:1px solid #a5f3fc;">
+                            <i class="far fa-calendar-alt" style="margin-right:4px;"></i> ${t.training_date ? t.training_date.substring(0, 10) : '-'}
+                        </span>
+                        <div style="display:flex; flex-direction:row; gap:8px; align-items:center;">
+                            <button onclick="window.completeTraining('${t.id || t.name}')" style="background:transparent; border:none; padding:4px; font-size:14px; color:#10b981; cursor:pointer; transition:color 0.2s;" onmouseover="this.style.color='#059669'" onmouseout="this.style.color='#10b981'" title="Mark as Done"><i class="fas fa-check-circle"></i></button>
+                            <button onclick="window.triggerEditTraining('${t.id || t.name}')" style="background:transparent; border:none; padding:4px; font-size:14px; color:#64748b; cursor:pointer; transition:color 0.2s;" onmouseover="this.style.color='#0f172a'" onmouseout="this.style.color='#64748b'" title="Edit Training"><i class="fas fa-pencil-alt"></i></button>
+                            <button onclick="window.deleteTraining('${t.id || t.name}')" style="background:transparent; border:none; padding:4px; font-size:14px; color:#ef4444; cursor:pointer; transition:color 0.2s;" onmouseover="this.style.color='#b91c1c'" onmouseout="this.style.color='#ef4444'" title="Delete Training"><i class="fas fa-trash"></i></button>
+                        </div>
                     </div>
                 </td>
             </tr>
@@ -1776,4 +1981,277 @@ window.promoteTrackingOrder = function(reportId) {
         
         if (window.showToast) window.showToast("Please complete the remaining details to promote this order.", "info");
     }, 300);
+};
+
+
+
+window.openSTRReport = async function() {
+    if (!window.salestrack || !window.salestrack.openListModal) {
+        alert("Modal functionality not ready.");
+        return;
+    }
+    
+    window.salestrack.openListModal("Sales Tracking Report (STR)", "<div style='padding:60px;text-align:center;color:#64748b;font-weight:600;'><i class='fas fa-spinner fa-spin' style='margin-right:10px;'></i> Generating Sales Tracking Report...</div>", "1500px"); // Kept as string for loading // Use larger modal size for KPI style
+
+    let [defectsRes, trainingsRes] = await Promise.all([
+        window.electron.invoke('supabase:query', {
+            table: 'ft_defect',
+            method: 'select',
+            params: {
+                columns: '*',
+                filters: { status: 'Open' },
+                order: { column: 'created_at', ascending: false },
+                limit: 1000
+            }
+        }),
+        window.electron.invoke('supabase:query', {
+            table: 'ft_operator_training',
+            method: 'select',
+            params: {
+                columns: '*',
+                order: { column: 'training_date', ascending: true },
+                limit: 1000
+            }
+        })
+    ]);
+
+    if (!defectsRes.ok || !trainingsRes.ok) {
+        window.salestrack.openListModal("Sales Tracking Report (STR)", "<div style='padding:40px;text-align:center;color:#ef4444;'>Failed to load report data from database.</div>", "1200px");
+        return;
+    }
+
+    let defects = defectsRes.data || [];
+    let trainings = trainingsRes.data || [];
+    
+    window._cachedDefectsData = defects;
+    window._cachedTrainingsData = trainings;
+    
+    // Filter by Company dropdown if active
+    const tCompanyEl = document.getElementById("ol-company");
+    const tSelectedCompany = tCompanyEl ? tCompanyEl.value : "";
+    let companyLabel = tSelectedCompany && tSelectedCompany !== "All" ? tSelectedCompany : "All Companies";
+
+    const headerTitle = `
+        <div id="str-report-header" style="display:flex; align-items:center; gap:15px; width:100%; justify-content:space-between; background: transparent; padding: 0;">
+            <span style="font-size:18px; font-weight:800; color:#0f172a;">Sales Tracking Report (STR)</span>
+            <div class="no-print" style="display:flex; align-items:center; gap:10px;">
+                <select onchange="if(document.getElementById('ol-company')) { document.getElementById('ol-company').value = this.value; if(window.loadOrdersList) window.loadOrdersList(); } window.openSTRReport();" 
+                    style="padding:6px 12px; border-radius:6px; border:1px solid #cbd5e1; font-size:13px; font-weight:600; color:#334155; outline:none; cursor:pointer; background:white;">
+                    <option value="All" ${companyLabel === 'All Companies' ? 'selected' : ''}>All Companies</option>
+                    <option value="Machinery Exchange" ${companyLabel === 'Machinery Exchange' ? 'selected' : ''}>Machinery Exchange</option>
+                    <option value="Sinopower" ${companyLabel === 'Sinopower Zimbabwe' || companyLabel === 'Sinopower' ? 'selected' : ''}>Sinopower Zimbabwe</option>
+                </select>
+                <button onclick="window.openSTRReport()" style="padding:6px 12px; background:#f1f5f9; color:#475569; border:1px solid #cbd5e1; border-radius:6px; cursor:pointer; font-size:13px; font-weight:600; display:flex; align-items:center; gap:6px; transition:0.2s;" onmouseover="this.style.background='#e2e8f0'" onmouseout="this.style.background='#f1f5f9'">
+                    <i class="fas fa-sync-alt"></i> Refresh
+                </button>
+                <button onclick="window.print()" style="padding:8px 16px; background:#0f172a; color:white; border:none; border-radius:8px; cursor:pointer; font-weight:700; font-size:12px; box-shadow:0 4px 6px -1px rgba(0,0,0,0.1); display:flex; align-items:center; gap:6px; transition:0.2s;" onmouseover="this.style.background='#1e293b'" onmouseout="this.style.background='#0f172a'">
+                    <i class="fas fa-print"></i> Print PDF
+                </button>
+            </div>
+        </div>
+    `;
+    
+    if (tSelectedCompany && tSelectedCompany.toLowerCase() !== "all" && tSelectedCompany.trim() !== "") {
+        if (window.olOrdersData) {
+            const validOrderIds = new Set(window.olOrdersData.map(o => o.report_id));
+            defects = defects.filter(d => validOrderIds.has(d.order_id));
+            trainings = trainings.filter(t => validOrderIds.has(t.order_id));
+        }
+    }
+
+    let totalDefects = defects.length;
+    let totalTrainings = trainings.length;
+    
+    // Count machines affected by defects
+    let defectMachines = new Set(defects.map(d => d.machine).filter(Boolean)).size;
+    // Count machines needing training
+    let trainingMachines = new Set(trainings.map(t => t.machine).filter(Boolean)).size;
+
+    let html = `
+    <div class="eff-report-container" style="padding:32px; font-family:'Inter', sans-serif; background:white;">
+        <style>
+            @media print {
+                @page { margin: 10mm; size: auto; }
+                body > *:not(#dash-generic-modal), #main-view-container, #view-orders-list, .view-page, .ai-order-row { display: none !important; }
+                #dash-generic-modal { display: block !important; position: absolute !important; top: 0 !important; left: 0 !important; width: 100% !important; background: white !important; backdrop-filter: none !important; height: auto !important; }
+                #dash-modal-inner { width: 100% !important; max-width: none !important; max-height: none !important; border-radius: 0 !important; box-shadow: none !important; margin: 0 !important; border: none !important; }
+                #dash-modal-inner > div:first-child { display: none !important; }
+                #dash-generic-body { padding: 0 !important; overflow: visible !important; }
+                .eff-report-container { padding: 0 !important; border: none !important; background: white !important; }
+                .eff-report-container table { border-collapse: collapse !important; border: 2px solid black !important; width: 100% !important; margin-top: 20px !important; page-break-inside: auto; }
+                .eff-report-container tr { page-break-inside: avoid; page-break-after: auto; }
+                .eff-report-container th, .eff-report-container td { border: 1px solid black !important; font-size: 10px !important; padding: 6px 8px !important; }
+                .eff-summary-grid { display: grid !important; grid-template-columns: repeat(4, 1fr) !important; gap: 0 !important; border: 2px solid black !important; background: white !important; margin-bottom: 20px !important; }
+                .eff-summary-grid > div { border: 1px solid black !important; padding: 10px !important; }
+                .eff-report-container div, .eff-report-container table { box-shadow: none !important; border-radius: 0 !important; }
+                .no-print { display: none !important; }
+            }
+            .str-action-group .str-actions { display: none; gap: 8px; }
+            .str-action-group:hover .str-actions { display: flex; }
+            .str-action-group:hover .str-dots { display: none; }
+        </style>
+        
+        
+        <div style="display:flex; justify-content:space-between; align-items:flex-end; margin-bottom:40px; border-bottom:1px solid #e2e8f0; padding-bottom:20px;">
+            <div style="display:flex; align-items:center; gap:20px;">
+                <img src="file:///C:/Users/Administrator/omnis/assets/images/omnis-logo.png" style="height:45px;" alt="Omnis Logo" onerror="this.src='../../assets/images/omnis-logo.png'">
+            </div>
+            <div style="text-align:right;">
+                <div style="font-size:24px; font-weight:900; color:#0f172a; letter-spacing:-0.03em;">Sales Tracking Report (STR)</div>
+                <div style="font-size:18px; color:#64748b; font-weight:500; margin-top:5px;">${companyLabel} &middot; ${new Date().toLocaleString()}</div>
+            </div>
+        </div>
+
+        <!-- KPI Summary Cards -->
+        <div class="eff-summary-grid" style="display:grid; grid-template-columns: repeat(4, 1fr); gap:1px; background:#e2e8f0; border:1px solid #e2e8f0; border-radius:12px; overflow:hidden; margin-bottom:40px; box-shadow:0 4px 12px rgba(0,0,0,0.05);">
+            <div style="background:white; padding:24px; text-align:center;">
+                <div style="font-size:12px; font-weight:800; color:white; background:#ef4444; padding:6px 12px; display:inline-block; border-radius:6px; margin-bottom:12px; text-transform:uppercase; letter-spacing:0.05em;">Open Defects</div>
+                <div style="font-size:32px; font-weight:900; color:#ef4444;">${totalDefects}</div>
+            </div>
+            <div style="background:white; padding:24px; text-align:center;">
+                <div style="font-size:12px; font-weight:800; color:white; background:#b91c1c; padding:6px 12px; display:inline-block; border-radius:6px; margin-bottom:12px; text-transform:uppercase; letter-spacing:0.05em;">Affected Machines</div>
+                <div style="font-size:32px; font-weight:900; color:#b91c1c;">${defectMachines}</div>
+            </div>
+            <div style="background:white; padding:24px; text-align:center;">
+                <div style="font-size:12px; font-weight:800; color:white; background:#0891b2; padding:6px 12px; display:inline-block; border-radius:6px; margin-bottom:12px; text-transform:uppercase; letter-spacing:0.05em;">Planned Trainings</div>
+                <div style="font-size:32px; font-weight:900; color:#0891b2;">${totalTrainings}</div>
+            </div>
+            <div style="background:white; padding:24px; text-align:center;">
+                <div style="font-size:12px; font-weight:800; color:white; background:#0e7490; padding:6px 12px; display:inline-block; border-radius:6px; margin-bottom:12px; text-transform:uppercase; letter-spacing:0.05em;">Trainee Machines</div>
+                <div style="font-size:32px; font-weight:900; color:#0e7490;">${trainingMachines}</div>
+            </div>
+        </div>
+
+        
+        <!-- STR Explanation -->
+        <div class="no-print" style="background:#f8fafc; border:1px solid #e2e8f0; border-left:4px solid #0891b2; border-radius:8px; padding:16px 20px; margin-bottom:40px; display:flex; gap:16px; align-items:flex-start;">
+            <i class="fa fa-info-circle" style="color:#0891b2; font-size:20px; margin-top:2px;"></i>
+            <div style="font-size:13px; color:#475569; line-height:1.6;">
+                <h4 style="margin:0 0 8px 0; color:#0f172a; font-size:14px; font-weight:700;">Sales Tracking Overview</h4>
+                <p style="margin:0 0 8px 0;">This report combines after-sales defect tracking and operator training into a single consolidated view:</p>
+                <ul style="margin:0; padding-left:20px;">
+                    <li style="margin-bottom:4px;"><strong>Active Defects:</strong> Logs of reported issues for machinery. Addressing these promptly maintains high customer satisfaction and equipment uptime.</li>
+                    <li style="margin-bottom:4px;"><strong>Planned Trainings:</strong> Scheduled operator inductions and machine familiarisation sessions. Completing these ensures safe and correct operation.</li>
+                    <li><strong>Action Menu:</strong> Hover over the <i class="fas fa-ellipsis-h" style="margin:0 4px;"></i> icon on any row to mark defects as resolved, edit details, or mark trainings as completed.</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- DEFECTS SECTION -->
+
+        <h3 style="margin:0 0 15px 0; color:#0f172a; font-size:18px; font-weight:800; letter-spacing:-0.5px;">
+            <i class="fas fa-exclamation-triangle" style="color:#ef4444; margin-right:8px;"></i> Active Defects
+        </h3>
+    `;
+
+    if (defects.length === 0) {
+        html += `<div style='padding:40px; text-align:center; color:#64748b; font-size:14px; font-style:italic; background:white; border:1px solid #e2e8f0; border-radius:12px; margin-bottom:40px;'>No active defects currently reported.</div>`;
+    } else {
+        html += `
+        <div style="background:white; border:1px solid #e2e8f0; border-radius:12px; overflow:hidden; margin-bottom:40px; box-shadow:0 4px 20px rgba(0,0,0,0.03);">
+            <table style="width:100%; border-collapse:separate; border-spacing:0; font-size:13px; text-align:left;">
+                <thead style="background:#f8fafc; border-bottom:2px solid #e2e8f0;">
+                    <tr>
+                        <th style="padding:8px 12px; font-weight:800; color:#475569; text-transform:uppercase; letter-spacing:0.05em; width:20%;">Customer</th>
+                        <th style="padding:8px 12px; font-weight:800; color:#475569; text-transform:uppercase; letter-spacing:0.05em; width:20%;">Machine</th>
+                        <th style="padding:8px 12px; font-weight:800; color:#475569; text-transform:uppercase; letter-spacing:0.05em; width:45%;">Defect Description</th>
+                        <th style="padding:8px 12px; font-weight:800; color:#475569; text-transform:uppercase; letter-spacing:0.05em; width:15%;">Date / Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+        `;
+        
+        for (let d of defects) {
+            let cust = (d.customer || d.order_id || 'Unknown Customer').replace(/"/g, '');
+            html += `
+                <tr style="border-bottom:1px solid #f1f5f9; transition:background 0.2s;" onmouseover="this.style.background='#f8fafc'" onmouseout="this.style.background='transparent'">
+                    <td style="padding:8px 12px; font-weight:700; color:#0f172a; vertical-align:middle;">${cust}</td>
+                    <td style="padding:8px 12px; color:#475569; font-weight:600; vertical-align:middle;">${d.machine || '-'}</td>
+                    <td style="padding:8px 12px; color:#ef4444; font-weight:500; vertical-align:middle; line-height:1.5;">${(d.description || '-').replace(/\n/g, '<br>')}</td>
+                    <td style="padding:8px 12px; vertical-align:middle;">
+                        <div style="display:flex; flex-direction:row; gap:8px; align-items:center;">
+                            <span style="font-size:11px; color:#991b1b; font-weight:700; white-space:nowrap; background:#fee2e2; padding:4px 8px; border-radius:4px;">
+                                <i class="far fa-calendar-alt" style="margin-right:4px;"></i> ${d.start_date ? d.start_date.substring(0, 10) : '-'}
+                            </span>
+                            <div class="no-print str-action-group" style="display:inline-flex; align-items:center; background:#f8fafc; border:1px solid #e2e8f0; border-radius:6px; padding:4px 8px; cursor:pointer; min-height:24px;">
+                                <div class="str-dots" style="color:#64748b; margin:0 auto;"><i class="fas fa-ellipsis-h"></i></div>
+                                <div class="str-actions">
+                                    <button onclick="window.resolveDefect('${d.name}')" style="background:transparent; border:none; padding:0; font-size:14px; color:#10b981; cursor:pointer; transition:color 0.2s;" onmouseover="this.style.color='#059669'" onmouseout="this.style.color='#10b981'" title="Resolve"><i class="fas fa-check-circle"></i></button>
+                                    <button onclick="window.triggerEditDefect('${encodeURIComponent(d.machine || '').replace(/'/g, "%27")}', '${encodeURIComponent(d.order_id || '').replace(/'/g, "%27")}', '${encodeURIComponent(d.customer || '').replace(/'/g, "%27")}')" style="background:transparent; border:none; padding:0; font-size:14px; color:#64748b; cursor:pointer; transition:color 0.2s;" onmouseover="this.style.color='#0f172a'" onmouseout="this.style.color='#64748b'" title="Edit"><i class="fas fa-pencil-alt"></i></button>
+                                </div>
+                            </div>
+                        </div>
+                    </td>
+                </tr>
+            `;
+        }
+        html += `</tbody></table></div>`;
+    }
+
+    html += `
+        <!-- TRAININGS SECTION -->
+        <h3 style="margin:0 0 15px 0; color:#0f172a; font-size:18px; font-weight:800; letter-spacing:-0.5px;">
+            <i class="fas fa-user-graduate" style="color:#0891b2; margin-right:8px;"></i> Planned Operator Trainings
+        </h3>
+    `;
+
+    if (trainings.length === 0) {
+        html += `<div style='padding:40px; text-align:center; color:#64748b; font-size:14px; font-style:italic; background:white; border:1px solid #e2e8f0; border-radius:12px;'>No operator trainings currently planned.</div>`;
+    } else {
+        html += `
+        <div style="background:white; border:1px solid #e2e8f0; border-radius:12px; overflow:hidden; box-shadow:0 4px 20px rgba(0,0,0,0.03);">
+            <table style="width:100%; border-collapse:separate; border-spacing:0; font-size:13px; text-align:left;">
+                <thead style="background:#f8fafc; border-bottom:2px solid #e2e8f0;">
+                    <tr>
+                        <th style="padding:8px 12px; font-weight:800; color:#475569; text-transform:uppercase; letter-spacing:0.05em; width:20%;">Customer</th>
+                        <th style="padding:8px 12px; font-weight:800; color:#475569; text-transform:uppercase; letter-spacing:0.05em; width:20%;">Machine</th>
+                        <th style="padding:8px 12px; font-weight:800; color:#475569; text-transform:uppercase; letter-spacing:0.05em; width:20%;">Location</th>
+                        <th style="padding:8px 12px; font-weight:800; color:#475569; text-transform:uppercase; letter-spacing:0.05em; width:15%;">Trainer</th>
+                        <th style="padding:8px 12px; font-weight:800; color:#475569; text-transform:uppercase; letter-spacing:0.05em; width:10%; text-align:center;">Operators</th>
+                        <th style="padding:8px 12px; font-weight:800; color:#475569; text-transform:uppercase; letter-spacing:0.05em; width:15%;">Date / Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+        `;
+        
+        for (let t of trainings) {
+            let customer = (t.customer || t.order_id || 'Unknown').replace(/"/g, '');
+            html += `
+                <tr style="border-bottom:1px solid #f1f5f9; transition:background 0.2s;" onmouseover="this.style.background='#f8fafc'" onmouseout="this.style.background='transparent'">
+                    <td style="padding:8px 12px; font-weight:700; color:#0f172a; vertical-align:middle;">${customer}</td>
+                    <td style="padding:8px 12px; font-weight:600; color:#475569; vertical-align:middle;">${t.machine || '-'}</td>
+                    <td style="padding:8px 12px; color:#64748b; vertical-align:middle;">
+                        <i class="fas fa-map-marker-alt" style="color:#ef4444; margin-right:4px;"></i> ${t.location || '-'}
+                    </td>
+                    <td style="padding:8px 12px; color:#0f172a; font-weight:600; vertical-align:middle;">${t.trainer_name || '-'}</td>
+                    <td style="padding:8px 12px; color:#0f172a; font-weight:800; text-align:center; vertical-align:middle;">${t.number_of_operators || 1}</td>
+                    <td style="padding:8px 12px; vertical-align:middle;">
+                        <div style="display:flex; flex-direction:row; gap:8px; align-items:center;">
+                            <span style="font-size:11px; color:#0891b2; font-weight:700; white-space:nowrap; background:#ecfeff; padding:4px 8px; border-radius:4px;">
+                                <i class="far fa-calendar-alt" style="margin-right:4px;"></i> ${t.training_date ? t.training_date.substring(0, 10) : '-'}
+                            </span>
+                            <div class="no-print str-action-group" style="display:inline-flex; align-items:center; background:#f8fafc; border:1px solid #e2e8f0; border-radius:6px; padding:4px 8px; cursor:pointer; min-height:24px;">
+                                <div class="str-dots" style="color:#64748b; margin:0 auto;"><i class="fas fa-ellipsis-h"></i></div>
+                                <div class="str-actions">
+                                    <button onclick="window.completeTraining('${t.id || t.name}')" style="background:transparent; border:none; padding:0; font-size:14px; color:#10b981; cursor:pointer; transition:color 0.2s;" onmouseover="this.style.color='#059669'" onmouseout="this.style.color='#10b981'" title="Mark as Done"><i class="fas fa-check-circle"></i></button>
+                                    <button onclick="window.triggerEditTraining('${t.id || t.name}')" style="background:transparent; border:none; padding:0; font-size:14px; color:#64748b; cursor:pointer; transition:color 0.2s;" onmouseover="this.style.color='#0f172a'" onmouseout="this.style.color='#64748b'" title="Edit Training"><i class="fas fa-pencil-alt"></i></button>
+                                    <button onclick="window.deleteTraining('${t.id || t.name}')" style="background:transparent; border:none; padding:0; font-size:14px; color:#ef4444; cursor:pointer; transition:color 0.2s;" onmouseover="this.style.color='#b91c1c'" onmouseout="this.style.color='#ef4444'" title="Delete Training"><i class="fas fa-trash"></i></button>
+                                </div>
+                            </div>
+                        </div>
+                    </td>
+                </tr>
+            `;
+        }
+        html += `</tbody></table></div>`;
+    }
+
+    html += `
+        <div class="no-print" style="margin-top:24px; font-size:11px; color:#94a3b8; text-align:center;">
+            Generated via OAI &middot; Omnis SalesTrack &middot; ${new Date().toLocaleString()}
+        </div>
+    </div>`;
+    
+    // Pass 1500px to match efficiency report width
+    window.salestrack.openListModal(headerTitle, html, "1500px");
 };
