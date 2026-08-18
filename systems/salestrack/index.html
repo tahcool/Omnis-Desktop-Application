@@ -115,7 +115,9 @@
       width: 100vw !important;
       margin: 0 !important;
       padding: 0 !important;
-      background: var(--page-bg);
+      background-color: var(--page-bg);
+      background-image: radial-gradient(#cbd5e1 1.2px, transparent 1.2px);
+      background-size: 24px 24px;
       display: block !important;
     }
 
@@ -537,6 +539,13 @@
 
     .gs-input, .gs-select {
       transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    /* Electron Input Responsiveness Fix */
+    input, textarea, select, [contenteditable], .ql-editor {
+      -webkit-user-select: text !important;
+      user-select: text !important;
+      -webkit-app-region: no-drag !important;
     }
 
     @keyframes modal-slide-up {
@@ -2622,9 +2631,10 @@
       display: grid;
       grid-template-columns: 200px 130px 50px 110px 2.5fr 1.2fr 120px 120px 120px 80px 80px;
       gap: 12px;
-      padding: 10px 14px;
-      background: var(--accent-maroon);
-      border-radius: 8px;
+      padding: 16px 20px;
+      background: linear-gradient(135deg, #4c110d 0%, #8b2219 55%, #6b1a14 100%);
+      border-radius: 16px;
+      box-shadow: 0 4px 12px rgba(139, 34, 25, 0.15);
       font-weight: 700;
       font-size: 11px;
       color: #ffffff;
@@ -2666,21 +2676,22 @@
       display: grid;
       grid-template-columns: 200px 130px 50px 110px 2.5fr 1.2fr 120px 120px 120px 80px 80px;
       gap: 8px;
-      padding: 8px 12px;
+      padding: 12px 14px;
       background: #fff;
-      border-radius: 12px;
-      border: 1px solid #cbd5e1;
+      border-radius: 16px;
+      border: 1px solid #e2e8f0;
       align-items: center;
-      transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+      transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
       cursor: pointer;
       position: relative;
+      box-shadow: 0 4px 15px -3px rgba(0,0,0,0.02);
     }
 
     .ai-order-row:hover {
       border-color: #cbd5e1;
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
-      background-color: #fbfcfe;
-      transform: translateY(-1px);
+      box-shadow: 0 12px 24px -4px rgba(0, 0, 0, 0.08);
+      background-color: #fff;
+      transform: translateY(-2px);
     }
 
     .ai-order-row.risk-high {
@@ -4568,13 +4579,13 @@
     }
 
     .mxg-kpi-card {
-      background: linear-gradient(135deg, rgba(139, 34, 25, 0.08) 0%, rgba(139, 34, 25, 0.02) 100%);
+      background: #fff;
       backdrop-filter: blur(12px);
       -webkit-backdrop-filter: blur(12px);
-      border: 1px solid rgba(139, 34, 25, 0.15);
-      border-radius: 18px;
-      padding: 16px 20px;
-      box-shadow: 0 4px 16px rgba(139, 34, 25, 0.05), inset 0 1px 0 rgba(255, 255, 255, 0.6);
+      border: 1px solid #e2e8f0;
+      border-radius: 20px;
+      padding: 24px 28px;
+      box-shadow: 0 10px 30px -5px rgba(0,0,0,0.06), 0 4px 6px -4px rgba(0,0,0,0.02);
       transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);
       position: relative;
       overflow: hidden;
@@ -5632,6 +5643,48 @@
       background: #dcfce7;
       color: #16a34a;
     }
+
+    /* Fleetrack Report Cards Style for Shortcuts */
+    .rpt-card {
+      cursor: pointer;
+      border: 1px solid rgba(255, 255, 255, 0.6);
+      border-radius: 16px;
+      padding: 16px 14px;
+      display: flex;
+      flex-direction: column;
+      position: relative;
+      overflow: hidden;
+      transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+      align-items: center;
+      justify-content: center;
+      aspect-ratio: 1 / 1;
+      text-align: center;
+      gap: 6px;
+    }
+    .rpt-card::before {
+      content: ''; position: absolute; top:0; left:0; right:0; height: 100%;
+      background: linear-gradient(180deg, rgba(255,255,255,0.4) 0%, rgba(255,255,255,0) 100%);
+      pointer-events: none;
+    }
+    .rpt-card:hover { transform: translateY(-6px); }
+    
+    .rpt-card-red { background: linear-gradient(135deg, #ffffff 0%, #fee2e2 100%); box-shadow: 0 12px 24px -4px rgba(239,68,68,0.2); border-color: #fca5a5; }
+    .rpt-card-red:hover { box-shadow: 0 20px 40px -5px rgba(239,68,68,0.4); border-color: #ef4444; }
+    
+    .rpt-card-amber { background: linear-gradient(135deg, #ffffff 0%, #fef3c7 100%); box-shadow: 0 12px 24px -4px rgba(245,158,11,0.2); border-color: #fcd34d; }
+    .rpt-card-amber:hover { box-shadow: 0 20px 40px -5px rgba(245,158,11,0.4); border-color: #f59e0b; }
+    
+    .rpt-card-blue { background: linear-gradient(135deg, #ffffff 0%, #dbeafe 100%); box-shadow: 0 12px 24px -4px rgba(59,130,246,0.2); border-color: #93c5fd; }
+    .rpt-card-blue:hover { box-shadow: 0 20px 40px -5px rgba(59,130,246,0.4); border-color: #3b82f6; }
+    
+    .rpt-card-purple { background: linear-gradient(135deg, #ffffff 0%, #f3e8ff 100%); box-shadow: 0 12px 24px -4px rgba(168,85,247,0.2); border-color: #d8b4fe; }
+    .rpt-card-purple:hover { box-shadow: 0 20px 40px -5px rgba(168,85,247,0.4); border-color: #a855f7; }
+    
+    .rpt-card-green { background: linear-gradient(135deg, #ffffff 0%, #d1fae5 100%); box-shadow: 0 12px 24px -4px rgba(16,185,129,0.2); border-color: #6ee7b7; }
+    .rpt-card-green:hover { box-shadow: 0 20px 40px -5px rgba(16,185,129,0.4); border-color: #10b981; }
+    
+    .rpt-card-sky { background: linear-gradient(135deg, #ffffff 0%, #e0f2fe 100%); box-shadow: 0 12px 24px -4px rgba(14,165,233,0.2); border-color: #7dd3fc; }
+    .rpt-card-sky:hover { box-shadow: 0 20px 40px -5px rgba(14,165,233,0.4); border-color: #0ea5e9; }
   </style>
   <style>
     /* REFRESHED TABLE STYLES (Appended) */
@@ -6045,7 +6098,7 @@
     <!-- REMOVED GLASS CLASS HERE -->
     <!-- REMOVED GLASS CLASS HERE -->
     <main class="main"
-      style="margin-top: 0; height: 100vh; overflow: hidden; display: flex; flex-direction: column; flex: 1; min-width: 0; position: relative; background: #f8fafc;">
+      style="margin-top: 0; height: 100vh; overflow: hidden; display: flex; flex-direction: column; flex: 1; min-width: 0; position: relative; background: transparent;">
       <!-- Topbar removed as per user request -->
 
       <!-- TAB NAVIGATION CONTAINER (shown only for GSM Report) -->
@@ -6363,7 +6416,7 @@
           <div style="display:flex; align-items:stretch; gap:16px; padding:20px 40px 0;">
 
             <!-- Profile / Greeting block -->
-            <div style="background:linear-gradient(135deg,#4c110d 0%,#8b2219 55%,#6b1a14 100%); border-radius:18px; padding:24px 30px; display:flex; align-items:center; gap:24px; min-width:400px; flex-shrink:0; position:relative; overflow:hidden; box-shadow:0 4px 20px rgba(139,34,25,0.25);">
+            <div style="background:linear-gradient(135deg,#4c110d 0%,#8b2219 55%,#6b1a14 100%); border-radius:20px; padding:28px 32px; display:flex; align-items:center; gap:24px; min-width:400px; flex-shrink:0; position:relative; overflow:hidden; box-shadow: 0 10px 40px -10px rgba(139,34,25,0.6), inset 0 1px 0 rgba(255,255,255,0.15); border: 1px solid rgba(255,255,255,0.08);">
               <div id="dash-app-version-pill" style="position:absolute;top:16px;right:16px;padding:3px 8px;background:rgba(255,255,255,0.12);border:1px solid rgba(255,255,255,0.18);border-radius:6px;font-size:9px;font-weight:800;color:rgba(255,255,255,0.8);text-transform:uppercase;letter-spacing:0.06em;z-index:2;">v2.2.15</div>
               <div style="position:absolute;top:-20px;right:-20px;width:100px;height:100px;border-radius:50%;background:rgba(255,255,255,0.06);pointer-events:none;"></div>
               <div style="position:absolute;bottom:-10px;right:60px;width:60px;height:60px;border-radius:50%;background:rgba(255,255,255,0.04);pointer-events:none;"></div>
@@ -6371,7 +6424,7 @@
               <div style="position:relative;flex-shrink:0;">
                 <div style="position:absolute;inset:-3px;border-radius:50%;background:linear-gradient(135deg,rgba(255,255,255,0.4),rgba(255,255,255,0.1));z-index:0;"></div>
                 <div id="profile-avatar-wrap" onclick="document.getElementById('profile-photo-input').click()"
-                     style="position:relative;width:56px;height:56px;border-radius:50%;cursor:pointer;border:3px solid rgba(255,255,255,0.85);overflow:hidden;z-index:1;box-shadow:0 6px 18px rgba(0,0,0,0.35);"
+                     style="position:relative;width:56px;height:56px;border-radius:50%;cursor:pointer;border:3px solid rgba(255,255,255,0.9);overflow:hidden;z-index:1;box-shadow:0 10px 25px -5px rgba(0,0,0,0.6);"
                      title="Click to change profile photo">
                   <div id="profile-avatar-letter" style="width:100%;height:100%;background:linear-gradient(135deg,#6b1a14,#2d0906);display:flex;align-items:center;justify-content:center;font-size:22px;font-weight:800;color:#fff;">A</div>
                   <img id="profile-avatar-img" src="" alt="Profile" style="position:absolute;top:0;left:0;width:100%;height:100%;object-fit:cover;display:none;border-radius:50%;">
@@ -6387,19 +6440,11 @@
               <div style="min-width:0;position:relative;z-index:1;padding-right:70px;">
                 <h2 id="welcome-greeting" style="font-size:16px;font-weight:900;color:#fff;margin:0 0 6px;letter-spacing:-0.02em;line-height:1.3;">Good afternoon, Administrator!</h2>
                 <p id="welcome-date-subtitle" style="font-size:12px;color:rgba(255,255,255,0.75);margin:0 0 14px;font-weight:500;">Today is Wednesday, May 27.</p>
-                <div style="display:flex;gap:10px;">
-                  <button onclick="window.salestrack.openEfficiencyReportModalV5()" style="padding:6px 14px;background:rgba(255,255,255,0.12);border:1px solid rgba(255,255,255,0.2);border-radius:8px;font-size:11px;font-weight:800;color:#fff;cursor:pointer;display:flex;align-items:center;gap:6px;transition:background 0.15s;" onmouseover="this.style.background='rgba(255,255,255,0.22)'" onmouseout="this.style.background='rgba(255,255,255,0.12)'">
-                    <i class="fas fa-bolt" style="font-size:10px;"></i> Efficiency
-                  </button>
-                  <button onclick="window.salestrack.openMERReportModal()" style="padding:6px 14px;background:rgba(255,255,255,0.12);border:1px solid rgba(255,255,255,0.2);border-radius:8px;font-size:11px;font-weight:800;color:#fff;cursor:pointer;display:flex;align-items:center;gap:6px;transition:background 0.15s;" onmouseover="this.style.background='rgba(255,255,255,0.22)'" onmouseout="this.style.background='rgba(255,255,255,0.12)'">
-                    <i class="fas fa-chart-line" style="font-size:10px;"></i> Month End
-                  </button>
-                </div>
               </div>
             </div>
 
             <!-- SINOPOWER COMBINED -->
-            <div style="background:#fff;border:1px solid #e2e8f0;border-top:3px solid #8b2219;border-radius:14px;padding:16px 20px;box-shadow:0 1px 4px rgba(0,0,0,0.05);flex:1;min-width:0;">
+            <div style="background:#fff;border:1px solid #e2e8f0;border-top:4px solid #8b2219;border-radius:20px;padding:22px 24px;box-shadow:0 10px 30px -5px rgba(0,0,0,0.06), 0 4px 6px -4px rgba(0,0,0,0.02);flex:1;min-width:0;">
               <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;">
                 <div>
                   <div style="font-size:11px;font-weight:900;letter-spacing:0.1em;text-transform:uppercase;color:#8b2219;">Sinopower</div>
@@ -6446,7 +6491,7 @@
             </div>
 
             <!-- MACHINERY EXCHANGE COMBINED -->
-            <div style="background:#fff;border:1px solid #e2e8f0;border-top:3px solid #1e3a5f;border-radius:14px;padding:16px 20px;box-shadow:0 1px 4px rgba(0,0,0,0.05);flex:1;min-width:0;">
+            <div style="background:#fff;border:1px solid #e2e8f0;border-top:4px solid #1e3a5f;border-radius:20px;padding:22px 24px;box-shadow:0 10px 30px -5px rgba(0,0,0,0.06), 0 4px 6px -4px rgba(0,0,0,0.02);flex:1;min-width:0;">
               <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;">
                 <div>
                   <div style="font-size:11px;font-weight:900;letter-spacing:0.1em;text-transform:uppercase;color:#1e3a5f;">Machinery Exchange</div>
@@ -6494,54 +6539,125 @@
 
           </div><!-- /top header -->
 
-          <!-- QUICK ACCESS BAR (full width) -->
-          <div style="padding:0 40px;margin-bottom:0;">
-            <div style="background:#fff;border:1px solid #e2e8f0;border-radius:16px;padding:14px 20px;box-shadow:0 2px 8px rgba(0,0,0,0.04);display:flex;align-items:center;gap:12px;">
-              <div style="display:flex;align-items:center;gap:8px;flex-shrink:0;padding-right:14px;border-right:1px solid #f1f5f9;">
-                <span style="font-size:18px;font-weight:900;letter-spacing:-0.02em;color:#0f172a;white-space:nowrap;padding:0 4px;text-transform:uppercase;">Shortcuts</span>
+          <!-- SHORTCUTS CARDS (FLEETRACK STYLE) -->
+          <div style="padding:0 40px; margin-top:32px; margin-bottom:24px;">
+            <div style="display:flex; align-items:center; gap:8px; margin-bottom:16px;">
+              <span style="font-size:18px;font-weight:900;letter-spacing:-0.02em;color:#0f172a;text-transform:uppercase;">Shortcuts</span>
+            </div>
+            <div style="display:grid; grid-auto-flow:column; grid-auto-columns:150px; gap:16px; justify-content:flex-start; overflow-x:auto; padding-top:12px; padding-bottom:56px; padding-left:20px; padding-right:20px; margin-left:-20px; margin-right:-20px; scrollbar-width:thin;">
+              
+              <!-- 1 -->
+              <div onclick="switchToView('view-quotations-list')" class="rpt-card rpt-card-red">
+                <div style="font-size:16px; width:32px; height:32px; display:flex; align-items:center; justify-content:center; border-radius:12px; background:rgba(0,0,0,0.04); box-shadow:inset 0 2px 4px rgba(255,255,255,0.5);">
+                  <i class="fas fa-file-alt" style="color:#334155;"></i>
+                </div>
+                <div style="font-weight:700;font-size:13px;color:#0f172a;">Quotations</div>
+                <div style="font-size:10px;color:#64748b;line-height:1.2;">Create and manage sales quotes.</div>
+                <div style="margin-top:2px;font-size:9px;font-weight:700;color:#ef4444;text-transform:uppercase;letter-spacing:0.5px;">QUOTE</div>
               </div>
-              <div style="display:flex;flex-wrap:nowrap;gap:8px;align-items:center;flex:1;justify-content:space-between;">
-                <button onclick="switchToView('view-quotations-list')" style="background:white; color:#334155; border:1px solid #e2e8f0; border-radius:10px; padding:0 24px; height:46px; font-size:13px; font-weight:700; cursor:pointer; display:inline-flex; align-items:center; justify-content:center; gap:10px; transition:all 0.2s; box-shadow:0 2px 4px rgba(0,0,0,0.02); white-space:nowrap; flex:1;" onmouseover="this.style.background='#f8fafc'; this.style.borderColor='#cbd5e1'; this.style.boxShadow='0 6px 16px rgba(0,0,0,0.06)'; this.style.transform='translateY(-2px)';" onmouseout="this.style.background='white'; this.style.borderColor='#e2e8f0'; this.style.boxShadow='0 2px 4px rgba(0,0,0,0.02)'; this.style.transform='none';">
-                  <i class="fas fa-file-alt" style="color:#64748b; font-size:14px;"></i>
-                  <span>Quotations</span>
-                </button>
-                <button onclick="switchToView('view-orders-list')" style="background:white; color:#334155; border:1px solid #e2e8f0; border-radius:10px; padding:0 24px; height:46px; font-size:13px; font-weight:700; cursor:pointer; display:inline-flex; align-items:center; justify-content:center; gap:10px; transition:all 0.2s; box-shadow:0 2px 4px rgba(0,0,0,0.02); white-space:nowrap; flex:1;" onmouseover="this.style.background='#f8fafc'; this.style.borderColor='#cbd5e1'; this.style.boxShadow='0 6px 16px rgba(0,0,0,0.06)'; this.style.transform='translateY(-2px)';" onmouseout="this.style.background='white'; this.style.borderColor='#e2e8f0'; this.style.boxShadow='0 2px 4px rgba(0,0,0,0.02)'; this.style.transform='none';">
-                  <i class="fas fa-truck" style="color:#64748b; font-size:14px;"></i>
-                  <span>Orders</span>
-                </button>
-                <button onclick="switchToView('view-customers-list')" style="background:white; color:#334155; border:1px solid #e2e8f0; border-radius:10px; padding:0 24px; height:46px; font-size:13px; font-weight:700; cursor:pointer; display:inline-flex; align-items:center; justify-content:center; gap:10px; transition:all 0.2s; box-shadow:0 2px 4px rgba(0,0,0,0.02); white-space:nowrap; flex:1;" onmouseover="this.style.background='#f8fafc'; this.style.borderColor='#cbd5e1'; this.style.boxShadow='0 6px 16px rgba(0,0,0,0.06)'; this.style.transform='translateY(-2px)';" onmouseout="this.style.background='white'; this.style.borderColor='#e2e8f0'; this.style.boxShadow='0 2px 4px rgba(0,0,0,0.02)'; this.style.transform='none';">
-                  <i class="fas fa-users" style="color:#64748b; font-size:14px;"></i>
-                  <span>Customers</span>
-                </button>
-                <button onclick="switchToView('view-tenders')" style="background:white; color:#334155; border:1px solid #e2e8f0; border-radius:10px; padding:0 24px; height:46px; font-size:13px; font-weight:700; cursor:pointer; display:inline-flex; align-items:center; justify-content:center; gap:10px; transition:all 0.2s; box-shadow:0 2px 4px rgba(0,0,0,0.02); white-space:nowrap; flex:1;" onmouseover="this.style.background='#f8fafc'; this.style.borderColor='#cbd5e1'; this.style.boxShadow='0 6px 16px rgba(0,0,0,0.06)'; this.style.transform='translateY(-2px)';" onmouseout="this.style.background='white'; this.style.borderColor='#e2e8f0'; this.style.boxShadow='0 2px 4px rgba(0,0,0,0.02)'; this.style.transform='none';">
-                  <i class="fas fa-project-diagram" style="color:#64748b; font-size:14px;"></i>
-                  <span>Tenders</span>
-                </button>
-                <button onclick="switchToView('view-ce-list')" style="background:white; color:#334155; border:1px solid #e2e8f0; border-radius:10px; padding:0 24px; height:46px; font-size:13px; font-weight:700; cursor:pointer; display:inline-flex; align-items:center; justify-content:center; gap:10px; transition:all 0.2s; box-shadow:0 2px 4px rgba(0,0,0,0.02); white-space:nowrap; flex:1;" onmouseover="this.style.background='#f8fafc'; this.style.borderColor='#cbd5e1'; this.style.boxShadow='0 6px 16px rgba(0,0,0,0.06)'; this.style.transform='translateY(-2px)';" onmouseout="this.style.background='white'; this.style.borderColor='#e2e8f0'; this.style.boxShadow='0 2px 4px rgba(0,0,0,0.02)'; this.style.transform='none';">
-                  <i class="fas fa-clipboard-check" style="color:#64748b; font-size:14px;"></i>
-                  <span>CE Reports</span>
-                </button>
-                <button onclick="switchToView('view-marketing')" style="background:white; color:#334155; border:1px solid #e2e8f0; border-radius:10px; padding:0 24px; height:46px; font-size:13px; font-weight:700; cursor:pointer; display:inline-flex; align-items:center; justify-content:center; gap:10px; transition:all 0.2s; box-shadow:0 2px 4px rgba(0,0,0,0.02); white-space:nowrap; flex:1;" onmouseover="this.style.background='#f8fafc'; this.style.borderColor='#cbd5e1'; this.style.boxShadow='0 6px 16px rgba(0,0,0,0.06)'; this.style.transform='translateY(-2px)';" onmouseout="this.style.background='white'; this.style.borderColor='#e2e8f0'; this.style.boxShadow='0 2px 4px rgba(0,0,0,0.02)'; this.style.transform='none';">
-                  <i class="fas fa-bullhorn" style="color:#64748b; font-size:14px;"></i>
-                  <span>Marketing</span>
-                </button>
-                <button onclick="window.salestrack.openEfficiencyReportModalV5()" style="background:white; color:#334155; border:1px solid #e2e8f0; border-radius:10px; padding:0 24px; height:46px; font-size:13px; font-weight:700; cursor:pointer; display:inline-flex; align-items:center; justify-content:center; gap:10px; transition:all 0.2s; box-shadow:0 2px 4px rgba(0,0,0,0.02); white-space:nowrap; flex:1;" onmouseover="this.style.background='#f8fafc'; this.style.borderColor='#cbd5e1'; this.style.boxShadow='0 6px 16px rgba(0,0,0,0.06)'; this.style.transform='translateY(-2px)';" onmouseout="this.style.background='white'; this.style.borderColor='#e2e8f0'; this.style.boxShadow='0 2px 4px rgba(0,0,0,0.02)'; this.style.transform='none';">
-                  <i class="fas fa-bolt" style="color:#64748b; font-size:14px;"></i>
-                  <span>Efficiency</span>
-                </button>
-                <button onclick="window.salestrack.openMERReportModal()" style="background:white; color:#334155; border:1px solid #e2e8f0; border-radius:10px; padding:0 24px; height:46px; font-size:13px; font-weight:700; cursor:pointer; display:inline-flex; align-items:center; justify-content:center; gap:10px; transition:all 0.2s; box-shadow:0 2px 4px rgba(0,0,0,0.02); white-space:nowrap; flex:1;" onmouseover="this.style.background='#f8fafc'; this.style.borderColor='#cbd5e1'; this.style.boxShadow='0 6px 16px rgba(0,0,0,0.06)'; this.style.transform='translateY(-2px)';" onmouseout="this.style.background='white'; this.style.borderColor='#e2e8f0'; this.style.boxShadow='0 2px 4px rgba(0,0,0,0.02)'; this.style.transform='none';">
-                  <i class="fas fa-chart-line" style="color:#64748b; font-size:14px;"></i>
-                  <span>Month End</span>
-                </button>
-                <button onclick="switchToView('view-training')" style="background:white; color:#334155; border:1px solid #e2e8f0; border-radius:10px; padding:0 24px; height:46px; font-size:13px; font-weight:700; cursor:pointer; display:inline-flex; align-items:center; justify-content:center; gap:10px; transition:all 0.2s; box-shadow:0 2px 4px rgba(0,0,0,0.02); white-space:nowrap; flex:1;" onmouseover="this.style.background='#f8fafc'; this.style.borderColor='#cbd5e1'; this.style.boxShadow='0 6px 16px rgba(0,0,0,0.06)'; this.style.transform='translateY(-2px)';" onmouseout="this.style.background='white'; this.style.borderColor='#e2e8f0'; this.style.boxShadow='0 2px 4px rgba(0,0,0,0.02)'; this.style.transform='none';">
-                  <i class="fas fa-graduation-cap" style="color:#64748b; font-size:14px;"></i>
-                  <span>Training</span>
-                </button>
-                <button onclick="switchToView('view-training-library'); window.renderTrainingLibrary && window.renderTrainingLibrary();" style="background:white; color:#334155; border:1px solid #e2e8f0; border-radius:10px; padding:0 24px; height:46px; font-size:13px; font-weight:700; cursor:pointer; display:inline-flex; align-items:center; justify-content:center; gap:10px; transition:all 0.2s; box-shadow:0 2px 4px rgba(0,0,0,0.02); white-space:nowrap; flex:1;" onmouseover="this.style.background='#f8fafc'; this.style.borderColor='#cbd5e1'; this.style.boxShadow='0 6px 16px rgba(0,0,0,0.06)'; this.style.transform='translateY(-2px)';" onmouseout="this.style.background='white'; this.style.borderColor='#e2e8f0'; this.style.boxShadow='0 2px 4px rgba(0,0,0,0.02)'; this.style.transform='none';">
-                  <i class="fas fa-book-open" style="color:#64748b; font-size:14px;"></i>
-                  <span>Course Library</span>
-                </button>
+              
+              <!-- 2 -->
+              <div onclick="switchToView('view-orders-list')" class="rpt-card rpt-card-amber">
+                <div style="font-size:16px; width:32px; height:32px; display:flex; align-items:center; justify-content:center; border-radius:12px; background:rgba(0,0,0,0.04); box-shadow:inset 0 2px 4px rgba(255,255,255,0.5);">
+                  <i class="fas fa-truck" style="color:#334155;"></i>
+                </div>
+                <div style="font-weight:700;font-size:13px;color:#0f172a;">Orders</div>
+                <div style="font-size:10px;color:#64748b;line-height:1.2;">Manage active and historical orders.</div>
+                <div style="margin-top:2px;font-size:9px;font-weight:700;color:#f59e0b;text-transform:uppercase;letter-spacing:0.5px;">ORDER</div>
               </div>
+              
+              <!-- 3 -->
+              <div onclick="switchToView('view-customers-list')" class="rpt-card rpt-card-blue">
+                <div style="font-size:16px; width:32px; height:32px; display:flex; align-items:center; justify-content:center; border-radius:12px; background:rgba(0,0,0,0.04); box-shadow:inset 0 2px 4px rgba(255,255,255,0.5);">
+                  <i class="fas fa-users" style="color:#334155;"></i>
+                </div>
+                <div style="font-weight:700;font-size:13px;color:#0f172a;">Customers</div>
+                <div style="font-size:10px;color:#64748b;line-height:1.2;">View and edit customer database.</div>
+                <div style="margin-top:2px;font-size:9px;font-weight:700;color:#3b82f6;text-transform:uppercase;letter-spacing:0.5px;">CUST</div>
+              </div>
+
+
+              <!-- 5 -->
+              <div onclick="switchToView('view-ce-list')" class="rpt-card rpt-card-green">
+                <div style="font-size:16px; width:32px; height:32px; display:flex; align-items:center; justify-content:center; border-radius:12px; background:rgba(0,0,0,0.04); box-shadow:inset 0 2px 4px rgba(255,255,255,0.5);">
+                  <i class="fas fa-clipboard-check" style="color:#334155;"></i>
+                </div>
+                <div style="font-weight:700;font-size:13px;color:#0f172a;">CE Reports</div>
+                <div style="font-size:10px;color:#64748b;line-height:1.2;">View customer engagement reports.</div>
+                <div style="margin-top:2px;font-size:9px;font-weight:700;color:#10b981;text-transform:uppercase;letter-spacing:0.5px;">CER</div>
+              </div>
+
+              <!-- 6 -->
+              <div onclick="switchToView('view-marketing')" class="rpt-card rpt-card-sky">
+                <div style="font-size:16px; width:32px; height:32px; display:flex; align-items:center; justify-content:center; border-radius:12px; background:rgba(0,0,0,0.04); box-shadow:inset 0 2px 4px rgba(255,255,255,0.5);">
+                  <i class="fas fa-bullhorn" style="color:#334155;"></i>
+                </div>
+                <div style="font-weight:700;font-size:13px;color:#0f172a;">Marketing</div>
+                <div style="font-size:10px;color:#64748b;line-height:1.2;">Manage marketing campaigns and leads.</div>
+                <div style="margin-top:2px;font-size:9px;font-weight:700;color:#0ea5e9;text-transform:uppercase;letter-spacing:0.5px;">MKT</div>
+              </div>
+
+              <!-- 7 -->
+              <div onclick="window.salestrack.openEfficiencyReportModalV5()" class="rpt-card rpt-card-amber">
+                <div style="font-size:16px; width:32px; height:32px; display:flex; align-items:center; justify-content:center; border-radius:12px; background:rgba(0,0,0,0.04); box-shadow:inset 0 2px 4px rgba(255,255,255,0.5);">
+                  <i class="fas fa-bolt" style="color:#334155;"></i>
+                </div>
+                <div style="font-weight:700;font-size:13px;color:#0f172a;">Efficiency</div>
+                <div style="font-size:10px;color:#64748b;line-height:1.2;">Track team and individual efficiency.</div>
+                <div style="margin-top:2px;font-size:9px;font-weight:700;color:#f59e0b;text-transform:uppercase;letter-spacing:0.5px;">EFF</div>
+              </div>
+
+              <!-- 8 -->
+              <div onclick="window.salestrack.openMERReportModal()" class="rpt-card rpt-card-purple">
+                <div style="font-size:16px; width:32px; height:32px; display:flex; align-items:center; justify-content:center; border-radius:12px; background:rgba(0,0,0,0.04); box-shadow:inset 0 2px 4px rgba(255,255,255,0.5);">
+                  <i class="fas fa-chart-line" style="color:#334155;"></i>
+                </div>
+                <div style="font-weight:700;font-size:13px;color:#0f172a;">Month End</div>
+                <div style="font-size:10px;color:#64748b;line-height:1.2;">Generate and view month-end reports.</div>
+                <div style="margin-top:2px;font-size:9px;font-weight:700;color:#a855f7;text-transform:uppercase;letter-spacing:0.5px;">MER</div>
+              </div>
+
+              <!-- 9 -->
+              <div onclick="switchToView('view-training')" class="rpt-card rpt-card-red">
+                <div style="font-size:16px; width:32px; height:32px; display:flex; align-items:center; justify-content:center; border-radius:12px; background:rgba(0,0,0,0.04); box-shadow:inset 0 2px 4px rgba(255,255,255,0.5);">
+                  <i class="fas fa-graduation-cap" style="color:#334155;"></i>
+                </div>
+                <div style="font-weight:700;font-size:13px;color:#0f172a;">Training</div>
+                <div style="font-size:10px;color:#64748b;line-height:1.2;">Track staff training progress and compliance.</div>
+                <div style="margin-top:2px;font-size:9px;font-weight:700;color:#ef4444;text-transform:uppercase;letter-spacing:0.5px;">TRN</div>
+              </div>
+
+              <!-- 10 -->
+              <div onclick="switchToView('view-training-library'); window.renderTrainingLibrary && window.renderTrainingLibrary();" class="rpt-card rpt-card-blue">
+                <div style="font-size:16px; width:32px; height:32px; display:flex; align-items:center; justify-content:center; border-radius:12px; background:rgba(0,0,0,0.04); box-shadow:inset 0 2px 4px rgba(255,255,255,0.5);">
+                  <i class="fas fa-book-open" style="color:#334155;"></i>
+                </div>
+                <div style="font-weight:700;font-size:13px;color:#0f172a;">Course Library</div>
+                <div style="font-size:10px;color:#64748b;line-height:1.2;">Browse and assign training modules.</div>
+                <div style="margin-top:2px;font-size:9px;font-weight:700;color:#3b82f6;text-transform:uppercase;letter-spacing:0.5px;">LRN</div>
+              </div>
+
+
+              <!-- 11 -->
+              <div onclick="switchToView('view-stock')" class="rpt-card rpt-card-green">
+                <div style="font-size:16px; width:32px; height:32px; display:flex; align-items:center; justify-content:center; border-radius:12px; background:rgba(0,0,0,0.04); box-shadow:inset 0 2px 4px rgba(255,255,255,0.5);">
+                  <i class="fas fa-boxes" style="color:#334155;"></i>
+                </div>
+                <div style="font-weight:700;font-size:13px;color:#0f172a;">Stock</div>
+                <div style="font-size:10px;color:#64748b;line-height:1.2;">View and manage inventory.</div>
+                <div style="margin-top:2px;font-size:9px;font-weight:700;color:#10b981;text-transform:uppercase;letter-spacing:0.5px;">STK</div>
+              </div>
+
+              <!-- 12 -->
+              <div onclick="window.showGroupSalesForm()" class="rpt-card rpt-card-sky">
+                <div style="font-size:16px; width:32px; height:32px; display:flex; align-items:center; justify-content:center; border-radius:12px; background:rgba(0,0,0,0.04); box-shadow:inset 0 2px 4px rgba(255,255,255,0.5);">
+                  <i class="fas fa-cart-plus" style="color:#334155;"></i>
+                </div>
+                <div style="font-weight:700;font-size:13px;color:#0f172a;">Sales Entry</div>
+                <div style="font-size:10px;color:#64748b;line-height:1.2;">Log new sales and orders.</div>
+                <div style="margin-top:2px;font-size:9px;font-weight:700;color:#0ea5e9;text-transform:uppercase;letter-spacing:0.5px;">SALE</div>
+              </div>
+
             </div>
           </div>
           
@@ -6592,9 +6708,107 @@
                 };
                 
                 // Slight delay to ensure salestrack dependencies are initialized
-                setTimeout(initOemBanner, 1000);
+                setTimeout(initOemBanner, 50);
             });
           </script>
+
+          
+          <!-- OEM & MARKET INTELLIGENCE BRIEF -->
+          <div style="padding: 64px 40px 32px;">
+            <div style="background: #fff; border: 1px solid #e2e8f0; border-radius: 20px; padding: 28px 32px; box-shadow: 0 10px 30px -5px rgba(0,0,0,0.06), 0 4px 6px -4px rgba(0,0,0,0.02); display: flex; flex-direction: column; gap: 20px;">
+                
+                <div style="display: flex; align-items: center; justify-content: space-between;">
+                    <div style="display: flex; align-items: center; gap: 10px;">
+                        <div>
+                            <div style="font-size: 18px; font-weight: 900; color: #0f172a; letter-spacing: -0.02em; text-transform: uppercase;">OEM & Market Intelligence Brief</div>
+                            <div style="font-size: 11px; color: #64748b; font-weight: 500;">Latest updates impacting your supply chain and pricing</div>
+                        </div>
+                    </div>
+                    <div style="font-size: 11px; font-weight: 700; color: #94a3b8; background: #f1f5f9; padding: 4px 10px; border-radius: 6px;">Updated Today</div>
+                </div>
+
+                
+                <div id="oem-news-marquee-wrapper" style="overflow-x: auto; white-space: nowrap; position: relative; width: calc(100% + 32px); margin: -20px -16px; padding: 20px 16px; scrollbar-width: none;" onmouseenter="window.pauseOemMarquee=true" onmouseleave="window.pauseOemMarquee=false">
+                    <style>
+                        #oem-news-marquee-wrapper::-webkit-scrollbar { display: none; }
+                    </style>
+                    <div id="oem-news-marquee-content" style="display: inline-flex; gap: 16px; padding-right: 24px;">
+                        <!-- Brief Item 1: Beira Port -->
+                        <div style="display: flex; gap: 16px; padding: 18px 20px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 14px; min-width: 380px; max-width: 380px; white-space: normal; cursor: pointer; transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);" onmouseover="this.style.borderColor='#93c5fd'; this.style.backgroundColor='#fff'; this.style.boxShadow='0 12px 24px -4px rgba(59,130,246,0.15), 0 4px 8px -2px rgba(59,130,246,0.05)'; this.style.transform='translateY(-2px)';" onmouseout="this.style.borderColor='#e2e8f0'; this.style.backgroundColor='#f8fafc'; this.style.boxShadow='none'; this.style.transform='none';" onclick="window.open('https://clubofmozambique.com/', '_blank')">
+                            <i class="fas fa-ship" style="color: #1e293b; font-size: 18px; margin-top: 2px;"></i>
+                            <div>
+                                <div style="font-size: 12px; font-weight: 700; color: #1e293b; margin-bottom: 2px;">Port of Beira Efficiency Upgrades</div>
+                                <div style="font-size: 11px; color: #64748b; line-height: 1.3;">New cargo handling equipment deployed at Beira port. Expected to reduce machine offloading times by 20%.</div>
+                            </div>
+                        </div>
+
+                        <!-- Brief Item 2: Zimbabwe Mining -->
+                        <div style="display: flex; gap: 16px; padding: 18px 20px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 14px; min-width: 380px; max-width: 380px; white-space: normal; cursor: pointer; transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);" onmouseover="this.style.borderColor='#93c5fd'; this.style.backgroundColor='#fff'; this.style.boxShadow='0 12px 24px -4px rgba(59,130,246,0.15), 0 4px 8px -2px rgba(59,130,246,0.05)'; this.style.transform='translateY(-2px)';" onmouseout="this.style.borderColor='#e2e8f0'; this.style.backgroundColor='#f8fafc'; this.style.boxShadow='none'; this.style.transform='none';" onclick="window.open('https://www.herald.co.zw/category/articles/business/', '_blank')">
+                            <i class="fas fa-hammer" style="color: #1e293b; font-size: 18px; margin-top: 2px;"></i>
+                            <div>
+                                <div style="font-size: 12px; font-weight: 700; color: #1e293b; margin-bottom: 2px;">Lithium Mining Boom in ZIM</div>
+                                <div style="font-size: 11px; color: #64748b; line-height: 1.3;">Surge in lithium projects near Harare driving massive demand for heavy yellow iron and dump trucks.</div>
+                            </div>
+                        </div>
+
+                        <!-- Brief Item 3: Beira Corridor -->
+                        <div style="display: flex; gap: 16px; padding: 18px 20px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 14px; min-width: 380px; max-width: 380px; white-space: normal; cursor: pointer; transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);" onmouseover="this.style.borderColor='#93c5fd'; this.style.backgroundColor='#fff'; this.style.boxShadow='0 12px 24px -4px rgba(59,130,246,0.15), 0 4px 8px -2px rgba(59,130,246,0.05)'; this.style.transform='translateY(-2px)';" onmouseout="this.style.borderColor='#e2e8f0'; this.style.backgroundColor='#f8fafc'; this.style.boxShadow='none'; this.style.transform='none';" onclick="window.open('https://www.chronicle.co.zw/', '_blank')">
+                            <i class="fas fa-road" style="color: #1e293b; font-size: 18px; margin-top: 2px;"></i>
+                            <div>
+                                <div style="font-size: 12px; font-weight: 700; color: #1e293b; margin-bottom: 2px;">Beira-Mutare Corridor Upgrades</div>
+                                <div style="font-size: 11px; color: #64748b; line-height: 1.3;">Extensive road rehabilitation along the Beira corridor to speed up delivery of heavy machinery into Zimbabwe.</div>
+                            </div>
+                        </div>
+
+                        <!-- Brief Item 4: Durban Shipping -->
+                        <div style="display: flex; gap: 16px; padding: 18px 20px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 14px; min-width: 380px; max-width: 380px; white-space: normal; cursor: pointer; transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);" onmouseover="this.style.borderColor='#93c5fd'; this.style.backgroundColor='#fff'; this.style.boxShadow='0 12px 24px -4px rgba(59,130,246,0.15), 0 4px 8px -2px rgba(59,130,246,0.05)'; this.style.transform='translateY(-2px)';" onmouseout="this.style.borderColor='#e2e8f0'; this.style.backgroundColor='#f8fafc'; this.style.boxShadow='none'; this.style.transform='none';" onclick="window.open('https://www.engineeringnews.co.za/page/logistics', '_blank')">
+                            <i class="fas fa-anchor" style="color: #1e293b; font-size: 18px; margin-top: 2px;"></i>
+                            <div>
+                                <div style="font-size: 12px; font-weight: 700; color: #1e293b; margin-bottom: 2px;">Durban Port Congestion Update</div>
+                                <div style="font-size: 11px; color: #64748b; line-height: 1.3;">Backlogs at Durban Ro-Ro terminals easing. Consignments routed through SA expected to clear faster this month.</div>
+                            </div>
+                        </div>
+
+                        <!-- Brief Item 5: Zimbabwe Tenders -->
+                        <div style="display: flex; gap: 16px; padding: 18px 20px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 14px; min-width: 380px; max-width: 380px; white-space: normal; cursor: pointer; transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);" onmouseover="this.style.borderColor='#93c5fd'; this.style.backgroundColor='#fff'; this.style.boxShadow='0 12px 24px -4px rgba(59,130,246,0.15), 0 4px 8px -2px rgba(59,130,246,0.05)'; this.style.transform='translateY(-2px)';" onmouseout="this.style.borderColor='#e2e8f0'; this.style.backgroundColor='#f8fafc'; this.style.boxShadow='none'; this.style.transform='none';" onclick="window.open('https://www.sundaymail.co.zw/', '_blank')">
+                            <i class="fas fa-tractor" style="color: #1e293b; font-size: 18px; margin-top: 2px;"></i>
+                            <div>
+                                <div style="font-size: 12px; font-weight: 700; color: #1e293b; margin-bottom: 2px;">ZIM Government Agri-Mechanisation</div>
+                                <div style="font-size: 11px; color: #64748b; line-height: 1.3;">New government tender announced for tractors and agricultural machinery. Bids close at the end of the month.</div>
+                            </div>
+                        </div>
+
+                        <!-- Brief Item 6: Customs & Borders -->
+                        <div style="display: flex; gap: 16px; padding: 18px 20px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 14px; min-width: 380px; max-width: 380px; white-space: normal; cursor: pointer; transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);" onmouseover="this.style.borderColor='#93c5fd'; this.style.backgroundColor='#fff'; this.style.boxShadow='0 12px 24px -4px rgba(59,130,246,0.15), 0 4px 8px -2px rgba(59,130,246,0.05)'; this.style.transform='translateY(-2px)';" onmouseout="this.style.borderColor='#e2e8f0'; this.style.backgroundColor='#f8fafc'; this.style.boxShadow='none'; this.style.transform='none';" onclick="window.open('https://www.herald.co.zw/', '_blank')">
+                            <i class="fas fa-truck-loading" style="color: #1e293b; font-size: 18px; margin-top: 2px;"></i>
+                            <div>
+                                <div style="font-size: 12px; font-weight: 700; color: #1e293b; margin-bottom: 2px;">Forbes Border Post Expansion</div>
+                                <div style="font-size: 11px; color: #64748b; line-height: 1.3;">Mutare border expansions aimed at significantly reducing transit times for commercial cargo coming from Beira port.</div>
+                            </div>
+                        </div>
+                    </div>
+</div>
+                </div>
+                <script>
+                    if (!window.oemMarqueeInit) {
+                        window.oemMarqueeInit = true;
+                        setInterval(() => {
+                            if (window.pauseOemMarquee) return;
+                            const container = document.getElementById('oem-news-marquee-wrapper');
+                            if (container) {
+                                container.scrollLeft += 1;
+                                // Simple loop: if scrolled to end, jump to start (or near start)
+                                // In a perfect marquee we'd clone elements, but this is a simple auto-scroll.
+                                if (container.scrollLeft >= container.scrollWidth - container.clientWidth - 2) {
+                                    container.scrollLeft = 0;
+                                }
+                            }
+                        }, 30);
+                    }
+                </script></div>
+
+            </div>
+          </div>
 
           <!-- MAIN 3-COL GRID -->
           <div style="display:grid; grid-template-columns:300px 1fr; gap:22px; align-items:stretch; padding:12px 40px 22px; flex:1; min-height:0;">
@@ -6702,92 +6916,6 @@
 
 
 
-              <!-- LOGISTICS & PIPELINE KANBAN WIDGET -->
-              <div style="background:#fff;border:1px solid #e2e8f0;border-radius:18px;box-shadow:0 2px 12px rgba(0,0,0,0.05);display:flex;flex-direction:column;overflow:hidden;height:100%;min-height:400px;isolation:isolate;">
-                <!-- Header -->
-                <div style="display:flex;align-items:center;justify-content:space-between;padding:16px 20px 14px;border-bottom:1px solid #e2e8f0;background:#f1f5f9;border-top-left-radius:18px;border-top-right-radius:18px;">
-                  <div style="display:flex;align-items:center;gap:10px;">
-                    <div style="width:32px;height:32px;border-radius:9px;background:#fff; border:1px solid #cbd5e1;display:flex;align-items:center;justify-content:center;box-shadow:0 1px 2px rgba(0,0,0,0.05);"><i class="fas fa-stream" style="color:#475569;font-size:13px;"></i></div>
-                    <div>
-                      <div style="font-size:13px;font-weight:900;color:#0f172a;letter-spacing:-0.01em;">Logistics & Pipeline Timeline</div>
-                      <div style="font-size:10px;color:#94a3b8;font-weight:500;">Orders, Quotes, Trainings & Stock organized by ETA</div>
-                    </div>
-                  </div>
-                  <div style="display:flex;gap:16px;align-items:center;">
-                      <select id="dash-kb-company-filter" onchange="if(window.DashboardTimeline) window.DashboardTimeline.setCompanyFilter(this.value);" style="padding:4px 10px; border-radius:6px; border:1px solid #cbd5e1; font-size:11px; font-weight:700; color:#475569; background:#fff; outline:none; cursor:pointer; box-shadow:0 1px 2px rgba(0,0,0,0.05);">
-                        <option value="ALL">All Companies</option>
-                        <option value="SinoPower">SinoPower</option>
-                        <option value="Machinery Exchange">Machinery Exchange</option>
-                      </select>
-                      <div style="width:1px;height:16px;background:#e2e8f0;margin:0 4px;"></div>
-                      <div style="display:flex;gap:4px;align-items:center;cursor:pointer;" onclick="if(window.DashboardTimeline) window.DashboardTimeline.toggleCategory('order');"><div id="kb-leg-order" style="width:8px;height:8px;border-radius:50%;background:#0284c7;transition:all 0.2s;"></div><span id="kb-leg-txt-order" style="font-size:10px;font-weight:700;color:#64748b;user-select:none;transition:all 0.2s;">Orders</span></div>
-                      <div style="display:flex;gap:4px;align-items:center;cursor:pointer;" onclick="if(window.DashboardTimeline) window.DashboardTimeline.toggleCategory('quote');"><div id="kb-leg-quote" style="width:8px;height:8px;border-radius:50%;background:#d97706;transition:all 0.2s;"></div><span id="kb-leg-txt-quote" style="font-size:10px;font-weight:700;color:#64748b;user-select:none;transition:all 0.2s;">Quotes</span></div>
-                      <div style="display:flex;gap:4px;align-items:center;cursor:pointer;" onclick="if(window.DashboardTimeline) window.DashboardTimeline.toggleCategory('training');"><div id="kb-leg-training" style="width:8px;height:8px;border-radius:50%;background:#16a34a;transition:all 0.2s;"></div><span id="kb-leg-txt-training" style="font-size:10px;font-weight:700;color:#64748b;user-select:none;transition:all 0.2s;">Trainings</span></div>
-                      <div style="display:flex;gap:4px;align-items:center;cursor:pointer;" onclick="if(window.DashboardTimeline) window.DashboardTimeline.toggleCategory('stock');"><div id="kb-leg-stock" style="width:8px;height:8px;border-radius:50%;background:#9333ea;transition:all 0.2s;"></div><span id="kb-leg-txt-stock" style="font-size:10px;font-weight:700;color:#64748b;user-select:none;transition:all 0.2s;">Stock</span></div>
-                    </div>
-                </div>
-
-                <!-- Kanban Board Area -->
-                <div style="display:grid;grid-template-columns:repeat(4, 1fr);flex:1;min-height:0;background:#fafbfc;">
-                  
-                  <!-- Column 1: Overdue -->
-                  <div style="border-right:1px solid #f1f5f9;display:flex;flex-direction:column;min-height:0;background:#ffffff;">
-                    <div style="padding:14px 16px;border-bottom:2px solid #ef4444;background:#0f172a;display:flex;align-items:center;justify-content:space-between;">
-                      <div style="display:flex;align-items:center;gap:8px;">
-                        <i class="fas fa-exclamation-triangle" style="color:#ef4444;font-size:12px;"></i>
-                        <span style="font-size:11px;font-weight:900;color:#ffffff;text-transform:uppercase;">Urgent / Overdue</span>
-                      </div>
-                      <span id="dash-kb-overdue-count" style="font-size:10px;font-weight:800;color:#ef4444;background:#fef2f2;padding:2px 8px;border-radius:10px;">0</span>
-                    </div>
-                    <div id="dash-kb-overdue" style="padding:16px;overflow-y:auto;flex:1;">
-                        <!-- JS injected -->
-                    </div>
-                  </div>
-
-                  <!-- Column 2: This Week -->
-                  <div style="border-right:1px solid #f1f5f9;display:flex;flex-direction:column;min-height:0;background:#f8fafc;">
-                    <div style="padding:14px 16px;border-bottom:2px solid #3b82f6;background:#1e293b;display:flex;align-items:center;justify-content:space-between;">
-                      <div style="display:flex;align-items:center;gap:8px;">
-                        <i class="fas fa-calendar-day" style="color:#3b82f6;font-size:12px;"></i>
-                        <span style="font-size:11px;font-weight:900;color:#ffffff;text-transform:uppercase;">This Week</span>
-                      </div>
-                      <span id="dash-kb-this-week-count" style="font-size:10px;font-weight:800;color:#3b82f6;background:#eff6ff;padding:2px 8px;border-radius:10px;">0</span>
-                    </div>
-                    <div id="dash-kb-this-week" style="padding:16px;overflow-y:auto;flex:1;">
-                        <!-- JS injected -->
-                    </div>
-                  </div>
-
-                  <!-- Column 3: Next Week -->
-                  <div style="border-right:1px solid #f1f5f9;display:flex;flex-direction:column;min-height:0;background:#f1f5f9;">
-                    <div style="padding:14px 16px;border-bottom:2px solid #8b5cf6;background:#334155;display:flex;align-items:center;justify-content:space-between;">
-                      <div style="display:flex;align-items:center;gap:8px;">
-                        <i class="fas fa-calendar-week" style="color:#8b5cf6;font-size:12px;"></i>
-                        <span style="font-size:11px;font-weight:900;color:#ffffff;text-transform:uppercase;">Next Week</span>
-                      </div>
-                      <span id="dash-kb-next-week-count" style="font-size:10px;font-weight:800;color:#8b5cf6;background:#f5f3ff;padding:2px 8px;border-radius:10px;">0</span>
-                    </div>
-                    <div id="dash-kb-next-week" style="padding:16px;overflow-y:auto;flex:1;">
-                        <!-- JS injected -->
-                    </div>
-                  </div>
-
-                  <!-- Column 4: Later -->
-                  <div style="display:flex;flex-direction:column;min-height:0;background:#e2e8f0;">
-                    <div style="padding:14px 16px;border-bottom:2px solid #94a3b8;background:#475569;display:flex;align-items:center;justify-content:space-between;">
-                      <div style="display:flex;align-items:center;gap:8px;">
-                        <i class="fas fa-calendar-alt" style="color:#94a3b8;font-size:12px;"></i>
-                        <span style="font-size:11px;font-weight:900;color:#ffffff;text-transform:uppercase;">Later Pipeline</span>
-                      </div>
-                      <span id="dash-kb-later-count" style="font-size:10px;font-weight:800;color:#64748b;background:#f1f5f9;padding:2px 8px;border-radius:10px;">0</span>
-                    </div>
-                    <div id="dash-kb-later" style="padding:16px;overflow-y:auto;flex:1;">
-                        <!-- JS injected -->
-                    </div>
-                  </div>
-                  
-                </div>
-              </div>
             </div>
               
               <!-- Tenders are now accessed via the top Quick Access Bar -->
@@ -10967,6 +11095,7 @@
 
 
     <!-- GENERIC PLACEHOLDER VIEW -->
+    
     <div id="view-generic" class="view-content hidden"
       style="display:flex; flex-direction:column; padding:0; margin:0; position: relative; overflow: hidden; flex: 1; height: 100%; min-height: 0;">
       <div class="placeholder-card">
@@ -11224,7 +11353,7 @@
         <div class="mxg-table-container" style="background: transparent; box-shadow: none; border: none; padding: 0;">
           
           <!-- Unified Sales Grid Header -->
-          <div class="ai-order-header ai-sales-grid" style="position: sticky; top: 0; z-index: 20; border-radius: 12px 12px 0 0; margin-bottom: 8px;">
+          <div class="ai-order-header ai-sales-grid" style="position: sticky; top: 0; z-index: 20; border-radius: 16px; margin-bottom: 12px;">
             <div>Customer</div>
             <div>Brand</div>
             <div>Model</div>
@@ -14280,8 +14409,7 @@
         const dateStr = item.order_date ? formatDate(item.order_date) : "-";
         const row = document.createElement("div");
         row.className = "ai-order-row ai-sales-grid";
-        row.style.borderRadius = "12px";
-        row.style.borderLeft = "4px solid var(--accent-maroon)";
+        row.style.borderLeft = "3px solid var(--accent-maroon)";
         
         row.innerHTML = `
           <div class="ai-order-cell">
@@ -14786,7 +14914,7 @@
           const timeGreeting = hour < 12 ? 'Good morning' : hour < 17 ? 'Good afternoon' : 'Good evening';
 
           const greetEl = document.getElementById('welcome-greeting');
-          if (greetEl) greetEl.textContent = `${timeGreeting}, ${displayName}! 👋`;
+          if (greetEl) greetEl.textContent = `${timeGreeting}, ${displayName}!`;
 
           const dateSubtitle = document.getElementById('welcome-date-subtitle');
           if (dateSubtitle) {
@@ -15503,6 +15631,7 @@
     window.onload = function() { window.print(); };
   <\/script>
   
+  
 </body>
 </html>`);
       win.document.close();
@@ -15722,7 +15851,8 @@
               Please do not reply to this email. &copy; ${brandName} &mdash; Omnis Order Management System
           </div>
       </div>
-      </body>
+        
+</body>
       </html>
       `;
 
@@ -15983,6 +16113,7 @@ thead th { padding:11px 12px; font-size:10px; font-weight:800; color:#fff; text-
 </table>
 <div class="footer"><span>Omnis AI &middot; SalesTrack &mdash; Customer Appreciation</span><span>Confidential &mdash; Internal Use Only</span></div>
 <script>window.onload=function(){window.print();};<\/script>
+  
   
 </body></html>`);
       win.document.close();
@@ -16763,6 +16894,10 @@ thead th { padding:11px 12px; font-size:10px; font-weight:800; color:#fff; text-
         window._omnisConfirmResolve = (val) => {
           overlay.classList.remove('active');
           delete window._omnisConfirmResolve;
+          if (window._omnisConfirmKeyHandler) {
+            document.removeEventListener('keydown', window._omnisConfirmKeyHandler);
+            delete window._omnisConfirmKeyHandler;
+          }
           resolve(val);
         };
 
@@ -16772,13 +16907,12 @@ thead th { padding:11px 12px; font-size:10px; font-weight:800; color:#fff; text-
         overlay.classList.add('active');
 
         // Escape key to cancel
-        const keyHandler = (e) => {
+        window._omnisConfirmKeyHandler = (e) => {
           if (e.key === 'Escape' && window._omnisConfirmResolve) {
             window._omnisConfirmResolve(false);
-            document.removeEventListener('keydown', keyHandler);
           }
         };
-        document.addEventListener('keydown', keyHandler);
+        document.addEventListener('keydown', window._omnisConfirmKeyHandler);
         setTimeout(() => primaryBtn.focus(), 50);
       });
     };
@@ -17278,7 +17412,7 @@ thead th { padding:11px 12px; font-size:10px; font-weight:800; color:#fff; text-
                 const phaseId = `phase_${brand.replace(/[^a-zA-Z0-9]/g, '')}_${phase.replace(/[^a-zA-Z0-9]/g, '')}`;
                 brandBodyHtml += `
                   <!-- Phase Group Header -->
-                  <div onclick="const e = document.getElementById('${phaseId}'); const i = this.querySelector('.fa-chevron-down, .fa-chevron-right'); if(e.style.display==='none'){e.style.display='block'; i.classList.replace('fa-chevron-right','fa-chevron-down');}else{e.style.display='none'; i.classList.replace('fa-chevron-down','fa-chevron-right');}" style="cursor: pointer; padding: 10px 14px; margin-top: 16px; margin-bottom: 8px; background: rgba(0,0,0,0.03); border-left: 4px solid ${phaseItems[0].statusColor}; border-radius: 0 4px 4px 0; font-size: 13px; font-weight: 800; color: #1e293b; text-transform: uppercase; letter-spacing: 0.05em; display: flex; justify-content: space-between; align-items: center; transition: background 0.2s;" onmouseover="this.style.background='rgba(0,0,0,0.06)'" onmouseout="this.style.background='rgba(0,0,0,0.03)'">
+                  <div onclick="const e = document.getElementById('${phaseId}'); const i = this.querySelector('.fa-chevron-down, .fa-chevron-right'); if(e.style.display==='none'){e.style.display='block'; i.classList.replace('fa-chevron-right','fa-chevron-down');}else{e.style.display='none'; i.classList.replace('fa-chevron-down','fa-chevron-right');}" style="cursor: pointer; padding: 14px 20px; margin-top: 16px; margin-bottom: 12px; background: #fff; border: 1px solid #e2e8f0; border-left: 4px solid ${phaseItems[0].statusColor}; border-radius: 12px; box-shadow: 0 2px 4px rgba(0,0,0,0.02); font-size: 13px; font-weight: 800; color: #1e293b; text-transform: uppercase; letter-spacing: 0.05em; display: flex; justify-content: space-between; align-items: center; transition: all 0.2s;" onmouseover="this.style.transform='translateY(-1px)'; this.style.boxShadow='0 4px 12px rgba(0,0,0,0.05)';" onmouseout="this.style.transform='none'; this.style.boxShadow='0 2px 4px rgba(0,0,0,0.02)';">
                       <div style="display:flex; align-items:center; gap:8px;">
                           <i class="fas fa-chevron-right" style="color:#94a3b8; font-size:11px; width:12px; text-align:center;"></i>
                           <span><i class="fas ${phaseItems[0].statusIcon}" style="margin-right: 6px; color: ${phaseItems[0].statusColor};"></i> ${phase}</span>
@@ -17295,13 +17429,13 @@ thead th { padding:11px 12px; font-size:10px; font-weight:800; color:#fff; text-
               <div class="mxg-table-container" style="background:transparent; box-shadow:none; border:none; padding:0; margin-bottom:40px;" id="stock-section-${brand}" data-oem="${brand}">
                 <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; padding:0 8px;">
                   <div style="display:flex; align-items:center; gap:12px;">
-                    ${getOEMLogo(brand) ? `<img src="${getOEMLogo(brand)}" style="height:42px; object-fit:contain; filter:drop-shadow(0 4px 6px rgba(0,0,0,0.15));">` : `<div style="font-weight:900; font-size:20px; color:#0f172a;">${brand.toUpperCase()}</div>`}
+                    ${getOEMLogo(brand) ? `<img src="${getOEMLogo(brand)}" style="height:42px; object-fit:contain; filter:grayscale(100%) brightness(0.45) opacity(85%) drop-shadow(0 4px 6px rgba(0,0,0,0.15));">` : `<div style="font-weight:900; font-size:20px; color:#0f172a;">${brand.toUpperCase()}</div>`}
                   </div>
                   <div style="font-size:11px; font-weight:700; color:#64748b; background:#f1f5f9; padding:4px 10px; border-radius:6px; letter-spacing:0.02em;">ENTRIES: ${secRecords.length}</div>
                 </div>
 
                 <!-- Stock Grid Header -->
-                <div class="ai-order-header ai-stock-grid" style="border-radius:12px 12px 0 0; margin-bottom:8px;">
+                <div class="ai-order-header ai-stock-grid" style="border-radius:16px; margin-bottom:12px;">
                   <div>Model</div>
                   <div>Contract</div>
                   <div>Potential Customers</div>
@@ -17505,11 +17639,12 @@ thead th { padding:11px 12px; font-size:10px; font-weight:800; color:#fff; text-
                   const header = group.previousElementSibling;
                   if (header) {
                       header.style.display = groupHasVisibleRows ? 'flex' : 'none';
-                      if (targetStatus !== 'All' && groupHasVisibleRows) {
+                      const shouldExpand = (targetStatus !== 'All' || targetOem !== 'all') && groupHasVisibleRows;
+                      if (shouldExpand) {
                           group.style.display = 'block';
                           const icon = header.querySelector('.fa-chevron-right, .fa-chevron-down');
                           if (icon) icon.classList.replace('fa-chevron-right', 'fa-chevron-down');
-                      } else if (targetStatus === 'All') {
+                      } else {
                           group.style.display = 'none';
                           const icon = header.querySelector('.fa-chevron-right, .fa-chevron-down');
                           if (icon) icon.classList.replace('fa-chevron-down', 'fa-chevron-right');
@@ -21836,6 +21971,7 @@ thead th { padding:11px 12px; font-size:10px; font-weight:800; color:#fff; text-
 
             
   
+  
 </body>
 
 
@@ -21964,6 +22100,7 @@ thead th { padding:11px 12px; font-size:10px; font-weight:800; color:#fff; text-
                     This is an automated update from ${brand}. Please do not reply to this email. &copy; ${brand} &mdash; Omnis Order Management System
                 </div>
             </div>
+  
   
 </body>
 </html>
@@ -27242,7 +27379,7 @@ Commercial Team`);
         <span id="outbox-trigger-badge" style="position:absolute; top:-5px; right:-5px; background:var(--accent-red); color:#fff; width:20px; height:20px; border-radius:10px; font-size:11px; display:flex; justify-content:center; align-items:center; font-weight:700;">0</span>
     </div>
 
-  <script src="timeline_logic.js"></script>
+  
 </body>
 
 

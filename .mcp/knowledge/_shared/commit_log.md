@@ -405,3 +405,5 @@
   Files: .mcp/knowledge/_shared/commit_log.md,systems/salestrack/certificates_logic.js,systems/salestrack/index.html,
 - `bc54069` 2026-08-18 [supabase-migration] Checkpoint before email formatting and logic changes
   Files: .mcp/knowledge/_shared/commit_log.md,main.js,systems/salestrack/index.html,
+- `ead70d1` 2026-08-18 [supabase-migration] Checkpoint before fixing OEM logos in Stock Inventory
+  Files: .mcp/knowledge/_shared/commit_log.md,systems/salestrack/index.html,
