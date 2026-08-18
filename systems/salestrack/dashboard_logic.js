@@ -59,13 +59,13 @@ window.OmnisDashboardV6 = class OmnisDashboardV6 {
             if (window.electron && window.electron.getVersion) {
                 window.electron.getVersion().then(v => {
                     const label = document.getElementById('app-version-label');
-                    if (label) label.innerText = `V${v}-NEXUS`;
+                    if (label) label.innerText = `V${v}-AURA`;
 
                     const dashPill = document.getElementById('dash-app-version-pill');
                     if (dashPill) dashPill.innerText = `V${v}`;
 
                     const sLabel = document.getElementById('update-settings-status');
-                    if (sLabel) sLabel.innerText = `Version ${v} Nexus`;
+                    if (sLabel) sLabel.innerText = `Version ${v} Aura`;
                 });
             }
 
