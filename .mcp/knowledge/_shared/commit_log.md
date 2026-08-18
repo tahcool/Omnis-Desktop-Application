@@ -399,3 +399,5 @@
 \n## 2026-08-18
 - `96fb2d5` 2026-08-18 [supabase-migration] Restore point: before updating Order Tracking print report
   Files: .mcp/knowledge/_shared/commit_log.md,systems/salestrack/index.html,
+- `cb11404` 2026-08-18 [supabase-migration] [checkpoint] Checkpoint before further changes
+  Files: .mcp/knowledge/_shared/commit_log.md,systems/salestrack/dashboard_logic.js,systems/salestrack/orders_logic.js,

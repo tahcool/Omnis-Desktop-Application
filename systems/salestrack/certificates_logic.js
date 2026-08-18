@@ -8,6 +8,9 @@ class CertificatesLogic {
         this.trainings = [];
         this.recentCerts = [];
         this.allCerts = [];
+        this.dirPage = 1;
+        this.dirRowsPerPage = 15;
+        this.currentDirCerts = [];
         this.initListeners();
     }
 
@@ -435,7 +438,7 @@ class CertificatesLogic {
                     .bottom-left { bottom: 0; left: 0; border-width: 40px 0 0 40px; border-color: transparent transparent transparent #000; }
                     .bottom-right { bottom: 0; right: 0; border-width: 0 0 40px 40px; border-color: transparent transparent #000 transparent; }
                     
-                    .logo { height: 100px; margin-bottom: 20px; }
+                    .logo { height: 90px; margin-bottom: 10px; }
                     
                     .title {
                         font-family: 'Playfair Display', serif;
@@ -450,17 +453,17 @@ class CertificatesLogic {
                         font-size: 52px;
                         color: #fde047;
                         text-shadow: -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000, 1px 1px 0 #000;
-                        margin: 20px 0 30px;
+                        margin: 10px 0 20px;
                         letter-spacing: 2px;
                     }
                     
                     .certify-text { font-size: 20px; font-weight: 600; margin-bottom: 5px; }
-                    .mention { font-family: 'Playfair Display', serif; font-style: italic; font-size: 24px; margin-bottom: 20px; min-height: 20px; }
+                    .mention { font-family: 'Playfair Display', serif; font-style: italic; font-size: 24px; margin-bottom: 15px; min-height: 20px; }
                     
-                    .name-line { font-size: 38px; font-weight: 400; border-bottom: 2px solid #000; width: 70%; margin: 0 auto 10px; padding-bottom: 5px; }
-                    .id-line { font-size: 20px; font-weight: 600; margin-bottom: 30px; }
+                    .name-line { font-size: 32px; font-weight: 400; border-bottom: 2px solid #000; width: 90%; margin: 0 auto 10px; padding-bottom: 5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+                    .id-line { font-size: 20px; font-weight: 600; margin-bottom: 15px; }
                     
-                    .description { font-size: 18px; line-height: 1.5; font-weight: 600; margin: 0 auto 40px; width: 85%; }
+                    .description { font-size: 18px; line-height: 1.5; font-weight: 600; margin: 0 auto 20px; width: 85%; }
                     
                     .footer-grid {
                         display: grid; grid-template-columns: 1fr 1fr 1fr; align-items: end;
@@ -601,11 +604,43 @@ class CertificatesLogic {
 
             if (res.ok && res.data) {
                 this.allCerts = res.data;
+                this.updateKPIs(this.allCerts);
                 this.renderDirectory(this.allCerts);
             }
         } catch (e) {
             console.error("Error loading directory", e);
         }
+    }
+
+    updateKPIs(certs) {
+        const totalElem = document.getElementById('kpi-total-certs');
+        const monthElem = document.getElementById('kpi-month-certs');
+        const uniqueElem = document.getElementById('kpi-unique-ops');
+
+        if (!totalElem) return;
+
+        // Total
+        totalElem.textContent = certs.length.toString();
+
+        // This Month
+        const now = new Date();
+        const currentMonth = now.getMonth();
+        const currentYear = now.getFullYear();
+        const monthCerts = certs.filter(c => {
+            if (!c.created_at) return false;
+            const d = new Date(c.created_at);
+            return d.getMonth() === currentMonth && d.getFullYear() === currentYear;
+        });
+        monthElem.textContent = monthCerts.length.toString();
+
+        // Unique Operators (by id_number)
+        const uniqueOps = new Set();
+        certs.forEach(c => {
+            if (c.id_number) {
+                uniqueOps.add(c.id_number.trim().toLowerCase());
+            }
+        });
+        uniqueElem.textContent = uniqueOps.size.toString();
     }
 
     reprintCertificate(id) {
@@ -651,20 +686,34 @@ class CertificatesLogic {
     }
 
     renderDirectory(certs) {
+        this.currentDirCerts = certs;
         const tbody = document.getElementById('cert-directory-tbody');
         if (!tbody) return;
 
         if (certs.length === 0) {
-            tbody.innerHTML = '<tr><td colspan="5" style="padding:20px; text-align:center; color:#94a3b8; font-style:italic;">No certificates found.</td></tr>';
+            tbody.innerHTML = '<tr><td colspan="7" style="padding:20px; text-align:center; color:#94a3b8; font-style:italic;">No certificates found.</td></tr>';
+            const pageInfo = document.getElementById('cert-dir-page-info');
+            if (pageInfo) pageInfo.textContent = 'Showing 0 of 0';
             return;
         }
 
+        const total = certs.length;
+        const maxPage = Math.ceil(total / this.dirRowsPerPage) || 1;
+        if (this.dirPage > maxPage) this.dirPage = maxPage;
+        if (this.dirPage < 1) this.dirPage = 1;
+
+        const startIdx = (this.dirPage - 1) * this.dirRowsPerPage;
+        const endIdx = startIdx + this.dirRowsPerPage;
+        const paginatedCerts = certs.slice(startIdx, endIdx);
+
         let html = '';
-        certs.forEach(c => {
+        paginatedCerts.forEach((c, i) => {
+            const rowNum = startIdx + i + 1;
             const cDate = c.completion_date ? c.completion_date.substring(0,10) : '';
             html += `
                 
                   <tr style="border-bottom:1px solid #f1f5f9; transition:background 0.2s;" onmouseover="this.style.background='#f8fafc'" onmouseout="this.style.background='transparent'">
+                      <td style="padding:12px 16px; font-weight:700; color:#94a3b8; font-size:12px;">${rowNum}.</td>
                       <td style="padding:12px 16px; font-weight:600; color:#0f172a;">${c.operator_name || ''}</td>
                       <td style="padding:12px 16px; color:#334155;">${c.id_number || ''}</td>
                       <td style="padding:12px 16px; color:#334155;">${c.machine_type || ''}</td>
@@ -678,6 +727,25 @@ class CertificatesLogic {
             `;
         });
         tbody.innerHTML = html;
+
+        const pageInfo = document.getElementById('cert-dir-page-info');
+        if (pageInfo) {
+            const currentEnd = Math.min(endIdx, total);
+            pageInfo.textContent = `Showing ${startIdx + 1} to ${currentEnd} of ${total} entries (Page ${this.dirPage} of ${maxPage})`;
+        }
+    }
+
+    changeDirPage(delta) {
+        const total = this.currentDirCerts ? this.currentDirCerts.length : 0;
+        const maxPage = Math.ceil(total / this.dirRowsPerPage) || 1;
+        let newPage = this.dirPage + delta;
+        if (newPage < 1) newPage = 1;
+        if (newPage > maxPage) newPage = maxPage;
+        
+        if (newPage !== this.dirPage) {
+            this.dirPage = newPage;
+            this.renderDirectory(this.currentDirCerts);
+        }
     }
 
     searchCertificates(query) {
@@ -747,7 +815,7 @@ class CertificatesLogic {
                     .bottom-left { bottom: 0; left: 0; border-width: 40px 0 0 40px; border-color: transparent transparent transparent #000; }
                     .bottom-right { bottom: 0; right: 0; border-width: 0 0 40px 40px; border-color: transparent transparent #000 transparent; }
                     
-                    .logo { height: 100px; margin-bottom: 20px; }
+                    .logo { height: 90px; margin-bottom: 10px; }
                     
                     .title {
                         font-family: 'Playfair Display', serif;
@@ -762,7 +830,7 @@ class CertificatesLogic {
                         font-size: 52px;
                         color: #fde047; /* Yellowish */
                         text-shadow: -1px -1px 0 #000, 1px -1px 0 #000, -1px 1px 0 #000, 1px 1px 0 #000;
-                        margin: 20px 0 30px;
+                        margin: 10px 0 20px;
                         letter-spacing: 2px;
                     }
                     
@@ -775,29 +843,32 @@ class CertificatesLogic {
                         font-family: 'Playfair Display', serif;
                         font-style: italic;
                         font-size: 24px;
-                        margin-bottom: 20px;
+                        margin-bottom: 15px;
                         min-height: 20px;
                     }
                     
                     .name-line {
-                        font-size: 38px;
+                        font-size: 32px;
                         font-weight: 400;
                         border-bottom: 2px solid #000;
-                        width: 70%;
+                        width: 90%;
                         margin: 0 auto 10px;
                         padding-bottom: 5px;
+                        white-space: nowrap;
+                        overflow: hidden;
+                        text-overflow: ellipsis;
                     }
                     .id-line {
                         font-size: 20px;
                         font-weight: 600;
-                        margin-bottom: 30px;
+                        margin-bottom: 15px;
                     }
                     
                     .description {
                         font-size: 18px;
                         line-height: 1.5;
                         font-weight: 600;
-                        margin: 0 auto 40px;
+                        margin: 0 auto 20px;
                         width: 85%;
                     }
                     
