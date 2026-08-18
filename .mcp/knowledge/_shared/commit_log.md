@@ -403,3 +403,5 @@
   Files: .mcp/knowledge/_shared/commit_log.md,systems/salestrack/dashboard_logic.js,systems/salestrack/orders_logic.js,
 - `a0964d6` 2026-08-18 [supabase-migration] [checkpoint] Added KPI cards, pagination, and print layout fixes for Operator Certificates
   Files: .mcp/knowledge/_shared/commit_log.md,systems/salestrack/certificates_logic.js,systems/salestrack/index.html,
+- `bc54069` 2026-08-18 [supabase-migration] Checkpoint before email formatting and logic changes
+  Files: .mcp/knowledge/_shared/commit_log.md,main.js,systems/salestrack/index.html,
