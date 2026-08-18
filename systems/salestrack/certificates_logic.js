@@ -712,7 +712,7 @@ class CertificatesLogic {
             const cDate = c.completion_date ? c.completion_date.substring(0,10) : '';
             html += `
                 
-                  <tr style="border-bottom:1px solid #f1f5f9; transition:background 0.2s;" onmouseover="this.style.background='#f8fafc'" onmouseout="this.style.background='transparent'">
+                  <tr style="border-bottom:1px solid #f1f5f9; cursor:pointer; background:#fff; transition:all 0.3s cubic-bezier(0.16, 1, 0.3, 1);" onmouseover="this.style.boxShadow='0 12px 24px -4px rgba(0,0,0,0.08)'; this.style.transform='translateY(-2px)'; this.style.borderRadius='16px';" onmouseout="this.style.boxShadow='none'; this.style.transform='none'; this.style.borderRadius='0';">
                       <td style="padding:12px 16px; font-weight:700; color:#94a3b8; font-size:12px;">${rowNum}.</td>
                       <td style="padding:12px 16px; font-weight:600; color:#0f172a;">${c.operator_name || ''}</td>
                       <td style="padding:12px 16px; color:#334155;">${c.id_number || ''}</td>

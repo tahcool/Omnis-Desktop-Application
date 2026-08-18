@@ -407,3 +407,5 @@
   Files: .mcp/knowledge/_shared/commit_log.md,main.js,systems/salestrack/index.html,
 - `ead70d1` 2026-08-18 [supabase-migration] Checkpoint before fixing OEM logos in Stock Inventory
   Files: .mcp/knowledge/_shared/commit_log.md,systems/salestrack/index.html,
+- `f5afa43` 2026-08-18 [supabase-migration] [checkpoint] UI Polish: applied premium styling to dashboard cards, news section, and tables
+  Files: .mcp/knowledge/_shared/commit_log.md,inject_search_view.py,systems/salestrack/index.html,update_main_bg.py,
