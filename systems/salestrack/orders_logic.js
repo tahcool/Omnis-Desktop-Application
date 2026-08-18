@@ -199,7 +199,7 @@ async function loadOrdersList(force = false) {
                         revised_handover: null,
                         actual_handover: null,
                         order_date: order.order_date,
-                        company: order.company || 'Sinopower',
+                        company: order.company || '',
                         is_payment_terms: order.is_payment_terms,
                         is_tracking_only: false,
                         days_left: "-"
@@ -255,7 +255,7 @@ async function loadOrdersList(force = false) {
                             revised_handover: m.revised_date,
                             actual_handover: actual_handover,
                             order_date: order.order_date,
-                            company: order.company || 'Sinopower',
+                            company: order.company || '',
                             is_payment_terms: order.is_payment_terms,
                             is_tracking_only: false,
                             days_left: days_left
@@ -904,7 +904,18 @@ function renderOrdersList() {
         return;
     }
 
-    container.innerHTML = paginatedRows.map(r => {
+    // Ensure global kebab menu closer is active
+    if (!window.kebabMenuListenerAdded) {
+        document.addEventListener('click', function(e) {
+            if (!e.target.closest('.kebab-container')) {
+                document.querySelectorAll('.kebab-menu').forEach(m => m.style.display = 'none');
+                document.querySelectorAll('.ai-order-row').forEach(row => row.style.zIndex = '1');
+            }
+        });
+        window.kebabMenuListenerAdded = true;
+    }
+
+    container.innerHTML = paginatedRows.map((r, index) => {
         // 1. Determine Risk Level (GSM Style)
         let riskClass = "risk-low";
         let riskLabel = "ON TRACK";
@@ -970,26 +981,50 @@ function renderOrdersList() {
         if (r.is_payment_terms === true) {
             btnHtml += `<span style="display:inline-block; white-space:nowrap; color:#10b981; font-weight:800; font-size:10px; margin-right:8px; border:1px solid #10b981; padding:2px 6px; border-radius:6px; background:#ecfdf5;">ON TERMS</span>`;
         }
-        btnHtml += `<button class="btn-text-action" onclick="window.dashManager.openOrderModal('${safeReportId}', '${safeMachineId}')">DETAILS</button>`;
-        // Company selector goes in actions cell
+        
+        // Actions cell kebab menu
         btnHtml += `
-            <div style="margin-top:6px; display:flex; align-items:center; gap:5px;">
-              <select
-                style="font-size:10px; font-weight:800; padding:2px 6px; border-radius:7px; border:1px solid ${cc.border}; background:${cc.bg}; color:${cc.color}; cursor:pointer; outline:none; width:100%;"
-                onchange="window.setOrderCompany('${safeReportId}', this.value, this)"
-              >
-                <option value="Sinopower"          ${r.company === 'Sinopower'          ? 'selected' : ''}>SPZ</option>
-                <option value="Machinery Exchange" ${r.company === 'Machinery Exchange' ? 'selected' : ''}>MXG</option>
-                <option value="Unassigned"         ${(!r.company || r.company === 'Unassigned') ? 'selected' : ''}>---</option>
-              </select>
-              <span id="company-status-${r.report_id}" style="font-size:10px; color:#94a3b8; white-space:nowrap;"></span>
-            </div>`;
+            <div class="kebab-container" style="position:relative; display:inline-block; text-align:right;">
+                <button onclick="
+                    const m = this.nextElementSibling;
+                    const isVis = m.style.display==='block';
+                    document.querySelectorAll('.kebab-menu').forEach(x=>x.style.display='none');
+                    document.querySelectorAll('.ai-order-row').forEach(x=>{ x.style.position='relative'; x.style.zIndex='1'; });
+                    const row = this.closest('.ai-order-row');
+                    if (row) row.style.zIndex = isVis ? '1' : '99';
+                    m.style.display = isVis ? 'none' : 'block';
+                    event.stopPropagation();
+                " style="background:#f1f5f9; border:1px solid #e2e8f0; border-radius:6px; cursor:pointer; padding:6px 14px; color:#475569; font-size:14px; transition:0.2s;" onmouseover="this.style.background='#e2e8f0'" onmouseout="this.style.background='#f1f5f9'">
+                    <i class="fas fa-ellipsis-h"></i>
+                </button>
+                
+                <div class="kebab-menu" style="display:none; position:absolute; right:0; top:100%; margin-top:6px; background:white; border:1px solid #e2e8f0; border-radius:8px; box-shadow:0 10px 25px -5px rgba(0,0,0,0.2); z-index:99; min-width:160px; text-align:left; overflow:hidden;">
+                    <div style="padding:8px 12px; border-bottom:1px solid #f1f5f9; background:#f8fafc; font-size:10px; font-weight:800; color:#64748b; text-transform:uppercase;">Assigned Co.</div>
+                    <div style="padding:6px;">
+                        <select
+                            style="font-size:11px; font-weight:700; padding:6px; border-radius:6px; border:1px solid ${cc.border}; background:${cc.bg}; color:${cc.color}; cursor:pointer; outline:none; width:100%;"
+                            onchange="window.setOrderCompany('${safeReportId}', this.value, this); this.parentElement.parentElement.style.display='none';"
+                            onclick="event.stopPropagation();"
+                        >
+                            <option value="Sinopower"          ${r.company === 'Sinopower'          ? 'selected' : ''}>Sinopower</option>
+                            <option value="Machinery Exchange" ${r.company === 'Machinery Exchange' ? 'selected' : ''}>Machinery Exchange</option>
+                            <option value="Unassigned"         ${(!r.company || r.company === 'Unassigned') ? 'selected' : ''}>Unassigned</option>
+                        </select>
+                    </div>
+                    <div style="border-top:1px solid #f1f5f9;"></div>
+                    <button onclick="window.dashManager.openOrderModal('${safeReportId}', '${safeMachineId}'); this.parentElement.style.display='none';" style="width:100%; text-align:left; background:transparent; border:none; padding:10px 12px; font-size:13px; font-weight:600; color:#3b82f6; cursor:pointer; transition:0.2s;" onmouseover="this.style.background='#eff6ff'" onmouseout="this.style.background='transparent'"><i class="fas fa-edit" style="width:18px; text-align:center; margin-right:4px;"></i> Edit Order</button>
+                    <button onclick="window.olSelectedOrders = new Map(); window.olSelectedOrders.set('${safeReportId}', {reportId: '${safeReportId}', machineId: '${safeMachineId}'}); window.bulkDeleteOrders(); this.parentElement.style.display='none';" style="width:100%; text-align:left; background:transparent; border:none; padding:10px 12px; font-size:13px; font-weight:600; color:#ef4444; cursor:pointer; transition:0.2s;" onmouseover="this.style.background='#fef2f2'" onmouseout="this.style.background='transparent'"><i class="fas fa-trash" style="width:18px; text-align:center; margin-right:4px;"></i> Delete</button>
+                </div>
+            </div>
+            <div id="company-status-${r.report_id}" style="font-size:10px; color:#94a3b8; white-space:nowrap; text-align:right; margin-top:4px;"></div>
+        `;
 
         const isChecked = window.olSelectedOrders && window.olSelectedOrders.has(r.report_id) ? 'checked' : '';
         return `
           <div class="ai-order-row ${riskClass} ${(r.status || "").toLowerCase().includes("new sale") ? 'is-new-entry' : ''}" data-id="${r.report_id}">
             <div class="ai-order-cell" style="flex-direction:row; display:flex; gap:10px; align-items:flex-start;">
               <input type="checkbox" class="order-select-cb" value="${safeReportId}" data-machine="${safeMachineId}" style="margin-top:4px; transform:scale(1.2); cursor:pointer;" onclick="event.stopPropagation(); window.toggleOrderSelection(this)" ${isChecked}>
+              <span style="font-size:12px; font-weight:800; color:#94a3b8; margin-top:2px; min-width:24px; display:inline-block;">${start + index + 1}.</span>
               <div style="flex:1;" onclick="window.dashManager.openOrderModal('${safeReportId}', '${safeMachineId}')">
                 <span class="cell-label">Customer / Risk</span>
                 <div style="font-weight:700; font-size:15px; color:#000000; margin-bottom:4px; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden;" title="${(r.customer || '').replace(/\"/g, '')}">${(r.customer || "-").replace(/\"/g, '')}</div>
@@ -1114,6 +1149,7 @@ window.updateBulkActionBar = function() {
             <div style="display:flex; gap:10px;">
                 <button onclick="window.dashManager.showBulkUpdateModal('email')" style="background:#0284c7; color:white; border:none; padding:8px 16px; border-radius:8px; font-weight:700; font-size:13px; cursor:pointer; box-shadow:0 4px 6px rgba(0,0,0,0.1);"><i class="fas fa-envelope"></i> Bulk Email</button>
                 <button onclick="window.dashManager.showBulkUpdateModal('whatsapp')" style="background:#25d366; color:white; border:none; padding:8px 16px; border-radius:8px; font-weight:700; font-size:13px; cursor:pointer; box-shadow:0 4px 6px rgba(0,0,0,0.1);"><i class="fas fa-comment"></i> Bulk WhatsApp</button>
+                <button onclick="window.bulkDeleteOrders()" style="background:#ef4444; color:white; border:none; padding:8px 16px; border-radius:8px; font-weight:700; font-size:13px; cursor:pointer; box-shadow:0 4px 6px rgba(0,0,0,0.1);"><i class="fas fa-trash"></i> Delete</button>
                 <button onclick="window.clearOrderSelection()" style="background:rgba(255,255,255,0.1); color:white; border:none; padding:8px 16px; border-radius:8px; font-weight:600; font-size:13px; cursor:pointer;">Cancel</button>
             </div>
         `;
@@ -1126,6 +1162,93 @@ window.clearOrderSelection = function() {
     if (window.olSelectedOrders) window.olSelectedOrders.clear();
     document.querySelectorAll('.order-select-cb').forEach(cb => cb.checked = false);
     window.updateBulkActionBar();
+}
+
+window.bulkDeleteOrders = function() {
+    if (!window.olSelectedOrders || window.olSelectedOrders.size === 0) return;
+    
+    const count = window.olSelectedOrders.size;
+    
+    const overlay = document.createElement('div');
+    overlay.style.cssText = 'position:fixed; top:0; left:0; width:100vw; height:100vh; background:rgba(15,23,42,0.75); display:flex; justify-content:center; align-items:center; z-index:999999; backdrop-filter:blur(4px); font-family:"Inter", "Segoe UI", sans-serif; opacity:0; transition:opacity 0.2s ease-out;';
+    
+    const modal = document.createElement('div');
+    modal.style.cssText = 'background:white; border-radius:16px; width:400px; max-width:90%; padding:30px; box-shadow:0 25px 50px -12px rgba(0,0,0,0.25); text-align:center; transform:scale(0.95); transition:transform 0.2s ease-out;';
+    
+    modal.innerHTML = `
+        <div style="width:64px; height:64px; background:#fee2e2; border-radius:50%; display:flex; justify-content:center; align-items:center; margin:0 auto 20px;">
+            <i class="fas fa-exclamation-triangle" style="color:#ef4444; font-size:28px;"></i>
+        </div>
+        <h2 style="margin:0 0 12px; font-size:22px; font-weight:800; color:#0f172a;">Delete Orders?</h2>
+        <p style="margin:0 0 28px; font-size:15px; color:#475569; line-height:1.5;">
+            Are you sure you want to permanently delete <strong>${count} selected order(s)</strong>? This action cannot be undone.
+        </p>
+        <div style="display:flex; justify-content:center; gap:12px;">
+            <button id="btn-cancel-delete" style="padding:12px 20px; background:#f1f5f9; color:#334155; border:none; border-radius:10px; font-size:15px; font-weight:700; cursor:pointer; flex:1; transition:0.2s;">Cancel</button>
+            <button id="btn-confirm-delete" style="padding:12px 20px; background:#ef4444; color:white; border:none; border-radius:10px; font-size:15px; font-weight:700; cursor:pointer; flex:1; box-shadow:0 4px 6px -1px rgba(239,68,68,0.3); transition:0.2s;"><i class="fas fa-trash" style="margin-right:6px;"></i>Delete</button>
+        </div>
+    `;
+    
+    overlay.appendChild(modal);
+    document.body.appendChild(overlay);
+    
+    // Trigger animations
+    requestAnimationFrame(() => {
+        overlay.style.opacity = '1';
+        modal.style.transform = 'scale(1)';
+    });
+    
+    const cleanup = () => {
+        overlay.style.opacity = '0';
+        modal.style.transform = 'scale(0.95)';
+        setTimeout(() => {
+            if (document.body.contains(overlay)) document.body.removeChild(overlay);
+        }, 200);
+    };
+
+    const cancelBtn = document.getElementById('btn-cancel-delete');
+    const confirmBtn = document.getElementById('btn-confirm-delete');
+
+    cancelBtn.addEventListener('click', cleanup);
+    cancelBtn.addEventListener('mouseover', function() { this.style.background = '#e2e8f0'; });
+    cancelBtn.addEventListener('mouseout', function() { this.style.background = '#f1f5f9'; });
+    
+    confirmBtn.addEventListener('mouseover', function() { this.style.background = '#dc2626'; });
+    confirmBtn.addEventListener('mouseout', function() { this.style.background = '#ef4444'; });
+
+    confirmBtn.addEventListener('click', async () => {
+        confirmBtn.innerHTML = '<i class="fas fa-spinner fa-spin" style="margin-right:6px;"></i>Deleting...';
+        confirmBtn.style.opacity = '0.8';
+        confirmBtn.style.pointerEvents = 'none';
+        cancelBtn.style.pointerEvents = 'none';
+        
+        try {
+            const reportIds = Array.from(window.olSelectedOrders.keys());
+            
+            // Hide locally immediately
+            reportIds.forEach(id => {
+                localStorage.setItem('deleted_order_' + id, 'true');
+            });
+
+            // Delete from Supabase
+            for (const id of reportIds) {
+                await window.electron.invoke('supabase:query', {
+                    table: 'fmb_reports',
+                    method: 'delete',
+                    params: { match: { frappe_id: id } }
+                });
+            }
+            
+            window.clearOrderSelection();
+            if (window.loadOrdersList) window.loadOrdersList(true);
+            cleanup();
+        } catch (e) {
+            console.error("Error bulk deleting orders:", e);
+            confirmBtn.innerHTML = '<i class="fas fa-exclamation-triangle" style="margin-right:6px;"></i>Failed';
+            confirmBtn.style.background = '#f59e0b';
+            setTimeout(cleanup, 2000);
+        }
+    });
 }
 
 /* =========================================
@@ -1234,7 +1357,8 @@ window.openDefectsReport = async function() {
         return;
     }
 
-    window._cachedDefectsData = res.data;
+    // Only include defects generated from Order Tracking (must have an order_id)
+    window._cachedDefectsData = res.data.filter(d => d.order_id && d.order_id.trim() !== '');
 
     // Build the Add Defect Datalist Options
     let datalistOptions = '';
@@ -1339,6 +1463,9 @@ window.handleAddDefectSelect = function(inputEl) {
 };
 
 window.triggerEditDefect = function(machine, orderId, customer) {
+    try { machine = decodeURIComponent(machine); } catch(e){}
+    try { orderId = decodeURIComponent(orderId); } catch(e){}
+    try { customer = decodeURIComponent(customer); } catch(e){}
     console.log("Trigger edit:", machine, orderId, customer);
     if (!window.salestrack) {
         alert("System not ready (salestrack missing)");
@@ -1794,31 +1921,34 @@ window.printMainOrdersReport = function() {
         <table>
             <thead>
                 <tr>
-                    <th style="width:15%;">Report ID</th>
-                    <th style="width:25%;">Customer</th>
-                    <th style="width:30%;">Machinery Details</th>
-                    <th style="width:15%;">Status</th>
-                    <th style="width:15%;">Handover</th>
+                    <th style="width:5%;">#</th>
+                    <th style="width:15%;">Customer</th>
+                    <th style="width:35%;">Machinery Details</th>
+                    <th style="width:15%;">Target Date</th>
+                    <th style="width:15%;">Revised Date</th>
+                    <th style="width:15%;">Days Left</th>
                 </tr>
             </thead>
             <tbody>
     `;
 
+    let rowIndex = 1;
     for (let r of rows) {
-        let machines = (r.machines || []).map(m => `<div>${m.item_name || m.item_code} (${m.qty})</div>`).join('');
-        if (!machines) machines = r.items_summary || '-';
-
-        let statusColor = '#64748b';
-        if (r.status === 'Pre-Delivery') statusColor = '#d97706';
-        if (r.status === 'Delivered') statusColor = '#10b981';
+        let machineInfo = r.machine || r.item || '-';
+        if (r.qty > 1) {
+            machineInfo += ` (x${r.qty})`;
+        }
+        
+        let cleanCustomer = (r.customer || '').replace(/^"|"$/g, '').trim();
 
         tableHtml += `
             <tr>
-                <td style="font-weight:700;">${r.report_id}</td>
-                <td style="font-weight:600; color:#334155;">${r.customer}</td>
-                <td style="color:#475569;">${machines}</td>
-                <td style="font-weight:700; color:${statusColor};">${r.status}</td>
-                <td style="color:#0f172a;">${r.handover_date ? r.handover_date : '-'}</td>
+                <td style="font-weight:700; color:#64748b;">${rowIndex++}</td>
+                <td style="font-weight:600; color:#334155;">${cleanCustomer}</td>
+                <td style="color:#475569;">${machineInfo}</td>
+                <td style="color:#0f172a;">${r.target_handover || '-'}</td>
+                <td style="color:#0f172a;">${r.revised_handover || '-'}</td>
+                <td style="color:#0f172a;">${r.days_left !== undefined ? r.days_left : '-'}</td>
             </tr>
         `;
     }
@@ -1828,19 +1958,25 @@ window.printMainOrdersReport = function() {
     win.document.write(`
         <html><head><title>Orders Report</title>
         <style>
-            @page { size: landscape; margin: 15mm; }
-            body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; padding: 40px; color: #0f172a; }
-            table { width: 100%; border-collapse: collapse; margin-top: 20px; font-size: 13px; }
-            th, td { border: 1px solid #cbd5e1; padding: 12px; text-align: left; vertical-align: top; }
-            th { background: #f8fafc; font-weight: bold; text-transform: uppercase; font-size: 11px; color:#475569; }
+            @page { size: landscape; margin: 10mm; }
+            body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; padding: 20px; color: #0f172a; }
+            table { width: 100%; border-collapse: collapse; margin-top: 20px; font-size: 11px; }
+            th, td { border: 1px solid #cbd5e1; padding: 6px 8px; text-align: left; vertical-align: top; }
+            th { background: #f8fafc; font-weight: bold; text-transform: uppercase; font-size: 10px; color:#475569; }
             .no-print { display: none !important; }
+            .header-container { display: flex; justify-content: space-between; align-items: flex-end; border-bottom: 2px solid #e2e8f0; padding-bottom: 15px; margin-bottom: 20px; }
+            .header-right { text-align: right; }
         </style>
         </head><body>
-        <div style="text-align:center; margin-bottom: 30px; border-bottom: 2px solid #e2e8f0; padding-bottom: 20px;">
-            <img src="${logoUrl}" style="height:60px; margin-bottom:15px;" />
-            <h1 style="margin: 0; font-size:24px; color: #1e293b;">Active Orders Report</h1>
-            <div style="font-size:14px; font-weight:600; color:#475569; margin-top:8px;">Filtered By: ${selectedCompany}</div>
-            <div style="font-size:12px; color:#64748b; margin-top:4px;">Generated: ${new Date().toLocaleString()} | ${rows.length} Records</div>
+        <div class="header-container">
+            <div>
+                <img src="${logoUrl}" style="height:60px;" />
+            </div>
+            <div class="header-right">
+                <h1 style="margin: 0 0 5px 0; font-size:22px; color: #1e293b;">Active Orders Report</h1>
+                <div style="font-size:13px; font-weight:600; color:#475569;">Filtered By: ${selectedCompany} | Status: In progress</div>
+                <div style="font-size:11px; color:#64748b; margin-top:4px;">Generated: ${new Date().toLocaleString()} | ${rows.length} Records</div>
+            </div>
         </div>
         ${tableHtml}
         <script>
@@ -2020,7 +2156,10 @@ window.openSTRReport = async function() {
         return;
     }
 
-    let defects = defectsRes.data || [];
+    let allDefects = defectsRes.data || [];
+    // Only include defects generated from Order Tracking (must have an order_id)
+    let defects = allDefects.filter(d => d.order_id && d.order_id.trim() !== '');
+    
     let trainings = trainingsRes.data || [];
     
     window._cachedDefectsData = defects;
@@ -2035,7 +2174,7 @@ window.openSTRReport = async function() {
         <div id="str-report-header" style="display:flex; align-items:center; gap:15px; width:100%; justify-content:space-between; background: transparent; padding: 0;">
             <span style="font-size:18px; font-weight:800; color:#0f172a;">Sales Tracking Report (STR)</span>
             <div class="no-print" style="display:flex; align-items:center; gap:10px;">
-                <select onchange="if(document.getElementById('ol-company')) { document.getElementById('ol-company').value = this.value; if(window.loadOrdersList) window.loadOrdersList(); } window.openSTRReport();" 
+                <select onchange="(async () => { if(document.getElementById('ol-company')) { document.getElementById('ol-company').value = this.value; if(window.loadOrdersList) await window.loadOrdersList(); } window.openSTRReport(); })()" 
                     style="padding:6px 12px; border-radius:6px; border:1px solid #cbd5e1; font-size:13px; font-weight:600; color:#334155; outline:none; cursor:pointer; background:white;">
                     <option value="All" ${companyLabel === 'All Companies' ? 'selected' : ''}>All Companies</option>
                     <option value="Machinery Exchange" ${companyLabel === 'Machinery Exchange' ? 'selected' : ''}>Machinery Exchange</option>

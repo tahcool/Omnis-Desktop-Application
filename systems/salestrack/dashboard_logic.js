@@ -8478,10 +8478,15 @@ window.OmnisDashboardV6 = class OmnisDashboardV6 {
             </div>
         </div>`);
 
-        document.getElementById('btn-confirm-send-email').onclick = () => {
-            document.getElementById('email-preview-modal').remove();
-            this.sendEmailUpdate(btn, originalHtml, emailContacts, reportId, customerName, company, machines, ccList);
-        };
+        const confirmBtn = document.getElementById('btn-confirm-send-email');
+        if (confirmBtn) {
+            confirmBtn.onclick = () => {
+                if (confirmBtn.dataset.clicked) return;
+                confirmBtn.dataset.clicked = "true";
+                document.getElementById('email-preview-modal').remove();
+                this.sendEmailUpdate(btn, originalHtml, emailContacts, reportId, customerName, company, machines, ccList);
+            };
+        }
     }
     async sendEmailUpdate(btn, originalHtml, emailContacts, reportId, customerName, company, machines, ccList) {
         if (btn) { btn.disabled = true; btn.innerHTML = `<span>&#9203;</span> Checking...`; }
@@ -8492,11 +8497,9 @@ window.OmnisDashboardV6 = class OmnisDashboardV6 {
                     table: 'omnis_salestrack_notifications', method: 'select', params: { columns: 'notified_email', filters: { report_id: reportId } }
                 });
                 if (checkRes && checkRes.data && checkRes.data.length > 0 && checkRes.data[0].notified_email) {
-                    const confirmResend = confirm("⚠️ You have already sent an email for this order.\nAre you sure you want to send another one?");
-                    if (!confirmResend) {
-                        if (btn) { btn.disabled = false; btn.innerHTML = originalHtml || `<span style="font-size:18px;">&#128231;</span> Send Email`; }
-                        return;
-                    }
+                    alert("⚠️ An email update has already been sent for this order.\n\nTo prevent spam and confusion, double-sending is not allowed.");
+                    if (btn) { btn.disabled = false; btn.innerHTML = originalHtml || `<span style="font-size:18px;">&#128231;</span> Send Email`; }
+                    return;
                 }
             }
 

@@ -396,3 +396,6 @@
   Files: .mcp/knowledge/_shared/commit_log.md,.mcp/knowledge/fleetrack/session_notes.md,check_dup.js,count_warnings.py,extract_tables.py,main.js,scripts/Apply_Missing_Indexes.sql,scripts/Apply_RLS_Optimizations.sql,scripts/Database_Diagnostics.sql,scripts/Fix_Linter_Warnings.sql,scripts/Fix_Missing_RLS_Policies.sql,scripts/Generate_Missing_Indexes.sql,scripts/Generate_RLS_Optimizations.sql,scripts/fix_mutable_functions.sql,scripts/secure_portal_tables.sql,tables_to_fix.json,temp_script.js,temp_script_all.js,
 - `79245c8` 2026-08-17 [supabase-migration] Implement KPI style Sales Tracking Report (STR) and UI improvements
   Files: .mcp/knowledge/_shared/commit_log.md,.mcp/knowledge/fleetrack/session_notes.md,SRD_Orders.pdf,fix_companies.py,fix_completed.py,main.js,migrate_orders_to_supabase.py,old_orders_logic.js,restore_track_machines.py,sync_completed.py,systems/salestrack/dashboard_logic.js,systems/salestrack/index.html,systems/salestrack/orders_logic.js,systems/salestrack/timeline_logic.js,test.py,
+\n## 2026-08-18
+- `96fb2d5` 2026-08-18 [supabase-migration] Restore point: before updating Order Tracking print report
+  Files: .mcp/knowledge/_shared/commit_log.md,systems/salestrack/index.html,
