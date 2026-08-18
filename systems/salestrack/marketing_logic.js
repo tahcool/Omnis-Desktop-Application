@@ -43,7 +43,7 @@
         var badge=c.status==='Sent'?'<span class="mkt-badge mkt-badge-sent">Sent</span>':'<span class="mkt-badge mkt-badge-draft">Draft</span>';
         var chs=Array.isArray(c.channels)?c.channels:['email'];
         var icons=chs.map(function(ch){return ch==='whatsapp'?'<i class="fab fa-whatsapp" style="color:#25d366;"></i>':'<i class="fas fa-envelope" style="color:#3b82f6;"></i>';}).join(' ');
-        var tr=document.createElement('tr'); tr.className='mkt-hub-row';
+        var tr=document.createElement('tr'); tr.className='mkt-hub-row'; tr.style.borderBottom='1px solid #f1f5f9'; tr.style.cursor='pointer'; tr.style.background='#fff'; tr.style.transition='all 0.3s cubic-bezier(0.16, 1, 0.3, 1)'; tr.onmouseover=function(){this.style.boxShadow='0 12px 24px -4px rgba(0,0,0,0.08)'; this.style.transform='translateY(-2px)'; this.style.borderRadius='16px';}; tr.onmouseout=function(){this.style.boxShadow='none'; this.style.transform='none'; this.style.borderRadius='0';};
         tr.innerHTML='<td style="padding:16px 20px;font-weight:700;color:#0f172a;">'+(c.subject||'Untitled')+'</td><td style="padding:16px 20px;text-align:center;">'+badge+'</td><td style="padding:16px 20px;text-align:center;font-size:18px;">'+icons+'</td><td style="padding:16px 20px;text-align:center;color:#64748b;">'+(c.sent_at?new Date(c.sent_at).toLocaleDateString():'—')+'</td><td style="padding:16px 20px;text-align:center;font-weight:600;">'+((c.successful_sends||0).toLocaleString())+' / '+((c.total_audience||0).toLocaleString())+'</td><td style="padding:16px 20px;text-align:right;"><button onclick="window.marketingEditCampaign(\''+c.id+'\')" class="mkt-btn-sm mkt-btn-blue"><i class="fas fa-edit"></i> Edit</button></td>';
         grid.appendChild(tr);
       });
