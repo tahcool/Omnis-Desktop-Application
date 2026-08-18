@@ -821,7 +821,9 @@ ipcMain.handle('supabase:query', async (event, { table, method, params, data }) 
       if (!params.skipSelect) query = query.select();
 
     } else if (method === 'upsert') {
-      query = query.upsert(params.data || data, params.options || {}).select();
+      const options = params.options || {};
+      if (params.onConflict) options.onConflict = params.onConflict;
+      query = query.upsert(params.data || data, options).select();
 
     } else if (method === 'delete') {
       query = query.delete();

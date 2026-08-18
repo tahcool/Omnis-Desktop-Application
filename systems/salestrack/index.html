@@ -15087,6 +15087,7 @@
               <label class="gs-label" for="gs-model">Model <span style="color:#ef4444;">*</span></label>
               <input type="text" id="gs-model" class="gs-input" placeholder="e.g. ZX890">
               <div id="gs-model-suggest" class="suggest-list hidden"></div>
+              <div id="gs-stock-badge" style="margin-top: 6px; font-size: 11px; font-weight: 700; transition: all 0.2s;"></div>
             </div>
             <div class="gs-field">
               <label class="gs-label" for="gs-oem">OEM / Brand <span style="color:#ef4444;">*</span></label>
@@ -15573,7 +15574,19 @@
               oemInput.placeholder = "Select or Type OEM...";
               oemInput.focus();
             }
+            if (typeof window.checkStockAvailability === 'function') window.checkStockAvailability();
           });
+
+          const gsModelEl = document.getElementById('gs-model');
+          if (gsModelEl) {
+             let stockCheckTimer = null;
+             gsModelEl.addEventListener('input', () => {
+               clearTimeout(stockCheckTimer);
+               stockCheckTimer = setTimeout(() => {
+                 if (typeof window.checkStockAvailability === 'function') window.checkStockAvailability();
+               }, 500);
+             });
+          }
 
           setupSuggestions(document.getElementById('gs-salesperson'), document.getElementById('gs-salesperson-suggest'), "search_salesperson_for_omnis");
 
@@ -15607,7 +15620,7 @@
     window._giftListAllRows = [];
 
     /* ===== NEW SALE EMAIL ALERT ===== */
-    async function sendNewSaleAlert(payload, saleName) {
+    async function sendNewSaleAlert(payload, saleName, matchedStock = null) {
       const companyKey = (payload.company || '').toLowerCase().includes('sino') ? 'spz' : 'mxg';
       const isSino = companyKey === 'spz';
       const brandName  = isSino ? 'Sinopower' : 'Machinery Exchange';
@@ -15650,8 +15663,18 @@
         ['Lead Time',        payload.committed_lead_time || '—'],
         ['Sector',           payload.sector          || '—'],
         ['Salesperson',      salesperson],
-        ['Reference',        saleName                || '—'],
+        ['Reference',        saleName                || '—']
       ];
+
+      if (matchedStock) {
+        rows.push(['Stock Status', '<span style="color:#10b981;font-weight:800;">In Stock (Deducted from Inventory)</span>']);
+        if (matchedStock.production_completion) rows.push(['Production Date', matchedStock.production_completion]);
+        if (matchedStock.shipping_date) rows.push(['Shipping Date', matchedStock.shipping_date]);
+        if (matchedStock.eta_beira) rows.push(['ETA Beira', matchedStock.eta_beira]);
+        if (matchedStock.eta_harare) rows.push(['ETA Harare', matchedStock.eta_harare]);
+      } else {
+        rows.push(['Stock Status', '<span style="color:#ef4444;font-weight:800;">Not in Stock (New OEM Order Required)</span>']);
+      }
 
       const tableRows = rows.map(([label, val], i) => `
         <tr>
@@ -15968,6 +15991,78 @@ thead th { padding:11px 12px; font-size:10px; font-weight:800; color:#fff; text-
       window._forceTrackingPush = false;
     }
 
+    window._latestMatchedStock = null;
+    window.checkStockAvailability = async function() {
+      const model = document.getElementById('gs-model').value.trim();
+      const badge = document.getElementById('gs-stock-badge');
+      if (!model) {
+        if(badge) badge.innerHTML = "";
+        window._latestMatchedStock = null;
+        return;
+      }
+      
+      try {
+        if(badge) {
+          badge.innerHTML = `<i class="fas fa-spinner fa-spin"></i> Checking stock...`;
+          badge.style.color = "#64748b";
+        }
+        
+        const res = await window.electron.invoke('supabase:query', {
+          table: 'stock_inventory',
+          method: 'select',
+          params: {
+            ilike: [{ col: 'model', pat: `%${model}%` }]
+          }
+        });
+        if (res.ok && res.data && res.data.length > 0) {
+          // Filter to those with quantity > 0 and exact match (case-insensitive + trimmed)
+          const availableStock = res.data.filter(s => 
+            parseInt(s.actual_qty) > 0 && 
+            s.model && 
+            s.model.trim().toLowerCase() === model.toLowerCase()
+          );
+          if (availableStock.length > 0) {
+             // Sort by earliest target date / production date
+             availableStock.sort((a,b) => {
+                const dateA = a.shipping_date || a.production_completion || a.eta_beira || a.eta_harare || '9999-12-31';
+                const dateB = b.shipping_date || b.production_completion || b.eta_beira || b.eta_harare || '9999-12-31';
+                return dateA.localeCompare(dateB);
+             });
+             const stock = availableStock[0];
+             window._latestMatchedStock = stock;
+             const qty = stock.actual_qty;
+             let etaStr = "";
+             if (stock.eta_harare) etaStr = `(ETA: Harare ${stock.eta_harare})`;
+             else if (stock.eta_beira) etaStr = `(ETA: Beira ${stock.eta_beira})`;
+             else if (stock.shipping_date) etaStr = `(Ship: ${stock.shipping_date})`;
+             else if (stock.production_completion) etaStr = `(Prod: ${stock.production_completion})`;
+             else etaStr = `(In Stock)`;
+             
+             if(badge) {
+                badge.innerHTML = `<i class="fas fa-check-circle"></i> ${qty} in stock ${etaStr}`;
+                badge.style.color = "#10b981";
+             }
+          } else {
+             window._latestMatchedStock = null;
+             if(badge) {
+                badge.innerHTML = `<i class="fas fa-times-circle"></i> Out of stock (New OEM Order Required)`;
+                badge.style.color = "#ef4444";
+             }
+          }
+        } else {
+          window._latestMatchedStock = null;
+          if(badge) {
+             badge.innerHTML = `<i class="fas fa-times-circle"></i> Out of stock (New OEM Order Required)`;
+             badge.style.color = "#ef4444";
+          }
+        }
+      } catch (err) {
+        console.error("Stock check error:", err);
+        if(badge) badge.innerHTML = "";
+        window._latestMatchedStock = null;
+      }
+    };
+
     window.pushSaleToTracking = function() {
       window._forceTrackingPush = true;
       window.saveGroupSaleRecord();
@@ -16121,9 +16216,38 @@ thead th { padding:11px 12px; font-size:10px; font-weight:800; color:#fff; text-
               window._forceTrackingPush = false;
           }
 
+          // --- AUTO DEDUCT FROM STOCK ---
+          if (!window._editingGroupSaleName && window._latestMatchedStock) {
+              try {
+                  const stock = window._latestMatchedStock;
+                  const qtySold = parseInt(payload.qty || 1);
+                  const currentStockQty = parseInt(stock.actual_qty || 0);
+                  const newQty = currentStockQty - qtySold;
+                  
+                  if (newQty <= 0) {
+                      await window.electron.invoke('supabase:query', {
+                          table: 'stock_inventory',
+                          method: 'delete',
+                          params: { match: { id: stock.id } }
+                      });
+                      console.log("[Stock] Deducted to 0, removed stock entry:", stock.id);
+                  } else {
+                      await window.electron.invoke('supabase:query', {
+                          table: 'stock_inventory',
+                          method: 'update',
+                          data: { actual_qty: newQty },
+                          params: { match: { id: stock.id } }
+                      });
+                      console.log("[Stock] Deducted qty:", qtySold, "from stock:", stock.id);
+                  }
+              } catch(deductErr) {
+                  console.error("[Stock Deduction Error]", deductErr);
+              }
+          }
+
           // --- NEW SALE EMAIL ALERT ---
           if (!window._editingGroupSaleName) {
-            try { sendNewSaleAlert(payload, response.name); } catch(emailErr) { console.warn('[Sale Alert] Email failed:', emailErr); }
+            try { sendNewSaleAlert(payload, response.name, window._latestMatchedStock); } catch(emailErr) { console.warn('[Sale Alert] Email failed:', emailErr); }
           }
 
           closeGroupSalesForm();
@@ -16446,8 +16570,14 @@ thead th { padding:11px 12px; font-size:10px; font-weight:800; color:#fff; text-
         const response = res.message || res;
 
         if (response && response.ok) {
-          closeStockPipelineForm();
-          
+          // Keep form open for further edits
+          window._editingStockId = response.name;
+          try { document.getElementById('sp-doc-id').value = response.name; } catch(e) {}
+          const overlay = document.getElementById('sp-form-overlay');
+          if (overlay) {
+              const titleEl = overlay.querySelector('h2');
+              if (titleEl) titleEl.innerText = `Edit Stock Pipeline Entry (${response.name})`;
+          }
           // --- Supabase Real-time Sync ---
           try {
              let sData = null;
@@ -16497,7 +16627,7 @@ thead th { padding:11px 12px; font-size:10px; font-weight:800; color:#fff; text-
                  const upRes = await window.electron.invoke('supabase:query', {
                      table: 'stock_inventory', method: 'upsert',
                      data: upsertPayload,
-                     params: { onConflict: 'frappe_id' }
+                     params: { options: { onConflict: 'frappe_id' } }
                  });
                  if (upRes && upRes.ok) sData = upRes.data; else sErr = upRes ? upRes.error : "Unknown IPC error";
                  
