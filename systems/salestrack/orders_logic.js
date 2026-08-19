@@ -32,6 +32,7 @@ function initOrdersLogic() {
     const filterContainer = document.getElementById("ol-orders-filters");
     if (filterContainer) {
         filterContainer.querySelectorAll("input, select").forEach(inp => {
+            if (inp.value) olOrdersFilter[inp.dataset.filter] = inp.value.trim().toLowerCase();
             inp.addEventListener("input", () => {
                 olOrdersFilter[inp.dataset.filter] = inp.value.trim().toLowerCase();
                 olPage = 1; // Reset to page 1 on filter change
@@ -58,11 +59,18 @@ function initOrdersLogic() {
     const fromFilter = document.getElementById("ol-from-date");
     const toFilter = document.getElementById("ol-to-date");
 
-    if (companyFilter) companyFilter.addEventListener("change", () => {
-        if (typeof syncCompanyFilters === "function") syncCompanyFilters('ol-company', 'mxg-company-filter');
-        if (typeof syncPeriodFilters === "function") syncPeriodFilters('ol', 'mxg');
-        loadOrdersList(true);
-    });
+    if (companyFilter) {
+        const savedComp = localStorage.getItem('omnis_orders_company');
+        if (savedComp) {
+            companyFilter.value = savedComp;
+        }
+        companyFilter.addEventListener("change", () => {
+            localStorage.setItem('omnis_orders_company', companyFilter.value);
+            if (typeof syncCompanyFilters === "function") syncCompanyFilters('ol-company', 'mxg-company-filter');
+            if (typeof syncPeriodFilters === "function") syncPeriodFilters('ol', 'mxg');
+            loadOrdersList(true);
+        });
+    }
     if (fromFilter) fromFilter.addEventListener("change", () => {
         if (typeof syncPeriodFilters === "function") syncPeriodFilters('ol', 'mxg');
         loadOrdersList(true);
@@ -933,7 +941,7 @@ function renderOrdersList() {
                 riskColor = "#ef4444";
             } else if (daysVal <= 5) {
                 riskClass = "risk-medium";
-                riskLabel = "POTENTIAL LATE";
+                riskLabel = "POTENTIALLY LATE";
                 riskIcon = "fa-clock";
                 riskColor = "#f59e0b";
             }

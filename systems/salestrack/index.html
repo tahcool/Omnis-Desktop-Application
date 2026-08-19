@@ -5668,22 +5668,22 @@
     }
     .rpt-card:hover { transform: translateY(-6px); }
     
-    .rpt-card-red { background: linear-gradient(135deg, #ffffff 0%, #fee2e2 100%); box-shadow: 0 12px 24px -4px rgba(239,68,68,0.2); border-color: #fca5a5; }
+    .rpt-card-red { background: linear-gradient(135deg, #ffffff 0%, #fee2e2 100%); box-shadow: none; border-color: #fca5a5; }
     .rpt-card-red:hover { box-shadow: 0 20px 40px -5px rgba(239,68,68,0.4); border-color: #ef4444; }
     
-    .rpt-card-amber { background: linear-gradient(135deg, #ffffff 0%, #fef3c7 100%); box-shadow: 0 12px 24px -4px rgba(245,158,11,0.2); border-color: #fcd34d; }
+    .rpt-card-amber { background: linear-gradient(135deg, #ffffff 0%, #fef3c7 100%); box-shadow: none; border-color: #fcd34d; }
     .rpt-card-amber:hover { box-shadow: 0 20px 40px -5px rgba(245,158,11,0.4); border-color: #f59e0b; }
     
-    .rpt-card-blue { background: linear-gradient(135deg, #ffffff 0%, #dbeafe 100%); box-shadow: 0 12px 24px -4px rgba(59,130,246,0.2); border-color: #93c5fd; }
+    .rpt-card-blue { background: linear-gradient(135deg, #ffffff 0%, #dbeafe 100%); box-shadow: none; border-color: #93c5fd; }
     .rpt-card-blue:hover { box-shadow: 0 20px 40px -5px rgba(59,130,246,0.4); border-color: #3b82f6; }
     
-    .rpt-card-purple { background: linear-gradient(135deg, #ffffff 0%, #f3e8ff 100%); box-shadow: 0 12px 24px -4px rgba(168,85,247,0.2); border-color: #d8b4fe; }
+    .rpt-card-purple { background: linear-gradient(135deg, #ffffff 0%, #f3e8ff 100%); box-shadow: none; border-color: #d8b4fe; }
     .rpt-card-purple:hover { box-shadow: 0 20px 40px -5px rgba(168,85,247,0.4); border-color: #a855f7; }
     
-    .rpt-card-green { background: linear-gradient(135deg, #ffffff 0%, #d1fae5 100%); box-shadow: 0 12px 24px -4px rgba(16,185,129,0.2); border-color: #6ee7b7; }
+    .rpt-card-green { background: linear-gradient(135deg, #ffffff 0%, #d1fae5 100%); box-shadow: none; border-color: #6ee7b7; }
     .rpt-card-green:hover { box-shadow: 0 20px 40px -5px rgba(16,185,129,0.4); border-color: #10b981; }
     
-    .rpt-card-sky { background: linear-gradient(135deg, #ffffff 0%, #e0f2fe 100%); box-shadow: 0 12px 24px -4px rgba(14,165,233,0.2); border-color: #7dd3fc; }
+    .rpt-card-sky { background: linear-gradient(135deg, #ffffff 0%, #e0f2fe 100%); box-shadow: none; border-color: #7dd3fc; }
     .rpt-card-sky:hover { box-shadow: 0 20px 40px -5px rgba(14,165,233,0.4); border-color: #0ea5e9; }
   </style>
   <style>
@@ -5778,7 +5778,7 @@
 
   <!-- PREMIUM TOP NAV (MOVED TO BODY ROOT) -->
   <nav class="omnis-top-nav">
-    <div class="top-nav-logo">
+    <div class="top-nav-logo" style="cursor: pointer;" onclick="document.querySelector('.top-nav-item[data-view=\'view-dashboard\']').click()">
       <img src="../../assets/images/omnis-logo-white.png" alt="Omnis AI" style="height: 38px; width: auto; object-fit: contain;">
       <span style="color:#f8fafc; font-weight:800; letter-spacing:0.12em; font-size:11.5px; margin-right: 12px; margin-top: 2px; opacity: 0.9;">Salestrack</span>
     </div>
@@ -7009,6 +7009,10 @@
                           style="padding:8px 20px; border:none; border-radius:8px; font-size:12px; font-weight:700; cursor:pointer; transition:all 0.3s; background:transparent; color:#64748b; display:flex; align-items:center; gap:8px;">
                           <i class="fas fa-users"></i> Team
                         </button>
+                        <button onclick="salestrack.setSettingsTab('email-queue')" class="settings-tab-btn" data-tab="email-queue"
+                                style="padding:8px 20px; border:none; border-radius:8px; font-size:12px; font-weight:700; cursor:pointer; transition:all 0.3s; background:transparent; color:#64748b; display:flex; align-items:center; gap:8px;">
+                          <i class="fas fa-envelope"></i> Email Queue
+                        </button>
 
                       </div>
                     </div>
@@ -7247,8 +7251,23 @@
                           </div>
                       </div>
         
-                      
+                      <div id="settings-tab-email-queue" class="settings-tab-content hidden">
+                        <div style="background: white; border: 1px solid #e2e8f0; border-radius: 12px; padding: 24px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);">
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                                <div>
+                                    <h3 style="font-size: 16px; font-weight: 750; color: #0f172a; margin: 0 0 4px 0;">Email Queue Monitor <span id="email-queue-count" style="font-size: 12px; color: #64748b; font-weight: 600; margin-left: 8px; background: #f1f5f9; padding: 2px 8px; border-radius: 12px;">(0)</span></h3>
+                                    <p style="font-size: 13px; color: #64748b; margin: 0;">Monitor stuck or failed system emails. Failed emails auto-retry 3 times.</p>
+                                </div>
+                                <button onclick="if(window.salestrack) window.salestrack.requeueFailedEmails()" style="background: #3b82f6; color: white; border: none; padding: 10px 20px; border-radius: 8px; font-weight: 700; cursor: pointer; font-size: 13px; transition: all 0.2s; display: flex; align-items: center; gap: 8px; box-shadow: 0 4px 10px rgba(59,130,246,0.3);">
+                                  <i class="fas fa-sync-alt"></i> Retry All Failed
+                                </button>
+                            </div>
+                            <div id="settings-email-queue-list" style="font-size: 13px; color: #475569; max-height: 400px; overflow-y: auto; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 16px;">
+                                <div style="text-align: center; color: #94a3b8; padding: 20px;"><i class="fas fa-spinner fa-spin" style="margin-right:8px;"></i> Loading queue...</div>
+                            </div>
+                        </div>
                       </div>
+                      
         
                       <div id="settings-status-msg"
                         style="margin-top: 20px; padding: 12px 20px; border-radius: 10px; font-size: 14px; font-weight: 600; display: none; justify-content: space-between; align-items: center; border: 1px solid transparent;">
@@ -8092,7 +8111,7 @@
                   onblur="this.style.borderColor='#e2e8f0'; this.style.background='#f8fafc'">
                   <option value="">Status</option>
                   <option value="pending">Pending</option>
-                  <option value="in progress">In Progress</option>
+                  <option value="in progress" selected>In Progress</option>
                   <option value="handed over">Handed Over</option>
                   <option value="draft">Draft</option>
                   <option value="cancelled">Cancelled</option>
@@ -8782,8 +8801,8 @@
               style="border:none; background:transparent; font-size:12px; font-weight:700; color:#334155; outline:none; width:115px;">
           </div>
 
-          <button id="ol-str-report-btn" class="btn-secondary" onclick="if(window.openSTRReport) window.openSTRReport();"
-            style="padding:0 20px; border-radius:10px; font-weight:800; height: 42px; font-size: 12px; text-transform:uppercase; letter-spacing:0.02em; margin-right:8px; background:#f8fafc; color:#334155; border:1px solid #cbd5e1;">
+          <button id="ol-str-report-btn" class="btn-primary" onclick="if(window.openSTRReport) window.openSTRReport();"
+            style="padding:0 20px; border-radius:10px; font-weight:800; height: 42px; font-size: 12px; text-transform:uppercase; letter-spacing:0.02em; margin-right:8px; background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%); color: #fff; border:none; box-shadow: 0 4px 12px rgba(37,99,235,0.2);">
             <i class="fas fa-chart-line" style="margin-right:8px;"></i> STR Report
           </button>
           
@@ -8864,7 +8883,7 @@
             style="border:1px solid #e2e8f0; background:#f8fafc; border-radius:6px; padding:8px 12px; font-size:12px; width:120px; outline:none; cursor:pointer;">
             <option value="">Status</option>
             <option value="new sale">New Sale</option>
-            <option value="in progress">In Progress</option>
+            <option value="in progress" selected>In Progress</option>
             <option value="on hold">On Hold</option>
             <option value="customer to collect">Customer To Collect</option>
             <option value="handed over">Handed Over</option>
@@ -19644,15 +19663,15 @@ thead th { padding:11px 12px; font-size:10px; font-weight:800; color:#fff; text-
       width: 100vw !important;
       min-height: 80px;
       height: auto !important;
-      background: #000000 !important;
+      background: linear-gradient(135deg, #4c110d 0%, #8b2219 100%) !important;
       display: flex;
       align-items: center;
       flex-wrap: wrap;
       padding: 10px 20px;
       gap: 12px 24px;
       z-index: 100000 !important;
-      border-bottom: 2px solid #ef4444 !important;
-      box-shadow: none !important;
+      border-bottom: none !important;
+      box-shadow: 0 4px 12px rgba(76,17,13,0.4) !important;
       flex-shrink: 0;
     }
 
@@ -19690,17 +19709,10 @@ thead th { padding:11px 12px; font-size:10px; font-weight:800; color:#fff; text-
       transform: scale(1.02);
     }
     .top-nav-logo img {
-      /* Premium 3D glassy bevel/emboss effect via drop-shadows */
-      filter: drop-shadow(0 -1px 1px rgba(255, 255, 255, 0.5)) 
-              drop-shadow(0 2px 2px rgba(0, 0, 0, 0.8)) 
-              drop-shadow(0 4px 10px rgba(0, 0, 0, 0.6));
+      filter: none;
     }
     .top-nav-logo span {
-      /* Glossy metallic gradient for the text */
-      background: linear-gradient(180deg, #ffffff 20%, #94a3b8 80%);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      filter: drop-shadow(0 2px 3px rgba(0, 0, 0, 0.8));
+      color: #e2e8f0;
     }
 
     .top-nav-group {

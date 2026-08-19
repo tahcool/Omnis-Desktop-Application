@@ -51,12 +51,26 @@ Deno.serve(async (req) => {
 
     // 2. Fetch pending emails due now
     const now = new Date().toISOString();
-    const { data: pending, error: qErr } = await sb
+    let reqBody: any = {};
+    try {
+      if (req.method === "POST" || req.method === "PUT" || req.method === "PATCH") {
+        reqBody = await req.json();
+      }
+    } catch (e) {
+      // Ignore if no body or invalid json
+    }
+
+    let query = sb
       .from("omnis_email_queue")
       .select("*")
       .eq("status", "pending")
-      .lte("scheduled_for", now)
-      .limit(20);
+      .lte("scheduled_for", now);
+      
+    if (reqBody && reqBody.id) {
+      query = query.eq("id", reqBody.id);
+    }
+    
+    const { data: pending, error: qErr } = await query.limit(20);
 
     if (qErr) throw new Error(qErr.message);
     if (!pending || pending.length === 0) {
@@ -96,12 +110,16 @@ Deno.serve(async (req) => {
         sent++;
       } catch (e: any) {
         errors.push(`${row.id}: ${e.message}`);
+        
+        const newRetryCount = (row.retry_count || 0) + 1;
+        const newStatus = newRetryCount >= 3 ? "failed" : "pending";
+
         await sb
           .from("omnis_email_queue")
           .update({
-            status:        "failed",
+            status:        newStatus,
             error_message: e.message,
-            retry_count:   (row.retry_count || 0) + 1,
+            retry_count:   newRetryCount,
           })
           .eq("id", row.id);
       }

@@ -8617,6 +8617,198 @@ window.OmnisDashboardV6 = class OmnisDashboardV6 {
         }
     }
 
+    async loadFailedEmails() {
+        const listEl = document.getElementById('settings-email-queue-list');
+        if (!listEl) return;
+        
+        listEl.innerHTML = '<div style="text-align: center; color: #94a3b8; padding: 20px;"><i class="fas fa-spinner fa-spin" style="margin-right:8px;"></i> Loading queue...</div>';
+        
+        try {
+            const res = await window.electron.invoke('supabase:query', {
+                table: 'omnis_email_queue',
+                method: 'select',
+                params: {
+                    or: 'status.eq.failed,status.eq.pending',
+                    order: { column: 'created_at', ascending: false },
+                    limit: 50
+                }
+            });
+                
+            if (!res.ok) throw new Error(res.error || 'Unknown DB error');
+            const data = res.data;
+            
+            if (!data || data.length === 0) {
+                listEl.innerHTML = '<div style="text-align: center; color: #10b981; padding: 20px; font-weight: 600;"><i class="fas fa-check-circle" style="margin-right:8px;"></i> Queue is healthy. No failed or pending emails.</div>';
+                if (document.getElementById('email-queue-count')) document.getElementById('email-queue-count').innerText = '(0 items)';
+                return;
+            }
+            
+            if (document.getElementById('email-queue-count')) document.getElementById('email-queue-count').innerText = `(${data.length} ${data.length === 1 ? 'item' : 'items'})`;
+            
+            let html = '<table style="width: 100%; border-collapse: collapse; text-align: left;">';
+            html += '<thead><tr style="border-bottom: 1px solid #e2e8f0;"><th style="padding: 8px; font-weight: 600; width: 40px;">#</th><th style="padding: 8px; font-weight: 600;">Date</th><th style="padding: 8px; font-weight: 600;">Status</th><th style="padding: 8px; font-weight: 600;">To</th><th style="padding: 8px; font-weight: 600;">Subject</th><th style="padding: 8px; font-weight: 600;">Retries</th><th style="padding: 8px; font-weight: 600;">Error</th><th style="padding: 8px; font-weight: 600; text-align:right;">Actions</th></tr></thead>';
+            html += '<tbody>';
+            
+            data.forEach((item, idx) => {
+                const isFailed = item.status === 'failed';
+                const statusColor = isFailed ? '#ef4444' : '#f59e0b';
+                const statusBg = isFailed ? '#fee2e2' : '#fef3c7';
+                const dateStr = item.created_at ? new Date(item.created_at).toLocaleString([], {month:'short', day:'numeric', hour:'2-digit', minute:'2-digit'}) : 'N/A';
+                
+                html += `<tr style="border-bottom: 1px solid #f1f5f9;">
+                    <td style="padding: 10px 8px; font-size: 11px; color: #94a3b8; font-weight: 600;">${idx + 1}</td>
+                    <td style="padding: 10px 8px; font-size: 11px; color: #64748b;">${dateStr}</td>
+                    <td style="padding: 10px 8px;"><span style="background: ${statusBg}; color: ${statusColor}; padding: 2px 8px; border-radius: 12px; font-size: 11px; font-weight: 700; text-transform: uppercase;">${item.status}</span></td>
+                    <td style="padding: 10px 8px;">${item.to_email || 'N/A'}</td>
+                    <td style="padding: 10px 8px;">${item.subject || 'N/A'}</td>
+                    <td style="padding: 10px 8px;">${item.retry_count || 0}/3</td>
+                    <td style="padding: 10px 8px; color: #ef4444; font-size: 11px; max-width: 150px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="${item.error_message || ''}">${item.error_message || '-'}</td>
+                    <td style="padding: 10px 8px; text-align: right; display: flex; justify-content: flex-end; gap: 4px;">
+                        <button onclick="if(window.salestrack) window.salestrack.requeueSingleEmail('${item.id}', this)" style="background: #e0f2fe; color: #0284c7; border: none; padding: 4px 8px; border-radius: 6px; cursor: pointer; transition: 0.2s;" onmouseover="this.style.background='#bae6fd'" onmouseout="this.style.background='#e0f2fe'" title="Retry this Email">
+                            <i class="fas fa-sync-alt"></i>
+                        </button>
+                        <button onclick="if(window.salestrack) window.salestrack.deleteFailedEmail('${item.id}')" style="background: #fee2e2; color: #ef4444; border: none; padding: 4px 8px; border-radius: 6px; cursor: pointer; transition: 0.2s;" onmouseover="this.style.background='#fecaca'" onmouseout="this.style.background='#fee2e2'" title="Delete from Queue">
+                            <i class="fas fa-trash-alt"></i>
+                        </button>
+                    </td>
+                </tr>`;
+            });
+            
+            html += '</tbody></table>';
+            listEl.innerHTML = html;
+        } catch (e) {
+            console.error(e);
+            listEl.innerHTML = `<div style="color: #ef4444; padding: 20px;"><i class="fas fa-exclamation-triangle"></i> Error loading queue: ${e.message}</div>`;
+        }
+    }
+
+    async requeueSingleEmail(id, btnElement) {
+        if (window.showOmnisConfirm) {
+            const confirmed = await window.showOmnisConfirm({
+                title: 'Requeue Email',
+                message: 'Are you sure you want to requeue this email?',
+                confirmText: 'Retry',
+                danger: false
+            });
+            if (!confirmed) return;
+        } else {
+            if (!confirm('Are you sure you want to requeue this email?')) return;
+        }
+        
+        const originalHtml = btnElement.innerHTML;
+        btnElement.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+        btnElement.style.pointerEvents = 'none';
+        btnElement.style.opacity = '0.7';
+        
+        try {
+            const res = await window.electron.invoke('supabase:query', {
+                table: 'omnis_email_queue',
+                method: 'update',
+                params: {
+                    data: { status: 'pending', error_message: null },
+                    match: { id: id }
+                }
+            });
+            
+            if (!res.ok) throw new Error(res.error || 'Failed to requeue');
+            
+            // Trigger the edge function to process the queue immediately
+            try {
+                await window.electron.invoke('supabase:edgeFunction', { name: 'process-email-queue', data: { id: id } });
+            } catch (efError) {
+                console.warn('Edge function trigger failed, will retry on schedule:', efError);
+            }
+            
+            await this.loadFailedEmails();
+        } catch (e) {
+            console.error(e);
+            alert('Failed to requeue email: ' + e.message);
+        } finally {
+            btnElement.innerHTML = originalHtml;
+            btnElement.style.pointerEvents = 'auto';
+            btnElement.style.opacity = '1';
+        }
+    }
+
+    async requeueFailedEmails() {
+        if (window.showOmnisConfirm) {
+            const confirmed = await window.showOmnisConfirm({
+                title: 'Requeue All Emails',
+                message: 'Are you sure you want to requeue all failed emails?',
+                confirmText: 'Retry All',
+                danger: false
+            });
+            if (!confirmed) return;
+        } else {
+            if (!confirm('Are you sure you want to requeue all failed emails?')) return;
+        }
+
+        const btn = event.currentTarget;
+        const originalHtml = btn.innerHTML;
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Retrying...';
+        btn.style.pointerEvents = 'none';
+        btn.style.opacity = '0.7';
+        
+        try {
+            const res = await window.electron.invoke('supabase:query', {
+                table: 'omnis_email_queue',
+                method: 'update',
+                params: {
+                    data: { status: 'pending', error_message: null },
+                    match: { status: 'failed' }
+                }
+            });
+                
+            if (!res.ok) throw new Error(res.error || 'Failed to requeue');
+            
+            // Trigger the edge function to process the queue immediately
+            try {
+                await window.electron.invoke('supabase:edgeFunction', { name: 'process-email-queue', data: {} });
+            } catch (efError) {
+                console.warn('Edge function trigger failed, will retry on schedule:', efError);
+            }
+            
+            if (this.showSettingsStatus) this.showSettingsStatus('Failed emails requeued and processing started!', 'success');
+            await this.loadFailedEmails();
+        } catch (e) {
+            console.error(e);
+            if (this.showSettingsStatus) this.showSettingsStatus('Failed to requeue emails: ' + e.message, 'error');
+        } finally {
+            btn.innerHTML = originalHtml;
+            btn.style.pointerEvents = 'auto';
+            btn.style.opacity = '1';
+        }
+    }
+
+    async deleteFailedEmail(id) {
+        if (window.showOmnisConfirm) {
+            const confirmed = await window.showOmnisConfirm({
+                title: 'Delete Email',
+                message: 'Are you sure you want to delete this email from the queue? It will not be sent.',
+                confirmText: 'Delete',
+                danger: true
+            });
+            if (!confirmed) return;
+        } else {
+            if (!confirm('Are you sure you want to delete this email from the queue? It will not be sent.')) return;
+        }
+        
+        try {
+            const res = await window.electron.invoke('supabase:query', {
+                table: 'omnis_email_queue',
+                method: 'delete',
+                params: {
+                    match: { id: id }
+                }
+            });
+            if (!res.ok) throw new Error(res.error || 'Failed to delete email');
+            await this.loadFailedEmails();
+        } catch (e) {
+            console.error(e);
+            alert('Failed to delete email: ' + e.message);
+        }
+    }
+
     /**
      * Switches between settings tabs
      * @param {string} tabId - connectivity, maintenance, intelligence, security
@@ -8644,6 +8836,10 @@ window.OmnisDashboardV6 = class OmnisDashboardV6 {
         });
 
         if (window.omnisLog) window.omnisLog(`[Settings] Switched to tab: ${tabId.toUpperCase()}`);
+
+        if (tabId === 'email-queue') {
+            if (this.loadFailedEmails) this.loadFailedEmails();
+        }
 
         // 3. Side-effects per tab
         if (tabId === 'brand-mappings') {
