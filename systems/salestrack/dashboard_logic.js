@@ -7574,24 +7574,24 @@ window.OmnisDashboardV6 = class OmnisDashboardV6 {
                 if (navbarText && navbarDot) {
                     let displayLabel = 'WA: DISCONNECTED';
                     let dotColor = '#64748b'; // Slate 400
-                    let textColor = 'rgba(255,255,255,0.4)';
+                    let textColor = '#64748b'; // Slate 400 for light bg
 
                     if (status === 'CONNECTED') {
                         displayLabel = 'WA: CONNECTED';
                         dotColor = '#22c55e'; // Green 500
-                        textColor = '#22c55e';
+                        textColor = '#16a34a'; // Darker green
                     } else if (status === 'QR_READY') {
                         displayLabel = 'WA: SCAN NEEDED';
                         dotColor = '#f59e0b'; // Amber 500
-                        textColor = '#f59e0b';
+                        textColor = '#d97706'; // Darker amber
                     } else if (status === 'CONNECTING' || status === 'AUTHENTICATING') {
                         displayLabel = 'WA: CONNECTING...';
                         dotColor = '#3b82f6'; // Blue 500
-                        textColor = '#3b82f6';
+                        textColor = '#2563eb'; // Darker blue
                     } else if (status === 'ERROR' || status === 'ERR_NO_BROWSER') {
                         displayLabel = status === 'ERR_NO_BROWSER' ? 'WA: NO BROWSER' : (errorDetail ? `WA: ${errorDetail}` : 'WA: ERROR');
                         dotColor = '#ef4444'; // Red 500
-                        textColor = '#ef4444';
+                        textColor = '#dc2626'; // Darker red
                     }
 
                     navbarText.innerText = displayLabel;
@@ -8617,60 +8617,142 @@ window.OmnisDashboardV6 = class OmnisDashboardV6 {
         }
     }
 
-    async loadFailedEmails() {
+    async changeEmailQueuePage(direction) {
+        if (typeof this.emailQueuePage === 'undefined') this.emailQueuePage = 1;
+        
+        let newPage = this.emailQueuePage + direction;
+        if (newPage < 1) newPage = 1;
+        
+        // Don't exceed total pages if known
+        if (this.emailQueueTotalPages && newPage > this.emailQueueTotalPages) {
+            newPage = this.emailQueueTotalPages;
+        }
+        
+        if (newPage !== this.emailQueuePage) {
+            this.emailQueuePage = newPage;
+            await this.loadFailedEmails();
+        }
+    }
+
+    async loadFailedEmails(resetPage = false) {
         const listEl = document.getElementById('settings-email-queue-list');
         if (!listEl) return;
+        
+        if (resetPage || typeof this.emailQueuePage === 'undefined') {
+            this.emailQueuePage = 1;
+        }
         
         listEl.innerHTML = '<div style="text-align: center; color: #94a3b8; padding: 20px;"><i class="fas fa-spinner fa-spin" style="margin-right:8px;"></i> Loading queue...</div>';
         
         try {
+            const filterEl = document.getElementById('email-queue-filter');
+            const filterVal = filterEl ? filterEl.value : 'failed_pending';
+            
+            const categoryEl = document.getElementById('email-queue-category');
+            const categoryVal = categoryEl ? categoryEl.value : 'all';
+            
+            const pageSize = 50;
+            const offset = (this.emailQueuePage - 1) * pageSize;
+            
+            let queryParams = {
+                order: { column: 'created_at', ascending: false },
+                range: { from: offset, to: offset + pageSize - 1 },
+                count: 'exact',
+                or: []
+            };
+            
+            if (filterVal === 'failed_pending') {
+                queryParams.or.push('status.eq.failed,status.eq.pending');
+            } else if (filterVal === 'sent') {
+                queryParams.match = { status: 'sent' };
+            }
+            
+            if (categoryVal === 'order') {
+                queryParams.or.push('related_type.eq.order,related_type.eq.group_sale');
+            } else if (categoryVal !== 'all') {
+                if (!queryParams.match) queryParams.match = {};
+                queryParams.match.related_type = categoryVal;
+            }
+
+            if (queryParams.or.length === 0) {
+                delete queryParams.or;
+            }
+
             const res = await window.electron.invoke('supabase:query', {
                 table: 'omnis_email_queue',
                 method: 'select',
-                params: {
-                    or: 'status.eq.failed,status.eq.pending',
-                    order: { column: 'created_at', ascending: false },
-                    limit: 50
-                }
+                params: queryParams
             });
                 
             if (!res.ok) throw new Error(res.error || 'Unknown DB error');
             const data = res.data;
+            const count = res.count || 0;
+            
+            this.emailQueueTotalPages = Math.ceil(count / pageSize) || 1;
+            
+            if (document.getElementById('email-queue-page-current')) {
+                document.getElementById('email-queue-page-current').innerText = this.emailQueuePage;
+                document.getElementById('email-queue-page-total').innerText = this.emailQueueTotalPages;
+            }
             
             if (!data || data.length === 0) {
-                listEl.innerHTML = '<div style="text-align: center; color: #10b981; padding: 20px; font-weight: 600;"><i class="fas fa-check-circle" style="margin-right:8px;"></i> Queue is healthy. No failed or pending emails.</div>';
+                listEl.innerHTML = '<div style="text-align: center; color: #10b981; padding: 20px; font-weight: 600;"><i class="fas fa-check-circle" style="margin-right:8px;"></i> Queue is healthy. No emails found for this view.</div>';
                 if (document.getElementById('email-queue-count')) document.getElementById('email-queue-count').innerText = '(0 items)';
                 return;
             }
             
-            if (document.getElementById('email-queue-count')) document.getElementById('email-queue-count').innerText = `(${data.length} ${data.length === 1 ? 'item' : 'items'})`;
+            if (document.getElementById('email-queue-count')) document.getElementById('email-queue-count').innerText = `(${count} ${count === 1 ? 'item' : 'items'})`;
             
             let html = '<table style="width: 100%; border-collapse: collapse; text-align: left;">';
             html += '<thead><tr style="border-bottom: 1px solid #e2e8f0;"><th style="padding: 8px; font-weight: 600; width: 40px;">#</th><th style="padding: 8px; font-weight: 600;">Date</th><th style="padding: 8px; font-weight: 600;">Status</th><th style="padding: 8px; font-weight: 600;">To</th><th style="padding: 8px; font-weight: 600;">Subject</th><th style="padding: 8px; font-weight: 600;">Retries</th><th style="padding: 8px; font-weight: 600;">Error</th><th style="padding: 8px; font-weight: 600; text-align:right;">Actions</th></tr></thead>';
             html += '<tbody>';
             
             data.forEach((item, idx) => {
-                const isFailed = item.status === 'failed';
-                const statusColor = isFailed ? '#ef4444' : '#f59e0b';
-                const statusBg = isFailed ? '#fee2e2' : '#fef3c7';
+                let statusColor = '#f59e0b'; // pending
+                let statusBg = '#fef3c7';
+                if (item.status === 'failed') {
+                    statusColor = '#ef4444';
+                    statusBg = '#fee2e2';
+                } else if (item.status === 'sent') {
+                    statusColor = '#10b981';
+                    statusBg = '#d1fae5';
+                }
+                
                 const dateStr = item.created_at ? new Date(item.created_at).toLocaleString([], {month:'short', day:'numeric', hour:'2-digit', minute:'2-digit'}) : 'N/A';
+                
+                let relatedBadge = '';
+                if (item.related_type === 'order' || item.related_type === 'group_sale') {
+                    relatedBadge = '<span style="background: #e0e7ff; color: #4338ca; padding: 2px 6px; border-radius: 4px; font-size: 10px; font-weight: 700; margin-right: 6px;">ORDER TRACKING</span>';
+                } else if (item.related_type === 'psv') {
+                    relatedBadge = '<span style="background: #ffedd5; color: #c2410c; padding: 2px 6px; border-radius: 4px; font-size: 10px; font-weight: 700; margin-right: 6px;">PSV</span>';
+                } else if (item.related_type === 'aftersales') {
+                    relatedBadge = '<span style="background: #dcfce7; color: #15803d; padding: 2px 6px; border-radius: 4px; font-size: 10px; font-weight: 700; margin-right: 6px;">AFTERSALES</span>';
+                } else if (item.related_type === 'marketing' || item.related_type === 'newsletter') {
+                    relatedBadge = '<span style="background: #fce7f3; color: #be185d; padding: 2px 6px; border-radius: 4px; font-size: 10px; font-weight: 700; margin-right: 6px;">MARKETING</span>';
+                }
                 
                 html += `<tr style="border-bottom: 1px solid #f1f5f9;">
                     <td style="padding: 10px 8px; font-size: 11px; color: #94a3b8; font-weight: 600;">${idx + 1}</td>
                     <td style="padding: 10px 8px; font-size: 11px; color: #64748b;">${dateStr}</td>
                     <td style="padding: 10px 8px;"><span style="background: ${statusBg}; color: ${statusColor}; padding: 2px 8px; border-radius: 12px; font-size: 11px; font-weight: 700; text-transform: uppercase;">${item.status}</span></td>
                     <td style="padding: 10px 8px;">${item.to_email || 'N/A'}</td>
-                    <td style="padding: 10px 8px;">${item.subject || 'N/A'}</td>
+                    <td style="padding: 10px 8px;">${relatedBadge}${item.subject || 'N/A'}</td>
                     <td style="padding: 10px 8px;">${item.retry_count || 0}/3</td>
                     <td style="padding: 10px 8px; color: #ef4444; font-size: 11px; max-width: 150px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;" title="${item.error_message || ''}">${item.error_message || '-'}</td>
-                    <td style="padding: 10px 8px; text-align: right; display: flex; justify-content: flex-end; gap: 4px;">
-                        <button onclick="if(window.salestrack) window.salestrack.requeueSingleEmail('${item.id}', this)" style="background: #e0f2fe; color: #0284c7; border: none; padding: 4px 8px; border-radius: 6px; cursor: pointer; transition: 0.2s;" onmouseover="this.style.background='#bae6fd'" onmouseout="this.style.background='#e0f2fe'" title="Retry this Email">
+                    <td style="padding: 10px 8px; text-align: right; display: flex; justify-content: flex-end; gap: 4px;">`;
+                
+                if (item.status !== 'sent') {
+                    html += `<button onclick="if(window.salestrack) window.salestrack.requeueSingleEmail('${item.id}', this)" style="background: #e0f2fe; color: #0284c7; border: none; padding: 4px 8px; border-radius: 6px; cursor: pointer; transition: 0.2s;" onmouseover="this.style.background='#bae6fd'" onmouseout="this.style.background='#e0f2fe'" title="Retry this Email">
                             <i class="fas fa-sync-alt"></i>
                         </button>
                         <button onclick="if(window.salestrack) window.salestrack.deleteFailedEmail('${item.id}')" style="background: #fee2e2; color: #ef4444; border: none; padding: 4px 8px; border-radius: 6px; cursor: pointer; transition: 0.2s;" onmouseover="this.style.background='#fecaca'" onmouseout="this.style.background='#fee2e2'" title="Delete from Queue">
                             <i class="fas fa-trash-alt"></i>
-                        </button>
-                    </td>
+                        </button>`;
+                } else {
+                    html += `<span style="color: #10b981; padding: 4px 8px; font-size: 12px; font-weight: 600;"><i class="fas fa-check"></i></span>`;
+                }
+                
+                html += `</td>
                 </tr>`;
             });
             

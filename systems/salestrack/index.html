@@ -5786,13 +5786,13 @@
     <div class="top-nav-group">
 
       <div class="top-nav-item active" data-view="view-dashboard">
-        <span class="icon"><i class="fas fa-th-large"></i></span> <span>Dashboard</span>
+        <span class="icon"><i class="fas fa-gauge-high"></i></span> <span>Dashboard</span>
       </div>
 
       <!-- Reports Dropdown -->
       <div class="top-nav-dropdown">
         <div class="top-nav-item top-nav-dropdown-trigger" id="dd-reports-trigger">
-          <span class="icon"><i class="fas fa-chart-bar"></i></span>
+          <span class="icon"><i class="fas fa-chart-column"></i></span>
           <span>Reports</span>
           <i class="fas fa-chevron-down" style="font-size:8px; margin-left:2px; opacity:0.6;"></i>
         </div>
@@ -5815,14 +5815,25 @@
       <!-- Operations Dropdown -->
       <div class="top-nav-dropdown">
         <div class="top-nav-item top-nav-dropdown-trigger" id="dd-ops-trigger">
-          <span class="icon"><i class="fas fa-cogs"></i></span>
+          <span class="icon"><i class="fas fa-bars-progress"></i></span>
           <span>Operations</span>
           <i class="fas fa-chevron-down" style="font-size:8px; margin-left:2px; opacity:0.6;"></i>
         </div>
         <div class="top-nav-dropdown-menu" id="dd-ops-menu">
+          <div style="font-size:10px; text-transform:uppercase; color:rgba(255,255,255,0.5); padding:4px 12px; margin-top:2px; font-weight:700; letter-spacing:0.05em;">Sales</div>
           <div class="top-nav-dropdown-item" data-view="view-group-sales-list">
             <i class="fas fa-chart-line"></i> Sales Entries
           </div>
+          <div class="top-nav-dropdown-item" data-view="view-quotations-list">
+            <i class="fas fa-file-invoice-dollar"></i> Quotations
+          </div>
+          <div class="top-nav-dropdown-item" data-view="view-ce-list">
+            <i class="fas fa-comment-dots"></i> Enquiries
+          </div>
+          <div class="top-nav-dropdown-item" data-view="view-command-center">
+            <i class="fas fa-bolt"></i> QLA
+          </div>
+          <div style="border-top:1px solid rgba(255,255,255,0.08); margin:4px 0;"></div>
           <div class="top-nav-dropdown-item" data-view="view-orders-list">
             <i class="fas fa-route"></i> Order Tracking
           </div>
@@ -5838,11 +5849,7 @@
           <div class="top-nav-dropdown-item" data-view="view-aftersales">
             <i class="fas fa-clipboard-check"></i> Aftersales
           </div>
-          <div class="top-nav-dropdown-item" data-view="view-ft-defect-queue" style="color:#e74c3c; border-top:1px solid rgba(255,255,255,0.08); margin-top:4px; padding-top:8px;">
-            <i class="fas fa-tools" style="color:#e74c3c;"></i>
-            <span>FT Defect Queue</span>
-            <span id="topnav-ft-badge" style="display:none; background:#c0392b; color:white; font-size:9px; font-weight:900; padding:1px 6px; border-radius:20px; margin-left:auto;">0</span>
-          </div>
+
         </div>
       </div>
 
@@ -5866,7 +5873,7 @@
       <!-- Customers Dropdown -->
       <div class="top-nav-dropdown">
         <div class="top-nav-item top-nav-dropdown-trigger" id="dd-customers-trigger">
-          <span class="icon"><i class="fas fa-users"></i></span>
+          <span class="icon"><i class="fas fa-building-user"></i></span>
           <span>Customers</span>
           <i class="fas fa-chevron-down" style="font-size:8px; margin-left:2px; opacity:0.6;"></i>
         </div>
@@ -5889,60 +5896,33 @@
 
       <!-- Tenders & Projects Section -->
       <div class="top-nav-item" data-view="view-tenders">
-        <span class="icon"><i class="fas fa-project-diagram"></i></span> <span>Tenders</span>
+        <span class="icon"><i class="fas fa-file-signature"></i></span> <span>Tenders</span>
       </div>
 
       <!-- Marketing Section -->
       <div class="top-nav-item" data-view="view-marketing">
-        <span class="icon"><i class="fas fa-bullhorn"></i></span> <span>Marketing</span>
+        <span class="icon"><i class="fas fa-bullseye"></i></span> <span>Marketing</span>
       </div>
 
       <!-- Training Dropdown -->
       <div class="top-nav-dropdown">
         <div class="top-nav-item top-nav-dropdown-trigger" id="dd-training-trigger">
-          <span class="icon"><i class="fas fa-graduation-cap"></i></span>
+          <span class="icon"><i class="fas fa-chalkboard-user"></i></span>
           <span>Training</span>
           <i class="fas fa-chevron-down" style="font-size:8px; margin-left:2px; opacity:0.6;"></i>
         </div>
         <div class="top-nav-dropdown-menu" id="dd-training-menu">
-          <div class="top-nav-dropdown-item" data-view="view-training">
-            <i class="fas fa-id-card"></i> Operator Certificates
+          <div class="top-nav-dropdown-item" data-view="view-certificates">
+            <i class="fas fa-award"></i> Operator Certificates
           </div>
           <div class="top-nav-dropdown-item" onclick="event.stopPropagation();(function(){var el=document.getElementById('view-training-library');if(!el)return;var navH=parseInt(getComputedStyle(document.documentElement).getPropertyValue('--nav-height'))||42;el.classList.remove('hidden');document.body.appendChild(el);el.style.cssText='display:block!important;position:fixed!important;top:'+navH+'px!important;left:0!important;right:0!important;bottom:0!important;width:100%!important;height:calc(100vh - '+navH+'px)!important;overflow-y:auto!important;z-index:99999!important;background:#f8fafc!important;';requestAnimationFrame(function(){if(window.renderTrainingLibrary)window.renderTrainingLibrary();});})();">
-            <i class="fas fa-book-open" style="color:#7c3aed;"></i> <span style="color:#7c3aed; font-weight:700;">Course Library</span>
+            <i class="fas fa-book-open"></i> <span>Course Library</span>
           </div>
         </div>
       </div>
 
     </div>
 
-    <div class="top-nav-group"
-      style="margin-left: 6px; padding-left: 6px; border-left: 1px solid rgba(255,255,255,0.1);">
-
-      <div class="top-nav-item" data-view="view-certificates">
-        <span class="icon"><i class="fas fa-certificate"></i></span> <span>Certificates</span>
-      </div>
-
-      <!-- Sales Dropdown -->
-      <div class="top-nav-dropdown">
-        <div class="top-nav-item top-nav-dropdown-trigger" id="dd-sales-trigger">
-          <span class="icon"><i class="fas fa-chart-line"></i></span>
-          <span>Sales</span>
-          <i class="fas fa-chevron-down" style="font-size:8px; margin-left:2px; opacity:0.6;"></i>
-        </div>
-        <div class="top-nav-dropdown-menu" id="dd-sales-menu">
-          <div class="top-nav-dropdown-item" data-view="view-quotations-list">
-            <i class="fas fa-file-alt"></i> Quotations
-          </div>
-          <div class="top-nav-dropdown-item" data-view="view-ce-list">
-            <i class="fas fa-inbox"></i> Enquiries
-          </div>
-          <div class="top-nav-dropdown-item" data-view="view-command-center">
-            <i class="fas fa-terminal"></i> QLA
-          </div>
-        </div>
-      </div>
-    </div>
 
     <div class="top-nav-spacer"></div>
 
@@ -5954,26 +5934,20 @@
 
       <div style="height:16px; width:1px; background:rgba(255,255,255,0.15);"></div>
 
-      <div id="wa-navbar-status" style="display:flex; align-items:center; gap:6px; cursor: pointer;" onclick="switchToView('view-settings')">
-        <span id="wa-navbar-dot" style="width:6px; height:6px; background:#64748b; border-radius:50%; display:inline-block;"></span>
-        <div id="wa-navbar-text" style="font-size:10px; color:rgba(255,255,255,0.4); font-weight:800; letter-spacing:0.05em;">WA: OFFLINE</div>
-      </div>
-
-      <div style="height:16px; width:1px; background:rgba(255,255,255,0.15);"></div>
 
       <div id="app-version-label" style="font-size:10px; color:rgba(255,255,255,0.4); font-weight:700; letter-spacing:0.02em;">V1.0.1-STABLE</div>
     </div>
 
     <div class="top-nav-group" style="gap:8px;">
       <div class="top-nav-action-btn" onclick="switchToView('view-settings', 'System Settings')"
-        style="padding:8px 14px; border-radius:8px; background:rgba(255,255,255,0.05); display:flex; align-items:center; gap:6px; transition: background 0.2s; cursor:pointer;"
-        onmouseover="this.style.background='rgba(255,255,255,0.1)'" onmouseout="this.style.background='rgba(255,255,255,0.05)'">
-        <span class="icon" style="margin:0; font-size:12px; width:auto; color:rgba(255,255,255,0.7);"><i class="fas fa-cog"></i></span>
-        <span style="font-size:12px; font-weight:700; color:rgba(255,255,255,0.9);">Settings</span>
+        style="padding:8px 14px; border-radius:8px; background:#000; display:flex; align-items:center; gap:6px; transition: background 0.2s; cursor:pointer;"
+        onmouseover="this.style.background='#1e293b'" onmouseout="this.style.background='#000'">
+        <span class="icon" style="margin:0; font-size:12px; width:auto; color:#fff;"><i class="fas fa-cog"></i></span>
+        <span style="font-size:12px; font-weight:700; color:#fff;">Settings</span>
       </div>
       <div class="top-nav-action-btn" onclick="logout()"
-        style="padding:8px 14px; border-radius:8px; background:rgba(248,113,113,0.1); display:flex; align-items:center; gap:6px; transition: background 0.2s; cursor:pointer;"
-        onmouseover="this.style.background='rgba(248,113,113,0.2)'" onmouseout="this.style.background='rgba(248,113,113,0.1)'">
+        style="padding:8px 14px; border-radius:8px; background:#000; display:flex; align-items:center; gap:6px; transition: background 0.2s; cursor:pointer;"
+        onmouseover="this.style.background='#1e293b'" onmouseout="this.style.background='#000'">
         <span class="icon" style="margin:0; font-size:12px; width:auto; color:#f87171;"><i class="fas fa-sign-out-alt"></i></span>
         <span style="font-size:12px; font-weight:700; color:#f87171;">Logout</span>
       </div>
@@ -6416,35 +6390,44 @@
           <div style="display:flex; align-items:stretch; gap:16px; padding:20px 40px 0;">
 
             <!-- Profile / Greeting block -->
-            <div style="background:linear-gradient(135deg,#4c110d 0%,#8b2219 55%,#6b1a14 100%); border-radius:20px; padding:28px 32px; display:flex; align-items:center; gap:24px; min-width:400px; flex-shrink:0; position:relative; overflow:hidden; box-shadow: 0 10px 40px -10px rgba(139,34,25,0.6), inset 0 1px 0 rgba(255,255,255,0.15); border: 1px solid rgba(255,255,255,0.08);">
-              <div id="dash-app-version-pill" style="position:absolute;top:16px;right:16px;padding:3px 8px;background:rgba(255,255,255,0.12);border:1px solid rgba(255,255,255,0.18);border-radius:6px;font-size:9px;font-weight:800;color:rgba(255,255,255,0.8);text-transform:uppercase;letter-spacing:0.06em;z-index:2;">v2.2.15</div>
-              <div style="position:absolute;top:-20px;right:-20px;width:100px;height:100px;border-radius:50%;background:rgba(255,255,255,0.06);pointer-events:none;"></div>
-              <div style="position:absolute;bottom:-10px;right:60px;width:60px;height:60px;border-radius:50%;background:rgba(255,255,255,0.04);pointer-events:none;"></div>
+            <div style="background:#fff; border-radius:20px; padding:28px 32px; display:flex; align-items:center; gap:24px; min-width:400px; flex-shrink:0; position:relative; overflow:hidden; box-shadow: 0 10px 30px -5px rgba(0,0,0,0.06), 0 4px 6px -4px rgba(0,0,0,0.02); border: 1px solid #e2e8f0;">
+              <div style="position:absolute;top:16px;right:16px;display:flex;align-items:center;gap:12px;z-index:2;">
+                <!-- WA Status -->
+                <div id="wa-navbar-status" style="display:flex; align-items:center; gap:6px; cursor: pointer; padding:4px 8px; background:#f1f5f9; border:1px solid #e2e8f0; border-radius:6px; transition:all 0.2s;" onmouseover="this.style.background='#e2e8f0'" onmouseout="this.style.background='#f1f5f9'" onclick="switchToView('view-settings')">
+                  <span id="wa-navbar-dot" style="width:6px; height:6px; background:#64748b; border-radius:50%; display:inline-block; box-shadow: 0 0 4px rgba(0,0,0,0.1);"></span>
+                  <div id="wa-navbar-text" style="font-size:9px; color:#64748b; font-weight:800; letter-spacing:0.06em; text-transform:uppercase;">WA: OFFLINE</div>
+                </div>
+                <!-- Settings Button -->
+                <div onclick="switchToView('view-settings')" style="cursor:pointer; width:24px; height:24px; display:flex; align-items:center; justify-content:center; background:#eff6ff; border:1px solid #bfdbfe; border-radius:6px; color:#2563eb; transition:all 0.2s;" onmouseover="this.style.background='#dbeafe'; this.style.borderColor='#93c5fd'" onmouseout="this.style.background='#eff6ff'; this.style.borderColor='#bfdbfe'">
+                  <i class="fas fa-cog" style="font-size:12px;"></i>
+                </div>
+              </div>
+              
               <!-- Avatar -->
               <div style="position:relative;flex-shrink:0;">
-                <div style="position:absolute;inset:-3px;border-radius:50%;background:linear-gradient(135deg,rgba(255,255,255,0.4),rgba(255,255,255,0.1));z-index:0;"></div>
+                <div style="position:absolute;inset:-3px;border-radius:50%;background:linear-gradient(135deg,rgba(0,0,0,0.1),rgba(0,0,0,0.03));z-index:0;"></div>
                 <div id="profile-avatar-wrap" onclick="document.getElementById('profile-photo-input').click()"
-                     style="position:relative;width:56px;height:56px;border-radius:50%;cursor:pointer;border:3px solid rgba(255,255,255,0.9);overflow:hidden;z-index:1;box-shadow:0 10px 25px -5px rgba(0,0,0,0.6);"
+                     style="position:relative;width:72px;height:72px;border-radius:50%;cursor:pointer;border:3px solid #fff;overflow:hidden;z-index:1;box-shadow:0 10px 25px -5px rgba(0,0,0,0.1);"
                      title="Click to change profile photo">
-                  <div id="profile-avatar-letter" style="width:100%;height:100%;background:linear-gradient(135deg,#6b1a14,#2d0906);display:flex;align-items:center;justify-content:center;font-size:22px;font-weight:800;color:#fff;">A</div>
+                  <div id="profile-avatar-letter" style="width:100%;height:100%;background:linear-gradient(135deg,#6b1a14,#2d0906);display:flex;align-items:center;justify-content:center;font-size:28px;font-weight:800;color:#fff;">A</div>
                   <img id="profile-avatar-img" src="" alt="Profile" style="position:absolute;top:0;left:0;width:100%;height:100%;object-fit:cover;display:none;border-radius:50%;">
                   <div id="profile-avatar-overlay" style="position:absolute;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.5);border-radius:50%;display:flex;align-items:center;justify-content:center;opacity:0;transition:opacity 0.2s;"
                        onmouseover="this.style.opacity='1'" onmouseout="this.style.opacity='0'">
                     <i class="fas fa-camera" style="color:#fff;font-size:14px;"></i>
                   </div>
                 </div>
-                <div style="position:absolute;bottom:1px;right:1px;width:12px;height:12px;border-radius:50%;background:#22c55e;border:2px solid rgba(255,255,255,0.9);z-index:2;box-shadow:0 0 5px rgba(34,197,94,0.7);"></div>
+                <div style="position:absolute;bottom:1px;right:1px;width:12px;height:12px;border-radius:50%;background:#22c55e;border:2px solid #fff;z-index:2;box-shadow:0 0 5px rgba(34,197,94,0.4);"></div>
               </div>
               <input type="file" id="profile-photo-input" accept="image/*" style="display:none;" onchange="window.openProfileCropModal(this)">
               <!-- Greeting text -->
               <div style="min-width:0;position:relative;z-index:1;padding-right:70px;">
-                <h2 id="welcome-greeting" style="font-size:16px;font-weight:900;color:#fff;margin:0 0 6px;letter-spacing:-0.02em;line-height:1.3;">Good afternoon, Administrator!</h2>
-                <p id="welcome-date-subtitle" style="font-size:12px;color:rgba(255,255,255,0.75);margin:0 0 14px;font-weight:500;">Today is Wednesday, May 27.</p>
+                <h2 id="welcome-greeting" style="font-size:16px;font-weight:900;color:#0f172a;margin:0 0 6px;letter-spacing:-0.02em;line-height:1.3;">Good afternoon, Administrator!</h2>
+                <p id="welcome-date-subtitle" style="font-size:12px;color:#64748b;margin:0 0 14px;font-weight:500;">Today is Wednesday, May 27.</p>
               </div>
             </div>
 
             <!-- SINOPOWER COMBINED -->
-            <div style="background:#fff;border:1px solid #e2e8f0;border-top:4px solid #8b2219;border-radius:20px;padding:22px 24px;box-shadow:0 10px 30px -5px rgba(0,0,0,0.06), 0 4px 6px -4px rgba(0,0,0,0.02);flex:1;min-width:0;">
+            <div style="background:rgba(255,255,255,0.8);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border:1px solid rgba(255,255,255,0.6);border-top:4px solid #8b2219;border-radius:20px;padding:22px 24px;box-shadow:0 10px 30px -5px rgba(0,0,0,0.06), 0 4px 6px -4px rgba(0,0,0,0.02);flex:1;min-width:0;">
               <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;">
                 <div>
                   <div style="font-size:11px;font-weight:900;letter-spacing:0.1em;text-transform:uppercase;color:#8b2219;">Sinopower</div>
@@ -6491,7 +6474,7 @@
             </div>
 
             <!-- MACHINERY EXCHANGE COMBINED -->
-            <div style="background:#fff;border:1px solid #e2e8f0;border-top:4px solid #1e3a5f;border-radius:20px;padding:22px 24px;box-shadow:0 10px 30px -5px rgba(0,0,0,0.06), 0 4px 6px -4px rgba(0,0,0,0.02);flex:1;min-width:0;">
+            <div style="background:rgba(255,255,255,0.8);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border:1px solid rgba(255,255,255,0.6);border-top:4px solid #1e3a5f;border-radius:20px;padding:22px 24px;box-shadow:0 10px 30px -5px rgba(0,0,0,0.06), 0 4px 6px -4px rgba(0,0,0,0.02);flex:1;min-width:0;">
               <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;">
                 <div>
                   <div style="font-size:11px;font-weight:900;letter-spacing:0.1em;text-transform:uppercase;color:#1e3a5f;">Machinery Exchange</div>
@@ -6553,7 +6536,6 @@
                 </div>
                 <div style="font-weight:700;font-size:13px;color:#0f172a;">Quotations</div>
                 <div style="font-size:10px;color:#64748b;line-height:1.2;">Create and manage sales quotes.</div>
-                <div style="margin-top:2px;font-size:9px;font-weight:700;color:#ef4444;text-transform:uppercase;letter-spacing:0.5px;">QUOTE</div>
               </div>
               
               <!-- 2 -->
@@ -6563,7 +6545,6 @@
                 </div>
                 <div style="font-weight:700;font-size:13px;color:#0f172a;">Orders</div>
                 <div style="font-size:10px;color:#64748b;line-height:1.2;">Manage active and historical orders.</div>
-                <div style="margin-top:2px;font-size:9px;font-weight:700;color:#f59e0b;text-transform:uppercase;letter-spacing:0.5px;">ORDER</div>
               </div>
               
               <!-- 3 -->
@@ -6573,7 +6554,6 @@
                 </div>
                 <div style="font-weight:700;font-size:13px;color:#0f172a;">Customers</div>
                 <div style="font-size:10px;color:#64748b;line-height:1.2;">View and edit customer database.</div>
-                <div style="margin-top:2px;font-size:9px;font-weight:700;color:#3b82f6;text-transform:uppercase;letter-spacing:0.5px;">CUST</div>
               </div>
 
 
@@ -6584,7 +6564,6 @@
                 </div>
                 <div style="font-weight:700;font-size:13px;color:#0f172a;">CE Reports</div>
                 <div style="font-size:10px;color:#64748b;line-height:1.2;">View customer engagement reports.</div>
-                <div style="margin-top:2px;font-size:9px;font-weight:700;color:#10b981;text-transform:uppercase;letter-spacing:0.5px;">CER</div>
               </div>
 
               <!-- 6 -->
@@ -6594,7 +6573,6 @@
                 </div>
                 <div style="font-weight:700;font-size:13px;color:#0f172a;">Marketing</div>
                 <div style="font-size:10px;color:#64748b;line-height:1.2;">Manage marketing campaigns and leads.</div>
-                <div style="margin-top:2px;font-size:9px;font-weight:700;color:#0ea5e9;text-transform:uppercase;letter-spacing:0.5px;">MKT</div>
               </div>
 
               <!-- 7 -->
@@ -6604,7 +6582,6 @@
                 </div>
                 <div style="font-weight:700;font-size:13px;color:#0f172a;">Efficiency</div>
                 <div style="font-size:10px;color:#64748b;line-height:1.2;">Track team and individual efficiency.</div>
-                <div style="margin-top:2px;font-size:9px;font-weight:700;color:#f59e0b;text-transform:uppercase;letter-spacing:0.5px;">EFF</div>
               </div>
 
               <!-- 8 -->
@@ -6614,7 +6591,6 @@
                 </div>
                 <div style="font-weight:700;font-size:13px;color:#0f172a;">Month End</div>
                 <div style="font-size:10px;color:#64748b;line-height:1.2;">Generate and view month-end reports.</div>
-                <div style="margin-top:2px;font-size:9px;font-weight:700;color:#a855f7;text-transform:uppercase;letter-spacing:0.5px;">MER</div>
               </div>
 
               <!-- 9 -->
@@ -6624,7 +6600,6 @@
                 </div>
                 <div style="font-weight:700;font-size:13px;color:#0f172a;">Training</div>
                 <div style="font-size:10px;color:#64748b;line-height:1.2;">Track staff training progress and compliance.</div>
-                <div style="margin-top:2px;font-size:9px;font-weight:700;color:#ef4444;text-transform:uppercase;letter-spacing:0.5px;">TRN</div>
               </div>
 
               <!-- 10 -->
@@ -6634,7 +6609,6 @@
                 </div>
                 <div style="font-weight:700;font-size:13px;color:#0f172a;">Course Library</div>
                 <div style="font-size:10px;color:#64748b;line-height:1.2;">Browse and assign training modules.</div>
-                <div style="margin-top:2px;font-size:9px;font-weight:700;color:#3b82f6;text-transform:uppercase;letter-spacing:0.5px;">LRN</div>
               </div>
 
 
@@ -6645,7 +6619,6 @@
                 </div>
                 <div style="font-weight:700;font-size:13px;color:#0f172a;">Stock</div>
                 <div style="font-size:10px;color:#64748b;line-height:1.2;">View and manage inventory.</div>
-                <div style="margin-top:2px;font-size:9px;font-weight:700;color:#10b981;text-transform:uppercase;letter-spacing:0.5px;">STK</div>
               </div>
 
               <!-- 12 -->
@@ -6655,7 +6628,6 @@
                 </div>
                 <div style="font-weight:700;font-size:13px;color:#0f172a;">Sales Entry</div>
                 <div style="font-size:10px;color:#64748b;line-height:1.2;">Log new sales and orders.</div>
-                <div style="margin-top:2px;font-size:9px;font-weight:700;color:#0ea5e9;text-transform:uppercase;letter-spacing:0.5px;">SALE</div>
               </div>
 
             </div>
@@ -7258,12 +7230,33 @@
                                     <h3 style="font-size: 16px; font-weight: 750; color: #0f172a; margin: 0 0 4px 0;">Email Queue Monitor <span id="email-queue-count" style="font-size: 12px; color: #64748b; font-weight: 600; margin-left: 8px; background: #f1f5f9; padding: 2px 8px; border-radius: 12px;">(0)</span></h3>
                                     <p style="font-size: 13px; color: #64748b; margin: 0;">Monitor stuck or failed system emails. Failed emails auto-retry 3 times.</p>
                                 </div>
-                                <button onclick="if(window.salestrack) window.salestrack.requeueFailedEmails()" style="background: #3b82f6; color: white; border: none; padding: 10px 20px; border-radius: 8px; font-weight: 700; cursor: pointer; font-size: 13px; transition: all 0.2s; display: flex; align-items: center; gap: 8px; box-shadow: 0 4px 10px rgba(59,130,246,0.3);">
-                                  <i class="fas fa-sync-alt"></i> Retry All Failed
-                                </button>
+                                <div style="display: flex; gap: 12px; align-items: center;">
+                                    <select id="email-queue-category" onchange="if(window.salestrack) window.salestrack.loadFailedEmails(true)" style="padding: 9px 12px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.1); background: #111111; font-size: 13px; font-weight: 600; color: #f9fafb; outline: none; cursor: pointer; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);">
+                                        <option value="all" selected>All Categories</option>
+                                        <option value="order">Order Tracking</option>
+                                        <option value="psv">PSV Reports</option>
+                                        <option value="aftersales">Aftersales</option>
+                                        <option value="marketing">Marketing</option>
+                                    </select>
+                                    <select id="email-queue-filter" onchange="if(window.salestrack) window.salestrack.loadFailedEmails(true)" style="padding: 9px 12px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.1); background: #111111; font-size: 13px; font-weight: 600; color: #f9fafb; outline: none; cursor: pointer; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);">
+                                        <option value="all">All Status</option>
+                                        <option value="failed_pending" selected>Pending & Failed</option>
+                                        <option value="sent">Sent Successfully</option>
+                                    </select>
+                                    <button onclick="if(window.salestrack) window.salestrack.requeueFailedEmails()" style="background: #3b82f6; color: white; border: none; padding: 10px 20px; border-radius: 8px; font-weight: 700; cursor: pointer; font-size: 13px; transition: all 0.2s; display: flex; align-items: center; gap: 8px; box-shadow: 0 4px 10px rgba(59,130,246,0.3);">
+                                        <i class="fas fa-sync-alt"></i> Retry All Failed
+                                    </button>
+                                </div>
                             </div>
-                            <div id="settings-email-queue-list" style="font-size: 13px; color: #475569; max-height: 400px; overflow-y: auto; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 16px;">
+                            <div id="settings-email-queue-list" style="font-size: 13px; color: #475569; max-height: calc(100vh - 280px); overflow-y: auto; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 8px; padding: 16px;">
                                 <div style="text-align: center; color: #94a3b8; padding: 20px;"><i class="fas fa-spinner fa-spin" style="margin-right:8px;"></i> Loading queue...</div>
+                            </div>
+                            <div id="email-queue-pagination" style="display: flex; justify-content: space-between; align-items: center; margin-top: 16px; padding: 0 8px; font-size: 13px; color: #64748b; font-weight: 600;">
+                                <div>Showing page <span id="email-queue-page-current">1</span> of <span id="email-queue-page-total">1</span></div>
+                                <div style="display: flex; gap: 8px;">
+                                    <button onclick="if(window.salestrack) window.salestrack.changeEmailQueuePage(-1)" style="padding: 6px 12px; border-radius: 6px; border: 1px solid #e2e8f0; background: white; cursor: pointer; color: #475569; font-weight: 600; outline: none; transition: 0.2s;"><i class="fas fa-chevron-left" style="margin-right: 4px;"></i> Prev</button>
+                                    <button onclick="if(window.salestrack) window.salestrack.changeEmailQueuePage(1)" style="padding: 6px 12px; border-radius: 6px; border: 1px solid #e2e8f0; background: white; cursor: pointer; color: #475569; font-weight: 600; outline: none; transition: 0.2s;">Next <i class="fas fa-chevron-right" style="margin-left: 4px;"></i></button>
+                                </div>
                             </div>
                         </div>
                       </div>
@@ -19726,13 +19719,14 @@ thead th { padding:11px 12px; font-size:10px; font-weight:800; color:#fff; text-
       align-items: center;
       gap: 6px;
       padding: 5px 8px;
-      color: rgba(255, 255, 255, 0.5);
-      font-size: 11.5px;
-      font-weight: 500;
+      color: rgba(255, 255, 255, 0.9);
+      font-size: 12px;
+      font-weight: 600;
       cursor: pointer;
       border-radius: 6px;
       transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
       white-space: nowrap;
+      text-shadow: 0 1px 2px rgba(0,0,0,0.3);
       letter-spacing: 0.02em;
       position: relative;
       width: auto !important;
@@ -19794,8 +19788,10 @@ thead th { padding:11px 12px; font-size:10px; font-weight:800; color:#fff; text-
       top: 100%;           /* flush — no gap, so hover is unbroken */
       left: 50%;
       transform: translateX(-50%);
-      background: #111111;
-      border: 1px solid rgba(255,255,255,0.1);
+      background: linear-gradient(135deg, rgba(98,23,18,0.75) 0%, rgba(139,34,25,0.8) 100%);
+      -webkit-backdrop-filter: blur(12px);
+      backdrop-filter: blur(12px);
+      border: 1px solid rgba(255,255,255,0.15);
       border-radius: 10px;
       min-width: 160px;
       padding-top: 10px;   /* visual breathing room pushed INSIDE the menu */
@@ -19827,9 +19823,9 @@ thead th { padding:11px 12px; font-size:10px; font-weight:800; color:#fff; text-
       align-items: center;
       gap: 10px;
       padding: 6px 12px;
-      color: rgba(255,255,255,0.6);
-      font-size: 10.5px;
-      font-weight: 500;
+      color: rgba(255,255,255,0.9);
+      font-size: 11.5px;
+      font-weight: 600;
       border-radius: 7px;
       cursor: pointer;
       transition: all 0.15s ease;
