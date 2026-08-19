@@ -5649,7 +5649,7 @@
       cursor: pointer;
       border: 1px solid rgba(255, 255, 255, 0.6);
       border-radius: 16px;
-      padding: 16px 14px;
+      padding: 16px 10px;
       display: flex;
       flex-direction: column;
       position: relative;
@@ -5657,7 +5657,11 @@
       transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
       align-items: center;
       justify-content: center;
+      text-align: center;
       aspect-ratio: 1 / 1;
+      flex: 1 1 140px;
+      min-width: 110px;
+      max-width: 160px;
       text-align: center;
       gap: 6px;
     }
@@ -5778,9 +5782,9 @@
 
   <!-- PREMIUM TOP NAV (MOVED TO BODY ROOT) -->
   <nav class="omnis-top-nav">
-    <div class="top-nav-logo" style="cursor: pointer;" onclick="document.querySelector('.top-nav-item[data-view=\'view-dashboard\']').click()">
-      <img src="../../assets/images/omnis-logo-white.png" alt="Omnis AI" style="height: 38px; width: auto; object-fit: contain;">
-      <span style="color:#f8fafc; font-weight:800; letter-spacing:0.12em; font-size:11.5px; margin-right: 12px; margin-top: 2px; opacity: 0.9;">Salestrack</span>
+    <div class="top-nav-logo" style="cursor: pointer; flex-shrink: 1; display: flex; flex-direction: column; align-items: flex-end;" onclick="document.querySelector('.top-nav-item[data-view=\'view-dashboard\']').click()">
+      <img src="../../assets/images/omnis-logo-white.png" alt="Omnis AI" style="height: clamp(24px, 4vh, 38px); width: auto; max-width: 100%; object-fit: contain;">
+      <span style="color:#f8fafc; font-weight:800; letter-spacing:0.12em; font-size: clamp(9px, 1.5vh, 11.5px); margin-right: 12px; margin-top: 2px; opacity: 0.9;">Salestrack</span>
     </div>
 
     <div class="top-nav-group">
@@ -6387,27 +6391,27 @@
         <div id="view-dashboard" class="view-content active" style="display:flex; flex-direction:column; padding:0; margin:0; position:relative; flex:1; height:100%; overflow-y:auto;">
 
           <!-- TOP HEADER: Profile + Company KPI Cards -->
-          <div style="display:flex; align-items:stretch; gap:16px; padding:20px 40px 0;">
+          <div style="display:flex; flex-wrap:wrap; align-items:stretch; gap:16px; padding:20px 40px 0;">
 
             <!-- Profile / Greeting block -->
-            <div style="background:#fff; border-radius:20px; padding:28px 32px; display:flex; align-items:center; gap:24px; min-width:400px; flex-shrink:0; position:relative; overflow:hidden; box-shadow: 0 10px 30px -5px rgba(0,0,0,0.06), 0 4px 6px -4px rgba(0,0,0,0.02); border: 1px solid #e2e8f0;">
+            <div style="background:#fff; border-radius:20px; padding:28px 32px; display:flex; align-items:center; gap:24px; flex: 1 1 350px; min-width: 250px; position:relative; overflow:hidden; box-shadow: 0 10px 30px -5px rgba(0,0,0,0.06), 0 4px 6px -4px rgba(0,0,0,0.02); border: 1px solid #e2e8f0;">
               <div style="position:absolute;top:16px;right:16px;display:flex;align-items:center;gap:12px;z-index:2;">
                 <!-- WA Status -->
-                <div id="wa-navbar-status" style="display:flex; align-items:center; gap:6px; cursor: pointer; padding:4px 8px; background:#f1f5f9; border:1px solid #e2e8f0; border-radius:6px; transition:all 0.2s;" onmouseover="this.style.background='#e2e8f0'" onmouseout="this.style.background='#f1f5f9'" onclick="switchToView('view-settings')">
-                  <span id="wa-navbar-dot" style="width:6px; height:6px; background:#64748b; border-radius:50%; display:inline-block; box-shadow: 0 0 4px rgba(0,0,0,0.1);"></span>
-                  <div id="wa-navbar-text" style="font-size:9px; color:#64748b; font-weight:800; letter-spacing:0.06em; text-transform:uppercase;">WA: OFFLINE</div>
+                <div id="wa-navbar-status" style="display:flex; align-items:center; gap:8px; cursor: pointer; padding:6px 14px; background:#0f172a; border-radius:99px; transition:all 0.2s; box-shadow: 0 2px 4px rgba(0,0,0,0.08);" onmouseover="this.style.background='#1e293b'; this.style.transform='translateY(-1px)'" onmouseout="this.style.background='#0f172a'; this.style.transform='none'" onclick="switchToView('view-settings')">
+                  <span id="wa-navbar-dot" style="width:6px; height:6px; background:#64748b; border-radius:50%; display:inline-block; box-shadow: 0 0 6px rgba(0,0,0,0.15);"></span>
+                  <div id="wa-navbar-text" style="font-size:10px; color:#fff; font-weight:700; letter-spacing:0.04em; text-transform:uppercase;">WA: OFFLINE</div>
                 </div>
                 <!-- Settings Button -->
-                <div onclick="switchToView('view-settings')" style="cursor:pointer; width:24px; height:24px; display:flex; align-items:center; justify-content:center; background:#eff6ff; border:1px solid #bfdbfe; border-radius:6px; color:#2563eb; transition:all 0.2s;" onmouseover="this.style.background='#dbeafe'; this.style.borderColor='#93c5fd'" onmouseout="this.style.background='#eff6ff'; this.style.borderColor='#bfdbfe'">
-                  <i class="fas fa-cog" style="font-size:12px;"></i>
+                <div onclick="switchToView('view-settings')" style="cursor:pointer; width:28px; height:28px; display:flex; align-items:center; justify-content:center; background:#0f172a; border-radius:50%; color:#fff; transition:all 0.2s; box-shadow: 0 2px 4px rgba(0,0,0,0.08);" onmouseover="this.style.background='#1e293b'; this.style.transform='translateY(-1px)'" onmouseout="this.style.background='#0f172a'; this.style.transform='none'">
+                  <i class="fas fa-cog" style="font-size:13px;"></i>
                 </div>
               </div>
               
               <!-- Avatar -->
               <div style="position:relative;flex-shrink:0;">
-                <div style="position:absolute;inset:-3px;border-radius:50%;background:linear-gradient(135deg,rgba(0,0,0,0.1),rgba(0,0,0,0.03));z-index:0;"></div>
+                <div style="position:absolute;inset:-4px;border-radius:50%;background:linear-gradient(135deg,rgba(0,0,0,0.1),rgba(0,0,0,0.03));z-index:0;"></div>
                 <div id="profile-avatar-wrap" onclick="document.getElementById('profile-photo-input').click()"
-                     style="position:relative;width:72px;height:72px;border-radius:50%;cursor:pointer;border:3px solid #fff;overflow:hidden;z-index:1;box-shadow:0 10px 25px -5px rgba(0,0,0,0.1);"
+                     style="position:relative;width:96px;height:96px;border-radius:50%;cursor:pointer;border:4px solid #fff;overflow:hidden;z-index:1;box-shadow:0 10px 25px -5px rgba(0,0,0,0.15);"
                      title="Click to change profile photo">
                   <div id="profile-avatar-letter" style="width:100%;height:100%;background:linear-gradient(135deg,#6b1a14,#2d0906);display:flex;align-items:center;justify-content:center;font-size:28px;font-weight:800;color:#fff;">A</div>
                   <img id="profile-avatar-img" src="" alt="Profile" style="position:absolute;top:0;left:0;width:100%;height:100%;object-fit:cover;display:none;border-radius:50%;">
@@ -6420,14 +6424,15 @@
               </div>
               <input type="file" id="profile-photo-input" accept="image/*" style="display:none;" onchange="window.openProfileCropModal(this)">
               <!-- Greeting text -->
-              <div style="min-width:0;position:relative;z-index:1;padding-right:70px;">
+              <div style="flex:1;position:relative;z-index:1;padding-right:70px;">
                 <h2 id="welcome-greeting" style="font-size:16px;font-weight:900;color:#0f172a;margin:0 0 6px;letter-spacing:-0.02em;line-height:1.3;">Good afternoon, Administrator!</h2>
                 <p id="welcome-date-subtitle" style="font-size:12px;color:#64748b;margin:0 0 14px;font-weight:500;">Today is Wednesday, May 27.</p>
               </div>
             </div>
 
             <!-- SINOPOWER COMBINED -->
-            <div style="background:rgba(255,255,255,0.8);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border:1px solid rgba(255,255,255,0.6);border-top:4px solid #8b2219;border-radius:20px;padding:22px 24px;box-shadow:0 10px 30px -5px rgba(0,0,0,0.06), 0 4px 6px -4px rgba(0,0,0,0.02);flex:1;min-width:0;">
+            <div style="display:flex; flex-wrap:wrap; gap:16px; flex: 2 1 600px;">
+              <div style="background:rgba(255,255,255,0.8);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border:1px solid rgba(255,255,255,0.6);border-top:4px solid #8b2219;border-radius:20px;padding:22px 24px;box-shadow:0 10px 30px -5px rgba(0,0,0,0.06), 0 4px 6px -4px rgba(0,0,0,0.02);flex:1 1 300px;">
               <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;">
                 <div>
                   <div style="font-size:11px;font-weight:900;letter-spacing:0.1em;text-transform:uppercase;color:#8b2219;">Sinopower</div>
@@ -6471,10 +6476,9 @@
                   </div>
                 </div>
               </div>
-            </div>
-
+              </div>
             <!-- MACHINERY EXCHANGE COMBINED -->
-            <div style="background:rgba(255,255,255,0.8);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border:1px solid rgba(255,255,255,0.6);border-top:4px solid #1e3a5f;border-radius:20px;padding:22px 24px;box-shadow:0 10px 30px -5px rgba(0,0,0,0.06), 0 4px 6px -4px rgba(0,0,0,0.02);flex:1;min-width:0;">
+            <div style="background:rgba(255,255,255,0.8);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border:1px solid rgba(255,255,255,0.6);border-top:4px solid #1e3a5f;border-radius:20px;padding:22px 24px;box-shadow:0 10px 30px -5px rgba(0,0,0,0.06), 0 4px 6px -4px rgba(0,0,0,0.02);flex:1 1 300px;">
               <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;">
                 <div>
                   <div style="font-size:11px;font-weight:900;letter-spacing:0.1em;text-transform:uppercase;color:#1e3a5f;">Machinery Exchange</div>
@@ -6518,16 +6522,17 @@
                   </div>
                 </div>
               </div>
+              </div>
             </div>
 
           </div><!-- /top header -->
 
           <!-- SHORTCUTS CARDS (FLEETRACK STYLE) -->
-          <div style="padding:0 40px; margin-top:32px; margin-bottom:24px;">
+          <div style="padding:0 40px; margin-top:16px; margin-bottom:0;">
             <div style="display:flex; align-items:center; gap:8px; margin-bottom:16px;">
               <span style="font-size:18px;font-weight:900;letter-spacing:-0.02em;color:#0f172a;text-transform:uppercase;">Shortcuts</span>
             </div>
-            <div style="display:grid; grid-auto-flow:column; grid-auto-columns:150px; gap:16px; justify-content:flex-start; overflow-x:auto; padding-top:12px; padding-bottom:56px; padding-left:20px; padding-right:20px; margin-left:-20px; margin-right:-20px; scrollbar-width:thin;">
+            <div style="display:flex; gap:16px; justify-content:space-between; overflow-x:auto; padding-top:24px; padding-bottom:40px; padding-left:24px; padding-right:24px; margin-left:-24px; margin-right:-24px; scrollbar-width:thin;">
               
               <!-- 1 -->
               <div onclick="switchToView('view-quotations-list')" class="rpt-card rpt-card-red">
@@ -6634,9 +6639,9 @@
           </div>
           
           <!-- OEM LOGOS BANNER (DYNAMIC FROM SETTINGS) -->
-          <div style="padding:16px 40px 0;">
-            <div id="oem-logos-banner-container" style="display:flex; align-items:center;">
-                <div id="oem-logos-banner-items" style="display:flex; align-items:center; justify-content:center; flex:1; gap:36px; overflow-x:auto; padding:16px 24px;">
+          <div style="padding:0 40px 0; overflow:hidden; width: 100%;">
+            <div id="oem-logos-banner-container" style="display:flex; align-items:center; justify-content:center; width:100%;">
+                <div id="oem-logos-banner-items" style="display:flex; align-items:center; justify-content:center; flex-wrap:nowrap; width:100%; gap:clamp(10px, 2vw, 36px); padding:4px 0;">
                     <!-- JS populated -->
                 </div>
             </div>
@@ -6673,7 +6678,7 @@
                         uniqueBrands.forEach(m => {
                             const brandSafe = m.brand.replace(/'/g, "\\'");
                             // Logos made slightly bigger (height:48px) and grey when not hovered
-                            html += `<img src="${m.logo_url}" alt="${m.brand}" title="${m.brand} Performance Report" style="height:48px; width:auto; max-width:160px; object-fit:contain; cursor:pointer; filter:grayscale(100%) brightness(0.45) opacity(85%); transition:all 0.25s cubic-bezier(0.4, 0, 0.2, 1);" onmouseover="this.style.filter='drop-shadow(0 4px 10px rgba(0,0,0,0.15))'; this.style.transform='scale(1.08) translateY(-2px)';" onmouseout="this.style.filter='grayscale(100%) brightness(0.45) opacity(85%)'; this.style.transform='none';" onclick="window.salestrack.openOEMBreakdownModal('${brandSafe}', 'This Year')">`;
+                            html += `<img src="${m.logo_url}" alt="${m.brand}" title="${m.brand} Performance Report" style="height:clamp(32px, 5vw, 48px); width:auto; max-width:140px; object-fit:contain; cursor:pointer; filter:grayscale(100%) brightness(0.45) opacity(85%); transition:all 0.25s cubic-bezier(0.4, 0, 0.2, 1);" onmouseover="this.style.filter='drop-shadow(0 4px 10px rgba(0,0,0,0.15))'; this.style.transform='scale(1.08) translateY(-2px)';" onmouseout="this.style.filter='grayscale(100%) brightness(0.45) opacity(85%)'; this.style.transform='none';" onclick="window.salestrack.openOEMBreakdownModal('${brandSafe}', 'This Year')">`;
                         });
                     }
                     container.innerHTML = html;
@@ -6709,28 +6714,28 @@
                     
                     const wrapper = document.getElementById('oem-news-marquee-content');
                     const newItems = `
-                        <div style="display: flex; gap: 16px; padding: 18px 20px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 14px; min-width: 380px; max-width: 380px; white-space: normal; cursor: pointer; transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);" onmouseover="this.style.borderColor='#93c5fd'; this.style.backgroundColor='#fff'; this.style.boxShadow='0 12px 24px -4px rgba(59,130,246,0.15), 0 4px 8px -2px rgba(59,130,246,0.05)'; this.style.transform='translateY(-2px)';" onmouseout="this.style.borderColor='#e2e8f0'; this.style.backgroundColor='#f8fafc'; this.style.boxShadow='none'; this.style.transform='none';">
+                        <div style="display: flex; gap: 16px; padding: 18px 20px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 14px; min-width: 260px; max-width: 340px; flex: 0 0 auto; white-space: normal; cursor: pointer; transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);" onmouseover="this.style.borderColor='#93c5fd'; this.style.backgroundColor='#fff'; this.style.boxShadow='0 12px 24px -4px rgba(59,130,246,0.15), 0 4px 8px -2px rgba(59,130,246,0.05)'; this.style.transform='translateY(-2px)';" onmouseout="this.style.borderColor='#e2e8f0'; this.style.backgroundColor='#f8fafc'; this.style.boxShadow='none'; this.style.transform='none';">
                             <i class="fas fa-truck-moving" style="color: #1e293b; font-size: 18px; margin-top: 2px;"></i>
                             <div>
                                 <div style="font-size: 12px; font-weight: 700; color: #1e293b; margin-bottom: 2px;">Cross-Border Fleet Expansion</div>
                                 <div style="font-size: 11px; color: #64748b; line-height: 1.3;">Logistics firm announces 200 new Volvo rigs for the SADC corridor. Major impact on regional capacity expected.</div>
                             </div>
                         </div>
-                        <div style="display: flex; gap: 16px; padding: 18px 20px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 14px; min-width: 380px; max-width: 380px; white-space: normal; cursor: pointer; transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);" onmouseover="this.style.borderColor='#93c5fd'; this.style.backgroundColor='#fff'; this.style.boxShadow='0 12px 24px -4px rgba(59,130,246,0.15), 0 4px 8px -2px rgba(59,130,246,0.05)'; this.style.transform='translateY(-2px)';" onmouseout="this.style.borderColor='#e2e8f0'; this.style.backgroundColor='#f8fafc'; this.style.boxShadow='none'; this.style.transform='none';">
+                        <div style="display: flex; gap: 16px; padding: 18px 20px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 14px; min-width: 260px; max-width: 340px; flex: 0 0 auto; white-space: normal; cursor: pointer; transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);" onmouseover="this.style.borderColor='#93c5fd'; this.style.backgroundColor='#fff'; this.style.boxShadow='0 12px 24px -4px rgba(59,130,246,0.15), 0 4px 8px -2px rgba(59,130,246,0.05)'; this.style.transform='translateY(-2px)';" onmouseout="this.style.borderColor='#e2e8f0'; this.style.backgroundColor='#f8fafc'; this.style.boxShadow='none'; this.style.transform='none';">
                             <i class="fas fa-gas-pump" style="color: #1e293b; font-size: 18px; margin-top: 2px;"></i>
                             <div>
                                 <div style="font-size: 12px; font-weight: 700; color: #1e293b; margin-bottom: 2px;">Fuel Levies Adjustment Q3</div>
                                 <div style="font-size: 11px; color: #64748b; line-height: 1.3;">Regional authorities announce 3% increase on diesel levies across main toll routes starting next month.</div>
                             </div>
                         </div>
-                        <div style="display: flex; gap: 16px; padding: 18px 20px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 14px; min-width: 380px; max-width: 380px; white-space: normal; cursor: pointer; transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);" onmouseover="this.style.borderColor='#93c5fd'; this.style.backgroundColor='#fff'; this.style.boxShadow='0 12px 24px -4px rgba(59,130,246,0.15), 0 4px 8px -2px rgba(59,130,246,0.05)'; this.style.transform='translateY(-2px)';" onmouseout="this.style.borderColor='#e2e8f0'; this.style.backgroundColor='#f8fafc'; this.style.boxShadow='none'; this.style.transform='none';">
+                        <div style="display: flex; gap: 16px; padding: 18px 20px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 14px; min-width: 260px; max-width: 340px; flex: 0 0 auto; white-space: normal; cursor: pointer; transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);" onmouseover="this.style.borderColor='#93c5fd'; this.style.backgroundColor='#fff'; this.style.boxShadow='0 12px 24px -4px rgba(59,130,246,0.15), 0 4px 8px -2px rgba(59,130,246,0.05)'; this.style.transform='translateY(-2px)';" onmouseout="this.style.borderColor='#e2e8f0'; this.style.backgroundColor='#f8fafc'; this.style.boxShadow='none'; this.style.transform='none';">
                             <i class="fas fa-cogs" style="color: #1e293b; font-size: 18px; margin-top: 2px;"></i>
                             <div>
                                 <div style="font-size: 12px; font-weight: 700; color: #1e293b; margin-bottom: 2px;">OEM Parts Shortage Easing</div>
                                 <div style="font-size: 11px; color: #64748b; line-height: 1.3;">Global supply chains stabilizing. Lead times for CAT and Bell heavy machinery spares down to 3 weeks average.</div>
                             </div>
                         </div>
-                        <div style="display: flex; gap: 16px; padding: 18px 20px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 14px; min-width: 380px; max-width: 380px; white-space: normal; cursor: pointer; transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);" onmouseover="this.style.borderColor='#93c5fd'; this.style.backgroundColor='#fff'; this.style.boxShadow='0 12px 24px -4px rgba(59,130,246,0.15), 0 4px 8px -2px rgba(59,130,246,0.05)'; this.style.transform='translateY(-2px)';" onmouseout="this.style.borderColor='#e2e8f0'; this.style.backgroundColor='#f8fafc'; this.style.boxShadow='none'; this.style.transform='none';">
+                        <div style="display: flex; gap: 16px; padding: 18px 20px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 14px; min-width: 260px; max-width: 340px; flex: 0 0 auto; white-space: normal; cursor: pointer; transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);" onmouseover="this.style.borderColor='#93c5fd'; this.style.backgroundColor='#fff'; this.style.boxShadow='0 12px 24px -4px rgba(59,130,246,0.15), 0 4px 8px -2px rgba(59,130,246,0.05)'; this.style.transform='translateY(-2px)';" onmouseout="this.style.borderColor='#e2e8f0'; this.style.backgroundColor='#f8fafc'; this.style.boxShadow='none'; this.style.transform='none';">
                             <i class="fas fa-chart-line" style="color: #1e293b; font-size: 18px; margin-top: 2px;"></i>
                             <div>
                                 <div style="font-size: 12px; font-weight: 700; color: #1e293b; margin-bottom: 2px;">Yellow Iron Imports Spike</div>
@@ -6746,8 +6751,8 @@
 
           
           <!-- OEM & MARKET INTELLIGENCE BRIEF -->
-          <div style="padding: 64px 40px 32px;">
-            <div style="background: #fff; border: 1px solid #e2e8f0; border-radius: 20px; padding: 28px 32px; box-shadow: 0 10px 30px -5px rgba(0,0,0,0.06), 0 4px 6px -4px rgba(0,0,0,0.02); display: flex; flex-direction: column; gap: 20px;">
+          <div style="padding: 24px 20px 80px; width: 100%;">
+            <div style="background: #fff; border: 1px solid #e2e8f0; border-radius: 20px; padding: 24px 20px; box-shadow: 0 10px 30px -5px rgba(0,0,0,0.06), 0 4px 6px -4px rgba(0,0,0,0.02); display: flex; flex-direction: column; gap: 20px;">
                 
                 <div style="display: flex; align-items: center; justify-content: space-between;">
                     <div style="display: flex; align-items: center; gap: 10px;">
@@ -6760,13 +6765,13 @@
                 </div>
 
                 
-                <div id="oem-news-marquee-wrapper" style="overflow-x: auto; white-space: nowrap; position: relative; width: calc(100% + 32px); margin: -20px -16px; padding: 20px 16px; scrollbar-width: none;" onmouseenter="window.pauseOemMarquee=true" onmouseleave="window.pauseOemMarquee=false">
+                <div id="oem-news-marquee-wrapper" style="overflow-x: auto; white-space: nowrap; position: relative; width: 100%; margin: 0; padding: 20px 4px; scrollbar-width: none;" onmouseenter="window.pauseOemMarquee=true" onmouseleave="window.pauseOemMarquee=false">
                     <style>
                         #oem-news-marquee-wrapper::-webkit-scrollbar { display: none; }
                     </style>
                     <div id="oem-news-marquee-content" style="display: inline-flex; gap: 16px; padding-right: 24px;">
                         <!-- Brief Item 1: Beira Port -->
-                        <div style="display: flex; gap: 16px; padding: 18px 20px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 14px; min-width: 380px; max-width: 380px; white-space: normal; cursor: pointer; transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);" onmouseover="this.style.borderColor='#93c5fd'; this.style.backgroundColor='#fff'; this.style.boxShadow='0 12px 24px -4px rgba(59,130,246,0.15), 0 4px 8px -2px rgba(59,130,246,0.05)'; this.style.transform='translateY(-2px)';" onmouseout="this.style.borderColor='#e2e8f0'; this.style.backgroundColor='#f8fafc'; this.style.boxShadow='none'; this.style.transform='none';" onclick="window.open('https://clubofmozambique.com/', '_blank')">
+                        <div style="display: flex; gap: 16px; padding: 18px 20px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 14px; min-width: 260px; max-width: 340px; flex: 0 0 auto; white-space: normal; cursor: pointer; transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);" onmouseover="this.style.borderColor='#93c5fd'; this.style.backgroundColor='#fff'; this.style.boxShadow='0 12px 24px -4px rgba(59,130,246,0.15), 0 4px 8px -2px rgba(59,130,246,0.05)'; this.style.transform='translateY(-2px)';" onmouseout="this.style.borderColor='#e2e8f0'; this.style.backgroundColor='#f8fafc'; this.style.boxShadow='none'; this.style.transform='none';" onclick="window.open('https://clubofmozambique.com/', '_blank')">
                             <i class="fas fa-ship" style="color: #1e293b; font-size: 18px; margin-top: 2px;"></i>
                             <div>
                                 <div style="font-size: 12px; font-weight: 700; color: #1e293b; margin-bottom: 2px;">Port of Beira Efficiency Upgrades</div>
@@ -6775,7 +6780,7 @@
                         </div>
 
                         <!-- Brief Item 2: Zimbabwe Mining -->
-                        <div style="display: flex; gap: 16px; padding: 18px 20px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 14px; min-width: 380px; max-width: 380px; white-space: normal; cursor: pointer; transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);" onmouseover="this.style.borderColor='#93c5fd'; this.style.backgroundColor='#fff'; this.style.boxShadow='0 12px 24px -4px rgba(59,130,246,0.15), 0 4px 8px -2px rgba(59,130,246,0.05)'; this.style.transform='translateY(-2px)';" onmouseout="this.style.borderColor='#e2e8f0'; this.style.backgroundColor='#f8fafc'; this.style.boxShadow='none'; this.style.transform='none';" onclick="window.open('https://www.herald.co.zw/category/articles/business/', '_blank')">
+                        <div style="display: flex; gap: 16px; padding: 18px 20px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 14px; min-width: 260px; max-width: 340px; flex: 0 0 auto; white-space: normal; cursor: pointer; transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);" onmouseover="this.style.borderColor='#93c5fd'; this.style.backgroundColor='#fff'; this.style.boxShadow='0 12px 24px -4px rgba(59,130,246,0.15), 0 4px 8px -2px rgba(59,130,246,0.05)'; this.style.transform='translateY(-2px)';" onmouseout="this.style.borderColor='#e2e8f0'; this.style.backgroundColor='#f8fafc'; this.style.boxShadow='none'; this.style.transform='none';" onclick="window.open('https://www.herald.co.zw/category/articles/business/', '_blank')">
                             <i class="fas fa-hammer" style="color: #1e293b; font-size: 18px; margin-top: 2px;"></i>
                             <div>
                                 <div style="font-size: 12px; font-weight: 700; color: #1e293b; margin-bottom: 2px;">Lithium Mining Boom in ZIM</div>
@@ -6784,7 +6789,7 @@
                         </div>
 
                         <!-- Brief Item 3: Beira Corridor -->
-                        <div style="display: flex; gap: 16px; padding: 18px 20px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 14px; min-width: 380px; max-width: 380px; white-space: normal; cursor: pointer; transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);" onmouseover="this.style.borderColor='#93c5fd'; this.style.backgroundColor='#fff'; this.style.boxShadow='0 12px 24px -4px rgba(59,130,246,0.15), 0 4px 8px -2px rgba(59,130,246,0.05)'; this.style.transform='translateY(-2px)';" onmouseout="this.style.borderColor='#e2e8f0'; this.style.backgroundColor='#f8fafc'; this.style.boxShadow='none'; this.style.transform='none';" onclick="window.open('https://www.chronicle.co.zw/', '_blank')">
+                        <div style="display: flex; gap: 16px; padding: 18px 20px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 14px; min-width: 260px; max-width: 340px; flex: 0 0 auto; white-space: normal; cursor: pointer; transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);" onmouseover="this.style.borderColor='#93c5fd'; this.style.backgroundColor='#fff'; this.style.boxShadow='0 12px 24px -4px rgba(59,130,246,0.15), 0 4px 8px -2px rgba(59,130,246,0.05)'; this.style.transform='translateY(-2px)';" onmouseout="this.style.borderColor='#e2e8f0'; this.style.backgroundColor='#f8fafc'; this.style.boxShadow='none'; this.style.transform='none';" onclick="window.open('https://www.chronicle.co.zw/', '_blank')">
                             <i class="fas fa-road" style="color: #1e293b; font-size: 18px; margin-top: 2px;"></i>
                             <div>
                                 <div style="font-size: 12px; font-weight: 700; color: #1e293b; margin-bottom: 2px;">Beira-Mutare Corridor Upgrades</div>
@@ -6793,7 +6798,7 @@
                         </div>
 
                         <!-- Brief Item 4: Durban Shipping -->
-                        <div style="display: flex; gap: 16px; padding: 18px 20px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 14px; min-width: 380px; max-width: 380px; white-space: normal; cursor: pointer; transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);" onmouseover="this.style.borderColor='#93c5fd'; this.style.backgroundColor='#fff'; this.style.boxShadow='0 12px 24px -4px rgba(59,130,246,0.15), 0 4px 8px -2px rgba(59,130,246,0.05)'; this.style.transform='translateY(-2px)';" onmouseout="this.style.borderColor='#e2e8f0'; this.style.backgroundColor='#f8fafc'; this.style.boxShadow='none'; this.style.transform='none';" onclick="window.open('https://www.engineeringnews.co.za/page/logistics', '_blank')">
+                        <div style="display: flex; gap: 16px; padding: 18px 20px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 14px; min-width: 260px; max-width: 340px; flex: 0 0 auto; white-space: normal; cursor: pointer; transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);" onmouseover="this.style.borderColor='#93c5fd'; this.style.backgroundColor='#fff'; this.style.boxShadow='0 12px 24px -4px rgba(59,130,246,0.15), 0 4px 8px -2px rgba(59,130,246,0.05)'; this.style.transform='translateY(-2px)';" onmouseout="this.style.borderColor='#e2e8f0'; this.style.backgroundColor='#f8fafc'; this.style.boxShadow='none'; this.style.transform='none';" onclick="window.open('https://www.engineeringnews.co.za/page/logistics', '_blank')">
                             <i class="fas fa-anchor" style="color: #1e293b; font-size: 18px; margin-top: 2px;"></i>
                             <div>
                                 <div style="font-size: 12px; font-weight: 700; color: #1e293b; margin-bottom: 2px;">Durban Port Congestion Update</div>
@@ -6802,7 +6807,7 @@
                         </div>
 
                         <!-- Brief Item 5: Zimbabwe Tenders -->
-                        <div style="display: flex; gap: 16px; padding: 18px 20px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 14px; min-width: 380px; max-width: 380px; white-space: normal; cursor: pointer; transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);" onmouseover="this.style.borderColor='#93c5fd'; this.style.backgroundColor='#fff'; this.style.boxShadow='0 12px 24px -4px rgba(59,130,246,0.15), 0 4px 8px -2px rgba(59,130,246,0.05)'; this.style.transform='translateY(-2px)';" onmouseout="this.style.borderColor='#e2e8f0'; this.style.backgroundColor='#f8fafc'; this.style.boxShadow='none'; this.style.transform='none';" onclick="window.open('https://www.sundaymail.co.zw/', '_blank')">
+                        <div style="display: flex; gap: 16px; padding: 18px 20px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 14px; min-width: 260px; max-width: 340px; flex: 0 0 auto; white-space: normal; cursor: pointer; transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);" onmouseover="this.style.borderColor='#93c5fd'; this.style.backgroundColor='#fff'; this.style.boxShadow='0 12px 24px -4px rgba(59,130,246,0.15), 0 4px 8px -2px rgba(59,130,246,0.05)'; this.style.transform='translateY(-2px)';" onmouseout="this.style.borderColor='#e2e8f0'; this.style.backgroundColor='#f8fafc'; this.style.boxShadow='none'; this.style.transform='none';" onclick="window.open('https://www.sundaymail.co.zw/', '_blank')">
                             <i class="fas fa-tractor" style="color: #1e293b; font-size: 18px; margin-top: 2px;"></i>
                             <div>
                                 <div style="font-size: 12px; font-weight: 700; color: #1e293b; margin-bottom: 2px;">ZIM Government Agri-Mechanisation</div>
@@ -6811,7 +6816,7 @@
                         </div>
 
                         <!-- Brief Item 6: Customs & Borders -->
-                        <div style="display: flex; gap: 16px; padding: 18px 20px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 14px; min-width: 380px; max-width: 380px; white-space: normal; cursor: pointer; transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);" onmouseover="this.style.borderColor='#93c5fd'; this.style.backgroundColor='#fff'; this.style.boxShadow='0 12px 24px -4px rgba(59,130,246,0.15), 0 4px 8px -2px rgba(59,130,246,0.05)'; this.style.transform='translateY(-2px)';" onmouseout="this.style.borderColor='#e2e8f0'; this.style.backgroundColor='#f8fafc'; this.style.boxShadow='none'; this.style.transform='none';" onclick="window.open('https://www.herald.co.zw/', '_blank')">
+                        <div style="display: flex; gap: 16px; padding: 18px 20px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 14px; min-width: 260px; max-width: 340px; flex: 0 0 auto; white-space: normal; cursor: pointer; transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);" onmouseover="this.style.borderColor='#93c5fd'; this.style.backgroundColor='#fff'; this.style.boxShadow='0 12px 24px -4px rgba(59,130,246,0.15), 0 4px 8px -2px rgba(59,130,246,0.05)'; this.style.transform='translateY(-2px)';" onmouseout="this.style.borderColor='#e2e8f0'; this.style.backgroundColor='#f8fafc'; this.style.boxShadow='none'; this.style.transform='none';" onclick="window.open('https://www.herald.co.zw/', '_blank')">
                             <i class="fas fa-truck-loading" style="color: #1e293b; font-size: 18px; margin-top: 2px;"></i>
                             <div>
                                 <div style="font-size: 12px; font-weight: 700; color: #1e293b; margin-bottom: 2px;">Forbes Border Post Expansion</div>
@@ -14995,7 +15000,18 @@
           if (dateSubtitle) {
             const now = new Date();
             const options = { weekday: 'long', month: 'long', day: 'numeric' };
-            dateSubtitle.textContent = `Today is ${now.toLocaleDateString('en-US', options)}. Overview for your fleet:`;
+            const quotes = [
+              {text: "You don't close a sale, you open a relationship if you want to build a long-term, successful enterprise.", author: "Patricia Fripp"},
+              {text: "Success in sales is the sum of small efforts, repeated day in and day out.", author: "Robert Collier"},
+              {text: "Logistics is the ball and chain of armored warfare.", author: "Heinz Guderian"},
+              {text: "The line between disorder and order lies in logistics.", author: "Sun Tzu"},
+              {text: "Sales go up and down, service stays forever.", author: "Jason Jennings"},
+              {text: "Without logistics the world stops.", author: "Anonymous"},
+              {text: "Great salespeople are relationship builders who provide value and help their customers win.", author: "Jeffrey Gitomer"},
+              {text: "Supply chains compete, not companies.", author: "Martin Christopher"}
+            ];
+            const randomQuote = quotes[Math.floor(Math.random() * quotes.length)];
+            dateSubtitle.innerHTML = `Today is ${now.toLocaleDateString('en-US', options)}.<br><span style="font-style:italic; opacity:0.85; font-size:12px; margin-top:6px; display:inline-block;">"${randomQuote.text}" — <strong style="font-weight:600">${randomQuote.author}</strong></span>`;
           }
 
           const avatarCircle = document.getElementById('welcome-avatar-circle');
@@ -17853,7 +17869,7 @@ thead th { padding:11px 12px; font-size:10px; font-weight:800; color:#fff; text-
         let html = `
           <div style="display: grid; grid-template-columns: 1fr 320px; gap: 24px; height: 100%; align-items: start;">
             <div style="display: flex; flex-direction: column; background: white; border-radius: 12px; overflow: hidden; border: 1px solid #e2e8f0; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);">
-                <div style="padding: 24px 32px; background: white; border-bottom: 1px solid #f1f5f9;">
+                <div style="padding: 20px 32px; background: white; border-bottom: 1px solid #f1f5f9;">
                     <div style="display: flex; justify-content: space-between; align-items: flex-start;">
                         <div>
                             <h2 style="margin: 0; font-size: 24px; font-weight: 850; color: #0f172a; letter-spacing: -0.02em;">${monthName}</h2>

@@ -4308,8 +4308,8 @@ window.OmnisDashboardV6 = class OmnisDashboardV6 {
 
                     .oem-tabs { display: flex; gap: 24px; border-bottom: 1px solid #e2e8f0; margin-bottom: 24px; padding: 0 8px; }
                     .oem-tab { padding: 12px 4px; border: none; background: transparent; cursor: pointer; font-weight: 500; font-size: 14px; color: #64748b; border-bottom: 2px solid transparent; transition: all 0.2s ease; position: relative; top: 1px; }
-                    .oem-tab:hover { color: #800000; border-bottom-color: #cbd5e1; }
-                    .oem-tab.active { color: #800000; border-bottom-color: #800000; font-weight: 700; }
+                    .oem-tab:hover { color: #0f172a; border-bottom-color: #cbd5e1; }
+                    .oem-tab.active { color: #0f172a; border-bottom-color: #0f172a; font-weight: 700; }
                     .oem-tab-content { display: none; }
                     .oem-tab-content.active { display: block; }
 
@@ -4393,19 +4393,20 @@ window.OmnisDashboardV6 = class OmnisDashboardV6 {
                         color: #0f172a; font-weight: 600;
                     }
 
-                    /* Total row — maroon accent (only maroon in table body) */
-                    .report-table .total-row { background: #700000 !important; }
+                    /* Total row — premium slate accent */
+                    .report-table .total-row { background: #0f172a !important; }
                     .report-table .total-row td { font-size: 13px !important; padding: 13px 11px !important; font-weight: 800; color: #fff !important; border-bottom: none !important; }
-                    .report-table .total-row .cat-col { color: #fff !important; background: #5a0000 !important; font-size: 13px !important; border-right: 2px solid rgba(255,255,255,0.15) !important; letter-spacing: 0.5px; }
+                    .report-table .total-row .cat-col { color: #fff !important; background: #0f172a !important; font-size: 13px !important; border-right: 2px solid rgba(255,255,255,0.1) !important; letter-spacing: 0.5px; }
 
-                    /* Sub-section title banner — maroon accent */
+                    /* Sub-section title banner — premium slate accent */
                     .sub-section-title {
-                        background: #800000;
-                        color: #fff; padding: 10px 20px;
+                        background: #0f172a;
+                        color: #fff; padding: 12px 20px;
                         font-weight: 700; font-size: 12px; margin-bottom: 0;
                         text-align: center; letter-spacing: 1.5px;
                         text-transform: uppercase;
-                        border-bottom: 2px solid rgba(255,255,255,0.2);
+                        border-bottom: none;
+                        border-radius: 6px;
                     }
 
                     @media print {
@@ -4533,7 +4534,7 @@ window.OmnisDashboardV6 = class OmnisDashboardV6 {
                                     <input type="date" id="oem-custom-end" value="${customEnd || ''}" style="padding:4px; border:1px solid #cbd5e1; border-radius:4px; font-size:10px;">
                                     <button id="oem-custom-apply" style="padding:4px 8px; background:#0f172a; color:white; border:none; border-radius:4px; font-size:10px; cursor:pointer;">Apply</button>
                                 </div>
-                                <button id="btn-export-oem-pdf" class="report-btn-print" style="padding:5px 12px; background:#ef4444; color:white; border:none; border-radius:6px; font-size:11px; font-weight:600; cursor:pointer; display:flex; align-items:center; gap:5px; margin-left:10px;">
+                                <button id="btn-export-oem-pdf" class="report-btn-print" style="padding:5px 12px; background:#0f172a; color:white; border:none; border-radius:6px; font-size:11px; font-weight:600; cursor:pointer; display:flex; align-items:center; gap:5px; margin-left:10px;">
                                     <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M6 9V2h12v7M6 18H4a2 2 0 01-2-2v-5a2 2 0 012-2h16a2 2 0 012 2v5a2 2 0 012 2h-2m-2 0v5H6v-5"></path></svg>
                                     Export / Print PDF
                                 </button>
@@ -7574,24 +7575,24 @@ window.OmnisDashboardV6 = class OmnisDashboardV6 {
                 if (navbarText && navbarDot) {
                     let displayLabel = 'WA: DISCONNECTED';
                     let dotColor = '#64748b'; // Slate 400
-                    let textColor = '#64748b'; // Slate 400 for light bg
+                    let textColor = '#fff'; // White for dark bg
 
                     if (status === 'CONNECTED') {
                         displayLabel = 'WA: CONNECTED';
                         dotColor = '#22c55e'; // Green 500
-                        textColor = '#16a34a'; // Darker green
+                        textColor = '#fff'; 
                     } else if (status === 'QR_READY') {
                         displayLabel = 'WA: SCAN NEEDED';
                         dotColor = '#f59e0b'; // Amber 500
-                        textColor = '#d97706'; // Darker amber
+                        textColor = '#fff'; 
                     } else if (status === 'CONNECTING' || status === 'AUTHENTICATING') {
                         displayLabel = 'WA: CONNECTING...';
                         dotColor = '#3b82f6'; // Blue 500
-                        textColor = '#2563eb'; // Darker blue
+                        textColor = '#fff'; 
                     } else if (status === 'ERROR' || status === 'ERR_NO_BROWSER') {
                         displayLabel = status === 'ERR_NO_BROWSER' ? 'WA: NO BROWSER' : (errorDetail ? `WA: ${errorDetail}` : 'WA: ERROR');
                         dotColor = '#ef4444'; // Red 500
-                        textColor = '#dc2626'; // Darker red
+                        textColor = '#fff'; 
                     }
 
                     navbarText.innerText = displayLabel;
