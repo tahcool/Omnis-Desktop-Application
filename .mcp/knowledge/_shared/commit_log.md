@@ -423,3 +423,5 @@
 \n## 2026-08-20
 - `b33faf1` 2026-08-20 [supabase-migration] Create restore point for Order Tracking contextual tours
   Files: .mcp/knowledge/_shared/commit_log.md,index.html,omnis_dashboard.py,systems/salestrack/certificates_logic.js,systems/salestrack/index.html,systems/salestrack/training_logic.js,
+- `8b58067` 2026-08-20 [supabase-migration] Bump version to 4.3.1 and fix email duplicate block logic
+  Files: .mcp/knowledge/_shared/commit_log.md,lib/email-manager.js,package.json,supabase/functions/process-email-queue/index.ts,systems/salestrack/dashboard_logic.js,systems/salestrack/index.html,
