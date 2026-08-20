@@ -425,3 +425,5 @@
   Files: .mcp/knowledge/_shared/commit_log.md,index.html,omnis_dashboard.py,systems/salestrack/certificates_logic.js,systems/salestrack/index.html,systems/salestrack/training_logic.js,
 - `8b58067` 2026-08-20 [supabase-migration] Bump version to 4.3.1 and fix email duplicate block logic
   Files: .mcp/knowledge/_shared/commit_log.md,lib/email-manager.js,package.json,supabase/functions/process-email-queue/index.ts,systems/salestrack/dashboard_logic.js,systems/salestrack/index.html,
+- `43a9453` 2026-08-20 [supabase-migration] [checkpoint] Profile header flex layout fix
+  Files: .mcp/knowledge/_shared/commit_log.md,systems/salestrack/index.html,

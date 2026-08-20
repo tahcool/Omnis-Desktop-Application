@@ -8657,6 +8657,9 @@ window.OmnisDashboardV6 = class OmnisDashboardV6 {
             
             const categoryEl = document.getElementById('email-queue-category');
             const categoryVal = categoryEl ? categoryEl.value : 'all';
+
+            const searchEl = document.getElementById('email-queue-search');
+            const searchVal = searchEl ? searchEl.value.trim() : '';
             
             const pageSize = 50;
             const offset = (this.emailQueuePage - 1) * pageSize;
@@ -8679,6 +8682,11 @@ window.OmnisDashboardV6 = class OmnisDashboardV6 {
             } else if (categoryVal !== 'all') {
                 if (!queryParams.match) queryParams.match = {};
                 queryParams.match.related_type = categoryVal;
+            }
+
+            if (searchVal) {
+                // Supabase ilike allows searching across multiple columns with 'or'
+                queryParams.or.push(`subject.ilike.%${searchVal}%,to_email.ilike.%${searchVal}%,error_message.ilike.%${searchVal}%`);
             }
 
             if (queryParams.or.length === 0) {
