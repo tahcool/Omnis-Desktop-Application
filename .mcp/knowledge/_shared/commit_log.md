@@ -420,3 +420,6 @@
   Files: .mcp/knowledge/_shared/commit_log.md,systems/salestrack/dashboard_logic.js,systems/salestrack/index.html,
 - `7b1b521` 2026-08-19 [supabase-migration] [checkpoint] Checkpoint after UI polish (avatar size, quotes subtitle, KPI card layout)
   Files: .mcp/knowledge/_shared/commit_log.md,systems/salestrack/dashboard_logic.js,systems/salestrack/index.html,
+\n## 2026-08-20
+- `b33faf1` 2026-08-20 [supabase-migration] Create restore point for Order Tracking contextual tours
+  Files: .mcp/knowledge/_shared/commit_log.md,index.html,omnis_dashboard.py,systems/salestrack/certificates_logic.js,systems/salestrack/index.html,systems/salestrack/training_logic.js,

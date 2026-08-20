@@ -6361,7 +6361,7 @@ window.OmnisDashboardV6 = class OmnisDashboardV6 {
                         <div style="font-size:18px; font-weight:700; color:#0f172a;">${(order ? order.customer : (fullDoc ? fullDoc.customer_name : 'Unknown')).replace(/"/g, '')}</div>
                     </div>
 
-                    <div style="width:160px; display:flex; flex-direction:column; justify-content:center;">
+                    <div id="edit-order-terms-section" style="width:160px; display:flex; flex-direction:column; justify-content:center;">
                        <label style="font-size:11px; font-weight:700; color:#64748b; display:block; margin-bottom:8px; text-transform:uppercase; letter-spacing:0.5px;">Payment Terms Deal</label>
                        <label style="display:flex; align-items:center; gap:8px; cursor:pointer;">
                            <input type="checkbox" id="edit-order-is-terms" ${order && order.is_payment_terms === true ? 'checked' : ''} style="width:18px; height:18px; accent-color:#10b981; cursor:pointer;">
@@ -6369,7 +6369,7 @@ window.OmnisDashboardV6 = class OmnisDashboardV6 {
                        </label>
                     </div>
 
-                    <div style="width:220px;">
+                    <div id="edit-order-status-section" style="width:220px;">
                        <label style="font-size:11px; font-weight:700; color:#64748b; display:block; margin-bottom:6px; text-transform:uppercase; letter-spacing:0.5px;">Order Status</label>
                        <select id="edit-order-status" style="width:100%; padding:10px; border:1px solid #cbd5e1; border-radius:8px; font-size:14px; background:white; font-weight:600; color:#334155; cursor:pointer;">
                             <option value="New Sale" ${order && order.status === 'New Sale' ? 'selected' : ''}>New Sale</option>
@@ -6399,7 +6399,7 @@ window.OmnisDashboardV6 = class OmnisDashboardV6 {
                </div>
 
                <!-- Machines Table -->
-               <div style="display:flex; flex-direction:column; gap:12px;">
+               <div id="edit-order-machines-section" style="display:flex; flex-direction:column; gap:12px;">
                    <div style="display:flex; justify-content:space-between; align-items:center;">
                        <div style="font-size:14px; font-weight:700; color:#334155; display:flex; align-items:center; gap:8px;">
                             <span>MACHINES</span>
@@ -6427,7 +6427,7 @@ window.OmnisDashboardV6 = class OmnisDashboardV6 {
                </div>
 
                <!-- Contacts Section -->
-               <div style="display:flex; flex-direction:column; gap:12px;">
+               <div id="edit-order-contacts-section" style="display:flex; flex-direction:column; gap:12px;">
                     <div style="display:flex; justify-content:space-between; align-items:center;">
                         <div style="font-size:14px; font-weight:700; color:#334155;">CONTACTS</div>
                         <div>
@@ -6810,7 +6810,7 @@ window.OmnisDashboardV6 = class OmnisDashboardV6 {
                 await window.electron.invoke('supabase:query', {
                     table: 'order_machines',
                     method: 'delete',
-                    params: { filters: { order_id: parentId } }
+                    params: { match: { order_id: parentId } }
                 });
 
                 if (allMachines.length > 0) {
@@ -6838,7 +6838,7 @@ window.OmnisDashboardV6 = class OmnisDashboardV6 {
                 await window.electron.invoke('supabase:query', {
                     table: 'order_contacts',
                     method: 'delete',
-                    params: { filters: { order_id: parentId } }
+                    params: { match: { order_id: parentId } }
                 });
 
                 if (this._tempContacts && this._tempContacts.length > 0) {
@@ -8428,50 +8428,50 @@ window.OmnisDashboardV6 = class OmnisDashboardV6 {
 
         document.body.insertAdjacentHTML('beforeend', `
         <div id="email-preview-modal" style="
-            position:fixed; inset:0; background:rgba(0,0,0,0.6); z-index:20000;
+            position:fixed; inset:0; background:rgba(15,23,42,0.7); z-index:20000;
             display:flex; align-items:center; justify-content:center;
-            backdrop-filter:blur(6px); animation:fadeIn 0.2s ease;
+            backdrop-filter:blur(8px); animation:fadeIn 0.2s ease; padding:20px;
         ">
             <div style="
-                background:white; width:90%; max-width:660px; border-radius:16px;
-                box-shadow:0 30px 60px rgba(0,0,0,0.3); overflow:hidden;
+                background:white; width:98%; max-width:1100px; border-radius:16px;
+                box-shadow:0 30px 60px rgba(0,0,0,0.4); overflow:hidden;
                 animation:slideUp 0.25s cubic-bezier(0.16,1,0.3,1);
-                max-height:90vh; display:flex; flex-direction:column;
+                max-height:92vh; display:flex; flex-direction:column;
             ">
-                <div style="background:${modalHeaderGradient}; padding:20px 24px; display:flex; justify-content:space-between; align-items:center; flex-shrink:0;">
-                    <div style="display:flex; align-items:center; gap:12px;">
-                        <div style="width:40px; height:40px; background:rgba(255,255,255,0.15); border-radius:10px; display:flex; align-items:center; justify-content:center; overflow:hidden;">
+                <div style="background:${modalHeaderGradient}; padding:24px 32px; display:flex; justify-content:space-between; align-items:center; flex-shrink:0;">
+                    <div style="display:flex; align-items:center; gap:16px;">
+                        <div style="width:48px; height:48px; background:rgba(255,255,255,0.15); border-radius:12px; display:flex; align-items:center; justify-content:center; overflow:hidden;">
                             <img src="${logoUrl}" style="max-width:80%; max-height:80%; object-fit:contain;" />
                         </div>
                         <div>
-                            <div style="font-size:17px; font-weight:700; color:white;">Send Email Update</div>
-                            <div style="font-size:12px; color:rgba(255,255,255,0.7); margin-top:2px;">Equipment Order Status Report</div>
+                            <div style="font-size:20px; font-weight:700; color:white;">Send Email Update</div>
+                            <div style="font-size:13px; color:rgba(255,255,255,0.7); margin-top:2px;">Equipment Order Status Report</div>
                         </div>
                     </div>
-                    <button onclick="document.getElementById('email-preview-modal').remove()" style="background:rgba(255,255,255,0.1); border:none; color:white; width:32px; height:32px; border-radius:8px; font-size:18px; cursor:pointer;">&times;</button>
+                    <button onclick="document.getElementById('email-preview-modal').remove()" style="background:rgba(255,255,255,0.1); border:none; color:white; width:36px; height:36px; border-radius:8px; font-size:20px; cursor:pointer;">&times;</button>
                 </div>
-                <div style="padding:24px; display:flex; flex-direction:column; gap:16px; overflow-y:auto;">
-                    <div style="background:#eff6ff; border:1px solid #bfdbfe; border-radius:10px; padding:14px 16px;">
-                        <div style="font-size:11px; font-weight:700; color:#1d4ed8; text-transform:uppercase; letter-spacing:0.5px; margin-bottom:8px;">&#128236; Customers (To)</div>
-                        <div style="font-size:13px; color:#1e40af; font-weight:500; line-height:1.8; margin-bottom:12px;">${recipientList}</div>
-                        <div style="font-size:11px; font-weight:700; color:#1d4ed8; text-transform:uppercase; letter-spacing:0.5px; margin-bottom:6px;">&#128101; ${internalTeamLabel} (CC)</div>
-                        <div style="font-size:12px; color:#3b82f6; font-weight:400; line-height:1.6;">${ccListHtml}</div>
+                <div style="padding:32px; display:flex; flex-direction:column; gap:20px; overflow-y:auto; flex:1;">
+                    <div style="background:#fef2f2; border:1px solid #fecaca; border-radius:10px; padding:16px 20px;">
+                        <div style="font-size:12px; font-weight:700; color:#991b1b; text-transform:uppercase; letter-spacing:0.5px; margin-bottom:8px;">&#128236; Customers (To)</div>
+                        <div style="font-size:14px; color:#7f1d1d; font-weight:500; line-height:1.8; margin-bottom:16px;">${recipientList}</div>
+                        <div style="font-size:12px; font-weight:700; color:#991b1b; text-transform:uppercase; letter-spacing:0.5px; margin-bottom:6px;">&#128101; ${internalTeamLabel} (CC)</div>
+                        <div style="font-size:13px; color:#b91c1c; font-weight:400; line-height:1.6;">${ccListHtml}</div>
                     </div>
-                    <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:10px; padding:14px 16px;">
-                        <div style="font-size:11px; font-weight:700; color:#64748b; text-transform:uppercase; letter-spacing:0.5px; margin-bottom:6px;">Subject</div>
-                        <div style="font-size:13px; color:#0f172a; font-weight:600;">Order Status Report &mdash; ${customerName}</div>
+                    <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:10px; padding:16px 20px;">
+                        <div style="font-size:12px; font-weight:700; color:#64748b; text-transform:uppercase; letter-spacing:0.5px; margin-bottom:6px;">Subject</div>
+                        <div style="font-size:15px; color:#0f172a; font-weight:600;">Order Status Report &mdash; ${customerName}</div>
                     </div>
                     ${machineSection}
                     ${multiNote}
-                    <div style="background:#f0fdf4; border:1px solid #bbf7d0; border-radius:10px; padding:12px 16px; display:flex; gap:10px; align-items:flex-start;">
-                        <span style="font-size:15px; flex-shrink:0;">&#128203;</span>
-                        <div style="font-size:12px; color:#166534; line-height:1.5;">
+                    <div style="background:#f0fdf4; border:1px solid #bbf7d0; border-radius:10px; padding:14px 20px; display:flex; gap:12px; align-items:flex-start;">
+                        <span style="font-size:16px; flex-shrink:0;">&#128203;</span>
+                        <div style="font-size:13px; color:#166534; line-height:1.5;">
                             The email will be sent as a <strong>formatted Equipment Order Status Report</strong> including all available logistics dates, handover dates (revised dates highlighted in red), machine status, and attached images.
                         </div>
                     </div>
-                    <div style="display:flex; gap:12px; justify-content:flex-end; padding-top:8px; border-top:1px solid #f1f5f9;">
-                        <button onclick="document.getElementById('email-preview-modal').remove()" style="padding:10px 24px; border:1px solid #e2e8f0; background:white; color:#64748b; border-radius:8px; font-size:14px; font-weight:600; cursor:pointer;">Cancel</button>
-                        <button id="btn-confirm-send-email" style="padding:10px 28px; background:#1d4ed8; color:white; border:none; border-radius:8px; font-size:14px; font-weight:700; cursor:pointer; display:flex; align-items:center; gap:8px; box-shadow:0 4px 14px rgba(29,78,216,0.3);">
+                    <div style="display:flex; gap:16px; justify-content:flex-end; padding-top:16px; border-top:1px solid #f1f5f9; margin-top:auto;">
+                        <button onclick="document.getElementById('email-preview-modal').remove()" style="padding:12px 28px; border:1px solid #e2e8f0; background:white; color:#64748b; border-radius:8px; font-size:15px; font-weight:600; cursor:pointer;">Cancel</button>
+                        <button id="btn-confirm-send-email" style="padding:12px 32px; background:${themeColor}; color:white; border:none; border-radius:8px; font-size:15px; font-weight:700; cursor:pointer; display:flex; align-items:center; gap:8px; box-shadow:0 4px 14px ${isSino ? 'rgba(123,21,21,0.3)' : 'rgba(29,78,216,0.3)'};">
                             <span>&#128231;</span> Send Now
                         </button>
                     </div>
@@ -8492,15 +8492,21 @@ window.OmnisDashboardV6 = class OmnisDashboardV6 {
     async sendEmailUpdate(btn, originalHtml, emailContacts, reportId, customerName, company, machines, ccList) {
         if (btn) { btn.disabled = true; btn.innerHTML = `<span>&#9203;</span> Checking...`; }
         try {
+            if (!reportId) throw new Error("Cannot send email: Order tracking ID is missing.");
+            
             // Check if already sent
             if (window.electron) {
                 const checkRes = await window.electron.invoke('supabase:query', {
-                    table: 'omnis_salestrack_notifications', method: 'select', params: { columns: 'notified_email', filters: { report_id: reportId } }
+                    table: 'omnis_salestrack_notifications', method: 'select', params: { columns: 'report_id, notified_email', match: { report_id: reportId } }
                 });
-                if (checkRes && checkRes.data && checkRes.data.length > 0 && checkRes.data[0].notified_email) {
-                    alert("⚠️ An email update has already been sent for this order.\n\nTo prevent spam and confusion, double-sending is not allowed.");
-                    if (btn) { btn.disabled = false; btn.innerHTML = originalHtml || `<span style="font-size:18px;">&#128231;</span> Send Email`; }
-                    return;
+                
+                const exactMatch = checkRes?.data?.find(r => r.report_id === reportId);
+                if (exactMatch && exactMatch.notified_email) {
+                    const proceed = confirm("⚠️ An email update has already been sent for this order.\n\nTo prevent spam, double-sending is usually blocked.\n\nDo you want to send it again anyway?");
+                    if (!proceed) {
+                        if (btn) { btn.disabled = false; btn.innerHTML = originalHtml || `<span style="font-size:18px;">&#128231;</span> Send Email`; }
+                        return;
+                    }
                 }
             }
 
@@ -10143,7 +10149,8 @@ window.OutboxManager = {
             displayTitle: displayTitle,
             displayDesc: displayDesc,
             sendAt: Date.now() + this.recallWindowMs,
-            status: 'pending'
+            status: 'pending',
+            retries: 0
         };
         this.queue.push(item);
         this.render();
@@ -10181,8 +10188,26 @@ window.OutboxManager = {
                         this.render();
                     }).catch(err => {
                         console.error('Failed to send outbox item', err);
-                        item.status = 'error';
-                        item.errorMsg = err.message;
+                        item.retries = (item.retries || 0) + 1;
+                        if (item.retries <= 5) {
+                            // Retry delays: 1m, 5m, 15m, 30m, 60m
+                            const delays = [60000, 300000, 900000, 1800000, 3600000];
+                            const delayMs = delays[item.retries - 1];
+                            item.sendAt = Date.now() + delayMs;
+                            item.status = 'pending';
+                            if (window.salestrack && window.salestrack.showToast) {
+                                window.salestrack.showToast(`Send failed. Retrying in ${Math.round(delayMs/60000)} mins...`, 'warning');
+                            }
+                        } else {
+                            item.status = 'error';
+                            item.errorMsg = err.message;
+                            if (window.salestrack && window.salestrack.showToast) {
+                                window.salestrack.showToast(`Final failure: ${item.displayTitle} could not be sent.`, 'error');
+                            }
+                            if (window.electron && window.electron.invoke) {
+                                window.electron.invoke('shell:showNotification', { title: "Email Failed", body: "An email permanently failed to send after 5 retries." }).catch(console.error);
+                            }
+                        }
                         this.render();
                     });
                 } else {

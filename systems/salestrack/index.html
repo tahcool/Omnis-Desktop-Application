@@ -129,7 +129,14 @@
     }
 
     /* Driver.js Custom Theme */
+    #driver-page-overlay, .driver-overlay, #driver-dummy-element {
+      z-index: 9999998 !important;
+    }
+    .driver-active-element {
+      z-index: 9999999 !important;
+    }
     .driver-popover {
+      z-index: 9999999 !important;
       background: #ffffff !important;
       color: #0f172a !important;
       border-radius: 12px !important;
@@ -8331,7 +8338,7 @@
           </span>
         </div>
 
-        <div style="display:flex; align-items:center; gap:12px;">
+        <div id="tour-stock-filters" style="display:flex; align-items:center; gap:12px;">
           <select id="stock-contract-dropdown" class="btn-stock-filter" style="padding: 0 16px; height: 42px; border-radius: 10px; border: 1px solid #e2e8f0; background: white; color: #0f172a; font-weight: 800; font-size: 12px; text-transform:uppercase; letter-spacing:0.02em; cursor: pointer; outline: none; width: 200px; transition: all 0.2s;" onchange="filterStock(window._activeStockOem, window._activeStockStatus, null, window._activeStockCompany, this.value)">
               <option value="All">ALL CONTRACTS</option>
           </select>
@@ -15146,6 +15153,53 @@
         }
     });
 
+    // ── Poll for permanently failed emails and notify ──
+    window.addEventListener('DOMContentLoaded', () => {
+        setInterval(async () => {
+            if (!window.supabase) return;
+            try {
+                const oneDayAgo = new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString();
+                const { data: failedEmails } = await window.supabase
+                    .from('omnis_email_queue')
+                    .select('id, to_email, subject, error_message')
+                    .eq('status', 'failed')
+                    .gte('created_at', oneDayAgo);
+
+                if (!failedEmails || failedEmails.length === 0) return;
+
+                const notifiedList = JSON.parse(localStorage.getItem('omnis_failed_emails_notified') || '[]');
+                let newFailures = 0;
+
+                failedEmails.forEach(email => {
+                    if (!notifiedList.includes(email.id)) {
+                        newFailures++;
+                        notifiedList.push(email.id);
+                        
+                        if (window.omnisLog) {
+                            window.omnisLog(`Email to ${email.to_email} permanently failed!`, 'error');
+                        }
+
+                        if (Notification.permission === 'granted') {
+                            new Notification('Email Delivery Failed', {
+                                body: `Could not deliver email to ${email.to_email}.\nSubject: ${email.subject}`,
+                            });
+                        }
+                    }
+                });
+
+                if (newFailures > 0) {
+                    localStorage.setItem('omnis_failed_emails_notified', JSON.stringify(notifiedList));
+                }
+            } catch (e) {
+                console.error('Failed to poll email queue for errors:', e);
+            }
+        }, 5 * 60 * 1000); 
+
+        if (Notification.permission !== 'granted' && Notification.permission !== 'denied') {
+            Notification.requestPermission();
+        }
+    });
+
 
     function setupProductsFilters() {
       const searchInput = document.getElementById("products-search");
@@ -17372,7 +17426,7 @@ thead th { padding:11px 12px; font-size:10px; font-weight:800; color:#fff; text-
 
             navHtml += `
                     <button class="btn-stock-filter" onclick="renderArrivalCalendar(); updateStockBtn(this)">📅 Monthly Arrivals</button>
-                    <button class="btn-stock-filter" onclick="showStockPipelineForm()"
+                    <button id="tour-add-stock-btn" class="btn-stock-filter" onclick="showStockPipelineForm()"
                         style="margin-left:auto; background:#800000; color:white; border-color:#800000;">+ Add New Record</button>
                  </div>
               </div>
@@ -26643,9 +26697,30 @@ Commercial Team`);
         btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Sending...';
 
         try {
-            // Ideally call a backend endpoint or edge function to actually send the email here
-            // e.g., await window.electron.invoke('send-email', {to, subj, body});
-            
+            // Fetch the existing log to get the cc_emails list
+            const { data: existingLog } = await window.supabase.from('psv_logs').select('cc_emails').eq('id', psvId).single();
+            const ccStr = (existingLog && existingLog.cc_emails && Array.isArray(existingLog.cc_emails)) 
+                          ? existingLog.cc_emails.join(',') : null;
+
+            const bodyHtml = `<!DOCTYPE html><html><head><meta charset="UTF-8"><title>${subj}</title></head><body style="margin:0;padding:0;background:#f1f5f9;font-family:Arial,sans-serif;"><table width="100%" cellpadding="0" cellspacing="0" style="background:#f1f5f9;padding:40px 0;"><tr><td align="center"><table width="600" cellpadding="0" cellspacing="0" style="background:white;border-radius:12px;overflow:hidden;box-shadow:0 4px 24px rgba(0,0,0,0.08);max-width:600px;"><tr><td style="background:#0f172a;padding:20px 24px;text-align:center;"><p style="margin:0;color:white;font-size:22px;font-weight:800;">Machinery Exchange</p></td></tr><tr><td style="padding:32px;color:#334155;font-size:14px;line-height:1.6;">${body.replace(/\n/g, '<br>')}</td></tr><tr><td style="background:#f8fafc;padding:24px;text-align:center;border-top:1px solid #e2e8f0;"><p style="margin:0;font-size:12px;color:#94a3b8;">You received this from Machinery Exchange.</p></td></tr></table></td></tr></table></body></html>`;
+
+            // Insert the email into omnis_email_queue
+            const emailRow = {
+                system: 'salestrack',
+                to_email: to,
+                cc_email: ccStr,
+                subject: subj,
+                body_html: bodyHtml,
+                body_text: body,
+                status: 'pending',
+                scheduled_for: new Date().toISOString(),
+                related_doc: psvId,
+                related_type: 'psv_customer',
+                created_by: (window.CURRENT_SYSTEM && window.CURRENT_SYSTEM.user) ? window.CURRENT_SYSTEM.user.email : null
+            };
+
+            const queueRes = await window.supabase.from('omnis_email_queue').insert([emailRow]);
+            if (queueRes.error) throw queueRes.error;
             // For now, mark as sent in Supabase
             const { error } = await window.supabase.from('psv_logs').update({
                 customer_email_sent: true,
@@ -27656,7 +27731,10 @@ Commercial Team`);
                     },
                     {
                         element: '#ol-add-tracking-btn',
-                        popover: { title: 'Add Tracking Manually', description: 'Click here to manually add a tracking entry for an existing order or defect.', side: 'bottom', align: 'center' }
+                        popover: { title: 'Track-Only Orders', description: 'Click here to manually add a Track-Only order. This is used when you are just notifying a customer of where an item is, rather than a financial sale they have paid for.', side: 'bottom', align: 'center' }
+                    },
+                    {
+                        popover: { title: 'Automated Tracking', description: 'Note: You do not need to manually add tracking for regular sales! Standard trackings are auto-added to this dashboard whenever a sale is entered into the system.', align: 'center' }
                     },
                     {
                         element: '#ol-orders-list',
@@ -27666,23 +27744,55 @@ Commercial Team`);
             } else if (activeView === 'modal-edit-order') {
                 tourSteps = [
                     {
-                        element: '#edit-order-is-terms',
+                        element: '#edit-order-terms-section',
                         popover: { title: 'Terms Deal', description: 'Toggle this checkbox if the order is on payment terms. This helps Operations track credit agreements.', side: 'bottom', align: 'center' }
                     },
                     {
-                        element: '#edit-order-status',
+                        element: '#edit-order-status-section',
                         popover: { title: 'Order Status', description: 'Manually override the logistic phase of this order.', side: 'bottom', align: 'center' }
                     },
                     {
-                        element: '#machines-tbody',
-                        popover: { title: 'Machine Details', description: 'View or modify the machines attached to this order, including target handover dates.', side: 'top', align: 'center' }
+                        element: '#edit-order-machines-section',
+                        popover: { title: 'Machine Details', description: 'View or modify the machines attached to this order, including target handover dates.', side: 'top', align: 'start' }
                     },
                     {
-                        element: '#contacts-tbody',
-                        popover: { title: 'Contacts', description: 'Attach customer contacts to ensure they receive WhatsApp/Email notifications about this order.', side: 'top', align: 'center' }
+                        element: '#edit-order-contacts-section',
+                        popover: { title: 'Contacts', description: 'Attach customer contacts to ensure they receive WhatsApp/Email notifications about this order.', side: 'top', align: 'start' }
                     },
                     {
                         popover: { title: 'Update Order', description: 'Once you are done making changes, scroll down and click "Save & Update".', side: 'top', align: 'center' }
+                    }
+                ];
+            } else if (activeView === 'view-stock') {
+                // Programmatically expand the first phase dropdown so the inner cells are visible
+                const firstContentDiv = document.querySelector('#view-stock div[id^="phase_"]');
+                if (firstContentDiv && firstContentDiv.style.display === 'none') {
+                    firstContentDiv.previousElementSibling.click();
+                }
+
+                tourSteps = [
+                    {
+                        element: '#stock-subnav',
+                        popover: { title: 'OEM Brands', description: 'Filter the entire pipeline by specific manufacturer brands (e.g. Bobcat, Foton).', side: 'bottom', align: 'start' }
+                    },
+                    {
+                        element: '#tour-stock-filters',
+                        popover: { title: 'Table Filters', description: 'Use these dropdowns to narrow down stock by Contracts, Companies, or Logistic Statuses.', side: 'bottom', align: 'center' }
+                    },
+                    {
+                        element: '#tour-add-stock-btn',
+                        popover: { title: 'Add New Record', description: 'Click here to manually log a new stock entry into the pipeline.', side: 'left', align: 'center' }
+                    },
+                    {
+                        popover: { title: 'Automated Deductions', description: 'Note: You do not have to manually remove stock when it is sold! The system automatically deducts from this inventory when a sale is entered on the main dashboard.', align: 'center' }
+                    },
+                    {
+                        element: '#view-stock .ai-order-header',
+                        popover: { title: 'Pipeline Columns', description: 'The table tracks machines through all stages: Qty, Proposed, Production, Shipped, Durban/Beira, and finally Harare.', side: 'top', align: 'center' }
+                    },
+                    {
+                        element: '#view-stock .stock-row-item .ai-order-cell:nth-child(3)',
+                        popover: { title: 'Earmarking Orders', description: 'The "Potential Customers" column allows you to ear-mark incoming orders. You can add potential customers to units in transit so sales teams can claim incoming stock!', side: 'top', align: 'center' }
                     }
                 ];
             } else {
