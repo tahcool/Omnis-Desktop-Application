@@ -427,3 +427,5 @@
   Files: .mcp/knowledge/_shared/commit_log.md,lib/email-manager.js,package.json,supabase/functions/process-email-queue/index.ts,systems/salestrack/dashboard_logic.js,systems/salestrack/index.html,
 - `43a9453` 2026-08-20 [supabase-migration] [checkpoint] Profile header flex layout fix
   Files: .mcp/knowledge/_shared/commit_log.md,systems/salestrack/index.html,
+- `e38d3b1` 2026-08-20 [supabase-migration] [checkpoint] Pre-customizable shortcuts implementation
+  Files: .mcp/knowledge/_shared/commit_log.md,systems/salestrack/dashboard_logic.js,systems/salestrack/index.html,

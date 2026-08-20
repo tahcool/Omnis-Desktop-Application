@@ -193,17 +193,33 @@ class CertificatesLogic {
         const lines = operatorsRaw.split('\n');
         const parsedOperators = [];
         for (let i = 0; i < lines.length; i++) {
-            const line = lines[i].trim();
+            let line = lines[i].trim();
             if (!line) continue;
-            // Split by tab or comma
+            
+            let name = '';
+            let idNum = '';
+
+            // Check for WhatsApp format first: "1. Name - ID: XXXXXX - Phone"
+            const idMatch = line.match(/-?\s*ID:\s*([^\s-]+(?:-[^\s-]+)*)/i);
+            if(idMatch) {
+                idNum = idMatch[1].trim();
+                let namePart = line.substring(0, idMatch.index).trim();
+                namePart = namePart.replace(/^\d+\.\s*/, '').trim();
+                namePart = namePart.replace(/\s*-$/, '').trim();
+                name = namePart;
+                
+                parsedOperators.push({ name: name, idNum: idNum });
+                continue;
+            }
+
+            // Fallback to Tab or Comma
             const parts = line.split(/[\t,]/);
             if (parts.length >= 2) {
-                parsedOperators.push({
-                    name: parts[0].trim(),
-                    idNum: parts[1].trim()
-                });
+                name = parts[0].trim().replace(/^\d+\.\s*/, '').trim();
+                idNum = parts[1].trim();
+                parsedOperators.push({ name: name, idNum: idNum });
             } else {
-                alert(`Line ${i+1} is invalid. Please format as: Name [Tab or Comma] ID Number`);
+                alert(`Line ${i+1} is invalid. Please format as: Name [Tab or Comma] ID Number, or paste directly from WhatsApp (e.g. "1. Name - ID: 123-45")`);
                 return;
             }
         }

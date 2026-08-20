@@ -2102,24 +2102,66 @@ window.OmnisDashboardV6 = class OmnisDashboardV6 {
 
             const lostSalesTotal = payload.lost_sales_total || 0;
 
-            const renderOEMTable = (title, data, accentColor) => {
-                if (!data || data.length === 0) return "";
+            const renderOEMTable = (title, rawData, accentColor) => {
+                if (!rawData || rawData.length === 0) return "";
+                
+                window._merHiddenOEMs = window._merHiddenOEMs || [];
+                let data = [];
+                let othersRow = { oem: 'Others', prev_q:0, prev_s:0, curr_q:0, curr_s:0, ytd_q:0, ytd_s:0 };
+                let hasOthers = false;
+
+                rawData.forEach(r => {
+                    const isOther = r.oem.toLowerCase() === 'other' || r.oem.toLowerCase() === 'others' || window._merHiddenOEMs.includes(r.oem);
+                    if (isOther) {
+                        hasOthers = true;
+                        othersRow.prev_q += (r.prev_q || 0);
+                        othersRow.prev_s += (r.prev_s || 0);
+                        othersRow.curr_q += (r.curr_q || 0);
+                        othersRow.curr_s += (r.curr_s || 0);
+                        othersRow.ytd_q += (r.ytd_q || 0);
+                        othersRow.ytd_s += (r.ytd_s || 0);
+                    } else {
+                        data.push(r);
+                    }
+                });
+
+                if (hasOthers) {
+                    othersRow.conv_mtd = othersRow.curr_q > 0 ? ((othersRow.curr_s / othersRow.curr_q) * 100).toFixed(1) : "0.0";
+                    othersRow.conv_ytd = othersRow.ytd_q > 0 ? ((othersRow.ytd_s / othersRow.ytd_q) * 100).toFixed(1) : "0.0";
+                    data.push(othersRow);
+                }
+                
+                // Recalculate conv % for safety on standard rows
+                data.forEach(r => {
+                    if(r.oem !== 'Others') {
+                        r.conv_mtd = r.curr_q > 0 ? ((r.curr_s / r.curr_q) * 100).toFixed(1) : "0.0";
+                        r.conv_ytd = r.ytd_q > 0 ? ((r.ytd_s / r.ytd_q) * 100).toFixed(1) : "0.0";
+                    }
+                });
+
+                let titleHtml = `
+                    <div style="font-weight:900; color:#0f172a; margin: 30px 0 15px 0; text-transform:uppercase; font-size:13px; border-left: 4px solid ${accentColor}; padding-left: 10px; letter-spacing: 0.05em; display:flex; justify-content:space-between; align-items:center;">
+                        <span>${title}</span>
+                        ${window._merHiddenOEMs.length > 0 ? `<span class="no-print" style="font-size:11px; font-weight:700; color:#3b82f6; cursor:pointer;" onclick="window._merHiddenOEMs=[]; window._merPersistedPage=window.salestrack.currentMerPage; window.salestrack.openMERReportModal(document.getElementById('mer-period-select').value, document.getElementById('mer-company-select').value);"><i class="fas fa-undo"></i> Reset Grouping (${window._merHiddenOEMs.length})</span>` : ''}
+                    </div>
+                `;
+
                 return `
-                    <div style="font-weight:900; color:#0f172a; margin: 30px 0 15px 0; text-transform:uppercase; font-size:13px; border-left: 4px solid ${accentColor}; padding-left: 10px; letter-spacing: 0.05em;">${title}</div>
+                    ${titleHtml}
                     <table class="mer-table">
                         <thead>
                             <tr>
                                 <th rowspan="2">OEM</th>
                                 <th colspan="2" style="text-align:center;">Targets</th>
                                 <th colspan="2" style="text-align:center;">${prev_month}</th>
-                                <th colspan="2" style="text-align:center; background:#e0f2fe; color:black;">${report_month}</th>
+                                <th colspan="2" style="text-align:center;">${report_month}</th>
                                 <th colspan="2" style="text-align:center;">Year to Date</th>
                                 <th colspan="2" style="text-align:center;">Conversion %</th>
                             </tr>
                             <tr>
                                 <th>Quotes</th><th>Sales</th>
                                 <th>Quotes</th><th>Sales</th>
-                                <th style="background:#f0fafb; color:black;">Quotes</th><th style="background:#f0fafb; color:black;">Sales</th>
+                                <th>Quotes</th><th>Sales</th>
                                 <th>Quotes</th><th>Sales</th>
                                 <th>MTD</th><th>YTD</th>
                             </tr>
@@ -2127,7 +2169,10 @@ window.OmnisDashboardV6 = class OmnisDashboardV6 {
                         <tbody>
                             ${data.map(r => `
                                 <tr>
-                                    <td style="font-weight:700;">${r.oem}</td>
+                                    <td style="font-weight:700; display:flex; align-items:center; justify-content:space-between;">
+                                        <span>${r.oem}</span>
+                                        ${r.oem !== 'Others' ? `<i class="fas fa-eye-slash no-print" style="color:#cbd5e1; cursor:pointer; font-size:11px;" title="Group into Others" onclick="window._merHiddenOEMs.push('${r.oem}'); window._merPersistedPage=window.salestrack.currentMerPage; window.salestrack.openMERReportModal(document.getElementById('mer-period-select').value, document.getElementById('mer-company-select').value);"></i>` : ''}
+                                    </td>
                                     <td style="color:#94a3b8;">-</td><td style="color:#94a3b8;">-</td>
                                     <td>${r.prev_q}</td><td>${r.prev_s}</td>
                                     <td style="font-weight:800; background:#f0f9ff;">${r.curr_q}</td>
@@ -2162,11 +2207,11 @@ window.OmnisDashboardV6 = class OmnisDashboardV6 {
                         .mer-title { font-size: 24px; font-weight: 950; color: #0f172a; letter-spacing: -0.02em; }
                         .mer-subtitle { font-size: 14px; color: #64748b; font-weight: 600; text-transform: uppercase; margin-top: 4px; }
                         
-                        .mer-table { width: 100%; border-collapse: collapse; margin-bottom: 20px; font-size: 13px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); border-radius: 4px; overflow: hidden; }
-                        .mer-table th { background: rgba(128, 0, 0, 0.85); padding: 14px 12px; text-align: left; font-weight: 850; color: white; border: 1px solid rgba(128,0,0,0.6); text-transform: uppercase; letter-spacing: 0.05em; font-size: 14px; }
-                        .mer-table td { padding: 10px 12px; border: 1px solid #e2e8f0; color: #1e293b; }
-                        .mer-table tr:nth-child(even) { background: #f8fafc; }
-                        .mer-table .total-row td { background: #7f1d1d !important; color: white; font-weight: 900; font-size: 16px; padding: 14px 12px; }
+                        .mer-table { width: 100%; border-collapse: collapse; margin-bottom: 20px; font-size: 13.5px; box-shadow: none; overflow: hidden; font-family: 'Inter', sans-serif; }
+                        .mer-table th { background: #ffffff; padding: 16px 12px; text-align: left; font-weight: 800; color: #475569; border-bottom: 2px solid #1e293b; text-transform: uppercase; letter-spacing: 0.05em; font-size: 11px; }
+                        .mer-table td { padding: 14px 12px; border-bottom: 1px solid #f1f5f9; color: #334155; }
+                        .mer-table tr:nth-child(even) { background: #fafcff; }
+                        .mer-table .total-row td { background: #f8fafc !important; color: #0f172a; font-weight: 900; font-size: 14px; padding: 16px 12px; border-top: 2px solid #1e293b; border-bottom: 2px solid #1e293b; }
                         
                         .brand-box { padding: 12px 20px; border-radius: 4px; font-weight: 900; display: inline-flex; align-items: center; gap: 10px; margin-bottom: 15px; background: rgba(128, 0, 0, 0.08); color: #0f172a; border: 1px solid #e2e8f0; }
                         .highlight-red { color: #dc2626; font-weight: 800; }
@@ -2180,42 +2225,123 @@ window.OmnisDashboardV6 = class OmnisDashboardV6 {
                             #dash-generic-body { padding: 0 !important; overflow: visible !important; }
                             .mer-report-container { padding: 0 !important; display: block !important; background: white !important; }
                             .mer-page { display: block !important; margin: 0; padding: 40px !important; box-shadow: none !important; border-radius: 0 !important; min-height: auto; page-break-after: always; border: none !important; width: 100% !important; max-width: none !important; }
-                            .mer-table { border-collapse: collapse !important; width: 100% !important; margin-top: 20px !important; border: 1px solid #000 !important; }
-                            .mer-table th { background: #7f1d1d !important; color: white !important; border: 1px solid #000 !important; -webkit-print-color-adjust: exact; }
-                            .mer-table td { border: 1px solid #000 !important; font-size: 11px !important; }
-                            .mer-table tr:nth-child(even) { background: #f8fafc !important; -webkit-print-color-adjust: exact; }
-                            .mer-table .total-row td { background: #7f1d1d !important; color: white !important; -webkit-print-color-adjust: exact; }
+                            .mer-table { border-collapse: collapse !important; width: 100% !important; margin-top: 20px !important; }
+                            .mer-table th { background: #ffffff !important; color: #1e293b !important; border-bottom: 2px solid #1e293b !important; font-size: 10px !important; }
+                            .mer-table td { border-bottom: 1px solid #e2e8f0 !important; font-size: 11px !important; }
+                            .mer-table tr:nth-child(even) { background: #fafcff !important; -webkit-print-color-adjust: exact; }
+                            .mer-table .total-row td { background: #f8fafc !important; color: #000 !important; border-top: 2px solid #000 !important; border-bottom: 2px solid #000 !important; -webkit-print-color-adjust: exact; }
                             .no-print { display: none !important; }
                         }
                     </style>
 
                     <!-- PAGE 1: MANAGEMENT SUMMARY -->
-                    <div class="mer-page">
-                        <div class="mer-header">
-                            <img src="file:///C:/Users/Administrator/omnis/assets/images/omnis-logo.png" style="height:45px;" alt="Omnis Logo" onerror="this.src='../../assets/images/omnis-logo.png'">
+                    <div class="mer-page" style="padding: 50px; background: white;">
+                        <div class="mer-header" style="border-bottom: 2px solid #1e293b; padding-bottom: 24px; margin-bottom: 35px; display: flex; justify-content: space-between; align-items: flex-end;">
+                            <img src="file:///C:/Users/Administrator/omnis/assets/images/omnis-logo.png" style="height:42px; filter: grayscale(100%) brightness(10%);" alt="Omnis Logo" onerror="this.src='../../assets/images/omnis-logo.png'; this.style.filter='grayscale(100%) brightness(10%)'">
                             <div style="text-align:right;">
-                                <div class="mer-title">QUOTES & SALES MONTHLY REPORT</div>
-                                <div class="mer-subtitle">MANAGEMENT SUMMARY &mdash; ${report_month} ${report_year}</div>
+                                <div class="mer-title" style="color: #0f172a; font-size: 26px; font-weight: 900; letter-spacing: -0.02em;">QUOTES & SALES REPORT</div>
+                                <div class="mer-subtitle" style="color: #475569; font-size: 13px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; margin-top: 6px;">EXECUTIVE BRIEFING &mdash; ${report_month} ${report_year}</div>
                             </div>
                         </div>
                         
-                        <div style="font-size: 14px; line-height: 1.8; color: #334155; max-width: 800px;">
-                            ${dynamic_summary}
-                            <div style="margin-top: 40px; border-top: 1px solid #e2e8f0; padding-top: 20px;">
-                                <div style="font-weight: 900; color: #0f172a; margin-bottom: 10px; text-transform: uppercase;">Next Month Outlook</div>
-                                <p style="font-style: italic;">We expect conversion-focused activity to intensify, with management emphasis on closing open opportunities. Pipeline execution is expected to support a stable period-end close.</p>
-                            </div>
+                        ${(() => {
+                            let totalQ = 0, totalS = 0, ytdQ = 0, ytdS = 0;
+                            let topOEM = "Multiple OEMs";
+                            let topOEMQ = 0;
                             
-                            <div style="margin-top: 40px; background: #fff1f2; border-left: 4px solid #9f1239; padding: 25px; border-radius: 12px; box-shadow: 0 4px 15px rgba(159, 18, 57, 0.1);">
-                                <div style="font-weight: 900; color: #881337; margin-bottom: 15px; display: flex; align-items: center; gap: 8px; font-size: 14px; text-transform: uppercase;">
-                                    <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
-                                    Omnis AI Insights & Suggestions
+                            if (performance_mxg) {
+                                totalQ += performance_mxg.reduce((a, b) => a + b.curr_q, 0);
+                                totalS += performance_mxg.reduce((a, b) => a + b.curr_s, 0);
+                                ytdQ += performance_mxg.reduce((a, b) => a + b.ytd_q, 0);
+                                ytdS += performance_mxg.reduce((a, b) => a + b.ytd_s, 0);
+                                
+                                performance_mxg.forEach(oem => {
+                                    if(oem.curr_q > topOEMQ) {
+                                        topOEMQ = oem.curr_q;
+                                        topOEM = oem.oem;
+                                    }
+                                });
+                            }
+                            if (performance_sp) {
+                                totalQ += performance_sp.reduce((a, b) => a + b.curr_q, 0);
+                                totalS += performance_sp.reduce((a, b) => a + b.curr_s, 0);
+                                ytdQ += performance_sp.reduce((a, b) => a + b.ytd_q, 0);
+                                ytdS += performance_sp.reduce((a, b) => a + b.ytd_s, 0);
+                                
+                                performance_sp.forEach(oem => {
+                                    if(oem.curr_q > topOEMQ) {
+                                        topOEMQ = oem.curr_q;
+                                        topOEM = oem.oem;
+                                    }
+                                });
+                            }
+                            
+                            const conversionRate = totalQ > 0 ? ((totalS / totalQ) * 100).toFixed(1) : "0.0";
+                            const outstanding = totalQ - totalS;
+                            
+                            const detailedSummary = `During <b>${report_month} ${report_year}</b>, the group recorded a total pipeline volume of <b>${totalQ}</b> quotations, yielding <b>${totalS}</b> finalized conversions (an aggregate monthly conversion rate of <b>${conversionRate}%</b>). This reflects a month-over-month pipeline velocity that necessitates immediate strategic focus to minimize late-stage deal attrition.
+                            <br><br>
+                            From a brand performance perspective, <b>${topOEM}</b> demonstrated the strongest market traction, contributing ${topOEMQ} quotes to the pipeline volume. The year-to-date trajectory indicates a robust cumulative pipeline of <b>${ytdQ}</b> total quotations yielding <b>${ytdS}</b> finalized sales across all active franchises.
+                            <br><br>
+                            Management should prioritize aggressive, targeted follow-ups on the <b>${outstanding}</b> outstanding quotations generated this month to maximize period-end revenue realization and prevent pipeline stagnation.`;
+
+                            return `
+                                <div style="display:grid; grid-template-columns: repeat(4, 1fr); gap:1px; background: #cbd5e1; margin-bottom: 40px; border: 1px solid #cbd5e1;">
+                                    <div style="background:#fff; padding:20px 24px;">
+                                        <div style="font-size:11px; font-weight:700; color:#64748b; text-transform:uppercase; letter-spacing:0.05em; margin-bottom:6px;">Pipeline Volume</div>
+                                        <div style="font-size:36px; font-weight:900; color:#0f172a; line-height:1;">${totalQ}</div>
+                                        <div style="font-size:12px; font-weight:500; color:#64748b; margin-top:8px;">Quotations in ${report_month}</div>
+                                    </div>
+                                    <div style="background:#fff; padding:20px 24px;">
+                                        <div style="font-size:11px; font-weight:700; color:#64748b; text-transform:uppercase; letter-spacing:0.05em; margin-bottom:6px;">Closed Won</div>
+                                        <div style="font-size:36px; font-weight:900; color:#0f172a; line-height:1;">${totalS}</div>
+                                        <div style="font-size:12px; font-weight:500; color:#64748b; margin-top:8px;">Finalized in ${report_month}</div>
+                                    </div>
+                                    <div style="background:#fff; padding:20px 24px;">
+                                        <div style="font-size:11px; font-weight:700; color:#64748b; text-transform:uppercase; letter-spacing:0.05em; margin-bottom:6px;">YTD Pipeline</div>
+                                        <div style="font-size:36px; font-weight:900; color:#0f172a; line-height:1;">${ytdQ}</div>
+                                        <div style="font-size:12px; font-weight:500; color:#64748b; margin-top:8px;">Quotations YTD</div>
+                                    </div>
+                                    <div style="background:#fff; padding:20px 24px;">
+                                        <div style="font-size:11px; font-weight:700; color:#64748b; text-transform:uppercase; letter-spacing:0.05em; margin-bottom:6px;">YTD Closed</div>
+                                        <div style="font-size:36px; font-weight:900; color:#0f172a; line-height:1;">${ytdS}</div>
+                                        <div style="font-size:12px; font-weight:500; color:#64748b; margin-top:8px;">Finalized YTD</div>
+                                    </div>
                                 </div>
-                                <ul style="margin: 0; padding-left: 20px; color: #4c0519; font-size: 13px; line-height: 1.6;">
-                                    ${(ai_suggestions || []).map(s => `<li style="margin-bottom: 8px;">${s}</li>`).join('')}
-                                </ul>
-                            </div>
-                        </div>
+                                
+                                <div style="display:flex; gap: 50px;">
+                                    <div style="flex:2;">
+                                        <div style="font-weight: 800; color: #1e293b; margin-bottom: 16px; text-transform: uppercase; font-size: 13px; letter-spacing: 0.05em;">Executive Commentary</div>
+                                        <div style="font-size: 14.5px; line-height: 1.8; color: #334155; text-align: justify; font-family: Georgia, serif;">
+                                            ${detailedSummary}
+                                        </div>
+                                        
+                                        <div style="margin-top: 40px; padding-top: 30px; border-top: 1px solid #e2e8f0;">
+                                            <div style="font-weight: 800; color: #1e293b; margin-bottom: 12px; text-transform: uppercase; font-size: 13px; letter-spacing: 0.05em;">Strategic Outlook</div>
+                                            <p style="font-style: italic; font-size: 15px; color: #475569; line-height: 1.7; margin: 0; font-family: Georgia, serif;">We expect conversion-focused activity to intensify, with management emphasis on closing open opportunities. Pipeline execution is expected to support a stable period-end close across all key OEM divisions.</p>
+                                        </div>
+                                    </div>
+                                    
+                                    <div style="flex:1;">
+                                        <div style="background: #f8fafc; color: #1e293b; padding: 30px 25px; border-top: 4px solid #334155; height: 100%; box-sizing: border-box;">
+                                            <div style="font-weight: 800; color: #0f172a; margin-bottom: 20px; display: flex; align-items: center; gap: 10px; font-size: 12px; text-transform: uppercase; letter-spacing: 0.08em;">
+                                                <i class="fas fa-brain" style="font-size:14px;"></i> Omnis AI Insights
+                                            </div>
+                                            <ul style="margin: 0; padding-left: 18px; font-size: 13.5px; line-height: 1.7; color: #334155;">
+                                                ${(ai_suggestions || []).map(s => {
+                                                    let text = s.replace(/<[^>]*>?/gm, '');
+                                                    let parts = text.split(':');
+                                                    if (parts.length > 1) {
+                                                        return `<li style="margin-bottom: 16px;"><strong style="color: #0f172a;">${parts[0]}:</strong>${parts.slice(1).join(':')}</li>`;
+                                                    }
+                                                    return `<li style="margin-bottom: 16px;">${text}</li>`;
+                                                }).join('')}
+                                            </ul>
+                                        </div>
+                                    </div>
+                                </div>
+                            `;
+                        })()}
                     </div>
 
                     <!-- PAGE 2: QUOTES & SALES PERFORMANCE -->
@@ -2397,7 +2523,8 @@ window.OmnisDashboardV6 = class OmnisDashboardV6 {
             }
 
             // Initialize Pagination
-            this.currentMerPage = 0;
+            this.currentMerPage = window._merPersistedPage !== undefined ? window._merPersistedPage : 0;
+            window._merPersistedPage = undefined;
             setTimeout(() => this.changeMERPage(0), 50);
 
         } catch (e) {
