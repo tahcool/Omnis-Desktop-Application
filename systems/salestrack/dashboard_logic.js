@@ -2102,10 +2102,20 @@ window.OmnisDashboardV6 = class OmnisDashboardV6 {
 
             const lostSalesTotal = payload.lost_sales_total || 0;
 
+            let logoHtml = `<img src="file:///C:/Users/Administrator/omnis/assets/images/omnis-logo.png" style="height:55px;" alt="Omnis Logo" onerror="this.src='../../assets/images/omnis-logo.png';">`;
+            if (companyText === 'Sinopower') {
+                logoHtml = `<img src="file:///C:/Users/Administrator/omnis/assets/images/SPZ Full Logo (White)@3x.png" style="height:110px; filter: invert(15%) sepia(85%) saturate(7000%) hue-rotate(350deg) brightness(90%) contrast(110%);" alt="Sinopower Logo">`;
+            } else if (companyText === 'Machinery Exchange') {
+                logoHtml = `<img src="file:///C:/Users/Administrator/omnis/assets/images/MXG Logo.png" style="height:110px;" alt="MXG Logo">`;
+            }
+
             const renderOEMTable = (title, rawData, accentColor) => {
                 if (!rawData || rawData.length === 0) return "";
                 
-                window._merHiddenOEMs = window._merHiddenOEMs || [];
+                if (!window._merHiddenOEMs) {
+                    try { window._merHiddenOEMs = JSON.parse(localStorage.getItem('merHiddenOEMs')) || []; }
+                    catch(e) { window._merHiddenOEMs = []; }
+                }
                 let data = [];
                 let othersRow = { oem: 'Others', prev_q:0, prev_s:0, curr_q:0, curr_s:0, ytd_q:0, ytd_s:0 };
                 let hasOthers = false;
@@ -2142,7 +2152,7 @@ window.OmnisDashboardV6 = class OmnisDashboardV6 {
                 let titleHtml = `
                     <div style="font-weight:900; color:#0f172a; margin: 30px 0 15px 0; text-transform:uppercase; font-size:13px; border-left: 4px solid ${accentColor}; padding-left: 10px; letter-spacing: 0.05em; display:flex; justify-content:space-between; align-items:center;">
                         <span>${title}</span>
-                        ${window._merHiddenOEMs.length > 0 ? `<span class="no-print" style="font-size:11px; font-weight:700; color:#3b82f6; cursor:pointer;" onclick="window._merHiddenOEMs=[]; window._merPersistedPage=window.salestrack.currentMerPage; window.salestrack.openMERReportModal(document.getElementById('mer-period-select').value, document.getElementById('mer-company-select').value);"><i class="fas fa-undo"></i> Reset Grouping (${window._merHiddenOEMs.length})</span>` : ''}
+                        ${window._merHiddenOEMs.length > 0 ? `<span class="no-print" style="font-size:11px; font-weight:700; color:#3b82f6; cursor:pointer;" onclick="window._merHiddenOEMs=[]; localStorage.removeItem('merHiddenOEMs'); window._merPersistedPage=window.salestrack.currentMerPage; window.salestrack.openMERReportModal(document.getElementById('mer-period-select').value, document.getElementById('mer-company-select').value);"><i class="fas fa-undo"></i> Reset Grouping (${window._merHiddenOEMs.length})</span>` : ''}
                     </div>
                 `;
 
@@ -2151,7 +2161,7 @@ window.OmnisDashboardV6 = class OmnisDashboardV6 {
                     <table class="mer-table">
                         <thead>
                             <tr>
-                                <th rowspan="2">OEM</th>
+                                <th rowspan="2" style="text-align:center; vertical-align:middle; font-size:14px;">OEM</th>
                                 <th colspan="2" style="text-align:center;">Targets</th>
                                 <th colspan="2" style="text-align:center;">${prev_month}</th>
                                 <th colspan="2" style="text-align:center;">${report_month}</th>
@@ -2169,9 +2179,11 @@ window.OmnisDashboardV6 = class OmnisDashboardV6 {
                         <tbody>
                             ${data.map(r => `
                                 <tr>
-                                    <td style="font-weight:700; display:flex; align-items:center; justify-content:space-between;">
-                                        <span>${r.oem}</span>
-                                        ${r.oem !== 'Others' ? `<i class="fas fa-eye-slash no-print" style="color:#cbd5e1; cursor:pointer; font-size:11px;" title="Group into Others" onclick="window._merHiddenOEMs.push('${r.oem}'); window._merPersistedPage=window.salestrack.currentMerPage; window.salestrack.openMERReportModal(document.getElementById('mer-period-select').value, document.getElementById('mer-company-select').value);"></i>` : ''}
+                                    <td style="font-weight:700;">
+                                        <div style="display:flex; align-items:center; justify-content:space-between;">
+                                            <span>${r.oem}</span>
+                                            ${r.oem !== 'Others' ? `<i class="fas fa-eye-slash no-print" style="color:#cbd5e1; cursor:pointer; font-size:11px;" title="Group into Others" onclick="window._merHiddenOEMs.push('${r.oem}'); localStorage.setItem('merHiddenOEMs', JSON.stringify(window._merHiddenOEMs)); window._merPersistedPage=window.salestrack.currentMerPage; window.salestrack.openMERReportModal(document.getElementById('mer-period-select').value, document.getElementById('mer-company-select').value);"></i>` : ''}
+                                        </div>
                                     </td>
                                     <td style="color:#94a3b8;">-</td><td style="color:#94a3b8;">-</td>
                                     <td>${r.prev_q}</td><td>${r.prev_s}</td>
@@ -2203,13 +2215,13 @@ window.OmnisDashboardV6 = class OmnisDashboardV6 {
                     
                     <style>
                         .mer-page { background: white; padding: 40px; margin-bottom: 30px; box-shadow: 0 4px 20px rgba(0,0,0,0.08); border-radius:4px; min-height: 800px; display: none; border: 1px solid #e2e8f0; width: 100%; max-width: 1600px; }
-                        .mer-header { display: flex; justify-content: space-between; align-items: flex-end; border-bottom: 2px solid #e2e8f0; padding-bottom: 20px; margin-bottom: 30px; }
-                        .mer-title { font-size: 24px; font-weight: 950; color: #0f172a; letter-spacing: -0.02em; }
-                        .mer-subtitle { font-size: 14px; color: #64748b; font-weight: 600; text-transform: uppercase; margin-top: 4px; }
+                        .mer-header { display: flex; justify-content: space-between; align-items: flex-end; margin-bottom: 35px; border-bottom: 2px solid #1e293b; padding-bottom: 24px; }
+                        .mer-title { color: #0f172a; font-size: 26px; font-weight: 900; letter-spacing: -0.02em; text-transform: uppercase; }
+                        .mer-subtitle { color: #475569; font-size: 13px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; margin-top: 6px; }
                         
-                        .mer-table { width: 100%; border-collapse: collapse; margin-bottom: 20px; font-size: 13.5px; box-shadow: none; overflow: hidden; font-family: 'Inter', sans-serif; }
-                        .mer-table th { background: #ffffff; padding: 16px 12px; text-align: left; font-weight: 800; color: #475569; border-bottom: 2px solid #1e293b; text-transform: uppercase; letter-spacing: 0.05em; font-size: 11px; }
-                        .mer-table td { padding: 14px 12px; border-bottom: 1px solid #f1f5f9; color: #334155; }
+                        .mer-table { width: 100%; border-collapse: collapse; margin-bottom: 20px; font-size: 13.5px; box-shadow: none; overflow: hidden; font-family: 'Inter', sans-serif; border: 1px solid #cbd5e1; }
+                        .mer-table th { background: #ffffff; padding: 16px 12px; text-align: left; font-weight: 800; color: #475569; border: 1px solid #cbd5e1; border-bottom: 2px solid #1e293b; text-transform: uppercase; letter-spacing: 0.05em; font-size: 11px; }
+                        .mer-table td { padding: 14px 12px; border: 1px solid #cbd5e1; color: #334155; }
                         .mer-table tr:nth-child(even) { background: #fafcff; }
                         .mer-table .total-row td { background: #f8fafc !important; color: #0f172a; font-weight: 900; font-size: 14px; padding: 16px 12px; border-top: 2px solid #1e293b; border-bottom: 2px solid #1e293b; }
                         
@@ -2224,10 +2236,14 @@ window.OmnisDashboardV6 = class OmnisDashboardV6 {
                             #dash-modal-inner > div:first-child { display: none !important; }
                             #dash-generic-body { padding: 0 !important; overflow: visible !important; }
                             .mer-report-container { padding: 0 !important; display: block !important; background: white !important; }
-                            .mer-page { display: block !important; margin: 0; padding: 40px !important; box-shadow: none !important; border-radius: 0 !important; min-height: auto; page-break-after: always; border: none !important; width: 100% !important; max-width: none !important; }
-                            .mer-table { border-collapse: collapse !important; width: 100% !important; margin-top: 20px !important; }
-                            .mer-table th { background: #ffffff !important; color: #1e293b !important; border-bottom: 2px solid #1e293b !important; font-size: 10px !important; }
-                            .mer-table td { border-bottom: 1px solid #e2e8f0 !important; font-size: 11px !important; }
+                            .mer-page { display: block !important; margin: 0; padding: 15px 30px !important; box-shadow: none !important; border-radius: 0 !important; min-height: auto; border: none !important; width: 100% !important; max-width: none !important; }
+                            .mer-page + .mer-page { page-break-before: always !important; }
+                            .mer-page.mer-page-hidden { display: none !important; }
+                            .mer-table { border-collapse: collapse !important; width: 100% !important; margin-top: 20px !important; border: 1px solid #cbd5e1 !important; page-break-inside: auto !important; }
+                            .mer-table thead { display: table-header-group !important; }
+                            .mer-table tr { page-break-inside: avoid !important; page-break-after: auto !important; }
+                            .mer-table th { background: #ffffff !important; color: #1e293b !important; border: 1px solid #cbd5e1 !important; border-bottom: 2px solid #1e293b !important; font-size: 10px !important; }
+                            .mer-table td { border: 1px solid #cbd5e1 !important; font-size: 11px !important; }
                             .mer-table tr:nth-child(even) { background: #fafcff !important; -webkit-print-color-adjust: exact; }
                             .mer-table .total-row td { background: #f8fafc !important; color: #000 !important; border-top: 2px solid #000 !important; border-bottom: 2px solid #000 !important; -webkit-print-color-adjust: exact; }
                             .no-print { display: none !important; }
@@ -2236,11 +2252,11 @@ window.OmnisDashboardV6 = class OmnisDashboardV6 {
 
                     <!-- PAGE 1: MANAGEMENT SUMMARY -->
                     <div class="mer-page" style="padding: 50px; background: white;">
-                        <div class="mer-header" style="border-bottom: 2px solid #1e293b; padding-bottom: 24px; margin-bottom: 35px; display: flex; justify-content: space-between; align-items: flex-end;">
-                            <img src="file:///C:/Users/Administrator/omnis/assets/images/omnis-logo.png" style="height:42px; filter: grayscale(100%) brightness(10%);" alt="Omnis Logo" onerror="this.src='../../assets/images/omnis-logo.png'; this.style.filter='grayscale(100%) brightness(10%)'">
+                        <div class="mer-header">
+                            ${logoHtml}
                             <div style="text-align:right;">
-                                <div class="mer-title" style="color: #0f172a; font-size: 26px; font-weight: 900; letter-spacing: -0.02em;">QUOTES & SALES REPORT</div>
-                                <div class="mer-subtitle" style="color: #475569; font-size: 13px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; margin-top: 6px;">EXECUTIVE BRIEFING &mdash; ${report_month} ${report_year}</div>
+                                <div class="mer-title">${companyText === 'Sinopower' ? 'SPS MONTH END REPORT' : 'SRD MONTH END REPORT'}</div>
+                                <div class="mer-subtitle">EXECUTIVE BRIEFING &mdash; ${report_month} ${report_year}</div>
                             </div>
                         </div>
                         
@@ -2286,39 +2302,39 @@ window.OmnisDashboardV6 = class OmnisDashboardV6 {
                             Management should prioritize aggressive, targeted follow-ups on the <b>${outstanding}</b> outstanding quotations generated this month to maximize period-end revenue realization and prevent pipeline stagnation.`;
 
                             return `
-                                <div style="display:grid; grid-template-columns: repeat(4, 1fr); gap:1px; background: #cbd5e1; margin-bottom: 40px; border: 1px solid #cbd5e1;">
-                                    <div style="background:#fff; padding:20px 24px;">
-                                        <div style="font-size:11px; font-weight:700; color:#64748b; text-transform:uppercase; letter-spacing:0.05em; margin-bottom:6px;">Pipeline Volume</div>
-                                        <div style="font-size:36px; font-weight:900; color:#0f172a; line-height:1;">${totalQ}</div>
-                                        <div style="font-size:12px; font-weight:500; color:#64748b; margin-top:8px;">Quotations in ${report_month}</div>
+                                <div style="display:grid; grid-template-columns: repeat(4, 1fr); gap:1px; background: #cbd5e1; margin-bottom: 15px; border: 1px solid #cbd5e1;">
+                                    <div style="background:#fff; padding:8px 12px;">
+                                        <div style="font-size:10px; font-weight:700; color:#64748b; text-transform:uppercase; letter-spacing:0.05em; margin-bottom:4px;">Pipeline Volume</div>
+                                        <div style="font-size:20px; font-weight:900; color:#0f172a; line-height:1;">${totalQ}</div>
+                                        <div style="font-size:10px; font-weight:500; color:#64748b; margin-top:4px;">Quotations in ${report_month}</div>
                                     </div>
-                                    <div style="background:#fff; padding:20px 24px;">
-                                        <div style="font-size:11px; font-weight:700; color:#64748b; text-transform:uppercase; letter-spacing:0.05em; margin-bottom:6px;">Closed Won</div>
-                                        <div style="font-size:36px; font-weight:900; color:#0f172a; line-height:1;">${totalS}</div>
-                                        <div style="font-size:12px; font-weight:500; color:#64748b; margin-top:8px;">Finalized in ${report_month}</div>
+                                    <div style="background:#fff; padding:8px 12px;">
+                                        <div style="font-size:10px; font-weight:700; color:#64748b; text-transform:uppercase; letter-spacing:0.05em; margin-bottom:4px;">Closed Won</div>
+                                        <div style="font-size:20px; font-weight:900; color:#0f172a; line-height:1;">${totalS}</div>
+                                        <div style="font-size:10px; font-weight:500; color:#64748b; margin-top:4px;">Finalized in ${report_month}</div>
                                     </div>
-                                    <div style="background:#fff; padding:20px 24px;">
-                                        <div style="font-size:11px; font-weight:700; color:#64748b; text-transform:uppercase; letter-spacing:0.05em; margin-bottom:6px;">YTD Pipeline</div>
-                                        <div style="font-size:36px; font-weight:900; color:#0f172a; line-height:1;">${ytdQ}</div>
-                                        <div style="font-size:12px; font-weight:500; color:#64748b; margin-top:8px;">Quotations YTD</div>
+                                    <div style="background:#fff; padding:8px 12px;">
+                                        <div style="font-size:10px; font-weight:700; color:#64748b; text-transform:uppercase; letter-spacing:0.05em; margin-bottom:4px;">YTD Pipeline</div>
+                                        <div style="font-size:20px; font-weight:900; color:#0f172a; line-height:1;">${ytdQ}</div>
+                                        <div style="font-size:10px; font-weight:500; color:#64748b; margin-top:4px;">Quotations YTD</div>
                                     </div>
-                                    <div style="background:#fff; padding:20px 24px;">
-                                        <div style="font-size:11px; font-weight:700; color:#64748b; text-transform:uppercase; letter-spacing:0.05em; margin-bottom:6px;">YTD Closed</div>
-                                        <div style="font-size:36px; font-weight:900; color:#0f172a; line-height:1;">${ytdS}</div>
-                                        <div style="font-size:12px; font-weight:500; color:#64748b; margin-top:8px;">Finalized YTD</div>
+                                    <div style="background:#fff; padding:8px 12px;">
+                                        <div style="font-size:10px; font-weight:700; color:#64748b; text-transform:uppercase; letter-spacing:0.05em; margin-bottom:4px;">YTD Closed</div>
+                                        <div style="font-size:20px; font-weight:900; color:#0f172a; line-height:1;">${ytdS}</div>
+                                        <div style="font-size:10px; font-weight:500; color:#64748b; margin-top:4px;">Finalized YTD</div>
                                     </div>
                                 </div>
                                 
-                                <div style="display:flex; gap: 50px;">
+                                <div style="display:flex; gap: 40px;">
                                     <div style="flex:2;">
-                                        <div style="font-weight: 800; color: #1e293b; margin-bottom: 16px; text-transform: uppercase; font-size: 13px; letter-spacing: 0.05em;">Executive Commentary</div>
-                                        <div style="font-size: 14.5px; line-height: 1.8; color: #334155; text-align: justify; font-family: Georgia, serif;">
+                                        <div style="font-weight: 800; color: #1e293b; margin-bottom: 12px; text-transform: uppercase; font-size: 13px; letter-spacing: 0.05em;">Executive Commentary</div>
+                                        <div style="font-size: 14.5px; line-height: 1.6; color: #334155; text-align: justify; font-family: Georgia, serif;">
                                             ${detailedSummary}
                                         </div>
                                         
-                                        <div style="margin-top: 40px; padding-top: 30px; border-top: 1px solid #e2e8f0;">
-                                            <div style="font-weight: 800; color: #1e293b; margin-bottom: 12px; text-transform: uppercase; font-size: 13px; letter-spacing: 0.05em;">Strategic Outlook</div>
-                                            <p style="font-style: italic; font-size: 15px; color: #475569; line-height: 1.7; margin: 0; font-family: Georgia, serif;">We expect conversion-focused activity to intensify, with management emphasis on closing open opportunities. Pipeline execution is expected to support a stable period-end close across all key OEM divisions.</p>
+                                        <div style="margin-top: 25px; padding-top: 20px; border-top: 1px solid #e2e8f0;">
+                                            <div style="font-weight: 800; color: #1e293b; margin-bottom: 8px; text-transform: uppercase; font-size: 13px; letter-spacing: 0.05em;">Strategic Outlook</div>
+                                            <p style="font-style: italic; font-size: 14.5px; color: #475569; line-height: 1.6; margin: 0; font-family: Georgia, serif;">We expect conversion-focused activity to intensify, with management emphasis on closing open opportunities. Pipeline execution is expected to support a stable period-end close across all key OEM divisions.</p>
                                         </div>
                                     </div>
                                     
@@ -2347,8 +2363,9 @@ window.OmnisDashboardV6 = class OmnisDashboardV6 {
                     <!-- PAGE 2: QUOTES & SALES PERFORMANCE -->
                     <div class="mer-page">
                         <div class="mer-header">
-                            <div class="mer-title">QUOTES & SALES</div>
+                            ${logoHtml}
                             <div style="text-align:right;">
+                                <div class="mer-title">QUOTES & SALES</div>
                                 <div class="mer-subtitle">MONTHLY REPORT (${report_month} - ${report_year})</div>
                             </div>
                         </div>
@@ -2360,8 +2377,9 @@ window.OmnisDashboardV6 = class OmnisDashboardV6 {
                     <!-- PAGE 3: SALES DETAILS -->
                     <div class="mer-page">
                         <div class="mer-header">
-                            <div class="mer-title">SALES DETAILS</div>
+                            ${logoHtml}
                             <div style="text-align:right;">
+                                <div class="mer-title">SALES DETAILS</div>
                                 <div class="mer-subtitle">${report_month} ${report_year} ACTIVITIES</div>
                             </div>
                         </div>
@@ -2389,25 +2407,31 @@ window.OmnisDashboardV6 = class OmnisDashboardV6 {
                                 </table>
                             </div>
                             <div>
-                                <div style="background:#fff1f2; border:1px solid #fda4af; border-radius:12px; padding:20px;">
-                                    <div style="font-weight:900; font-size:12px; color:#991b1b; text-transform:uppercase; margin-bottom:15px;">Customer Analysis</div>
-                                    <table style="width:100%; border-collapse:separate; border-spacing:0; font-size:13px;">
-                                        <tr style="border-bottom:1px solid #fecdd3;">
-                                            <td style="padding:8px 0; color:#475569;">Internal</td>
-                                            <td style="text-align:right; font-weight:800;">${customer_analysis.Internal || 0}</td>
-                                        </tr>
-                                        <tr style="border-bottom:1px solid #fecdd3;">
-                                            <td style="padding:8px 0; color:#475569;">Existing</td>
-                                            <td style="text-align:right; font-weight:800;">${customer_analysis.Existing || 0}</td>
-                                        </tr>
-                                        <tr style="border-bottom:1px solid #fecdd3;">
-                                            <td style="padding:8px 0; color:#475569;">New</td>
-                                            <td style="text-align:right; font-weight:800;">${customer_analysis.New || 0}</td>
-                                        </tr>
-                                        <tr>
-                                            <td style="padding:12px 0; font-weight:900; color:#991b1b;">TOTAL</td>
-                                            <td style="text-align:right; font-weight:900; color:#991b1b;">${customer_analysis.Existing + customer_analysis.New + (customer_analysis.Internal || 0)}</td>
-                                        </tr>
+                                <div>
+                                    <div style="font-weight:900; font-size:12px; color:#0f172a; text-transform:uppercase; margin-bottom:15px;">Customer Analysis</div>
+                                    <table class="mer-table" style="margin-bottom:0 !important;">
+                                        <tbody>
+                                            <tr>
+                                                <td style="color:#475569;">Internal</td>
+                                                <td style="text-align:center; font-weight:800; color:#0f172a; width: 60px;">${customer_analysis.Internal || 0}</td>
+                                            </tr>
+                                            <tr>
+                                                <td style="color:#475569;">Existing</td>
+                                                <td style="text-align:center; font-weight:800; color:#0f172a;">${customer_analysis.Existing || 0}</td>
+                                            </tr>
+                                            <tr>
+                                                <td style="color:#475569;">New</td>
+                                                <td style="text-align:center; font-weight:800; color:#0f172a;">${customer_analysis.New || 0}</td>
+                                            </tr>
+                                            <tr class="total-row">
+                                                <td style="font-weight:900; color:#0f172a;">TOTAL</td>
+                                                <td style="text-align:center; font-weight:900; color:#0f172a;">${customer_analysis.Existing + customer_analysis.New + (customer_analysis.Internal || 0)}</td>
+                                            </tr>
+                                            <tr style="background:#f1f5f9 !important;">
+                                                <td style="font-weight:800; color:#0f172a;">Lost Sales</td>
+                                                <td style="text-align:center; font-weight:800; color:#0f172a;">${lostSalesTotal}</td>
+                                            </tr>
+                                        </tbody>
                                     </table>
                                 </div>
                             </div>
@@ -2417,14 +2441,15 @@ window.OmnisDashboardV6 = class OmnisDashboardV6 {
                     <!-- PAGE 4: OEM SUMMARY -->
                     <div class="mer-page">
                         <div class="mer-header">
-                            <div class="mer-title">OEM SUMMARY</div>
+                            ${logoHtml}
                             <div style="text-align:right;">
+                                <div class="mer-title">OEM SUMMARY</div>
                                 <div class="mer-subtitle">CATEGORY & BRAND OVERVIEW</div>
                             </div>
                         </div>
                         
-                        <div style="display:grid; grid-template-columns: 1fr 1fr; gap:40px;">
-                            <div>
+                        <div style="display:flex; align-items:flex-start; gap:40px;">
+                            <div style="flex:1;">
                                 <table class="mer-table">
                                     <thead><tr><th>Product Category</th><th>Quotations</th><th>Orders</th></tr></thead>
                                     <tbody>
@@ -2435,9 +2460,9 @@ window.OmnisDashboardV6 = class OmnisDashboardV6 {
                                     </tbody>
                                 </table>
                             </div>
-                            <div style="background:#f8fafc; padding:20px; border-radius:12px; border:1px solid #e2e8f0;">
+                            <div style="flex:1;">
                                 <div style="font-weight:900; color:#0f172a; margin-bottom:15px; text-transform:uppercase; font-size:12px;">Top Performing Brands</div>
-                                <table class="mer-table" style="background:white;">
+                                <table class="mer-table" style="background:white; margin-top:0 !important;">
                                     <thead><tr><th>Brand</th><th style="text-align:center;">Quoted</th><th style="text-align:center;">Orders</th></tr></thead>
                                     <tbody>
                                         ${performance_table.filter(r => r.curr_q > 0 || r.curr_s > 0).map(r => `
@@ -2450,14 +2475,6 @@ window.OmnisDashboardV6 = class OmnisDashboardV6 {
                                         </tr>
                                     </tbody>
                                 </table>
-                                <table style="width:100%; border-collapse:separate; border-spacing:0; margin-top:10px;">
-                                    <tbody>
-                                        <tr>
-                                            <td style="padding:8px; background:#f1f5f9; font-weight:700; text-align:left; font-size:13px; color:#0f172a; border-radius:4px;">Lost Sales</td>
-                                            <td style="width:60px; padding:8px; font-weight:700; font-size:13px; color:#0f172a; text-align:right;">${lostSalesTotal}</td>
-                                        </tr>
-                                    </tbody>
-                                </table>
                             </div>
                         </div>
                     </div>
@@ -2466,8 +2483,11 @@ window.OmnisDashboardV6 = class OmnisDashboardV6 {
                     ${(payload.brand_pages || [{ name: 'Shantui', data: shantui_report }, { name: 'Hitachi', data: hitachi_report }, { name: 'Bobcat', data: bobcat_report }]).map(brand => `
                         <div class="mer-page">
                             <div class="mer-header">
-                                <div class="mer-title">${(brand.name || 'OEM').toUpperCase()} REPORT</div>
-                                <div style="text-align:right;"><div class="mer-subtitle">MONTHLY PERFORMANCE</div></div>
+                                ${logoHtml}
+                                <div style="text-align:right;">
+                                    <div class="mer-title">${(brand.name || 'OEM').toUpperCase()} REPORT</div>
+                                    <div class="mer-subtitle">MONTHLY PERFORMANCE</div>
+                                </div>
                             </div>
                             <table class="mer-table">
                                 <thead>
@@ -2509,6 +2529,7 @@ window.OmnisDashboardV6 = class OmnisDashboardV6 {
                         <span id="mer-page-indicator" style="background:#f1f5f9; padding:12px 20px; border-radius:99px; font-weight:800; font-size:14px; box-shadow:0 10px 20px rgba(0,0,0,0.1); border:1px solid #cbd5e1; color:#334155;">Page 1</span>
                         <button id="btn-mer-prev" onclick="window.salestrack.changeMERPage(-1)" style="padding:12px 25px; background:#475569; color:white; border:none; border-radius:99px; font-weight:700; cursor:pointer; box-shadow:0 10px 20px rgba(0,0,0,0.2); transition:opacity 0.2s;">&larr; Previous</button>
                         <button id="btn-mer-next" onclick="window.salestrack.changeMERPage(1)" style="padding:12px 25px; background:#2563eb; color:white; border:none; border-radius:99px; font-weight:700; cursor:pointer; box-shadow:0 10px 20px rgba(0,0,0,0.2); transition:opacity 0.2s;">Next &rarr;</button>
+                        <button id="btn-mer-toggle-print" onclick="window.salestrack.toggleMERPagePrint()" style="padding:12px 25px; background:#ef4444; color:white; border:none; border-radius:99px; font-weight:700; cursor:pointer; box-shadow:0 10px 20px rgba(0,0,0,0.2); margin-left:20px;"><i class="fas fa-minus"></i> Exclude Page</button>
                         <button onclick="window.print()" style="padding:12px 25px; background:#0f172a; color:white; border:none; border-radius:99px; font-weight:700; cursor:pointer; box-shadow:0 10px 20px rgba(0,0,0,0.2); margin-left:10px;">&#x1F5A8;&#xFE0F; Export PDF</button>
                     </div>
 
@@ -2525,6 +2546,16 @@ window.OmnisDashboardV6 = class OmnisDashboardV6 {
             // Initialize Pagination
             this.currentMerPage = window._merPersistedPage !== undefined ? window._merPersistedPage : 0;
             window._merPersistedPage = undefined;
+            
+            const renderedPages = document.querySelectorAll('.mer-page');
+            window._merHiddenPages = window._merHiddenPages || [];
+            window._merHiddenPages.forEach(idx => {
+                if (renderedPages[idx]) {
+                    renderedPages[idx].classList.add('mer-page-hidden');
+                    renderedPages[idx].style.opacity = '0.3';
+                }
+            });
+
             setTimeout(() => this.changeMERPage(0), 50);
 
         } catch (e) {
@@ -2564,7 +2595,26 @@ window.OmnisDashboardV6 = class OmnisDashboardV6 {
         });
 
         const ind = document.getElementById('mer-page-indicator');
-        if (ind) ind.innerText = `Page ${newIdx + 1} of ${pages.length}`;
+        if (ind) {
+            window._merHiddenPages = window._merHiddenPages || [];
+            if (window._merHiddenPages.includes(newIdx)) {
+                ind.innerText = `Excluded Page`;
+                ind.style.color = '#ef4444';
+            } else {
+                let includedCount = 0;
+                let currentIncludedIndex = 0;
+                for(let i = 0; i < pages.length; i++) {
+                    if (!window._merHiddenPages.includes(i)) {
+                        includedCount++;
+                        if (i === newIdx) {
+                            currentIncludedIndex = includedCount;
+                        }
+                    }
+                }
+                ind.innerText = `Page ${currentIncludedIndex} of ${includedCount}`;
+                ind.style.color = '#334155';
+            }
+        }
 
         const btnPrev = document.getElementById('btn-mer-prev');
         if (btnPrev) {
@@ -2577,6 +2627,33 @@ window.OmnisDashboardV6 = class OmnisDashboardV6 {
             btnNext.style.opacity = (newIdx === pages.length - 1) ? '0.4' : '1';
             btnNext.style.pointerEvents = (newIdx === pages.length - 1) ? 'none' : 'auto';
         }
+
+        const btnTogglePrint = document.getElementById('btn-mer-toggle-print');
+        if (btnTogglePrint) {
+            const isHidden = pages[newIdx].classList.contains('mer-page-hidden');
+            btnTogglePrint.innerHTML = isHidden ? '<i class="fas fa-plus"></i> Include Page' : '<i class="fas fa-minus"></i> Exclude Page';
+            btnTogglePrint.style.background = isHidden ? "#10b981" : "#ef4444";
+        }
+    }
+
+    toggleMERPagePrint() {
+        const pages = document.querySelectorAll('.mer-page');
+        if (!pages.length || typeof this.currentMerPage === 'undefined') return;
+        const p = pages[this.currentMerPage];
+        
+        window._merHiddenPages = window._merHiddenPages || [];
+        
+        if (p.classList.contains('mer-page-hidden')) {
+            p.classList.remove('mer-page-hidden');
+            window._merHiddenPages = window._merHiddenPages.filter(idx => idx !== this.currentMerPage);
+            p.style.opacity = '1';
+        } else {
+            p.classList.add('mer-page-hidden');
+            window._merHiddenPages.push(this.currentMerPage);
+            p.style.opacity = '0.3';
+        }
+        
+        this.changeMERPage(0);
     }
 
     // --- COMMAND CENTER: FOLLOW-UP REMINDERS ---
@@ -8354,7 +8431,7 @@ window.OmnisDashboardV6 = class OmnisDashboardV6 {
         const showThd   = machines.some(m=>m.target)  || doc.target_handover_date;
         const showRthd  = machines.some(m=>m.revised) || doc.revised_target_handover_date;
         const showAhd   = machines.some(m=>m.actual)  || doc.actual_handover_date;
-        const showNotes = machines.some(m=>m.notes)   || doc.comment;
+        const showNotes = false; // explicitly removed per request
 
         let headers = TH('Machine Details');
         if (showQty)   headers += TH('Qty','center');

@@ -429,3 +429,5 @@
   Files: .mcp/knowledge/_shared/commit_log.md,systems/salestrack/index.html,
 - `e38d3b1` 2026-08-20 [supabase-migration] [checkpoint] Pre-customizable shortcuts implementation
   Files: .mcp/knowledge/_shared/commit_log.md,systems/salestrack/dashboard_logic.js,systems/salestrack/index.html,
+- `5af19cc` 2026-08-20 [supabase-migration] Enhance MER Report aesthetics and add dynamic OEM grouping
+  Files: .mcp/knowledge/_shared/commit_log.md,systems/salestrack/certificates_logic.js,systems/salestrack/dashboard_logic.js,systems/salestrack/index.html,
