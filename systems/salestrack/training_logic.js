@@ -566,7 +566,7 @@ function _printCertificates(model, serial, date, attendees) {
             <div class="bottom-section">
                 <div class="sig-block">
                     <div class="sig-line"></div>
-                    <div class="sig-name">Antony Dube (SRD) Signature</div>
+                    <div class="sig-name">Mathew Ferreira (SRD) Signature</div>
                 </div>
 
                 <div class="date-block">

@@ -418,3 +418,5 @@
   Files: .mcp/knowledge/_shared/commit_log.md,check_email_queue.js,scripts/requeue_emails.js,supabase/.temp/cli-latest,supabase/functions/process-email-queue/index.ts,systems/salestrack/dashboard_logic.js,systems/salestrack/fix_orders_ui.py,systems/salestrack/index.html,systems/salestrack/orders_logic.js,
 - `6268246` 2026-08-19 [supabase-migration] UI: Refine Salestrack dashboard profile header, navbar and performance cards
   Files: .mcp/knowledge/_shared/commit_log.md,systems/salestrack/dashboard_logic.js,systems/salestrack/index.html,
+- `7b1b521` 2026-08-19 [supabase-migration] [checkpoint] Checkpoint after UI polish (avatar size, quotes subtitle, KPI card layout)
+  Files: .mcp/knowledge/_shared/commit_log.md,systems/salestrack/dashboard_logic.js,systems/salestrack/index.html,

@@ -12,6 +12,7 @@
   <!-- Inter — same weights as Fleetrack -->
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;850&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/driver.js@1.0.1/dist/driver.css"/>
 
   <style>
     :root {
@@ -126,6 +127,55 @@
       color: var(--text-dark);
       -webkit-font-smoothing: antialiased;
     }
+
+    /* Driver.js Custom Theme */
+    .driver-popover {
+      background: #ffffff !important;
+      color: #0f172a !important;
+      border-radius: 12px !important;
+      box-shadow: 0 20px 40px -5px rgba(0, 0, 0, 0.15) !important;
+      border: 1px solid #e2e8f0 !important;
+      font-family: 'Inter', sans-serif !important;
+    }
+    .driver-popover-title {
+      color: #0f172a !important;
+      font-weight: 800 !important;
+      font-size: 16px !important;
+      border-bottom: 1px solid #f1f5f9 !important;
+      padding-bottom: 8px !important;
+      margin-bottom: 12px !important;
+    }
+    .driver-popover-description {
+      color: #475569 !important;
+      font-size: 13px !important;
+      line-height: 1.6 !important;
+    }
+    .driver-popover-footer {
+      margin-top: 16px !important;
+    }
+    .driver-popover-progress-text {
+      color: #64748b !important;
+      font-size: 12px !important;
+      font-weight: 600 !important;
+    }
+    .driver-popover-next-btn, .driver-popover-prev-btn {
+      background: #8b2219 !important;
+      color: #ffffff !important;
+      border: none !important;
+      border-radius: 6px !important;
+      padding: 6px 12px !important;
+      font-weight: 700 !important;
+      text-shadow: none !important;
+      text-transform: none !important;
+      transition: background 0.2s !important;
+    }
+    .driver-popover-prev-btn {
+      background: #f1f5f9 !important;
+      color: #475569 !important;
+      border: 1px solid #cbd5e1 !important;
+    }
+    .driver-popover-next-btn:hover { background: #7a1d15 !important; }
+    .driver-popover-prev-btn:hover { background: #e2e8f0 !important; }
 
     /* AI Robot Animation */
     .ai-robot-container {
@@ -2553,7 +2603,6 @@
     /* Unified Command Center Header System */
     .table-wrapper table thead th,
     .stock-table thead th,
-    .mxg-table thead th,
     #ol-table thead th,
     .excel-table thead th {
       background: #8b2219 !important;
@@ -6405,6 +6454,10 @@
                 <div onclick="switchToView('view-settings')" style="cursor:pointer; width:28px; height:28px; display:flex; align-items:center; justify-content:center; background:#0f172a; border-radius:50%; color:#fff; transition:all 0.2s; box-shadow: 0 2px 4px rgba(0,0,0,0.08);" onmouseover="this.style.background='#1e293b'; this.style.transform='translateY(-1px)'" onmouseout="this.style.background='#0f172a'; this.style.transform='none'">
                   <i class="fas fa-cog" style="font-size:13px;"></i>
                 </div>
+                <!-- Help Button -->
+                <div id="btn-tutorial-help" onclick="document.getElementById('help-modal').style.display='flex';" style="cursor:pointer; width:28px; height:28px; display:flex; align-items:center; justify-content:center; background:#0f172a; border-radius:50%; color:#fff; transition:all 0.2s; box-shadow: 0 2px 4px rgba(0,0,0,0.08);" onmouseover="this.style.background='#1e293b'; this.style.transform='translateY(-1px)'" onmouseout="this.style.background='#0f172a'; this.style.transform='none'">
+                  <i class="fas fa-question" style="font-size:13px;"></i>
+                </div>
               </div>
               
               <!-- Avatar -->
@@ -6544,7 +6597,7 @@
               </div>
               
               <!-- 2 -->
-              <div onclick="switchToView('view-orders-list')" class="rpt-card rpt-card-amber">
+              <div id="tour-orders-list" onclick="switchToView('view-orders-list')" class="rpt-card rpt-card-amber">
                 <div style="font-size:16px; width:32px; height:32px; display:flex; align-items:center; justify-content:center; border-radius:12px; background:rgba(0,0,0,0.04); box-shadow:inset 0 2px 4px rgba(255,255,255,0.5);">
                   <i class="fas fa-truck" style="color:#334155;"></i>
                 </div>
@@ -6599,7 +6652,7 @@
               </div>
 
               <!-- 9 -->
-              <div onclick="switchToView('view-training')" class="rpt-card rpt-card-red">
+              <div id="tour-training" onclick="switchToView('view-training')" class="rpt-card rpt-card-red">
                 <div style="font-size:16px; width:32px; height:32px; display:flex; align-items:center; justify-content:center; border-radius:12px; background:rgba(0,0,0,0.04); box-shadow:inset 0 2px 4px rgba(255,255,255,0.5);">
                   <i class="fas fa-graduation-cap" style="color:#334155;"></i>
                 </div>
@@ -6627,7 +6680,7 @@
               </div>
 
               <!-- 12 -->
-              <div onclick="window.showGroupSalesForm()" class="rpt-card rpt-card-sky">
+              <div id="tour-sales-entry" onclick="window.showGroupSalesForm()" class="rpt-card rpt-card-sky">
                 <div style="font-size:16px; width:32px; height:32px; display:flex; align-items:center; justify-content:center; border-radius:12px; background:rgba(0,0,0,0.04); box-shadow:inset 0 2px 4px rgba(255,255,255,0.5);">
                   <i class="fas fa-cart-plus" style="color:#334155;"></i>
                 </div>
@@ -7434,16 +7487,15 @@
                         <div style="overflow-x:auto;">
                             <table style="width:100%; border-collapse:separate; border-spacing:0; font-size:13px; text-align:left;">
                                 <thead>
-                                    <tr style="background:linear-gradient(135deg, #4c110d 0%, #8b2219 55%, #6b1a14 100%);">
-                                        <th style="padding:16px 20px; font-weight:800; color:#ffffff; text-transform:uppercase; letter-spacing:0.05em; border-top-left-radius:16px; border-bottom-left-radius:16px; width:40px;">#</th>
-                                        <th style="padding:16px 20px; font-weight:800; color:#ffffff; text-transform:uppercase; letter-spacing:0.05em;">Operator</th>
-                                        <th style="padding:16px 20px; font-weight:800; color:#ffffff; text-transform:uppercase; letter-spacing:0.05em;">ID Number</th>
-                                        <th style="padding:16px 20px; font-weight:800; color:#ffffff; text-transform:uppercase; letter-spacing:0.05em;">Machine</th>
-                                        <th style="padding:16px 20px; font-weight:800; color:#ffffff; text-transform:uppercase; letter-spacing:0.05em;">Date</th>
-                                        <th style="padding:16px 20px; font-weight:800; color:#ffffff; text-transform:uppercase; letter-spacing:0.05em;">Ref Number</th>
-                                        <th style="padding:16px 20px; font-weight:800; color:#ffffff; text-transform:uppercase; letter-spacing:0.05em; text-align:right; border-top-right-radius:16px; border-bottom-right-radius:16px;">Actions</th>
+                                    <tr style="background:#f8fafc; border-bottom:2px solid #e2e8f0;">
+                                        <th style="padding:16px 20px; font-weight:700; color:#475569; text-transform:uppercase; font-size:12px; letter-spacing:0.05em; border-top-left-radius:16px; border-bottom-left-radius:16px; width:40px;">#</th>
+                                        <th style="padding:16px 20px; font-weight:700; color:#475569; text-transform:uppercase; font-size:12px; letter-spacing:0.05em;">Operator</th>
+                                        <th style="padding:16px 20px; font-weight:700; color:#475569; text-transform:uppercase; font-size:12px; letter-spacing:0.05em;">ID Number</th>
+                                        <th style="padding:16px 20px; font-weight:700; color:#475569; text-transform:uppercase; font-size:12px; letter-spacing:0.05em;">Machine</th>
+                                        <th style="padding:16px 20px; font-weight:700; color:#475569; text-transform:uppercase; font-size:12px; letter-spacing:0.05em;">Date</th>
+                                        <th style="padding:16px 20px; font-weight:700; color:#475569; text-transform:uppercase; font-size:12px; letter-spacing:0.05em;">Ref Number</th>
+                                        <th style="padding:16px 20px; font-weight:700; color:#475569; text-transform:uppercase; font-size:12px; letter-spacing:0.05em; text-align:right; border-top-right-radius:16px; border-bottom-right-radius:16px;">Actions</th>
                                     </tr>
-                                    <tr><td colspan="7" style="height: 12px;"></td></tr>
                                 </thead>
                                 <tbody id="cert-directory-tbody">
                                     <tr><td colspan="7" style="padding:20px; text-align:center; color:#94a3b8; font-style:italic;">Loading certificates...</td></tr>
@@ -27434,7 +27486,7 @@ Commercial Team`);
         <input type="hidden" id="sp-id">
         <div style="margin-bottom:16px;">
           <label style="display:block; font-size:12px; font-weight:600; color:#475569; margin-bottom:6px;">Full Name</label>
-          <input type="text" id="sp-name" placeholder="e.g. Antony Dube" style="width:100%; box-sizing:border-box; padding:10px 12px; border:1px solid #cbd5e1; border-radius:8px; font-size:14px; outline:none;">
+          <input type="text" id="sp-name" placeholder="e.g. Mathew Ferreira" style="width:100%; box-sizing:border-box; padding:10px 12px; border:1px solid #cbd5e1; border-radius:8px; font-size:14px; outline:none;">
         </div>
         <div style="margin-bottom:16px;">
           <label style="display:block; font-size:12px; font-weight:600; color:#475569; margin-bottom:6px;">Email Address</label>
@@ -27481,6 +27533,207 @@ Commercial Team`);
     </div>
 
   
+    <!-- Help / Documentation Modal -->
+    <div id="help-modal" style="display:none; position:fixed; inset:0; z-index:10000; background:rgba(15, 23, 42, 0.75); backdrop-filter:blur(8px); align-items:center; justify-content:center; padding:20px;">
+        <div style="background:#fff; width:100%; max-width:700px; max-height:85vh; border-radius:20px; display:flex; flex-direction:column; overflow:hidden; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.25);">
+            <!-- Header -->
+            <div style="padding:24px 32px; border-bottom:1px solid #e2e8f0; display:flex; justify-content:space-between; align-items:center; background:#0f172a; color:#fff;">
+                <h3 style="margin:0; font-size:18px; font-weight:700;"><i class="fas fa-book-open" style="margin-right:10px; color:#38bdf8;"></i>System Guide & Tutorials</h3>
+                <i class="fas fa-times" style="cursor:pointer; font-size:18px; color:#94a3b8;" onclick="closeHelpModal()" onmouseover="this.style.color='#fff'" onmouseout="this.style.color='#94a3b8'"></i>
+            </div>
+            
+            <!-- Body -->
+            <div style="padding:32px; overflow-y:auto; flex:1; font-size:14px; line-height:1.6; color:#334155; display:flex; flex-direction:column; gap:24px;">
+                
+                <div>
+                    <h4 style="font-size:16px; font-weight:700; color:#0f172a; margin:0 0 12px 0;">1. Sales Entry & Logging Defects</h4>
+                    <p style="margin:0;">Use the <strong>Quick Actions</strong> (F2) menu or click "Enter Sales" on the dashboard to log a new deal. When logging an order, you can explicitly mark "Defects Logging" if the equipment has issues, or select "Track Only Order" if it requires shipping but no financial processing.</p>
+                </div>
+
+                <div>
+                    <h4 style="font-size:16px; font-weight:700; color:#0f172a; margin:0 0 12px 0;">2. Adding Training & Terms Deals</h4>
+                    <p style="margin:0;">When entering a sale, you can check the "Includes Training" box to automatically schedule a training module. Similarly, toggling "Terms Deal" sets up custom net payment schedules directly in the order tracking.</p>
+                </div>
+                
+                <div>
+                    <h4 style="font-size:16px; font-weight:700; color:#0f172a; margin:0 0 12px 0;">3. WhatsApp and Email Updates</h4>
+                    <p style="margin:0;">The top right of your dashboard displays your WhatsApp connectivity status. When connected, the system will automatically push dispatch and delivery notifications to your linked number. Email updates fall back automatically for offline contacts.</p>
+                </div>
+
+                <div style="padding:16px; background:#f8fafc; border-radius:12px; border:1px solid #e2e8f0; text-align:center;">
+                    <p style="margin:0 0 12px 0; font-weight:600; color:#0f172a;">Want a guided walkthrough of the dashboard?</p>
+                    <button onclick="closeHelpModal(); startInteractiveTour();" style="background:#0f172a; color:#fff; border:none; border-radius:8px; padding:10px 24px; font-weight:600; cursor:pointer; transition:all 0.2s;" onmouseover="this.style.background='#1e293b'" onmouseout="this.style.background='#0f172a'">
+                        <i class="fas fa-play-circle" style="margin-right:8px;"></i>Start Interactive Tour
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <script src="https://cdn.jsdelivr.net/npm/driver.js@1.0.1/dist/driver.js.iife.js"></script>
+    <script>
+        window.openHelpModal = function() {
+            const modal = document.getElementById('help-modal');
+            if (modal) modal.style.display = 'flex';
+        };
+        window.closeHelpModal = function() {
+            const modal = document.getElementById('help-modal');
+            if (modal) modal.style.display = 'none';
+        };
+
+        function startInteractiveTour() {
+            if (!window.driver || !window.driver.js) return;
+            const driver = window.driver.js.driver;
+
+            // Determine active view
+            let activeView = 'view-dashboard';
+            
+            // Check if edit order modal is open
+            const genericModal = document.getElementById('dash-generic-modal');
+            const genericTitle = document.getElementById('dash-generic-title');
+            if (genericModal && genericModal.style.display !== 'none' && genericTitle && genericTitle.innerText.includes('Order Details')) {
+                activeView = 'modal-edit-order';
+            } else {
+                const pages = document.querySelectorAll('.view-page');
+                for (const p of pages) {
+                    if (p.style.display !== 'none' && !p.classList.contains('hidden')) {
+                        activeView = p.id;
+                        break;
+                    }
+                }
+            }
+
+            let tourSteps = [];
+
+            if (activeView === 'view-dashboard') {
+                tourSteps = [
+                    {
+                        element: '#wa-navbar-status',
+                        popover: { title: 'WhatsApp & Email Updates', description: 'When connected, the system will push dispatch and delivery notifications automatically to your linked WhatsApp number. If offline, it falls back to Email.', side: 'bottom', align: 'center' }
+                    },
+                    {
+                        element: '#tour-sales-entry',
+                        popover: { title: 'Sales Entry', description: 'Click here to log a new deal. You can mark <strong>Defects Logging</strong>, select <strong>Track Only Order</strong>, or toggle <strong>Terms Deal</strong> right from the form.', side: 'top', align: 'center' }
+                    },
+                    {
+                        element: '#tour-orders-list',
+                        popover: { title: 'Order Tracking', description: 'Manage active orders here. You can track all standard deliveries, <strong>defects</strong>, and <strong>track-only</strong> orders seamlessly.', side: 'top', align: 'center' }
+                    },
+                    {
+                        element: '#tour-training',
+                        popover: { title: 'Training Module', description: 'Access the training dashboard. If a deal <strong>Includes Training</strong>, you can assign modules and track staff compliance here.', side: 'top', align: 'center' }
+                    },
+                    {
+                        element: '#dd-ops-trigger',
+                        popover: { title: 'Terms Deals', description: 'Track deals marked as <strong>Terms Deals</strong> by expanding the <strong>Operations</strong> menu and navigating to <strong>Credit & Terms</strong>.', side: 'bottom', align: 'center' }
+                    },
+                    {
+                        element: '#btn-tutorial-help',
+                        popover: { title: 'System Guide', description: 'You can revisit the static system guide anytime by clicking here. That concludes the tour!', side: 'bottom', align: 'center' }
+                    }
+                ];
+            } else if (activeView === 'view-orders-list') {
+                tourSteps = [
+                    {
+                        element: '#ol-company',
+                        popover: { title: 'Company Filter', description: 'Filter the entire logistics dashboard by company (e.g. Machinery Exchange, Sinopower).', side: 'bottom', align: 'center' }
+                    },
+                    {
+                        element: '#ol-str-report-btn',
+                        popover: { title: 'STR Report', description: 'Generate a comprehensive Service & Tracking Report for the currently filtered orders.', side: 'bottom', align: 'center' }
+                    },
+                    {
+                        element: '#ol-print-report-btn',
+                        popover: { title: 'Print List', description: 'Print the current active view of orders to PDF or a physical printer.', side: 'bottom', align: 'center' }
+                    },
+                    {
+                        element: '#ol-orders-filters select[data-filter="status"]',
+                        popover: { title: 'In Progress Filter', description: 'By default, this is set to <strong>In Progress</strong>. Change this to see Completed, Delivered, or Cancelled orders.', side: 'bottom', align: 'center' }
+                    },
+                    {
+                        element: '#ol-orders-head-grid',
+                        popover: { title: 'Table Columns', description: '<strong>Customer / Risk:</strong> Who ordered and AI risk flag.<br><strong>Machine:</strong> The asset being delivered.<br><strong>Phase & Status:</strong> Logistic stages.<br><strong>Target Date & Days Left:</strong> Deadline indicators.', side: 'bottom', align: 'center' }
+                    },
+                    {
+                        element: '#ol-add-tracking-btn',
+                        popover: { title: 'Add Tracking Manually', description: 'Click here to manually add a tracking entry for an existing order or defect.', side: 'bottom', align: 'center' }
+                    },
+                    {
+                        element: '#ol-orders-list',
+                        popover: { title: 'Open an Order', description: 'Click on any row in this table to open the Order Edit screen. You can trigger the tour again from inside the Edit screen!', side: 'top', align: 'center' }
+                    }
+                ];
+            } else if (activeView === 'modal-edit-order') {
+                tourSteps = [
+                    {
+                        element: '#edit-order-is-terms',
+                        popover: { title: 'Terms Deal', description: 'Toggle this checkbox if the order is on payment terms. This helps Operations track credit agreements.', side: 'bottom', align: 'center' }
+                    },
+                    {
+                        element: '#edit-order-status',
+                        popover: { title: 'Order Status', description: 'Manually override the logistic phase of this order.', side: 'bottom', align: 'center' }
+                    },
+                    {
+                        element: '#machines-tbody',
+                        popover: { title: 'Machine Details', description: 'View or modify the machines attached to this order, including target handover dates.', side: 'top', align: 'center' }
+                    },
+                    {
+                        element: '#contacts-tbody',
+                        popover: { title: 'Contacts', description: 'Attach customer contacts to ensure they receive WhatsApp/Email notifications about this order.', side: 'top', align: 'center' }
+                    },
+                    {
+                        popover: { title: 'Update Order', description: 'Once you are done making changes, scroll down and click "Save & Update".', side: 'top', align: 'center' }
+                    }
+                ];
+            } else {
+                tourSteps = [
+                    {
+                        popover: { title: 'System Guide', description: 'No specific tutorial steps for this page yet. Use the main dashboard or Order Tracking for guided features.', align: 'center' }
+                    }
+                ];
+            }
+
+            const activeTour = driver({
+                showProgress: true,
+                animate: true,
+                allowClose: true,
+                doneBtnText: 'Finish',
+                nextBtnText: 'Next',
+                prevBtnText: 'Previous',
+                steps: tourSteps
+            });
+            activeTour.drive();
+        }
+
+        // On first load prompt
+        document.addEventListener('DOMContentLoaded', () => {
+            // Escape broken nesting for the floating button
+            const btn = document.getElementById('test-tour-btn');
+            if (btn) document.body.appendChild(btn);
+            
+            const hasSeenTour = localStorage.getItem('omnis_has_seen_tour_v1');
+            if (!hasSeenTour) {
+                // Show a prompt to take the tour
+                const tourPrompt = document.createElement('div');
+                tourPrompt.innerHTML = `
+                    <div style="position:fixed; bottom:24px; left:24px; background:#0f172a; color:#fff; padding:20px; border-radius:16px; box-shadow:0 15px 35px rgba(0,0,0,0.4); z-index:9999; width:320px; display:flex; flex-direction:column; gap:12px; border:1px solid #1e293b;">
+                        <div style="font-weight:800; font-size:16px; display:flex; align-items:center; gap:8px;"><i class="fas fa-magic" style="color:#38bdf8;"></i>Welcome to Salestrack!</div>
+                        <div style="font-size:13px; color:#cbd5e1; line-height:1.5;">Would you like a quick interactive tour to show you where everything is?</div>
+                        <div style="display:flex; gap:10px; margin-top:8px;">
+                            <button onclick="localStorage.setItem('omnis_has_seen_tour_v1', 'true'); this.parentElement.parentElement.remove(); startInteractiveTour();" style="flex:1; background:#38bdf8; color:#0f172a; border:none; padding:10px; border-radius:8px; font-weight:700; cursor:pointer; transition:background 0.2s;" onmouseover="this.style.background='#7dd3fc'" onmouseout="this.style.background='#38bdf8'">Start Tour</button>
+                            <button onclick="localStorage.setItem('omnis_has_seen_tour_v1', 'true'); this.parentElement.parentElement.remove();" style="background:transparent; border:1px solid #475569; color:#cbd5e1; padding:10px 16px; border-radius:8px; font-weight:600; cursor:pointer; transition:background 0.2s;" onmouseover="this.style.background='#1e293b'" onmouseout="this.style.background='transparent'">Never show again</button>
+                        </div>
+                    </div>
+                `;
+                document.body.appendChild(tourPrompt);
+            }
+        });
+    </script>
+    
+    <!-- TEST TOUR FLOATING BUTTON -->
+    <div id="test-tour-btn" onclick="startInteractiveTour()" style="position:fixed; bottom:30px; left:30px; background:linear-gradient(135deg, #0f172a, #1e293b); color:#38bdf8; width:64px; height:64px; border-radius:32px; display:flex; justify-content:center; align-items:center; cursor:pointer; box-shadow:0 10px 25px rgba(0,0,0,0.4); border:2px solid #38bdf8; z-index:2147483647; font-size:24px; transition:all 0.2s;" onmouseover="this.style.transform='scale(1.1)'; this.style.background='#38bdf8'; this.style.color='#0f172a';" onmouseout="this.style.transform='scale(1)'; this.style.background='linear-gradient(135deg, #0f172a, #1e293b)'; this.style.color='#38bdf8';" title="Test Interactive Tour">
+        <i class="fas fa-magic"></i>
+    </div>
 </body>
 
 

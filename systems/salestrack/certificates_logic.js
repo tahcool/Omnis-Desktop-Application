@@ -354,7 +354,7 @@ class CertificatesLogic {
                                 <div class="footer-grid">
                                     <div class="sig-block">
                                         <div class="sig-line"></div>
-                                        <div class="sig-name">Antony Dube (SRD) Signature</div>
+                                        <div class="sig-name">Mathew Ferreira (SRD) Signature</div>
                                     </div>
                                     <div class="date-block" style="padding: 0 20px;">
                                         <div class="date-line">${data.printDateStr}</div>
@@ -950,7 +950,7 @@ class CertificatesLogic {
                             <div class="footer-grid">
                                 <div class="sig-block">
                                     <div class="sig-line"></div>
-                                    <div class="sig-name">Antony Dube (SRD) Signature</div>
+                                    <div class="sig-name">Mathew Ferreira (SRD) Signature</div>
                                 </div>
                                 <div class="date-block" style="padding: 0 20px;">
                                     <div class="date-line">${data.printDateStr}</div>

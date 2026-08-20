@@ -379,7 +379,7 @@
     }
 
     .system-item {
-      display: flex;
+      display: none; /* Hide all by default, only show connected */
       justify-content: space-between;
       align-items: center;
       padding: 10px 0;
@@ -396,8 +396,7 @@
     }
 
     .system-item.active {
-      color: #fff;
-      padding-left: 8px;
+      display: none; /* Don't show while checking either */
     }
 
     .system-item.active .status-indicator {
@@ -405,6 +404,7 @@
     }
 
     .system-item.done {
+      display: flex;
       color: #34d399; /* Emerald 400 */
       font-weight: 600;
     }
@@ -415,8 +415,7 @@
     }
 
     .system-item.error {
-      color: #fbbf24; /* Amber 400 - more professional than Red */
-      opacity: 0.9;
+      display: none;
     }
 
     .system-item.error .status-indicator {

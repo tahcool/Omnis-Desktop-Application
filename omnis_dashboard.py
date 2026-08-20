@@ -6441,7 +6441,7 @@ def send_order_email_update(payload=None, **kwargs):
                 "sales.humphrey@machinery-exchange.com",
                 "chetan.samji@machinery-exchange.com",
                 "equipment@machinery-exchange.com",
-                "sales@machinery-exchange.com",
+                "louis@industrial-exchange.group",
                 "robin.hunter@machinery-exchange.com",
                 "rutendo@industrial-exchange.group",
                 "mathew@industrial-exchange.group",
