@@ -433,3 +433,6 @@
   Files: .mcp/knowledge/_shared/commit_log.md,systems/salestrack/certificates_logic.js,systems/salestrack/dashboard_logic.js,systems/salestrack/index.html,
 - `0b6946c` 2026-08-20 [supabase-migration] [checkpoint] MER Report styling updates (dynamic logos, table formatting) and removal of Notes column from order tracking email
   Files: .mcp/knowledge/_shared/commit_log.md,systems/salestrack/dashboard_logic.js,
+\n## 2026-08-21
+- `b898323` 2026-08-21 [supabase-migration] Fix splash screen logic to wait for dashboard and intelligence
+  Files: .mcp/knowledge/_shared/commit_log.md,main.js,package.json,scripts/extracted_js.js,systems/salestrack/dashboard_logic.js,systems/salestrack/index.html,
