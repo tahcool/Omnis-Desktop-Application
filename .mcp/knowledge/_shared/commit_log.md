@@ -454,3 +454,5 @@
   Files: .mcp/knowledge/_shared/commit_log.md,systems/salestrack/index.html,
 - `a8e8b78` 2026-08-21 [supabase-migration] fix: restore maroon gradient for stock grid headers
   Files: .mcp/knowledge/_shared/commit_log.md,systems/salestrack/index.html,
+- `ba800bd` 2026-08-21 [supabase-migration] fix: wire up auto-updater download progress IPC to frontend
+  Files: .mcp/knowledge/_shared/commit_log.md,main.js,
