@@ -452,3 +452,5 @@
   Files: .mcp/knowledge/_shared/commit_log.md,systems/salestrack/index.html,
 - `97bc8fa` 2026-08-21 [supabase-migration] fix: move stock sort headers to each phase group
   Files: .mcp/knowledge/_shared/commit_log.md,systems/salestrack/index.html,
+- `a8e8b78` 2026-08-21 [supabase-migration] fix: restore maroon gradient for stock grid headers
+  Files: .mcp/knowledge/_shared/commit_log.md,systems/salestrack/index.html,
