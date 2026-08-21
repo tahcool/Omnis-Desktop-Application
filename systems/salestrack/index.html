@@ -16762,7 +16762,7 @@ thead th { padding:11px 12px; font-size:10px; font-weight:800; color:#fff; text-
     }
 
     let spFormInited = false;
-    window._editingStockId = null;
+    // window._editingStockId = null; // Removed to prevent duplicate creation on subsequent saves
     window._spPotentialCustomers = [];
     window._stockRecordsMap = {}; // Global cache to prevent JSON string issues in onclick
 
@@ -17193,7 +17193,7 @@ thead th { padding:11px 12px; font-size:10px; font-weight:800; color:#fff; text-
             window.renderStockTab();
           }
           omnisLog("Stock record " + (window._editingStockId ? "updated" : "saved") + " successfully: " + response.name);
-          window._editingStockId = null;
+          // window._editingStockId = null; // Removed to prevent duplicate creation on subsequent saves
         } else {
           throw new Error(response.error || "Save failed");
         }
@@ -21500,7 +21500,7 @@ thead th { padding:11px 12px; font-size:10px; font-weight:800; color:#fff; text-
 
   <!-- OMNIS DEBUG FLOATING TOGGLE -->
   <button onclick="document.getElementById('omnis-debug-panel').classList.toggle('hidden')"
-    style="position:fixed; bottom:20px; right:20px; z-index:9998; background:#1e293b; color:#fbbf24; border:1px solid #334155; padding:10px 18px; border-radius:50px; font-size:11px; cursor:pointer; font-weight:800; box-shadow:0 10px 15px -3px rgba(0,0,0,0.4); opacity:0.6; transition:opacity 0.2s;"
+    style="display:none; position:fixed; bottom:20px; right:20px; z-index:9998; background:#1e293b; color:#fbbf24; border:1px solid #334155; padding:10px 18px; border-radius:50px; font-size:11px; cursor:pointer; font-weight:800; box-shadow:0 10px 15px -3px rgba(0,0,0,0.4); opacity:0.6; transition:opacity 0.2s;"
     onmouseover="this.style.opacity='1'" onmouseout="this.style.opacity='0.6'">
     DEBUG CONSOLE
   </button>

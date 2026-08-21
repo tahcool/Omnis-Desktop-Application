@@ -442,3 +442,5 @@
   Files: .mcp/knowledge/_shared/commit_log.md,systems/salestrack/index.html,
 - `0745b7c` 2026-08-21 [supabase-migration] Fix Customize button behavior by preventing default and stopping propagation to avoid unintended view navigation
   Files: systems/salestrack/index.html,
+- `a58866e` 2026-08-21 [supabase-migration] [checkpoint] Update shortcut customizer to support drag-and-drop ordering and persistence
+  Files: .mcp/knowledge/_shared/commit_log.md,systems/salestrack/index.html,
