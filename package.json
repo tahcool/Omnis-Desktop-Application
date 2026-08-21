@@ -44,7 +44,7 @@
       "allowToChangeInstallationDirectory": true,
       "createDesktopShortcut": "always",
       "createStartMenuShortcut": true,
-      "shortcutName": "Omnis Salestrack",
+      "shortcutName": "Omnis",
       "artifactName": "Omnis_Setup_${version}.exe"
     },
     "nsisWeb": {

@@ -55,7 +55,10 @@ window.OmnisDashboardV6 = class OmnisDashboardV6 {
             this.render();
             this.initInactivityTimer();
 
-            // ... Dynamic Versioning from Electron
+            
+            // Notify splash screen that data fetching and initial render is done
+            document.dispatchEvent(new Event("omnis_dashboard_ready"));
+// ... Dynamic Versioning from Electron
             if (window.electron && window.electron.getVersion) {
                 window.electron.getVersion().then(v => {
                     const label = document.getElementById('app-version-label');
@@ -2252,11 +2255,11 @@ window.OmnisDashboardV6 = class OmnisDashboardV6 {
 
                     <!-- PAGE 1: MANAGEMENT SUMMARY -->
                     <div class="mer-page" style="padding: 50px; background: white;">
-                        <div class="mer-header">
-                            ${logoHtml}
+                        <div class="mer-header" style="border-bottom: 2px solid #1e293b; padding-bottom: 24px; margin-bottom: 35px; display: flex; justify-content: space-between; align-items: flex-end;">
+                            <img src="file:///C:/Users/Administrator/omnis/assets/images/omnis-logo.png" style="height:42px; filter: grayscale(100%) brightness(10%);" alt="Omnis Logo" onerror="this.src='../../assets/images/omnis-logo.png'; this.style.filter='grayscale(100%) brightness(10%)'">
                             <div style="text-align:right;">
-                                <div class="mer-title">${companyText === 'Sinopower' ? 'SPS MONTH END REPORT' : 'SRD MONTH END REPORT'}</div>
-                                <div class="mer-subtitle">EXECUTIVE BRIEFING &mdash; ${report_month} ${report_year}</div>
+                                <div class="mer-title" style="color: #0f172a; font-size: 26px; font-weight: 900; letter-spacing: -0.02em;">QUOTES & SALES REPORT</div>
+                                <div class="mer-subtitle" style="color: #475569; font-size: 13px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; margin-top: 6px;">EXECUTIVE BRIEFING &mdash; ${report_month} ${report_year}</div>
                             </div>
                         </div>
                         
@@ -2302,39 +2305,39 @@ window.OmnisDashboardV6 = class OmnisDashboardV6 {
                             Management should prioritize aggressive, targeted follow-ups on the <b>${outstanding}</b> outstanding quotations generated this month to maximize period-end revenue realization and prevent pipeline stagnation.`;
 
                             return `
-                                <div style="display:grid; grid-template-columns: repeat(4, 1fr); gap:1px; background: #cbd5e1; margin-bottom: 15px; border: 1px solid #cbd5e1;">
-                                    <div style="background:#fff; padding:8px 12px;">
-                                        <div style="font-size:10px; font-weight:700; color:#64748b; text-transform:uppercase; letter-spacing:0.05em; margin-bottom:4px;">Pipeline Volume</div>
-                                        <div style="font-size:20px; font-weight:900; color:#0f172a; line-height:1;">${totalQ}</div>
-                                        <div style="font-size:10px; font-weight:500; color:#64748b; margin-top:4px;">Quotations in ${report_month}</div>
+                                <div style="display:grid; grid-template-columns: repeat(4, 1fr); gap:1px; background: #cbd5e1; margin-bottom: 40px; border: 1px solid #cbd5e1;">
+                                    <div style="background:#fff; padding:20px 24px;">
+                                        <div style="font-size:11px; font-weight:700; color:#64748b; text-transform:uppercase; letter-spacing:0.05em; margin-bottom:6px;">Pipeline Volume</div>
+                                        <div style="font-size:36px; font-weight:900; color:#0f172a; line-height:1;">${totalQ}</div>
+                                        <div style="font-size:12px; font-weight:500; color:#64748b; margin-top:8px;">Quotations in ${report_month}</div>
                                     </div>
-                                    <div style="background:#fff; padding:8px 12px;">
-                                        <div style="font-size:10px; font-weight:700; color:#64748b; text-transform:uppercase; letter-spacing:0.05em; margin-bottom:4px;">Closed Won</div>
-                                        <div style="font-size:20px; font-weight:900; color:#0f172a; line-height:1;">${totalS}</div>
-                                        <div style="font-size:10px; font-weight:500; color:#64748b; margin-top:4px;">Finalized in ${report_month}</div>
+                                    <div style="background:#fff; padding:20px 24px;">
+                                        <div style="font-size:11px; font-weight:700; color:#64748b; text-transform:uppercase; letter-spacing:0.05em; margin-bottom:6px;">Closed Won</div>
+                                        <div style="font-size:36px; font-weight:900; color:#0f172a; line-height:1;">${totalS}</div>
+                                        <div style="font-size:12px; font-weight:500; color:#64748b; margin-top:8px;">Finalized in ${report_month}</div>
                                     </div>
-                                    <div style="background:#fff; padding:8px 12px;">
-                                        <div style="font-size:10px; font-weight:700; color:#64748b; text-transform:uppercase; letter-spacing:0.05em; margin-bottom:4px;">YTD Pipeline</div>
-                                        <div style="font-size:20px; font-weight:900; color:#0f172a; line-height:1;">${ytdQ}</div>
-                                        <div style="font-size:10px; font-weight:500; color:#64748b; margin-top:4px;">Quotations YTD</div>
+                                    <div style="background:#fff; padding:20px 24px;">
+                                        <div style="font-size:11px; font-weight:700; color:#64748b; text-transform:uppercase; letter-spacing:0.05em; margin-bottom:6px;">YTD Pipeline</div>
+                                        <div style="font-size:36px; font-weight:900; color:#0f172a; line-height:1;">${ytdQ}</div>
+                                        <div style="font-size:12px; font-weight:500; color:#64748b; margin-top:8px;">Quotations YTD</div>
                                     </div>
-                                    <div style="background:#fff; padding:8px 12px;">
-                                        <div style="font-size:10px; font-weight:700; color:#64748b; text-transform:uppercase; letter-spacing:0.05em; margin-bottom:4px;">YTD Closed</div>
-                                        <div style="font-size:20px; font-weight:900; color:#0f172a; line-height:1;">${ytdS}</div>
-                                        <div style="font-size:10px; font-weight:500; color:#64748b; margin-top:4px;">Finalized YTD</div>
+                                    <div style="background:#fff; padding:20px 24px;">
+                                        <div style="font-size:11px; font-weight:700; color:#64748b; text-transform:uppercase; letter-spacing:0.05em; margin-bottom:6px;">YTD Closed</div>
+                                        <div style="font-size:36px; font-weight:900; color:#0f172a; line-height:1;">${ytdS}</div>
+                                        <div style="font-size:12px; font-weight:500; color:#64748b; margin-top:8px;">Finalized YTD</div>
                                     </div>
                                 </div>
                                 
-                                <div style="display:flex; gap: 40px;">
+                                <div style="display:flex; gap: 50px;">
                                     <div style="flex:2;">
-                                        <div style="font-weight: 800; color: #1e293b; margin-bottom: 12px; text-transform: uppercase; font-size: 13px; letter-spacing: 0.05em;">Executive Commentary</div>
-                                        <div style="font-size: 14.5px; line-height: 1.6; color: #334155; text-align: justify; font-family: Georgia, serif;">
+                                        <div style="font-weight: 800; color: #1e293b; margin-bottom: 16px; text-transform: uppercase; font-size: 13px; letter-spacing: 0.05em;">Executive Commentary</div>
+                                        <div style="font-size: 14.5px; line-height: 1.8; color: #334155; text-align: justify; font-family: Georgia, serif;">
                                             ${detailedSummary}
                                         </div>
                                         
-                                        <div style="margin-top: 25px; padding-top: 20px; border-top: 1px solid #e2e8f0;">
-                                            <div style="font-weight: 800; color: #1e293b; margin-bottom: 8px; text-transform: uppercase; font-size: 13px; letter-spacing: 0.05em;">Strategic Outlook</div>
-                                            <p style="font-style: italic; font-size: 14.5px; color: #475569; line-height: 1.6; margin: 0; font-family: Georgia, serif;">We expect conversion-focused activity to intensify, with management emphasis on closing open opportunities. Pipeline execution is expected to support a stable period-end close across all key OEM divisions.</p>
+                                        <div style="margin-top: 40px; padding-top: 30px; border-top: 1px solid #e2e8f0;">
+                                            <div style="font-weight: 800; color: #1e293b; margin-bottom: 12px; text-transform: uppercase; font-size: 13px; letter-spacing: 0.05em;">Strategic Outlook</div>
+                                            <p style="font-style: italic; font-size: 15px; color: #475569; line-height: 1.7; margin: 0; font-family: Georgia, serif;">We expect conversion-focused activity to intensify, with management emphasis on closing open opportunities. Pipeline execution is expected to support a stable period-end close across all key OEM divisions.</p>
                                         </div>
                                     </div>
                                     

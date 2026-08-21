@@ -1,4 +1,4 @@
-const { app, BrowserWindow, session, ipcMain, globalShortcut, dialog, shell, net } = require("electron");
+const { app, BrowserWindow, session, ipcMain, globalShortcut, dialog, shell, net, Notification } = require("electron");
 const { autoUpdater } = require("electron-updater");
 const path = require("path");
 const axios = require("axios");
@@ -1722,6 +1722,15 @@ app.whenReady().then(async () => {
 
   autoUpdater.on('update-available', () => {
     console.log('[Omnis] Update available.');
+    
+    if (Notification.isSupported()) {
+      new Notification({
+        title: 'Omnis Update Available',
+        body: 'A new version of the application is downloading in the background.',
+        icon: path.join(__dirname, "assets/images/omnis-notification-icon.png")
+      }).show();
+    }
+
     BrowserWindow.getAllWindows().forEach(win => {
       win.webContents.send('update-message', { type: 'available', text: 'Update available. Downloading...' });
     });
@@ -1735,6 +1744,15 @@ app.whenReady().then(async () => {
 
   autoUpdater.on('update-downloaded', () => {
     console.log('[Omnis] Update downloaded; will install now.');
+    
+    if (Notification.isSupported()) {
+      new Notification({
+        title: 'Omnis Update Ready',
+        body: 'The update has been downloaded. The application will restart in a few seconds to install it.',
+        icon: path.join(__dirname, "assets/images/omnis-notification-icon.png")
+      }).show();
+    }
+
     BrowserWindow.getAllWindows().forEach(win => {
       win.webContents.send('update-message', { type: 'downloaded', text: 'Update downloaded. Restarting...' });
     });

@@ -100,7 +100,7 @@
       inset: 0 !important;
       width: 100vw !important;
       height: 100vh !important;
-      background: #0b1120 !important;
+      background: #8b2219 !important;
       display: flex !important;
       flex-direction: column !important;
       align-items: center !important;
@@ -1275,11 +1275,13 @@
     }
 
     /* HIDE FLOATING ELEMENTS DURING LOADING/LOGIN */
+    #splash-overlay:not(.hidden)~#test-tour-btn,
     #splash-overlay:not(.hidden)~#sidebar-toggle-btn,
     #splash-overlay:not(.hidden)~#search-fab,
     #splash-overlay:not(.hidden)~.app-shell .dash-nav-zone,
     #splash-overlay:not(.hidden)~.app-shell #main-dots,
     #splash-overlay:not(.hidden)~.app-shell .dashboard-slider-dots,
+    .page-login:not(.hidden)~#test-tour-btn,
     .page-login:not(.hidden)~#sidebar-toggle-btn,
     .page-login:not(.hidden)~#search-fab,
     .page-login:not(.hidden)~.app-shell .dash-nav-zone,
@@ -5889,12 +5891,12 @@
 
 <body>
   <!-- SPLASH OVERLAY -->
-  <div id="splash-overlay" style="position:fixed; top:0; left:0; width:100vw; height:100vh; background: var(--accent-gradient, linear-gradient(135deg, #8b2219 0%, #4c110d 100%)); z-index: 9999999; display: flex; align-items: center; justify-content: center; flex-direction: column; transition: opacity 0.5s ease, visibility 0.5s ease;">
-      <div class="splash-inner" style="text-align: center;">
-          <div class="splash-logo" style="margin-bottom: 30px;">
-              <img src="../../assets/images/omnis-logo-white.png" alt="Omnis Logo" style="height: 50px; filter: drop-shadow(0px 4px 10px rgba(0,0,0,0.3));" />
+  <div id="splash-overlay" style="position:fixed; top:0; left:0; width:100vw; height:100vh; background: #8b2219; z-index: 9999999; display: flex; align-items: center; justify-content: center; flex-direction: column; transition: opacity 0.5s ease, visibility 0.5s ease;">
+      <div class="splash-inner" style="text-align: center; display: flex; flex-direction: column; align-items: center; width: 100%;">
+          <div class="splash-logo" style="margin-bottom: 30px; display: flex; justify-content: center; width: 100%;">
+              <img src="../../assets/images/omnis-logo-white.png" alt="Omnis Logo" style="height: clamp(50px, 10vh, 90px); max-width: 90vw; object-fit: contain; filter: drop-shadow(0px 4px 10px rgba(0,0,0,0.3));" />
           </div>
-          <div style="width: 200px; height: 4px; background: rgba(255,255,255,0.2); border-radius: 4px; overflow: hidden; margin: 0 auto 15px auto;">
+          <div style="width: 300px; height: 3px; background: rgba(255,255,255,0.2); border-radius: 4px; overflow: hidden; margin: 0 auto 15px auto;">
               <div id="splash-bar-inner" style="height: 100%; width: 0%; background: #ffffff; border-radius: 4px; transition: width 0.3s ease;"></div>
           </div>
           <div id="splash-text" class="splash-text" style="color: rgba(255,255,255,0.9); font-size: 13px; font-weight: 500; letter-spacing: 0.5px;">Initializing System...</div>
@@ -6564,93 +6566,93 @@
 
             <!-- SINOPOWER COMBINED -->
             <div style="display:flex; flex-wrap:wrap; gap:16px; flex: 2 1 600px;">
-              <div style="background:rgba(255,255,255,0.8);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border:1px solid rgba(255,255,255,0.6);border-top:4px solid #8b2219;border-radius:20px;padding:22px 24px;box-shadow:0 10px 30px -5px rgba(0,0,0,0.06), 0 4px 6px -4px rgba(0,0,0,0.02);flex:1 1 300px;">
+              <div style="background:#8b2219;border-radius:14px;padding:22px 24px;flex:1 1 300px;">
               <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;">
                 <div>
-                  <div style="font-size:11px;font-weight:900;letter-spacing:0.1em;text-transform:uppercase;color:#8b2219;">Sinopower</div>
-                  <div style="font-size:9px;font-weight:700;color:#94a3b8;text-transform:uppercase;letter-spacing:0.06em;">MTD & YTD Performance</div>
+                  <div style="font-size:11px;font-weight:900;letter-spacing:0.1em;text-transform:uppercase;color:#ffffff;">Sinopower</div>
+                  <div style="font-size:9px;font-weight:700;color:rgba(255,255,255,0.7);text-transform:uppercase;letter-spacing:0.06em;">MTD & YTD Performance</div>
                 </div>
-                <span style="width:28px;height:28px;background:rgba(139,34,25,0.08);border-radius:8px;display:inline-flex;align-items:center;justify-content:center;"><i class="fas fa-chart-line" style="color:#8b2219;font-size:11px;"></i></span>
+                <span style="width:28px;height:28px;background:rgba(255,255,255,0.1);border-radius:8px;display:inline-flex;align-items:center;justify-content:center;"><i class="fas fa-chart-line" style="color:#ffffff;font-size:11px;"></i></span>
               </div>
               
               <div style="display:flex;gap:16px;">
                 <!-- MTD Block -->
                 <div style="flex:1;">
-                  <div style="font-size:9px;font-weight:700;color:#94a3b8;text-transform:uppercase;margin-bottom:4px;">Month to Date</div>
+                  <div style="font-size:9px;font-weight:700;color:rgba(255,255,255,0.7);text-transform:uppercase;margin-bottom:4px;">Month to Date</div>
                   <div style="display:flex;align-items:baseline;gap:4px;margin-bottom:4px;">
-                    <div id="dash-sino-mtd" style="font-size:26px;font-weight:900;color:#0f172a;line-height:1;">&#8212;</div>
-                    <div id="dash-sino-mtd-tgt" style="font-size:11px;color:#94a3b8;font-weight:600;">/ &#8212;</div>
+                    <div id="dash-sino-mtd" style="font-size:26px;font-weight:900;color:#ffffff;line-height:1;">&#8212;</div>
+                    <div id="dash-sino-mtd-tgt" style="font-size:11px;color:rgba(255,255,255,0.5);font-weight:600;">/ &#8212;</div>
                   </div>
-                  <div style="width:100%;height:5px;background:#f1f5f9;border-radius:99px;overflow:hidden;margin-bottom:4px;">
-                    <div id="dash-sino-mtd-bar" style="height:100%;width:0%;background:linear-gradient(90deg,#c0392b,#8b2219);border-radius:99px;transition:width 0.7s ease;"></div>
+                  <div style="width:100%;height:5px;background:rgba(0,0,0,0.25);border-radius:99px;overflow:hidden;margin-bottom:4px;">
+                    <div id="dash-sino-mtd-bar" style="height:100%;width:0%;background:linear-gradient(90deg,#ef4444,#fca5a5);border-radius:99px;transition:width 0.7s ease;"></div>
                   </div>
                   <div style="display:flex;justify-content:space-between;align-items:center;">
-                    <span id="dash-sino-mtd-pct" style="font-size:11px;font-weight:900;color:#8b2219;">&#8212;%</span>
-                    <span id="dash-sino-mtd-note" style="font-size:9px;color:#94a3b8;font-weight:600;">units</span>
+                    <span id="dash-sino-mtd-pct" style="font-size:11px;font-weight:900;color:#ffffff;">&#8212;%</span>
+                    <span id="dash-sino-mtd-note" style="font-size:9px;color:rgba(255,255,255,0.7);font-weight:600;">units</span>
                   </div>
                 </div>
                 
-                <div style="width:1px;background:#e2e8f0;margin:0 4px;"></div>
+                <div style="width:1px;background:rgba(255,255,255,0.1);margin:0 4px;"></div>
                 
                 <!-- YTD Block -->
                 <div style="flex:1;">
-                  <div style="font-size:9px;font-weight:700;color:#94a3b8;text-transform:uppercase;margin-bottom:4px;">Year to Date</div>
+                  <div style="font-size:9px;font-weight:700;color:rgba(255,255,255,0.7);text-transform:uppercase;margin-bottom:4px;">Year to Date</div>
                   <div style="display:flex;align-items:baseline;gap:4px;margin-bottom:4px;">
-                    <div id="dash-sino-ytd" style="font-size:26px;font-weight:900;color:#0f172a;line-height:1;">&#8212;</div>
-                    <div id="dash-sino-ytd-tgt" style="font-size:11px;color:#94a3b8;font-weight:600;">/ &#8212;</div>
+                    <div id="dash-sino-ytd" style="font-size:26px;font-weight:900;color:#ffffff;line-height:1;">&#8212;</div>
+                    <div id="dash-sino-ytd-tgt" style="font-size:11px;color:rgba(255,255,255,0.5);font-weight:600;">/ &#8212;</div>
                   </div>
-                  <div style="width:100%;height:5px;background:#f1f5f9;border-radius:99px;overflow:hidden;margin-bottom:4px;">
-                    <div id="dash-sino-ytd-bar" style="height:100%;width:0%;background:linear-gradient(90deg,#c0392b,#8b2219);border-radius:99px;transition:width 0.7s ease;"></div>
+                  <div style="width:100%;height:5px;background:rgba(0,0,0,0.25);border-radius:99px;overflow:hidden;margin-bottom:4px;">
+                    <div id="dash-sino-ytd-bar" style="height:100%;width:0%;background:linear-gradient(90deg,#ef4444,#fca5a5);border-radius:99px;transition:width 0.7s ease;"></div>
                   </div>
                   <div style="display:flex;justify-content:space-between;align-items:center;">
-                    <span id="dash-sino-ytd-pct" style="font-size:11px;font-weight:900;color:#8b2219;">&#8212;%</span>
-                    <span id="dash-sino-ytd-note" style="font-size:9px;color:#94a3b8;font-weight:600;">units</span>
+                    <span id="dash-sino-ytd-pct" style="font-size:11px;font-weight:900;color:#ffffff;">&#8212;%</span>
+                    <span id="dash-sino-ytd-note" style="font-size:9px;color:rgba(255,255,255,0.7);font-weight:600;">units</span>
                   </div>
                 </div>
               </div>
               </div>
             <!-- MACHINERY EXCHANGE COMBINED -->
-            <div style="background:rgba(255,255,255,0.8);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);border:1px solid rgba(255,255,255,0.6);border-top:4px solid #1e3a5f;border-radius:20px;padding:22px 24px;box-shadow:0 10px 30px -5px rgba(0,0,0,0.06), 0 4px 6px -4px rgba(0,0,0,0.02);flex:1 1 300px;">
+            <div style="background:#0f172a;border-radius:14px;padding:22px 24px;flex:1 1 300px;">
               <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;">
                 <div>
-                  <div style="font-size:11px;font-weight:900;letter-spacing:0.1em;text-transform:uppercase;color:#1e3a5f;">Machinery Exchange</div>
-                  <div style="font-size:9px;font-weight:700;color:#94a3b8;text-transform:uppercase;letter-spacing:0.06em;">MTD & YTD Performance</div>
+                  <div style="font-size:11px;font-weight:900;letter-spacing:0.1em;text-transform:uppercase;color:#ffffff;">Machinery Exchange</div>
+                  <div style="font-size:9px;font-weight:700;color:rgba(255,255,255,0.7);text-transform:uppercase;letter-spacing:0.06em;">MTD & YTD Performance</div>
                 </div>
-                <span style="width:28px;height:28px;background:rgba(30,58,95,0.08);border-radius:8px;display:inline-flex;align-items:center;justify-content:center;"><i class="fas fa-chart-line" style="color:#1e3a5f;font-size:11px;"></i></span>
+                <span style="width:28px;height:28px;background:rgba(255,255,255,0.1);border-radius:8px;display:inline-flex;align-items:center;justify-content:center;"><i class="fas fa-chart-line" style="color:#ffffff;font-size:11px;"></i></span>
               </div>
               
               <div style="display:flex;gap:16px;">
                 <!-- MTD Block -->
                 <div style="flex:1;">
-                  <div style="font-size:9px;font-weight:700;color:#94a3b8;text-transform:uppercase;margin-bottom:4px;">Month to Date</div>
+                  <div style="font-size:9px;font-weight:700;color:rgba(255,255,255,0.7);text-transform:uppercase;margin-bottom:4px;">Month to Date</div>
                   <div style="display:flex;align-items:baseline;gap:4px;margin-bottom:4px;">
-                    <div id="dash-mxg-mtd" style="font-size:26px;font-weight:900;color:#0f172a;line-height:1;">&#8212;</div>
-                    <div id="dash-mxg-mtd-tgt" style="font-size:11px;color:#94a3b8;font-weight:600;">/ &#8212;</div>
+                    <div id="dash-mxg-mtd" style="font-size:26px;font-weight:900;color:#ffffff;line-height:1;">&#8212;</div>
+                    <div id="dash-mxg-mtd-tgt" style="font-size:11px;color:rgba(255,255,255,0.5);font-weight:600;">/ &#8212;</div>
                   </div>
-                  <div style="width:100%;height:5px;background:#f1f5f9;border-radius:99px;overflow:hidden;margin-bottom:4px;">
-                    <div id="dash-mxg-mtd-bar" style="height:100%;width:0%;background:linear-gradient(90deg,#3b82f6,#1e3a5f);border-radius:99px;transition:width 0.7s ease;"></div>
+                  <div style="width:100%;height:5px;background:rgba(0,0,0,0.25);border-radius:99px;overflow:hidden;margin-bottom:4px;">
+                    <div id="dash-mxg-mtd-bar" style="height:100%;width:0%;background:linear-gradient(90deg,#60a5fa,#3b82f6);border-radius:99px;transition:width 0.7s ease;"></div>
                   </div>
                   <div style="display:flex;justify-content:space-between;align-items:center;">
-                    <span id="dash-mxg-mtd-pct" style="font-size:11px;font-weight:900;color:#1e3a5f;">&#8212;%</span>
-                    <span id="dash-mxg-mtd-note" style="font-size:9px;color:#94a3b8;font-weight:600;">units</span>
+                    <span id="dash-mxg-mtd-pct" style="font-size:11px;font-weight:900;color:#ffffff;">&#8212;%</span>
+                    <span id="dash-mxg-mtd-note" style="font-size:9px;color:rgba(255,255,255,0.7);font-weight:600;">units</span>
                   </div>
                 </div>
                 
-                <div style="width:1px;background:#e2e8f0;margin:0 4px;"></div>
+                <div style="width:1px;background:rgba(255,255,255,0.1);margin:0 4px;"></div>
                 
                 <!-- YTD Block -->
                 <div style="flex:1;">
-                  <div style="font-size:9px;font-weight:700;color:#94a3b8;text-transform:uppercase;margin-bottom:4px;">Year to Date</div>
+                  <div style="font-size:9px;font-weight:700;color:rgba(255,255,255,0.7);text-transform:uppercase;margin-bottom:4px;">Year to Date</div>
                   <div style="display:flex;align-items:baseline;gap:4px;margin-bottom:4px;">
-                    <div id="dash-mxg-ytd" style="font-size:26px;font-weight:900;color:#0f172a;line-height:1;">&#8212;</div>
-                    <div id="dash-mxg-ytd-tgt" style="font-size:11px;color:#94a3b8;font-weight:600;">/ &#8212;</div>
+                    <div id="dash-mxg-ytd" style="font-size:26px;font-weight:900;color:#ffffff;line-height:1;">&#8212;</div>
+                    <div id="dash-mxg-ytd-tgt" style="font-size:11px;color:rgba(255,255,255,0.5);font-weight:600;">/ &#8212;</div>
                   </div>
-                  <div style="width:100%;height:5px;background:#f1f5f9;border-radius:99px;overflow:hidden;margin-bottom:4px;">
-                    <div id="dash-mxg-ytd-bar" style="height:100%;width:0%;background:linear-gradient(90deg,#3b82f6,#1e3a5f);border-radius:99px;transition:width 0.7s ease;"></div>
+                  <div style="width:100%;height:5px;background:rgba(0,0,0,0.25);border-radius:99px;overflow:hidden;margin-bottom:4px;">
+                    <div id="dash-mxg-ytd-bar" style="height:100%;width:0%;background:linear-gradient(90deg,#60a5fa,#3b82f6);border-radius:99px;transition:width 0.7s ease;"></div>
                   </div>
                   <div style="display:flex;justify-content:space-between;align-items:center;">
-                    <span id="dash-mxg-ytd-pct" style="font-size:11px;font-weight:900;color:#1e3a5f;">&#8212;%</span>
-                    <span id="dash-mxg-ytd-note" style="font-size:9px;color:#94a3b8;font-weight:600;">units</span>
+                    <span id="dash-mxg-ytd-pct" style="font-size:11px;font-weight:900;color:#ffffff;">&#8212;%</span>
+                    <span id="dash-mxg-ytd-note" style="font-size:9px;color:rgba(255,255,255,0.7);font-weight:600;">units</span>
                   </div>
                 </div>
               </div>
@@ -6938,6 +6940,7 @@
                     wrapper.innerHTML = `<div style="padding: 20px; color: #ef4444;">Failed to load updates. Please try again.</div>`;
                 } finally {
                     if (icon) icon.classList.remove('fa-spin');
+                  document.dispatchEvent(new Event('omnis_intelligence_ready'));
                 }
             };
             
@@ -12482,10 +12485,45 @@
       }
     }
 
+    let _dashDone = false;
+    let _intelDone = false;
+    let _splashInterval = null;
+    let _splashStarted = false;
+
+    document.addEventListener("omnis_dashboard_ready", () => {
+      _dashDone = true;
+      _checkSplashComplete();
+    });
+
+    document.addEventListener("omnis_intelligence_ready", () => {
+      _intelDone = true;
+      _checkSplashComplete();
+    });
+
+    function _checkSplashComplete() {
+      if (_dashDone && _intelDone && _splashStarted) {
+        if (_splashInterval) clearInterval(_splashInterval);
+        updateSplash("Ready. Loading interface…", 100);
+        setTimeout(() => {
+          hideSplash();
+          sessionStorage.setItem("omnis_splash_ready", "true");
+        }, 300);
+      }
+    }
+
     function runInitialSplash() {
+      _splashStarted = true;
       // If bereits run in this session, skip the drama
       if (sessionStorage.getItem("omnis_splash_ready")) {
-        hideSplash();
+        showSplash("Restoring workspace…", 75);
+        _checkSplashComplete();
+        
+        // Failsafe if events never fire
+        setTimeout(() => {
+          _dashDone = true;
+          _intelDone = true;
+          _checkSplashComplete();
+        }, 10000);
         return;
       }
 
@@ -12499,19 +12537,21 @@
       ];
       let i = 0, progress = 5;
       showSplash(messages[0], progress);
-      const interval = setInterval(() => {
+      
+      _splashInterval = setInterval(() => {
         i = (i + 1) % messages.length;
-        progress = Math.min(progress + 25, 95);
+        progress = Math.min(progress + 5, 95);
         updateSplash(messages[i], progress);
-      }, 120);
+      }, 300);
+
+      _checkSplashComplete();
+
+      // Failsafe if events never fire
       setTimeout(() => {
-        clearInterval(interval);
-        updateSplash("Ready. Loading interface…", 100);
-        setTimeout(() => {
-          hideSplash();
-          sessionStorage.setItem("omnis_splash_ready", "true");
-        }, 150);
-      }, 800);
+        _dashDone = true;
+        _intelDone = true;
+        _checkSplashComplete();
+      }, 10000);
     }
 
     /* Sync indicator */
@@ -27763,8 +27803,14 @@ Commercial Team`);
             // Check if edit order modal is open
             const genericModal = document.getElementById('dash-generic-modal');
             const genericTitle = document.getElementById('dash-generic-title');
-            if (genericModal && genericModal.style.display !== 'none' && genericTitle && genericTitle.innerText.includes('Order Details')) {
-                activeView = 'modal-edit-order';
+            if (genericModal && genericModal.style.display !== 'none' && genericTitle) {
+                if (genericTitle.innerText.includes('Order Details')) {
+                    activeView = 'modal-edit-order';
+                } else if (genericTitle.innerText.includes('Month End Report')) {
+                    activeView = 'modal-mer-report';
+                } else if (genericTitle.innerText.includes('Efficiency')) {
+                    activeView = 'modal-efficiency-report';
+                }
             } else {
                 const pages = document.querySelectorAll('.view-page');
                 for (const p of pages) {
@@ -27802,6 +27848,40 @@ Commercial Team`);
                     {
                         element: '#btn-tutorial-help',
                         popover: { title: 'System Guide', description: 'You can revisit the static system guide anytime by clicking here. That concludes the tour!', side: 'bottom', align: 'center' }
+                    }
+                ];
+            } else if (activeView === 'modal-efficiency-report') {
+                tourSteps = [
+                    {
+                        element: '#eff-company-select-v5',
+                        popover: { title: 'Company Filter', description: 'Filter the efficiency report to analyze performance for a specific company or view combined metrics.', side: 'bottom', align: 'center' }
+                    },
+                    {
+                        element: '#eff-period-select-v5',
+                        popover: { title: 'Time Period', description: 'Switch between This Month, Last Month, This Year, or All Time to track historical efficiency trends.', side: 'bottom', align: 'center' }
+                    },
+                    {
+                        element: '.eff-report-container',
+                        popover: { title: 'Performance Metrics', description: 'This section gives you an immediate overview: total machines delivered, how many met the target, and your weighted efficiency score.', side: 'top', align: 'center' }
+                    },
+                    {
+                        element: '#dash-generic-body .no-print',
+                        popover: { title: 'How it is Calculated', description: 'Our custom algorithm applies a 3-day grace period, followed by a graduated penalty for late deliveries. Review this section to understand the math behind the score.', side: 'top', align: 'center' }
+                    }
+                ];
+            } else if (activeView === 'modal-mer-report') {
+                tourSteps = [
+                    {
+                        element: '#mer-company-select',
+                        popover: { title: 'Company Filter', description: 'Filter the Month End Report to analyze performance for a specific company or view combined metrics.', side: 'bottom', align: 'center' }
+                    },
+                    {
+                        element: '#mer-period-select',
+                        popover: { title: 'Time Period', description: 'Switch between This Month, Last Month, This Year, or All Time to track historical performance trends.', side: 'bottom', align: 'center' }
+                    },
+                    {
+                        element: '#mer-exclude-page',
+                        popover: { title: 'Exclude Page Option', description: 'Use this option if you want to generate the report excluding certain specific pages to cater for different audiences.', side: 'top', align: 'center' }
                     }
                 ];
             } else if (activeView === 'view-orders-list') {

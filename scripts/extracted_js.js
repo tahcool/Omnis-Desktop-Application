@@ -5288,7 +5288,6 @@ if (localStorage.getItem("omnisDebug") === "true") document.getElementById("omni
                     }
                 }
             } catch(e) { console.error('[Omnis] Failed to augment company from Supabase', e); }
-
             const normalizeCompany = (c) => {
                 if (!c) return "Unassigned";
                 const cl = c.toLowerCase();
@@ -5309,17 +5308,65 @@ if (localStorage.getItem("omnisDebug") === "true") document.getElementById("omni
                 const frappeCompanies = [...new Set(data.current_orders.map(o => o.company).filter(Boolean))];
                 window.appendMissingCompanyFilters(frappeCompanies);
             }
-            // Frontend filter if Unassigned was requested (since we passed empty string to backend)
-            if (isUnassigned) {
-                if (data.current_orders) {
-                    data.current_orders = data.current_orders.filter(o => o.company === 'Unassigned');
-                }
-                if (data.orders) {
+                                if (data.orders) {
                     data.orders = data.orders.filter(o => o.company === 'Unassigned');
                 }
                 // Note: data.rows (aggregated metrics) can't easily be filtered here because they are pre-aggregated, 
                 // but at least the orders list will be correct.
             }
+
+            // >>> SUPABASE INTEGRATION FOR SALESPERSONS & PSV/CDV <<<
+            try {
+                if (window.electron && window.electron.invoke) {
+                    const repsRes = await window.electron.invoke('supabase:query', { 
+                        table: 'omnis_sales_persons', method: 'select', params: {columns: 'name'} 
+                    });
+                    const allReps = (repsRes && repsRes.data) ? repsRes.data : [];
+
+                    const fromDate = document.getElementById('mxg-from-date')?.value;
+                    const toDate = document.getElementById('mxg-to-date')?.value;
+                    let filters = {};
+                    if (fromDate) filters.gte = [{col: 'visit_date', val: fromDate}];
+                    if (toDate) filters.lte = [{col: 'visit_date', val: toDate}];
+
+                    const psvRes = await window.electron.invoke('supabase:query', { 
+                        table: 'psv_logs', method: 'select', params: {columns: 'salesperson', ...filters} 
+                    });
+                    const cdvRes = await window.electron.invoke('supabase:query', { 
+                        table: 'cdv_logs', method: 'select', params: {columns: 'salesperson', ...filters} 
+                    });
+
+                    const psvCounts = {};
+                    const cdvCounts = {};
+                    if (psvRes && psvRes.data) {
+                        psvRes.data.forEach(r => { psvCounts[r.salesperson] = (psvCounts[r.salesperson] || 0) + 1; });
+                    }
+                    if (cdvRes && cdvRes.data) {
+                        cdvRes.data.forEach(r => { cdvCounts[r.salesperson] = (cdvCounts[r.salesperson] || 0) + 1; });
+                    }
+
+                    const frappeMap = {};
+                    if (data.rows && Array.isArray(data.rows)) {
+                        data.rows.forEach(r => { frappeMap[r.salesperson] = r; });
+                    }
+
+                    if (allReps.length > 0) {
+                        const newRows = [];
+                        allReps.forEach(rep => {
+                            const fRow = frappeMap[rep.name] || {
+                                salesperson: rep.name, ce_actual: 0, pending: 0, quotes_actual: 0, fcdv: 0, hot_leads: 0, lost_sales: 0, handovers: 0, sales: 0
+                            };
+                            fRow.psv = psvCounts[rep.name] || 0;
+                            fRow.cdv = cdvCounts[rep.name] || 0;
+                            newRows.push(fRow);
+                        });
+                        data.rows = newRows;
+                    }
+                }
+            } catch(e) {
+                console.error('[Omnis] Failed to augment salespersons and PSV/CDV from Supabase', e);
+            }
+
             S.data = data;
             localStorage.setItem(cacheKey, JSON.stringify({ timestamp: Date.now(), data: data }));
             render(data);
