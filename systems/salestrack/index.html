@@ -6566,25 +6566,28 @@
 
             <!-- SINOPOWER COMBINED -->
             <div style="display:flex; flex-wrap:wrap; gap:16px; flex: 2 1 600px;">
-              <div style="background:#8b2219;border-radius:14px;padding:22px 24px;flex:1 1 300px;">
-              <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;">
+              <div style="background:linear-gradient(135deg, #8b2219 0%, #5c140e 100%);border-radius:14px;padding:22px 24px;flex:1 1 300px;box-shadow:0 12px 24px -4px rgba(139,34,25,0.35), inset 0 1px 0 rgba(255,255,255,0.15); position:relative; overflow:hidden;">
+                <!-- Subtle glowing orb in background -->
+                <div style="position:absolute; top:-20px; right:-20px; width:200px; height:200px; background:radial-gradient(circle, rgba(239,68,68,0.15) 0%, transparent 70%); border-radius:50%; pointer-events:none;"></div>
+                
+              <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px; position:relative; z-index:1;">
                 <div>
                   <div style="font-size:11px;font-weight:900;letter-spacing:0.1em;text-transform:uppercase;color:#ffffff;">Sinopower</div>
                   <div style="font-size:9px;font-weight:700;color:rgba(255,255,255,0.7);text-transform:uppercase;letter-spacing:0.06em;">MTD & YTD Performance</div>
                 </div>
-                <span style="width:28px;height:28px;background:rgba(255,255,255,0.1);border-radius:8px;display:inline-flex;align-items:center;justify-content:center;"><i class="fas fa-chart-line" style="color:#ffffff;font-size:11px;"></i></span>
+                <span style="width:28px;height:28px;background:rgba(255,255,255,0.1);border-radius:8px;display:inline-flex;align-items:center;justify-content:center;box-shadow:inset 0 1px 0 rgba(255,255,255,0.1);"><i class="fas fa-chart-line" style="color:#ffffff;font-size:11px;"></i></span>
               </div>
               
-              <div style="display:flex;gap:16px;">
+              <div style="display:flex;gap:16px; position:relative; z-index:1;">
                 <!-- MTD Block -->
                 <div style="flex:1;">
                   <div style="font-size:9px;font-weight:700;color:rgba(255,255,255,0.7);text-transform:uppercase;margin-bottom:4px;">Month to Date</div>
                   <div style="display:flex;align-items:baseline;gap:4px;margin-bottom:4px;">
-                    <div id="dash-sino-mtd" style="font-size:26px;font-weight:900;color:#ffffff;line-height:1;">&#8212;</div>
+                    <div id="dash-sino-mtd" style="font-size:26px;font-weight:900;color:#ffffff;line-height:1;text-shadow:0 2px 4px rgba(0,0,0,0.2);">&#8212;</div>
                     <div id="dash-sino-mtd-tgt" style="font-size:11px;color:rgba(255,255,255,0.5);font-weight:600;">/ &#8212;</div>
                   </div>
-                  <div style="width:100%;height:5px;background:rgba(0,0,0,0.25);border-radius:99px;overflow:hidden;margin-bottom:4px;">
-                    <div id="dash-sino-mtd-bar" style="height:100%;width:0%;background:linear-gradient(90deg,#ef4444,#fca5a5);border-radius:99px;transition:width 0.7s ease;"></div>
+                  <div style="width:100%;height:5px;background:rgba(0,0,0,0.3);border-radius:99px;overflow:hidden;margin-bottom:4px;box-shadow:inset 0 1px 2px rgba(0,0,0,0.3);">
+                    <div id="dash-sino-mtd-bar" style="height:100%;width:0%;background:linear-gradient(90deg,#ef4444,#fca5a5);border-radius:99px;transition:width 0.7s ease;box-shadow:0 0 10px rgba(239,68,68,0.5);"></div>
                   </div>
                   <div style="display:flex;justify-content:space-between;align-items:center;">
                     <span id="dash-sino-mtd-pct" style="font-size:11px;font-weight:900;color:#ffffff;">&#8212;%</span>
@@ -6592,17 +6595,17 @@
                   </div>
                 </div>
                 
-                <div style="width:1px;background:rgba(255,255,255,0.1);margin:0 4px;"></div>
+                <div style="width:1px;background:linear-gradient(to bottom, rgba(255,255,255,0), rgba(255,255,255,0.15) 50%, rgba(255,255,255,0));margin:0 4px;"></div>
                 
                 <!-- YTD Block -->
                 <div style="flex:1;">
                   <div style="font-size:9px;font-weight:700;color:rgba(255,255,255,0.7);text-transform:uppercase;margin-bottom:4px;">Year to Date</div>
                   <div style="display:flex;align-items:baseline;gap:4px;margin-bottom:4px;">
-                    <div id="dash-sino-ytd" style="font-size:26px;font-weight:900;color:#ffffff;line-height:1;">&#8212;</div>
+                    <div id="dash-sino-ytd" style="font-size:26px;font-weight:900;color:#ffffff;line-height:1;text-shadow:0 2px 4px rgba(0,0,0,0.2);">&#8212;</div>
                     <div id="dash-sino-ytd-tgt" style="font-size:11px;color:rgba(255,255,255,0.5);font-weight:600;">/ &#8212;</div>
                   </div>
-                  <div style="width:100%;height:5px;background:rgba(0,0,0,0.25);border-radius:99px;overflow:hidden;margin-bottom:4px;">
-                    <div id="dash-sino-ytd-bar" style="height:100%;width:0%;background:linear-gradient(90deg,#ef4444,#fca5a5);border-radius:99px;transition:width 0.7s ease;"></div>
+                  <div style="width:100%;height:5px;background:rgba(0,0,0,0.3);border-radius:99px;overflow:hidden;margin-bottom:4px;box-shadow:inset 0 1px 2px rgba(0,0,0,0.3);">
+                    <div id="dash-sino-ytd-bar" style="height:100%;width:0%;background:linear-gradient(90deg,#ef4444,#fca5a5);border-radius:99px;transition:width 0.7s ease;box-shadow:0 0 10px rgba(239,68,68,0.5);"></div>
                   </div>
                   <div style="display:flex;justify-content:space-between;align-items:center;">
                     <span id="dash-sino-ytd-pct" style="font-size:11px;font-weight:900;color:#ffffff;">&#8212;%</span>
@@ -6612,25 +6615,28 @@
               </div>
               </div>
             <!-- MACHINERY EXCHANGE COMBINED -->
-            <div style="background:#0f172a;border-radius:14px;padding:22px 24px;flex:1 1 300px;">
-              <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;">
+            <div style="background:linear-gradient(135deg, #0f172a 0%, #050810 100%);border-radius:14px;padding:22px 24px;flex:1 1 300px;box-shadow:0 12px 24px -4px rgba(15,23,42,0.5), inset 0 1px 0 rgba(255,255,255,0.1); position:relative; overflow:hidden;">
+              <!-- Subtle glowing orb in background -->
+              <div style="position:absolute; top:-20px; right:-20px; width:200px; height:200px; background:radial-gradient(circle, rgba(59,130,246,0.15) 0%, transparent 70%); border-radius:50%; pointer-events:none;"></div>
+              
+              <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px; position:relative; z-index:1;">
                 <div>
                   <div style="font-size:11px;font-weight:900;letter-spacing:0.1em;text-transform:uppercase;color:#ffffff;">Machinery Exchange</div>
                   <div style="font-size:9px;font-weight:700;color:rgba(255,255,255,0.7);text-transform:uppercase;letter-spacing:0.06em;">MTD & YTD Performance</div>
                 </div>
-                <span style="width:28px;height:28px;background:rgba(255,255,255,0.1);border-radius:8px;display:inline-flex;align-items:center;justify-content:center;"><i class="fas fa-chart-line" style="color:#ffffff;font-size:11px;"></i></span>
+                <span style="width:28px;height:28px;background:rgba(255,255,255,0.05);border-radius:8px;display:inline-flex;align-items:center;justify-content:center;box-shadow:inset 0 1px 0 rgba(255,255,255,0.05);"><i class="fas fa-chart-line" style="color:#ffffff;font-size:11px;"></i></span>
               </div>
               
-              <div style="display:flex;gap:16px;">
+              <div style="display:flex;gap:16px; position:relative; z-index:1;">
                 <!-- MTD Block -->
                 <div style="flex:1;">
                   <div style="font-size:9px;font-weight:700;color:rgba(255,255,255,0.7);text-transform:uppercase;margin-bottom:4px;">Month to Date</div>
                   <div style="display:flex;align-items:baseline;gap:4px;margin-bottom:4px;">
-                    <div id="dash-mxg-mtd" style="font-size:26px;font-weight:900;color:#ffffff;line-height:1;">&#8212;</div>
+                    <div id="dash-mxg-mtd" style="font-size:26px;font-weight:900;color:#ffffff;line-height:1;text-shadow:0 2px 4px rgba(0,0,0,0.3);">&#8212;</div>
                     <div id="dash-mxg-mtd-tgt" style="font-size:11px;color:rgba(255,255,255,0.5);font-weight:600;">/ &#8212;</div>
                   </div>
-                  <div style="width:100%;height:5px;background:rgba(0,0,0,0.25);border-radius:99px;overflow:hidden;margin-bottom:4px;">
-                    <div id="dash-mxg-mtd-bar" style="height:100%;width:0%;background:linear-gradient(90deg,#60a5fa,#3b82f6);border-radius:99px;transition:width 0.7s ease;"></div>
+                  <div style="width:100%;height:5px;background:rgba(0,0,0,0.4);border-radius:99px;overflow:hidden;margin-bottom:4px;box-shadow:inset 0 1px 2px rgba(0,0,0,0.4);">
+                    <div id="dash-mxg-mtd-bar" style="height:100%;width:0%;background:linear-gradient(90deg,#60a5fa,#93c5fd);border-radius:99px;transition:width 0.7s ease;box-shadow:0 0 10px rgba(96,165,250,0.5);"></div>
                   </div>
                   <div style="display:flex;justify-content:space-between;align-items:center;">
                     <span id="dash-mxg-mtd-pct" style="font-size:11px;font-weight:900;color:#ffffff;">&#8212;%</span>
@@ -6638,17 +6644,17 @@
                   </div>
                 </div>
                 
-                <div style="width:1px;background:rgba(255,255,255,0.1);margin:0 4px;"></div>
+                <div style="width:1px;background:linear-gradient(to bottom, rgba(255,255,255,0), rgba(255,255,255,0.1) 50%, rgba(255,255,255,0));margin:0 4px;"></div>
                 
                 <!-- YTD Block -->
                 <div style="flex:1;">
                   <div style="font-size:9px;font-weight:700;color:rgba(255,255,255,0.7);text-transform:uppercase;margin-bottom:4px;">Year to Date</div>
                   <div style="display:flex;align-items:baseline;gap:4px;margin-bottom:4px;">
-                    <div id="dash-mxg-ytd" style="font-size:26px;font-weight:900;color:#ffffff;line-height:1;">&#8212;</div>
+                    <div id="dash-mxg-ytd" style="font-size:26px;font-weight:900;color:#ffffff;line-height:1;text-shadow:0 2px 4px rgba(0,0,0,0.3);">&#8212;</div>
                     <div id="dash-mxg-ytd-tgt" style="font-size:11px;color:rgba(255,255,255,0.5);font-weight:600;">/ &#8212;</div>
                   </div>
-                  <div style="width:100%;height:5px;background:rgba(0,0,0,0.25);border-radius:99px;overflow:hidden;margin-bottom:4px;">
-                    <div id="dash-mxg-ytd-bar" style="height:100%;width:0%;background:linear-gradient(90deg,#60a5fa,#3b82f6);border-radius:99px;transition:width 0.7s ease;"></div>
+                  <div style="width:100%;height:5px;background:rgba(0,0,0,0.4);border-radius:99px;overflow:hidden;margin-bottom:4px;box-shadow:inset 0 1px 2px rgba(0,0,0,0.4);">
+                    <div id="dash-mxg-ytd-bar" style="height:100%;width:0%;background:linear-gradient(90deg,#60a5fa,#93c5fd);border-radius:99px;transition:width 0.7s ease;box-shadow:0 0 10px rgba(96,165,250,0.5);"></div>
                   </div>
                   <div style="display:flex;justify-content:space-between;align-items:center;">
                     <span id="dash-mxg-ytd-pct" style="font-size:11px;font-weight:900;color:#ffffff;">&#8212;%</span>
@@ -6878,6 +6884,7 @@
                             let iconClass = "fa-newspaper";
                             let gradient = "linear-gradient(135deg, #f1f5f9 0%, #e2e8f0 100%)";
                             let iconCol = "#64748b";
+                            let isTender = false;
 
                             let txt = (shortTitle + " " + briefText).toLowerCase();
                             if (txt.includes('gold') || txt.includes('mining') || txt.includes('lithium') || txt.includes('mineral') || txt.includes('ore') || txt.includes('drilling')) {
@@ -6900,6 +6907,7 @@
                                 iconClass = "fa-file-signature";
                                 gradient = "linear-gradient(135deg, #fff1f2 0%, #ffe4e6 100%)";
                                 iconCol = "#e11d48"; // Rose
+                                isTender = true;
                             }
                             
                             let thumbHtml = `<div style="width: 100%; height: 100%; background: ${gradient}; display: flex; align-items: center; justify-content: center; border-radius: 6px;"><i class="fas ${iconClass}" style="font-size: 20px; color: ${iconCol};"></i></div>`;
@@ -6915,19 +6923,26 @@
                                 }
                             }
                             
+                            let cardBg = isTender ? '#fff1f2' : '#f8fafc';
+                            let cardBorderWidth = isTender ? '2px' : '1px';
+                            let cardBorderCol = isTender ? '#fda4af' : '#e2e8f0';
+                            let hoverBorderCol = isTender ? '#fb7185' : '#93c5fd';
+                            let shadowHover = isTender ? '0 12px 24px -4px rgba(225,29,72,0.2), 0 4px 8px -2px rgba(225,29,72,0.1)' : '0 12px 24px -4px rgba(59,130,246,0.15), 0 4px 8px -2px rgba(59,130,246,0.05)';
+                            let badgeHtml = isTender ? `<div style="position: absolute; top: -10px; right: 20px; background: linear-gradient(135deg, #e11d48 0%, #be123c 100%); color: white; padding: 4px 10px; border-radius: 12px; font-size: 10px; font-weight: 900; letter-spacing: 0.05em; box-shadow: 0 4px 10px rgba(225,29,72,0.4); border: 1px solid #f43f5e; z-index: 10;"><i class="fas fa-bullhorn" style="margin-right: 4px;"></i> TENDER</div>` : '';
+
                             htmlContent += `
-                                <div style="display: flex; gap: 16px; padding: 18px 20px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 14px; min-width: 320px; max-width: 400px; flex: 0 0 auto; white-space: normal; cursor: pointer; transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);" 
-                                    onmouseover="this.style.borderColor='#93c5fd'; this.style.backgroundColor='#fff'; this.style.boxShadow='0 12px 24px -4px rgba(59,130,246,0.15), 0 4px 8px -2px rgba(59,130,246,0.05)'; this.style.transform='translateY(-2px)';" 
-                                    onmouseout="this.style.borderColor='#e2e8f0'; this.style.backgroundColor='#f8fafc'; this.style.boxShadow='none'; this.style.transform='none';" 
+                                <div style="position: relative; display: flex; gap: 16px; padding: 18px 20px; background: ${cardBg}; border: ${cardBorderWidth} solid ${cardBorderCol}; border-radius: 14px; min-width: 320px; max-width: 400px; flex: 0 0 auto; white-space: normal; cursor: pointer; transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);" 
+                                    onmouseover="this.style.borderColor='${hoverBorderCol}'; this.style.backgroundColor='#fff'; this.style.boxShadow='${shadowHover}'; this.style.transform='translateY(-2px)';" 
+                                    onmouseout="this.style.borderColor='${cardBorderCol}'; this.style.backgroundColor='${cardBg}'; this.style.boxShadow='none'; this.style.transform='none';" 
                                     onclick="window.open('${item.link}', '_blank')">
-                                    
-                                    <div style="width: 50px; height: 50px; border-radius: 8px; flex-shrink: 0; background: #fff; display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 4px rgba(0,0,0,0.05); padding: 4px; border: 1px solid #e2e8f0;">
+                                    ${badgeHtml}
+                                    <div style="width: 50px; height: 50px; border-radius: 8px; flex-shrink: 0; background: #fff; display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 4px rgba(0,0,0,0.05); padding: 4px; border: 1px solid #e2e8f0; position: relative; z-index: 5;">
                                         ${thumbHtml}
                                     </div>
-                                    <div style="display: flex; flex-direction: column; justify-content: center;">
+                                    <div style="display: flex; flex-direction: column; justify-content: center; position: relative; z-index: 5;">
                                         <div style="font-size: 13px; font-weight: 800; color: #1e293b; margin-bottom: 6px; line-height: 1.3;">${shortTitle}</div>
                                         <div style="font-size: 11px; color: #64748b; line-height: 1.4; margin-bottom: 8px; font-weight: 500;">${briefText}</div>
-                                        <div style="font-size: 10px; color: #8b2219; font-weight: 800; text-transform: uppercase; letter-spacing: 0.05em;">${item.pubDate ? new Date(item.pubDate).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' }) : 'TODAY'}</div>
+                                        <div style="font-size: 10px; color: ${isTender ? '#e11d48' : '#8b2219'}; font-weight: 800; text-transform: uppercase; letter-spacing: 0.05em;">${item.pubDate ? new Date(item.pubDate).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' }) : 'TODAY'}</div>
                                     </div>
                                 </div>
                             `;

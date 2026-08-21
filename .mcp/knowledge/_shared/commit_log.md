@@ -436,3 +436,5 @@
 \n## 2026-08-21
 - `b898323` 2026-08-21 [supabase-migration] Fix splash screen logic to wait for dashboard and intelligence
   Files: .mcp/knowledge/_shared/commit_log.md,main.js,package.json,scripts/extracted_js.js,systems/salestrack/dashboard_logic.js,systems/salestrack/index.html,
+- `a4ba639` 2026-08-21 [supabase-migration] Update navbar logo shadow and splash screen UI
+  Files: .mcp/knowledge/_shared/commit_log.md,systems/salestrack/index.html,
