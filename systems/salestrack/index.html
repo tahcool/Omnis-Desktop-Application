@@ -9928,7 +9928,13 @@
       </div>
     </div>
   </div>
-
+      </div>
+    </div>
+  </div>
+    </div>
+  </div>
+</div>
+  
   <!-- CUSTOMER VISITS (CDV) VIEW -->
   <div id="view-cdv" class="view-page" style="display:none; background:#f1f5f9; overflow-y:auto; padding-bottom:60px;">
     <!-- Header -->
@@ -28054,31 +28060,59 @@ Commercial Team`);
             }
         }
 
-        function applyShortcutsVisibility() {
+                function applyShortcutsVisibility() {
             var activeIds = getSavedShortcuts();
             var container = document.getElementById('shortcuts-card-container');
             if (!container) return;
-            var cards = container.querySelectorAll('.rpt-card[data-shortcut-id]');
-            cards.forEach(function(card) {
-                var sid = card.getAttribute('data-shortcut-id');
-                if (activeIds.includes(sid)) {
+            
+            // Reorder cards based on activeIds
+            activeIds.forEach(function(id) {
+                var card = container.querySelector('.rpt-card[data-shortcut-id="' + id + '"]');
+                if (card) {
+                    container.appendChild(card);
                     card.style.display = '';
-                } else {
+                }
+            });
+
+            // Handle inactive cards (append to end and hide)
+            var allCards = container.querySelectorAll('.rpt-card[data-shortcut-id]');
+            allCards.forEach(function(card) {
+                var sid = card.getAttribute('data-shortcut-id');
+                if (!activeIds.includes(sid)) {
+                    container.appendChild(card);
                     card.style.display = 'none';
                 }
             });
         }
 
-        window.openShortcutCustomizer = function() {
+                window.openShortcutCustomizer = function() {
             console.log("openShortcutCustomizer triggered");
             var modal = document.getElementById('shortcut-customizer-modal');
             if (!modal) {
                 alert("Error: Customizer modal element not found in the page!");
                 return;
             }
-            var checkboxes = modal.querySelectorAll('input[type="checkbox"]');
             var activeIds = getSavedShortcuts();
-            
+            var listContainer = document.getElementById('shortcut-customizer-list');
+            if (listContainer) {
+                // Reorder labels
+                activeIds.forEach(function(id) {
+                    var cb = listContainer.querySelector('input[value="' + id + '"]');
+                    if (cb && cb.closest('.drag-item')) {
+                        listContainer.appendChild(cb.closest('.drag-item'));
+                    }
+                });
+                // Unchecked items go to bottom
+                var allItems = listContainer.querySelectorAll('.drag-item');
+                allItems.forEach(function(item) {
+                    var cb = item.querySelector('input[type="checkbox"]');
+                    if (cb && !activeIds.includes(cb.value)) {
+                        listContainer.appendChild(item);
+                    }
+                });
+            }
+
+            var checkboxes = modal.querySelectorAll('input[type="checkbox"]');
             checkboxes.forEach(function(cb) {
                 cb.checked = activeIds.includes(cb.value);
             });
@@ -28091,9 +28125,10 @@ Commercial Team`);
             if (modal) modal.style.display = 'none';
         };
 
-        window.saveShortcuts = function() {
+                window.saveShortcuts = function() {
             var modal = document.getElementById('shortcut-customizer-modal');
             if (!modal) return;
+            // Get checkboxes in DOM order
             var checkboxes = modal.querySelectorAll('input[type="checkbox"]');
             var activeIds = [];
             checkboxes.forEach(function(cb) {
@@ -28106,10 +28141,42 @@ Commercial Team`);
                 alert("Please select at least one shortcut.");
                 return;
             }
-            
+
             localStorage.setItem('omnis_active_shortcuts', JSON.stringify(activeIds));
+            closeShortcutCustomizer();
             applyShortcutsVisibility();
-            window.closeShortcutCustomizer();
+        };
+
+        let draggedItem = null;
+        window.handleDragStart = function(e) {
+            draggedItem = e.target.closest('.drag-item');
+            e.dataTransfer.effectAllowed = 'move';
+            e.dataTransfer.setData('text/html', draggedItem.innerHTML);
+            setTimeout(() => {
+                draggedItem.style.opacity = '0.5';
+            }, 0);
+        };
+        window.handleDragOver = function(e) {
+            e.preventDefault();
+            const targetItem = e.target.closest('.drag-item');
+            if (targetItem && targetItem !== draggedItem) {
+                const list = document.getElementById('shortcut-customizer-list');
+                const items = Array.from(list.querySelectorAll('.drag-item'));
+                const draggedIndex = items.indexOf(draggedItem);
+                const targetIndex = items.indexOf(targetItem);
+                if (draggedIndex < targetIndex) {
+                    targetItem.after(draggedItem);
+                } else {
+                    targetItem.before(draggedItem);
+                }
+            }
+            return false;
+        };
+        window.handleDragEnd = function(e) {
+            if (draggedItem) {
+                draggedItem.style.opacity = '1';
+                draggedItem = null;
+            }
         };
 
         // Run immediately on page load
@@ -28128,18 +28195,18 @@ Commercial Team`);
             </div>
             <p style="color:#64748b; font-size:13px; margin-bottom:20px;">Select which shortcuts you want to appear on your dashboard.</p>
             
-            <div style="display:flex; flex-direction:column; gap:12px; max-height:400px; overflow-y:auto; margin-bottom:24px; padding-right:8px;">
-                <label style="display:flex; align-items:center; gap:12px; cursor:pointer;"><input type="checkbox" value="quotations" style="width:16px; height:16px;"> <span style="color:#334155; font-weight:600; font-size:14px;">Quotations</span></label>
-                <label style="display:flex; align-items:center; gap:12px; cursor:pointer;"><input type="checkbox" value="orders" style="width:16px; height:16px;"> <span style="color:#334155; font-weight:600; font-size:14px;">Orders</span></label>
-                <label style="display:flex; align-items:center; gap:12px; cursor:pointer;"><input type="checkbox" value="customers" style="width:16px; height:16px;"> <span style="color:#334155; font-weight:600; font-size:14px;">Customers</span></label>
-                <label style="display:flex; align-items:center; gap:12px; cursor:pointer;"><input type="checkbox" value="ce-reports" style="width:16px; height:16px;"> <span style="color:#334155; font-weight:600; font-size:14px;">CE Reports</span></label>
-                <label style="display:flex; align-items:center; gap:12px; cursor:pointer;"><input type="checkbox" value="marketing" style="width:16px; height:16px;"> <span style="color:#334155; font-weight:600; font-size:14px;">Marketing</span></label>
-                <label style="display:flex; align-items:center; gap:12px; cursor:pointer;"><input type="checkbox" value="efficiency" style="width:16px; height:16px;"> <span style="color:#334155; font-weight:600; font-size:14px;">Efficiency</span></label>
-                <label style="display:flex; align-items:center; gap:12px; cursor:pointer;"><input type="checkbox" value="month-end" style="width:16px; height:16px;"> <span style="color:#334155; font-weight:600; font-size:14px;">Month End</span></label>
-                <label style="display:flex; align-items:center; gap:12px; cursor:pointer;"><input type="checkbox" value="training" style="width:16px; height:16px;"> <span style="color:#334155; font-weight:600; font-size:14px;">Training</span></label>
-                <label style="display:flex; align-items:center; gap:12px; cursor:pointer;"><input type="checkbox" value="course-library" style="width:16px; height:16px;"> <span style="color:#334155; font-weight:600; font-size:14px;">Course Library</span></label>
-                <label style="display:flex; align-items:center; gap:12px; cursor:pointer;"><input type="checkbox" value="stock" style="width:16px; height:16px;"> <span style="color:#334155; font-weight:600; font-size:14px;">Stock</span></label>
-                <label style="display:flex; align-items:center; gap:12px; cursor:pointer;"><input type="checkbox" value="sales-entry" style="width:16px; height:16px;"> <span style="color:#334155; font-weight:600; font-size:14px;">Sales Entry</span></label>
+            <div id="shortcut-customizer-list" style="display:flex; flex-direction:column; gap:8px; max-height:400px; overflow-y:auto; margin-bottom:24px; padding-right:8px;">
+                <div class="drag-item" draggable="true" ondragstart="handleDragStart(event)" ondragover="handleDragOver(event)" ondragend="handleDragEnd(event)" style="display:flex; align-items:center; gap:12px; background:#f8fafc; padding:10px 12px; border-radius:8px; border:1px solid #e2e8f0; cursor:grab;"><i class="fas fa-grip-vertical" style="color:#94a3b8; font-size:16px;"></i><label style="display:flex; align-items:center; gap:12px; cursor:pointer; flex:1; margin:0;"><input type="checkbox" value="quotations" style="width:16px; height:16px;"> <span style="color:#334155; font-weight:600; font-size:14px;">Quotations</span></label></div>
+                <div class="drag-item" draggable="true" ondragstart="handleDragStart(event)" ondragover="handleDragOver(event)" ondragend="handleDragEnd(event)" style="display:flex; align-items:center; gap:12px; background:#f8fafc; padding:10px 12px; border-radius:8px; border:1px solid #e2e8f0; cursor:grab;"><i class="fas fa-grip-vertical" style="color:#94a3b8; font-size:16px;"></i><label style="display:flex; align-items:center; gap:12px; cursor:pointer; flex:1; margin:0;"><input type="checkbox" value="orders" style="width:16px; height:16px;"> <span style="color:#334155; font-weight:600; font-size:14px;">Orders</span></label></div>
+                <div class="drag-item" draggable="true" ondragstart="handleDragStart(event)" ondragover="handleDragOver(event)" ondragend="handleDragEnd(event)" style="display:flex; align-items:center; gap:12px; background:#f8fafc; padding:10px 12px; border-radius:8px; border:1px solid #e2e8f0; cursor:grab;"><i class="fas fa-grip-vertical" style="color:#94a3b8; font-size:16px;"></i><label style="display:flex; align-items:center; gap:12px; cursor:pointer; flex:1; margin:0;"><input type="checkbox" value="customers" style="width:16px; height:16px;"> <span style="color:#334155; font-weight:600; font-size:14px;">Customers</span></label></div>
+                <div class="drag-item" draggable="true" ondragstart="handleDragStart(event)" ondragover="handleDragOver(event)" ondragend="handleDragEnd(event)" style="display:flex; align-items:center; gap:12px; background:#f8fafc; padding:10px 12px; border-radius:8px; border:1px solid #e2e8f0; cursor:grab;"><i class="fas fa-grip-vertical" style="color:#94a3b8; font-size:16px;"></i><label style="display:flex; align-items:center; gap:12px; cursor:pointer; flex:1; margin:0;"><input type="checkbox" value="ce-reports" style="width:16px; height:16px;"> <span style="color:#334155; font-weight:600; font-size:14px;">CE Reports</span></label></div>
+                <div class="drag-item" draggable="true" ondragstart="handleDragStart(event)" ondragover="handleDragOver(event)" ondragend="handleDragEnd(event)" style="display:flex; align-items:center; gap:12px; background:#f8fafc; padding:10px 12px; border-radius:8px; border:1px solid #e2e8f0; cursor:grab;"><i class="fas fa-grip-vertical" style="color:#94a3b8; font-size:16px;"></i><label style="display:flex; align-items:center; gap:12px; cursor:pointer; flex:1; margin:0;"><input type="checkbox" value="marketing" style="width:16px; height:16px;"> <span style="color:#334155; font-weight:600; font-size:14px;">Marketing</span></label></div>
+                <div class="drag-item" draggable="true" ondragstart="handleDragStart(event)" ondragover="handleDragOver(event)" ondragend="handleDragEnd(event)" style="display:flex; align-items:center; gap:12px; background:#f8fafc; padding:10px 12px; border-radius:8px; border:1px solid #e2e8f0; cursor:grab;"><i class="fas fa-grip-vertical" style="color:#94a3b8; font-size:16px;"></i><label style="display:flex; align-items:center; gap:12px; cursor:pointer; flex:1; margin:0;"><input type="checkbox" value="efficiency" style="width:16px; height:16px;"> <span style="color:#334155; font-weight:600; font-size:14px;">Efficiency</span></label></div>
+                <div class="drag-item" draggable="true" ondragstart="handleDragStart(event)" ondragover="handleDragOver(event)" ondragend="handleDragEnd(event)" style="display:flex; align-items:center; gap:12px; background:#f8fafc; padding:10px 12px; border-radius:8px; border:1px solid #e2e8f0; cursor:grab;"><i class="fas fa-grip-vertical" style="color:#94a3b8; font-size:16px;"></i><label style="display:flex; align-items:center; gap:12px; cursor:pointer; flex:1; margin:0;"><input type="checkbox" value="month-end" style="width:16px; height:16px;"> <span style="color:#334155; font-weight:600; font-size:14px;">Month End</span></label></div>
+                <div class="drag-item" draggable="true" ondragstart="handleDragStart(event)" ondragover="handleDragOver(event)" ondragend="handleDragEnd(event)" style="display:flex; align-items:center; gap:12px; background:#f8fafc; padding:10px 12px; border-radius:8px; border:1px solid #e2e8f0; cursor:grab;"><i class="fas fa-grip-vertical" style="color:#94a3b8; font-size:16px;"></i><label style="display:flex; align-items:center; gap:12px; cursor:pointer; flex:1; margin:0;"><input type="checkbox" value="training" style="width:16px; height:16px;"> <span style="color:#334155; font-weight:600; font-size:14px;">Training</span></label></div>
+                <div class="drag-item" draggable="true" ondragstart="handleDragStart(event)" ondragover="handleDragOver(event)" ondragend="handleDragEnd(event)" style="display:flex; align-items:center; gap:12px; background:#f8fafc; padding:10px 12px; border-radius:8px; border:1px solid #e2e8f0; cursor:grab;"><i class="fas fa-grip-vertical" style="color:#94a3b8; font-size:16px;"></i><label style="display:flex; align-items:center; gap:12px; cursor:pointer; flex:1; margin:0;"><input type="checkbox" value="course-library" style="width:16px; height:16px;"> <span style="color:#334155; font-weight:600; font-size:14px;">Course Library</span></label></div>
+                <div class="drag-item" draggable="true" ondragstart="handleDragStart(event)" ondragover="handleDragOver(event)" ondragend="handleDragEnd(event)" style="display:flex; align-items:center; gap:12px; background:#f8fafc; padding:10px 12px; border-radius:8px; border:1px solid #e2e8f0; cursor:grab;"><i class="fas fa-grip-vertical" style="color:#94a3b8; font-size:16px;"></i><label style="display:flex; align-items:center; gap:12px; cursor:pointer; flex:1; margin:0;"><input type="checkbox" value="stock" style="width:16px; height:16px;"> <span style="color:#334155; font-weight:600; font-size:14px;">Stock</span></label></div>
+                <div class="drag-item" draggable="true" ondragstart="handleDragStart(event)" ondragover="handleDragOver(event)" ondragend="handleDragEnd(event)" style="display:flex; align-items:center; gap:12px; background:#f8fafc; padding:10px 12px; border-radius:8px; border:1px solid #e2e8f0; cursor:grab;"><i class="fas fa-grip-vertical" style="color:#94a3b8; font-size:16px;"></i><label style="display:flex; align-items:center; gap:12px; cursor:pointer; flex:1; margin:0;"><input type="checkbox" value="sales-entry" style="width:16px; height:16px;"> <span style="color:#334155; font-weight:600; font-size:14px;">Sales Entry</span></label></div>
             </div>
             
             <div style="display:flex; justify-content:flex-end; gap:12px;">

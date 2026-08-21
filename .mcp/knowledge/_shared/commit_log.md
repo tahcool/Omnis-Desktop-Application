@@ -438,3 +438,7 @@
   Files: .mcp/knowledge/_shared/commit_log.md,main.js,package.json,scripts/extracted_js.js,systems/salestrack/dashboard_logic.js,systems/salestrack/index.html,
 - `a4ba639` 2026-08-21 [supabase-migration] Update navbar logo shadow and splash screen UI
   Files: .mcp/knowledge/_shared/commit_log.md,systems/salestrack/index.html,
+- `3f1a6f7` 2026-08-21 [supabase-migration] [checkpoint] Update SINOPOWER and MACHINERY EXCHANGE KPI cards styling for a premium enterprise feel
+  Files: .mcp/knowledge/_shared/commit_log.md,systems/salestrack/index.html,
+- `0745b7c` 2026-08-21 [supabase-migration] Fix Customize button behavior by preventing default and stopping propagation to avoid unintended view navigation
+  Files: systems/salestrack/index.html,
