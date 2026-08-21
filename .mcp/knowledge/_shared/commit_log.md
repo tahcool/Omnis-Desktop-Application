@@ -444,3 +444,7 @@
   Files: systems/salestrack/index.html,
 - `a58866e` 2026-08-21 [supabase-migration] [checkpoint] Update shortcut customizer to support drag-and-drop ordering and persistence
   Files: .mcp/knowledge/_shared/commit_log.md,systems/salestrack/index.html,
+- `99b3e2c` 2026-08-21 [supabase-migration] [checkpoint] Fix stock duplication bug by preserving edit ID and hide debug console button
+  Files: .mcp/knowledge/_shared/commit_log.md,systems/salestrack/index.html,
+- `4806bcf` 2026-08-21 [supabase-migration] chore: bump version to 4.3.2 and add Sales Guide
+  Files: package.json,systems/salestrack/index.html,

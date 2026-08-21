@@ -17447,6 +17447,16 @@ thead th { padding:11px 12px; font-size:10px; font-weight:800; color:#fff; text-
       window._stockViewMode = 'table';
       window._activeStockOem = 'All';
       window._syncingStock = false;
+      window._stockSortState = { column: null, direction: 'asc' };
+
+      window.setStockSort = function(col) {
+          if (window._stockSortState && window._stockSortState.column === col) {
+              window._stockSortState.direction = window._stockSortState.direction === 'asc' ? 'desc' : 'asc';
+          } else {
+              window._stockSortState = { column: col, direction: 'asc' };
+          }
+          if (window.renderStockTab) window.renderStockTab();
+      };
 
       // ─────────────────────────────────────────────────────────────────
       // STOCK PIPELINE LOGIC
@@ -17534,6 +17544,33 @@ thead th { padding:11px 12px; font-size:10px; font-weight:800; color:#fff; text-
           if (window._stockViewMode === 'calendar') {
             window.renderArrivalCalendar();
             return;
+          }
+
+          const getSortIcon = (col) => {
+              if (!window._stockSortState || window._stockSortState.column !== col) return '<i class="fas fa-sort" style="color:#cbd5e1; margin-left:4px; font-size:10px;"></i>';
+              return window._stockSortState.direction === 'asc' 
+                  ? '<i class="fas fa-sort-up" style="color:#0284c7; margin-left:4px; font-size:10px;"></i>' 
+                  : '<i class="fas fa-sort-down" style="color:#0284c7; margin-left:4px; font-size:10px;"></i>';
+          };
+
+          if (window._stockSortState && window._stockSortState.column) {
+            data_records.sort((a, b) => {
+               const col = window._stockSortState.column;
+               const dir = window._stockSortState.direction === 'asc' ? 1 : -1;
+               const parseD = (d) => { if(!d || d==='-' || d.startsWith('0000')) return 0; const dt = new Date(d).getTime(); return isNaN(dt) ? 0 : dt; };
+               let valA = 0, valB = 0;
+               if (col === 'Prod') { valA = parseD(a.production_completion); valB = parseD(b.production_completion); }
+               else if (col === 'Ship') { valA = parseD(a.shipping_date); valB = parseD(b.shipping_date); }
+               else if (col === 'Durban') { valA = parseD(a.eta_durban); valB = parseD(b.eta_durban); }
+               else if (col === 'Beira') { valA = parseD(a.ted || a.eta_beira); valB = parseD(b.ted || b.eta_beira); }
+               else if (col === 'Harare') { valA = parseD(a.eta_harare); valB = parseD(b.eta_harare); }
+               
+               if (valA === 0 && valB !== 0) return 1;
+               if (valB === 0 && valA !== 0) return -1;
+               if (valA < valB) return -1 * dir;
+               if (valA > valB) return 1 * dir;
+               return 0;
+            });
           }
 
           const groups = {};
@@ -17796,11 +17833,11 @@ thead th { padding:11px 12px; font-size:10px; font-weight:800; color:#fff; text-
                   <div>Potential Customers</div>
                   <div style="text-align:center;">Qty</div>
                   <div style="text-align:center;">Proposed</div>
-                  <div style="text-align:center;">Prod</div>
-                  <div style="text-align:center;">Ship</div>
-                  <div style="text-align:center;">Durban</div>
-                  <div style="text-align:center;">Beira</div>
-                  <div style="text-align:center;">Harare</div>
+                  <div style="text-align:center; cursor:pointer; user-select:none;" onclick="window.setStockSort('Prod')">Prod ${getSortIcon('Prod')}</div>
+                  <div style="text-align:center; cursor:pointer; user-select:none;" onclick="window.setStockSort('Ship')">Ship ${getSortIcon('Ship')}</div>
+                  <div style="text-align:center; cursor:pointer; user-select:none;" onclick="window.setStockSort('Durban')">Durban ${getSortIcon('Durban')}</div>
+                  <div style="text-align:center; cursor:pointer; user-select:none;" onclick="window.setStockSort('Beira')">Beira ${getSortIcon('Beira')}</div>
+                  <div style="text-align:center; cursor:pointer; user-select:none;" onclick="window.setStockSort('Harare')">Harare ${getSortIcon('Harare')}</div>
                   <div style="text-align:right;">Actions</div>
                 </div>
 
