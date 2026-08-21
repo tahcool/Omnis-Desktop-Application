@@ -448,3 +448,5 @@
   Files: .mcp/knowledge/_shared/commit_log.md,systems/salestrack/index.html,
 - `4806bcf` 2026-08-21 [supabase-migration] chore: bump version to 4.3.2 and add Sales Guide
   Files: package.json,systems/salestrack/index.html,
+- `d9f438b` 2026-08-21 [supabase-migration] feat: add sort functionality to stock pipeline date columns
+  Files: .mcp/knowledge/_shared/commit_log.md,systems/salestrack/index.html,

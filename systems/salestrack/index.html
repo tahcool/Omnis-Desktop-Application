@@ -17812,6 +17812,20 @@ thead th { padding:11px 12px; font-size:10px; font-weight:800; color:#fff; text-
                       <span style="font-size: 11px; font-weight: 700; color: #64748b; background: #fff; padding: 2px 8px; border-radius: 12px; border: 1px solid rgba(0,0,0,0.05);">${phaseItems.length} UNIT(S)</span>
                   </div>
                   <div id="${phaseId}" style="display: none;">
+                      <!-- Stock Grid Header -->
+                      <div class="ai-order-header ai-stock-grid" style="border-radius:10px; margin-bottom:8px; margin-top:4px; padding:8px 12px; background:#f8fafc; border:1px solid #e2e8f0; box-shadow:none;">
+                        <div>Model</div>
+                        <div>Contract</div>
+                        <div>Potential Customers</div>
+                        <div style="text-align:center;">Qty</div>
+                        <div style="text-align:center;">Proposed</div>
+                        <div style="text-align:center; cursor:pointer; user-select:none;" onclick="window.setStockSort('Prod')">Prod ${getSortIcon('Prod')}</div>
+                        <div style="text-align:center; cursor:pointer; user-select:none;" onclick="window.setStockSort('Ship')">Ship ${getSortIcon('Ship')}</div>
+                        <div style="text-align:center; cursor:pointer; user-select:none;" onclick="window.setStockSort('Durban')">Durban ${getSortIcon('Durban')}</div>
+                        <div style="text-align:center; cursor:pointer; user-select:none;" onclick="window.setStockSort('Beira')">Beira ${getSortIcon('Beira')}</div>
+                        <div style="text-align:center; cursor:pointer; user-select:none;" onclick="window.setStockSort('Harare')">Harare ${getSortIcon('Harare')}</div>
+                        <div style="text-align:right;">Actions</div>
+                      </div>
                       ${rowsHtml}
                   </div>
                 `;
@@ -17824,21 +17838,6 @@ thead th { padding:11px 12px; font-size:10px; font-weight:800; color:#fff; text-
                     ${getOEMLogo(brand) ? `<img src="${getOEMLogo(brand)}" style="height:42px; object-fit:contain; filter:grayscale(100%) brightness(0.45) opacity(85%) drop-shadow(0 4px 6px rgba(0,0,0,0.15));">` : `<div style="font-weight:900; font-size:20px; color:#0f172a;">${brand.toUpperCase()}</div>`}
                   </div>
                   <div style="font-size:11px; font-weight:700; color:#64748b; background:#f1f5f9; padding:4px 10px; border-radius:6px; letter-spacing:0.02em;">ENTRIES: ${secRecords.length}</div>
-                </div>
-
-                <!-- Stock Grid Header -->
-                <div class="ai-order-header ai-stock-grid" style="border-radius:16px; margin-bottom:12px;">
-                  <div>Model</div>
-                  <div>Contract</div>
-                  <div>Potential Customers</div>
-                  <div style="text-align:center;">Qty</div>
-                  <div style="text-align:center;">Proposed</div>
-                  <div style="text-align:center; cursor:pointer; user-select:none;" onclick="window.setStockSort('Prod')">Prod ${getSortIcon('Prod')}</div>
-                  <div style="text-align:center; cursor:pointer; user-select:none;" onclick="window.setStockSort('Ship')">Ship ${getSortIcon('Ship')}</div>
-                  <div style="text-align:center; cursor:pointer; user-select:none;" onclick="window.setStockSort('Durban')">Durban ${getSortIcon('Durban')}</div>
-                  <div style="text-align:center; cursor:pointer; user-select:none;" onclick="window.setStockSort('Beira')">Beira ${getSortIcon('Beira')}</div>
-                  <div style="text-align:center; cursor:pointer; user-select:none;" onclick="window.setStockSort('Harare')">Harare ${getSortIcon('Harare')}</div>
-                  <div style="text-align:right;">Actions</div>
                 </div>
 
                 <!-- Stock Grid Body -->
