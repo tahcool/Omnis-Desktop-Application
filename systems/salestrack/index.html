@@ -100,7 +100,7 @@
       inset: 0 !important;
       width: 100vw !important;
       height: 100vh !important;
-      background: #8b2219 !important;
+      background: linear-gradient(135deg, #8b2219 0%, #5a1512 100%) !important;
       display: flex !important;
       flex-direction: column !important;
       align-items: center !important;
@@ -191,7 +191,7 @@
       gap: 8px !important;
     }
     .driver-popover-next-btn, .driver-popover-prev-btn {
-      background: #8b2219 !important;
+      background: linear-gradient(135deg, #8b2219 0%, #5a1512 100%) !important;
       color: #ffffff !important;
       border: none !important;
       border-radius: 6px !important;
@@ -2649,7 +2649,7 @@
     .stock-table thead th,
     #ol-table thead th,
     .excel-table thead th {
-      background: #8b2219 !important;
+      background: linear-gradient(135deg, #8b2219 0%, #5a1512 100%) !important;
       /* Force deep Maroon */
       color: #ffffff !important;
       text-transform: uppercase !important;
@@ -5802,7 +5802,7 @@
         box-shadow: none !important;
     }
     .rpt-card-maroon:hover .icon-container {
-        background: #8b2219 !important;
+        background: linear-gradient(135deg, #8b2219 0%, #5a1512 100%) !important;
         color: #ffffff !important;
         transform: scale(1.05);
     }
@@ -5891,7 +5891,7 @@
 
 <body>
   <!-- SPLASH OVERLAY -->
-  <div id="splash-overlay" style="position:fixed; top:0; left:0; width:100vw; height:100vh; background: #8b2219; z-index: 9999999; display: flex; align-items: center; justify-content: center; flex-direction: column; transition: opacity 0.5s ease, visibility 0.5s ease;">
+  <div id="splash-overlay" style="position:fixed; top:0; left:0; width:100vw; height:100vh; background: linear-gradient(135deg, #8b2219 0%, #5a1512 100%); z-index: 9999999; display: flex; align-items: center; justify-content: center; flex-direction: column; transition: opacity 0.5s ease, visibility 0.5s ease;">
       <div class="splash-inner" style="text-align: center; display: flex; flex-direction: column; align-items: center; width: 100%;">
           <div class="splash-logo" style="margin-bottom: 35px; display: flex; justify-content: center; width: 100%;">
               <img src="../../assets/images/omnis-logo-white.png" alt="Omnis Logo" style="height: clamp(60px, 14vh, 110px); max-width: 90vw; object-fit: contain;" />
@@ -27991,6 +27991,27 @@ Commercial Team`);
                     {
                         element: '#view-stock .stock-row-item .ai-order-cell:nth-child(3)',
                         popover: { title: 'Earmarking Orders', description: 'The "Potential Customers" column allows you to ear-mark incoming orders. You can add potential customers to units in transit so sales teams can claim incoming stock!', side: 'top', align: 'center' }
+                    }
+                ];
+            } else if (activeView === 'view-group-sales-list') {
+                tourSteps = [
+                    {
+                        element: '#group-sales-company',
+                        popover: { title: 'Company Filter', description: 'Filter the sales ledger by specific companies (e.g. Machinery Exchange, Sinopower).', side: 'bottom', align: 'center' }
+                    },
+                    {
+                        element: '#group-sales-search',
+                        popover: { title: 'Search Database', description: 'Quickly find specific transactions, customers, or equipment models.', side: 'bottom', align: 'center' }
+                    },
+                    {
+                        element: 'button[onclick="showGroupSalesForm()"]',
+                        popover: { title: 'New Sale', description: 'Click here to log a new closed deal. This automatically triggers logistics tracking and accounting workflows.', side: 'left', align: 'center' }
+                    },
+                    {
+                        popover: { title: 'KPI Metrics', description: 'The cards at the top help you monitor units closed, cumulative sales, top sector, top salesperson, and best selling models in real-time.', align: 'center' }
+                    },
+                    {
+                        popover: { title: 'Sales Ledger', description: 'View and manage all recorded transactions in the table below. Click on any row to edit or view detailed information.', align: 'center' }
                     }
                 ];
             } else {
