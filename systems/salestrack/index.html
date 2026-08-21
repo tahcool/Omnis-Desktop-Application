@@ -6671,7 +6671,7 @@
           <div style="padding:0 40px; margin-top:16px; margin-bottom:0;">
             <div style="display:flex; align-items:center; gap:8px; margin-bottom:16px;">
               <span style="font-size:18px;font-weight:900;letter-spacing:-0.02em;color:#0f172a;text-transform:uppercase;">Shortcuts</span>
-              <button onclick="window.openShortcutCustomizer()" style="background:rgba(0,0,0,0.04); border:none; color:#475569; cursor:pointer; font-size:13px; padding:6px 12px; border-radius:6px; font-weight:600; transition:all 0.2s; margin-left:auto; display:flex; align-items:center; gap:6px;" title="Customize Shortcuts" onmouseover="this.style.background='rgba(0,0,0,0.08)'; this.style.color='#0f172a'" onmouseout="this.style.background='rgba(0,0,0,0.04)'; this.style.color='#475569'">
+              <button type="button" onclick="event.preventDefault(); event.stopPropagation(); window.openShortcutCustomizer()" style="background:rgba(0,0,0,0.04); border:none; color:#475569; cursor:pointer; font-size:13px; padding:6px 12px; border-radius:6px; font-weight:600; transition:all 0.2s; margin-left:auto; display:flex; align-items:center; gap:6px;" title="Customize Shortcuts" onmouseover="this.style.background='rgba(0,0,0,0.08)'; this.style.color='#0f172a'" onmouseout="this.style.background='rgba(0,0,0,0.04)'; this.style.color='#475569'">
                 <i class="fas fa-sliders-h"></i> Customize
               </button>
             </div>
