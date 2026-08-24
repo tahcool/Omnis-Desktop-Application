@@ -458,3 +458,7 @@
   Files: .mcp/knowledge/_shared/commit_log.md,main.js,
 - `5cf8063` 2026-08-21 [supabase-migration] chore: prepare for release
   Files: .mcp/knowledge/_shared/commit_log.md,
+- `69f9166` 2026-08-21 [supabase-migration] chore: add release notes
+  Files: .mcp/knowledge/_shared/commit_log.md,release_notes_v4.3.3.md,
+- `2661536` 2026-08-21 [supabase-migration] v4.3.3
+  Files: package-lock.json,package.json,

@@ -150,6 +150,7 @@ __all__ = [
     "get_omnis_group_sales",       # ✅ ADDED
     "get_group_sales_list",       # ✅ ADDED for SalesTrack frontend
     "save_group_sales",           # ✅ ADDED for SalesTrack frontend
+    "force_push_to_fmb",          # ✅ ADDED
     "delete_group_sale",          # ✅ ADDED for SalesTrack frontend
     "get_omnis_orders_kpi",        # ✅ ADDED
     "get_omnis_quotations_kpi",    # ✅ ADDED
@@ -1782,6 +1783,26 @@ def save_group_sales(payload=None, **kwargs):
         return {"ok": False, "error": str(e)}
     finally:
         frappe.set_user(previous_user)
+
+@frappe.whitelist()
+def force_push_to_fmb(sale_name=None):
+    """
+    Manually forces the creation of an FMB Report from an existing Group Sales record.
+    Used by the 'Push to Tracking' button in the frontend.
+    """
+    if not sale_name:
+        return {"ok": False, "error": "sale_name is required"}
+    try:
+        if not frappe.db.exists("Group Sales", sale_name):
+            return {"ok": False, "error": f"Group Sale {sale_name} not found"}
+        
+        doc = frappe.get_doc("Group Sales", sale_name)
+        _trigger_fmb_entry_from_sale(doc)
+        frappe.db.commit()
+        return {"ok": True}
+    except Exception as e:
+        frappe.log_error(frappe.get_traceback(), "Force Push to FMB Error")
+        return {"ok": False, "error": str(e)}
 
 @frappe.whitelist(allow_guest=True)
 def _omnis_get_real_qtn_name(qtn_name: str) -> str:

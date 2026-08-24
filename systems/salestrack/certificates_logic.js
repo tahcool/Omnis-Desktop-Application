@@ -82,13 +82,13 @@ class CertificatesLogic {
 
         if (tabId === 'generate') {
             if (genTab) genTab.style.display = 'block';
-            if (btnGen) { btnGen.style.color = '#0891b2'; btnGen.style.borderBottomColor = '#0891b2'; }
+            if (btnGen) { btnGen.style.color = '#8b2219'; btnGen.style.borderBottomColor = '#8b2219'; }
         } else if (tabId === 'bulk') {
             if (bulkTab) bulkTab.style.display = 'block';
-            if (btnBulk) { btnBulk.style.color = '#0891b2'; btnBulk.style.borderBottomColor = '#0891b2'; }
+            if (btnBulk) { btnBulk.style.color = '#8b2219'; btnBulk.style.borderBottomColor = '#8b2219'; }
         } else {
             if (dirTab) dirTab.style.display = 'block';
-            if (btnDir) { btnDir.style.color = '#0891b2'; btnDir.style.borderBottomColor = '#0891b2'; }
+            if (btnDir) { btnDir.style.color = '#8b2219'; btnDir.style.borderBottomColor = '#8b2219'; }
         }
     }
 
@@ -707,7 +707,7 @@ class CertificatesLogic {
         if (!tbody) return;
 
         if (certs.length === 0) {
-            tbody.innerHTML = '<tr><td colspan="7" style="padding:20px; text-align:center; color:#94a3b8; font-style:italic;">No certificates found.</td></tr>';
+            tbody.innerHTML = '<div style="padding:40px; text-align:center; color:#94a3b8; font-style:italic; background:#fff; border-radius:12px; border:1px solid #e2e8f0;">No certificates found.</div>';
             const pageInfo = document.getElementById('cert-dir-page-info');
             if (pageInfo) pageInfo.textContent = 'Showing 0 of 0';
             return;
@@ -727,18 +727,17 @@ class CertificatesLogic {
             const rowNum = startIdx + i + 1;
             const cDate = c.completion_date ? c.completion_date.substring(0,10) : '';
             html += `
-                
-                  <tr style="border-bottom:1px solid #f1f5f9; cursor:pointer; background:#fff; transition:all 0.3s cubic-bezier(0.16, 1, 0.3, 1);" onmouseover="this.style.boxShadow='0 12px 24px -4px rgba(0,0,0,0.08)'; this.style.transform='translateY(-2px)'; this.style.borderRadius='16px';" onmouseout="this.style.boxShadow='none'; this.style.transform='none'; this.style.borderRadius='0';">
-                      <td style="padding:12px 16px; font-weight:700; color:#94a3b8; font-size:12px;">${rowNum}.</td>
-                      <td style="padding:12px 16px; font-weight:600; color:#0f172a;">${c.operator_name || ''}</td>
-                      <td style="padding:12px 16px; color:#334155;">${c.id_number || ''}</td>
-                      <td style="padding:12px 16px; color:#334155;">${c.machine_type || ''}</td>
-                      <td style="padding:12px 16px; color:#64748b;">${cDate}</td>
-                      <td style="padding:12px 16px; font-family:monospace; color:#0ea5e9; font-weight:600;">${c.cert_ref_number || ''}</td>
-                      <td style="padding:12px 16px; text-align:right;">
-                          <button onclick="window.certLogic.reprintCertificate('${c.id}')" style="background:#f8fafc; border:1px solid #cbd5e1; padding:6px 12px; border-radius:6px; cursor:pointer; color:#0f172a; font-size:12px; font-weight:600; transition:all 0.2s;" onmouseover="this.style.background='#f1f5f9'" onmouseout="this.style.background='#f8fafc'"><i class="fas fa-print" style="color:#0891b2; margin-right:4px;"></i> Reprint</button>
-                      </td>
-                  </tr>
+                  <div class="ai-order-row" style="grid-template-columns: 60px 2fr 2fr 2fr 120px 140px 100px; cursor:pointer;" onmouseover="this.style.transform='translateY(-1px)'; this.style.boxShadow='0 4px 12px rgba(0,0,0,0.05)';" onmouseout="this.style.transform='none'; this.style.boxShadow='0 2px 8px rgba(0,0,0,0.02)';">
+                      <div class="ai-order-cell" style="font-weight:700; color:#94a3b8; font-size:12px;">${rowNum}.</div>
+                      <div class="ai-order-cell" style="font-weight:600; color:#0f172a;">${c.operator_name || ''}</div>
+                      <div class="ai-order-cell" style="color:#334155;">${c.id_number || ''}</div>
+                      <div class="ai-order-cell" style="color:#334155;">${c.machine_type || ''}</div>
+                      <div class="ai-order-cell" style="color:#64748b;">${cDate}</div>
+                      <div class="ai-order-cell" style="font-family:monospace; color:#0ea5e9; font-weight:600;">${c.cert_ref_number || ''}</div>
+                      <div class="ai-order-cell" style="text-align:right;">
+                          <button onclick="window.certLogic.reprintCertificate('${c.id}')" style="background:#f8fafc; border:1px solid #cbd5e1; padding:6px 12px; border-radius:6px; cursor:pointer; color:#0f172a; font-size:12px; font-weight:600; transition:all 0.2s;" onmouseover="this.style.background='#f1f5f9'" onmouseout="this.style.background='#f8fafc'"><i class="fas fa-print" style="color:#8b2219; margin-right:4px;"></i> Reprint</button>
+                      </div>
+                  </div>
 
             `;
         });
