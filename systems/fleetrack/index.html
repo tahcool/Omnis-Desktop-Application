@@ -3542,6 +3542,32 @@
           <option value="sinopower" style="color: #0f172a;">Sinopower</option>
         </select>
 
+        <!-- Switch Module -->
+        <div class="top-nav-item module-switcher-dropdown" style="position:relative; overflow:visible; display:flex; align-items:center; justify-content:center; padding:7px 14px; border-radius:8px; background:rgba(255,255,255,0.05); cursor:pointer; gap:7px; transition:all 0.2s;" onmouseenter="clearTimeout(this.hideTimeout); this.querySelector('.dropdown-content').style.display='block'; this.style.background='rgba(255,255,255,0.1)'" onmouseleave="this.hideTimeout = setTimeout(() => { this.querySelector('.dropdown-content').style.display='none'; this.style.background='rgba(255,255,255,0.05)' }, 250)">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="dd-icon"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg>
+          <span>Switch Module</span>
+          <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-left:2px; opacity:0.6;"><polyline points="6 9 12 15 18 9"></polyline></svg>
+          
+          <div class="dropdown-content" style="display:none; position:absolute; top:100%; right:0; margin-top:5px; background:#0f172a; border:1px solid rgba(255,255,255,0.1); border-radius:6px; box-shadow:0 10px 25px rgba(0,0,0,0.5); min-width:180px; z-index:9999; padding:8px;">
+            <div style="padding: 8px; font-size: 12px; color: #64748b; text-align: center;">Loading...</div>
+          </div>
+          
+          <script>
+            (function() {
+              const parent = document.currentScript.parentElement;
+              const dropdown = parent.querySelector('.dropdown-content');
+              try {
+                const modules = JSON.parse(localStorage.getItem('omnis_modules')) || [];
+                if (modules.length > 0) {
+                    dropdown.innerHTML = modules.map(m => '<a href="../../' + m.url + '" style="display:flex; align-items:center; gap:8px; padding:10px 12px; color:white; text-decoration:none; font-size:13px; border-radius:4px; transition:background 0.2s;" onmouseover="this.style.background=\'rgba(255,255,255,0.1)\'" onmouseout="this.style.background=\'transparent\'"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="#e53935" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path><polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline><line x1="12" y1="22.08" x2="12" y2="12"></line></svg> ' + m.name + '</a>').join('');
+                } else {
+                    dropdown.innerHTML = '<a href="../../index.html?switch=1" style="display:block; padding:10px; color:white; text-decoration:none;">Go to Launcher</a>';
+                }
+              } catch(e) {}
+            })();
+          </script>
+        </div>
+
         <!-- Settings dropdown -->
         <div class="top-nav-dropdown">
           <div class="top-nav-item" id="dd-settings-trigger" onclick="toggleDropdown(event,'dd-settings-menu',this)" style="gap:7px; padding:7px 14px; border-radius:8px; background:rgba(255,255,255,0.05);">

@@ -6067,6 +6067,43 @@
     </div>
 
     <div class="top-nav-group" style="gap:8px;">
+      <!-- Switch Module Dropdown -->
+      <div class="top-nav-action-btn module-switcher-dropdown" style="position:relative; overflow:visible; display:flex; align-items:center; justify-content:center; padding:0 12px; height:32px; border-radius:6px; background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.1); cursor:pointer; gap:8px; transition:all 0.2s;" onmouseenter="clearTimeout(this.hideTimeout); this.querySelector('.dropdown-content').style.display='block'; this.style.background='rgba(255,255,255,0.1)'" onmouseleave="this.hideTimeout = setTimeout(() => { this.querySelector('.dropdown-content').style.display='none'; this.style.background='rgba(255,255,255,0.05)' }, 250)">
+        <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"></rect><rect x="14" y="3" width="7" height="7"></rect><rect x="14" y="14" width="7" height="7"></rect><rect x="3" y="14" width="7" height="7"></rect></svg>
+        <span style="font-size:12px; font-weight:700; color:#fff;">Switch Module</span>
+        <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="rgba(255,255,255,0.5)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-left:4px;"><polyline points="6 9 12 15 18 9"></polyline></svg>
+        
+        <div class="dropdown-content" style="display:none; position:absolute; top:100%; right:0; margin-top:5px; background:#0f172a; border:1px solid rgba(255,255,255,0.1); border-radius:6px; box-shadow:0 10px 25px rgba(0,0,0,0.5); min-width:180px; z-index:9999; padding:8px;">
+          <div style="padding: 8px; font-size: 12px; color: #64748b; text-align: center;">Loading...</div>
+        </div>
+        
+        <script>
+          (function() {
+            const parent = document.currentScript.parentElement;
+            const dropdown = parent.querySelector('.dropdown-content');
+            try {
+              const modules = JSON.parse(localStorage.getItem('omnis_modules')) || [];
+              if (modules.length > 0) {
+                  let html = modules.map(m => '<a href="../../' + m.url + '" style="display:flex; align-items:center; gap:8px; padding:10px 12px; color:white; text-decoration:none; font-size:13px; border-radius:4px; transition:background 0.2s;" onmouseover="this.style.background=\'rgba(255,255,255,0.1)\'" onmouseout="this.style.background=\'transparent\'"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="#8b2219" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path><polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline><line x1="12" y1="22.08" x2="12" y2="12"></line></svg> ' + m.name + '</a>').join('');
+                  if (localStorage.getItem('omnis_is_admin') === 'true') {
+                      html += '<a href="../../admin_dashboard.html" style="display:flex; align-items:center; gap:8px; padding:10px 12px; color:#ef4444; text-decoration:none; font-size:13px; border-radius:4px; border-top:1px solid rgba(255,255,255,0.1); margin-top:4px; transition:background 0.2s;" onmouseover="this.style.background=\'rgba(255,255,255,0.1)\'" onmouseout="this.style.background=\'transparent\'"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg> Admin Console</a>';
+                  }
+                  dropdown.innerHTML = html;
+              } else {
+                  dropdown.innerHTML = '<a href="../../index.html?switch=1" style="display:block; padding:10px; color:white; text-decoration:none;">Go to Launcher</a>';
+              }
+            } catch(e) {}
+          })();
+        </script>
+      </div>
+      <!-- User Management Button (Admin Only) -->
+      <div id="btn-user-management" class="top-nav-action-btn hidden" onclick="switchToView('view-user-management', 'User Management')"
+        style="padding:8px 14px; border-radius:8px; background:rgba(0,0,0,0.15); border: 1px solid rgba(255,255,255,0.1); display:flex; align-items:center; gap:6px; transition: all 0.2s; cursor:pointer;"
+        onmouseover="this.style.background='rgba(0,0,0,0.3)'" onmouseout="this.style.background='rgba(0,0,0,0.15)'">
+        <span class="icon" style="margin:0; font-size:12px; width:auto; color:#fff;"><i class="fas fa-users"></i></span>
+        <span style="font-size:12px; font-weight:700; color:#fff;">Users</span>
+      </div>
+
       <div class="top-nav-action-btn" onclick="switchToView('view-settings', 'System Settings')"
         style="padding:8px 14px; border-radius:8px; background:rgba(0,0,0,0.15); border: 1px solid rgba(255,255,255,0.1); display:flex; align-items:center; gap:6px; transition: all 0.2s; cursor:pointer;"
         onmouseover="this.style.background='rgba(0,0,0,0.3)'" onmouseout="this.style.background='rgba(0,0,0,0.15)'">
@@ -6178,6 +6215,10 @@
       <div class="sidebar-footer">
         <div class="nav-item" data-view="view-settings">
           <span class="icon"><i class="fas fa-cog"></i></span> <span>Settings</span>
+        </div>
+
+        <div class="nav-item" data-view="view-user-management">
+          <span class="icon"><i class="fas fa-users-cog"></i></span> <span>User Management</span>
         </div>
 
         <div class="nav-item" data-view="view-licensing">
@@ -6307,6 +6348,35 @@
           style="background:#fef2f2; border:1px solid #ef4444; color:#991b1b; padding:15px; margin:20px; border-radius:8px; font-size:13px; z-index:10000; position:relative;">
         </div>
         <div id="chart-error" style="margin:0 20px;"></div>
+
+<!-- ✅ USER MANAGEMENT VIEW -->
+  <div id="view-user-management" class="view-page dashboard-view" style="display:none; padding:40px; height:100%; overflow-y:auto; background:#f1f5f9;">
+    <div style="max-width:1400px; margin:0 auto;">
+      <div style="display:flex; justify-content:space-between; align-items:flex-end; margin-bottom:32px;">
+        <div>
+            <h1 style="margin:0; font-size:32px; font-weight:800; color:#1e293b; text-transform:uppercase; letter-spacing:0.05em;">User Management</h1>
+            <p style="margin:8px 0 0 0; color:#64748b; font-size:14px;">Manage user access to Omnis modules and configure admin permissions.</p>
+        </div>
+        <button onclick="window.salestrack_users.loadUsers()" class="btn-secondary" style="padding:10px 20px; border-radius:8px; font-weight:700;"><i class="fas fa-sync-alt"></i> Refresh</button>
+      </div>
+
+      <div style="background:white; border-radius:16px; padding:32px; box-shadow:0 4px 6px -1px rgba(0,0,0,0.05);">
+        <table style="width:100%; border-collapse:collapse; text-align:left;">
+          <thead>
+            <tr style="border-bottom:2px solid #f1f5f9;">
+              <th style="padding:16px; font-size:12px; font-weight:800; color:#64748b; text-transform:uppercase;">User</th>
+              <th style="padding:16px; font-size:12px; font-weight:800; color:#64748b; text-transform:uppercase;">Role</th>
+              <th style="padding:16px; font-size:12px; font-weight:800; color:#64748b; text-transform:uppercase;">Assigned Modules</th>
+              <th style="padding:16px; font-size:12px; font-weight:800; color:#64748b; text-transform:uppercase;">Actions</th>
+            </tr>
+          </thead>
+          <tbody id="user-management-tbody">
+            <tr><td colspan="4" style="padding:32px; text-align:center; color:#94a3b8; font-style:italic;">Loading users...</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
 
 <!-- ✅ CREDIT & TERMS VIEW -->
   <div id="view-credit-terms" class="view-page dashboard-view" style="display:none; padding:40px; height:100%; overflow-y:auto; background:#f1f5f9;">
@@ -7123,13 +7193,40 @@
                   </div><!-- /welcome card -->
 
               </div><!-- /left col -->
-
-
-
-            </div>
               
               <!-- Tenders are now accessed via the top Quick Access Bar -->
               
+              <!-- USER MANAGEMENT VIEW -->
+              <div id="view-user-management" class="view-page hidden" style="padding: 0; width:100%; min-height:100%; background:#f8fafc; overflow-y:auto;">
+                  <div style="padding: 80px 40px 40px 40px; width: 100%; box-sizing: border-box; max-width: 1200px; margin: 0 auto;">
+                    <div style="display:flex; justify-content:space-between; align-items:flex-end; margin-bottom: 30px; border-bottom: 1px solid #e2e8f0; padding-bottom: 20px;">
+                        <div>
+                            <h1 style="margin: 0; font-size: 28px; font-weight: 800; color: #0f172a; letter-spacing: -0.5px;">User Management</h1>
+                            <p style="margin: 8px 0 0 0; color: #64748b; font-size: 15px;">Manage system access and roles across all Omnis modules.</p>
+                        </div>
+                        <div>
+                            <button onclick="window.salestrack_users.loadUsers()" class="btn-secondary" style="padding: 10px 16px; border-radius: 8px; font-weight: 600; cursor:pointer;"><i class="fas fa-sync-alt"></i> Refresh</button>
+                        </div>
+                    </div>
+                    
+                    <div style="background: white; border-radius: 12px; border: 1px solid #e2e8f0; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); overflow: hidden;">
+                        <table style="width: 100%; border-collapse: collapse; text-align: left;">
+                            <thead>
+                                <tr style="background: #f8fafc; border-bottom: 2px solid #e2e8f0;">
+                                    <th style="padding: 16px; font-size: 12px; font-weight: 700; color: #64748b; text-transform: uppercase;">Email</th>
+                                    <th style="padding: 16px; font-size: 12px; font-weight: 700; color: #64748b; text-transform: uppercase;">Role</th>
+                                    <th style="padding: 16px; font-size: 12px; font-weight: 700; color: #64748b; text-transform: uppercase;">Accessible Modules</th>
+                                    <th style="padding: 16px; font-size: 12px; font-weight: 700; color: #64748b; text-transform: uppercase;">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="user-management-tbody">
+                                <!-- Populated by user_management_logic.js -->
+                            </tbody>
+                        </table>
+                    </div>
+                  </div>
+              </div>
+
               <!-- SETTINGS VIEW (Optimized Grid Layout) -->
                 <div id="view-settings" class="view-page hidden" style="padding: 0; width:100%; min-height:100%; background:#f8fafc; overflow-y:auto;">
                   
@@ -7172,16 +7269,16 @@
                   <div style="margin-top: 20px;">
         
                       
-                      <!-- TAB: TEAM -->
+                      <!-- TAB: TEAM / ACCESS MANAGEMENT -->
                       <div id="settings-tab-team" class="settings-tab-content hidden">
                           <div class="dash-card" style="background: #fff; padding: 30px; border-radius: 16px; border: 1px solid #e2e8f0; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);">
                             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 20px;">
                                 <div>
-                                  <h3 style="font-size: 18px; font-weight: 700; color: #1e293b; margin: 0 0 4px 0;">Sales Persons</h3>
-                                  <p style="font-size: 13px; color: #64748b; margin: 0;">Manage your team's emails and WhatsApp numbers for automated follow-ups.</p>
+                                  <h3 style="font-size: 18px; font-weight: 700; color: #1e293b; margin: 0 0 4px 0;">User & Access Management</h3>
+                                  <p style="font-size: 13px; color: #64748b; margin: 0;">Manage users and their module-specific access permissions.</p>
                                 </div>
-                                <button onclick="openAddSalesPersonModal()" class="primary-btn" style="padding: 8px 16px; background: #2563eb; color: #fff; border: none; border-radius: 8px; font-weight: 600; cursor: pointer;">
-                                  <i class="fas fa-plus"></i> Add Person
+                                <button onclick="salestrack.openCreateUserModal()" class="primary-btn" style="padding: 8px 16px; background: #8b2219; color: #fff; border: none; border-radius: 8px; font-weight: 600; cursor: pointer;">
+                                  <i class="fas fa-user-plus"></i> Create User
                                 </button>
                             </div>
                             
@@ -7189,14 +7286,13 @@
                               <table style="width: 100%; border-collapse: collapse; font-size: 13px; text-align: left;">
                                 <thead>
                                   <tr style="border-bottom: 2px solid #e2e8f0; color: #64748b;">
-                                    <th style="padding: 12px; font-weight: 600;">Name</th>
-                                    <th style="padding: 12px; font-weight: 600;">Email</th>
-                                    <th style="padding: 12px; font-weight: 600;">WhatsApp Number</th>
-                                    <th style="padding: 12px; font-weight: 600;">Status</th>
+                                    <th style="padding: 12px; font-weight: 600;">User (Email)</th>
+                                    <th style="padding: 12px; font-weight: 600;">Role</th>
+                                    <th style="padding: 12px; font-weight: 600;">System Access</th>
                                     <th style="padding: 12px; font-weight: 600; text-align: right;">Actions</th>
                                   </tr>
                                 </thead>
-                                <tbody id="sales-persons-table-body">
+                                <tbody id="team-users-table-body">
                                 </tbody>
                               </table>
                             </div>
@@ -7371,14 +7467,75 @@
                               </div>
                               <h3 style="font-size:24px; font-weight:800; color:#1e293b; margin-bottom:12px;">Account Security</h3>
                               <p style="color:#64748b; font-size:15px; max-width:500px; margin:0 auto 32px; line-height:1.6;">
-                                  Manage your account security settings. You can request a password reset link to be sent to your registered email address.
+                                  Manage your account security settings, update your password, and configure Two-Factor Authentication.
                               </p>
                               
-                              <div style="display:flex; justify-content:center; gap:16px;">
-                                  <button onclick="salestrack.requestPasswordReset()" 
-                                      style="background:#800000; color:white; border:none; padding:14px 32px; border-radius:10px; font-weight:700; cursor:pointer; display:flex; align-items:center; gap:10px; transition:all 0.2s;">
-                                      <i class="fas fa-key"></i> Reset My Password
-                                  </button>
+                              <div style="display:grid; grid-template-columns: 1fr 1fr; gap:24px; text-align:left;">
+                                  <!-- Profile Update Form -->
+                                  <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:12px; padding:24px;">
+                                      <h4 style="font-size:16px; font-weight:800; color:#1e293b; margin-bottom:16px; display:flex; align-items:center; gap:8px;">
+                                          <i class="fas fa-id-card" style="color:#800000;"></i> Update Profile
+                                      </h4>
+                                      <div style="display:flex; flex-direction:column; gap:12px;">
+                                          
+                                          <div style="display:flex; align-items:center; gap:16px; margin-bottom: 8px;">
+                                              <div id="sec-avatar-preview" style="width: 64px; height: 64px; border-radius: 50%; background: #e2e8f0; background-size: cover; background-position: center; flex-shrink: 0;"></div>
+                                              <div>
+                                                  <label style="font-size:13px; font-weight:700; color:#475569; display:block; margin-bottom:4px;">Profile Picture</label>
+                                                  <input type="file" id="sec-avatar-file" accept="image/*" style="font-size:12px; color:#64748b; width: 100%;">
+                                              </div>
+                                          </div>
+
+                                          <label style="font-size:13px; font-weight:700; color:#475569; margin-bottom:-8px;">Display Name</label>
+                                          <input type="text" id="sec-display-name" placeholder="E.g. John Doe" style="padding:10px 12px; border-radius:8px; border:1px solid #cbd5e1; background:white; font-size:14px; outline:none; transition:0.2s;">
+                                          <label style="font-size:13px; font-weight:700; color:#475569; margin-bottom:-8px; margin-top:4px;">Email Address</label>
+                                          <input type="email" id="sec-email" placeholder="john@example.com" style="padding:10px 12px; border-radius:8px; border:1px solid #cbd5e1; background:white; font-size:14px; outline:none; transition:0.2s;">
+                                          
+                                          <button onclick="if(window.salestrack) window.salestrack.updateProfile()" style="margin-top:8px; background:#800000; color:white; border:none; padding:10px 16px; border-radius:8px; font-weight:700; cursor:pointer; font-size:14px; transition:0.2s; width:100%;">
+                                              Save Profile
+                                          </button>
+                                      </div>
+                                  </div>
+
+                                  <!-- Password Change Form -->
+                                  <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:12px; padding:24px;">
+                                      <h4 style="font-size:16px; font-weight:800; color:#1e293b; margin-bottom:16px; display:flex; align-items:center; gap:8px;">
+                                          <i class="fas fa-lock" style="color:#800000;"></i> Change Password
+                                      </h4>
+                                      <div style="display:flex; flex-direction:column; gap:12px;">
+                                          <input type="password" id="sec-old-pwd" placeholder="Current Password" style="padding:10px 12px; border-radius:8px; border:1px solid #cbd5e1; background:white; font-size:14px; outline:none; transition:0.2s;">
+                                          <input type="password" id="sec-new-pwd" placeholder="New Password" style="padding:10px 12px; border-radius:8px; border:1px solid #cbd5e1; background:white; font-size:14px; outline:none; transition:0.2s;">
+                                          <input type="password" id="sec-confirm-pwd" placeholder="Confirm New Password" style="padding:10px 12px; border-radius:8px; border:1px solid #cbd5e1; background:white; font-size:14px; outline:none; transition:0.2s;">
+                                          
+                                          <button onclick="if(window.salestrack) window.salestrack.changePassword()" style="margin-top:8px; background:#800000; color:white; border:none; padding:10px 16px; border-radius:8px; font-weight:700; cursor:pointer; font-size:14px; transition:0.2s; width:100%;">
+                                              Update Password
+                                          </button>
+                                      </div>
+                                  </div>
+
+                                  <!-- 2FA Setup -->
+                                  <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:12px; padding:24px; grid-column: 1 / -1;">
+                                      <h4 style="font-size:16px; font-weight:800; color:#1e293b; margin-bottom:16px; display:flex; align-items:center; gap:8px;">
+                                          <i class="fas fa-shield-alt" style="color:#800000;"></i> Two-Step Auth (MFA)
+                                      </h4>
+                                      <p style="font-size:13px; color:#64748b; margin-bottom:16px; line-height:1.5;">
+                                          Add an extra layer of security to your account. You will be required to enter a code from an authenticator app (like Authy or Google Authenticator) every time you log in.
+                                      </p>
+                                      
+                                      <div id="mfa-setup-container" style="display:none; flex-direction:column; align-items:center; gap:12px; margin-bottom:16px;">
+                                          <div id="mfa-qr-code" style="background:white; padding:8px; border-radius:8px; border:1px solid #e2e8f0;"></div>
+                                          <input type="text" id="mfa-verify-code" placeholder="Enter 6-digit code" style="text-align:center; padding:10px 12px; border-radius:8px; border:1px solid #cbd5e1; background:white; font-size:18px; letter-spacing:4px; font-weight:700; outline:none; width:100%;" maxlength="6">
+                                          <button onclick="if(window.salestrack) window.salestrack.verifyMfaCode()" style="background:#10b981; color:white; border:none; padding:10px 16px; border-radius:8px; font-weight:700; cursor:pointer; font-size:14px; width:100%;">Verify & Enable</button>
+                                          <button onclick="document.getElementById('mfa-setup-container').style.display='none'" style="background:transparent; color:#64748b; border:1px solid #cbd5e1; padding:8px 16px; border-radius:8px; font-weight:600; cursor:pointer; font-size:13px; width:100%;">Cancel</button>
+                                      </div>
+
+                                      <div id="mfa-action-container">
+                                          <button id="btn-enable-mfa" onclick="if(window.salestrack) window.salestrack.startMfaEnrollment()" style="background:#1e293b; color:white; border:none; padding:10px 16px; border-radius:8px; font-weight:700; cursor:pointer; font-size:14px; width:100%;">
+                                              Set up Two-Step Auth
+                                          </button>
+                                      </div>
+                                  </div>
+
                               </div>
                               
                               <div style="margin-top:40px; padding-top:32px; border-top:1px solid #e2e8f0; text-align:left;">
@@ -7704,129 +7861,51 @@
 
             <div style="display:grid; grid-template-columns: repeat(4, 1fr); gap:32px; margin-bottom:40px;">
               
-              <!-- COLUMN 1: PUBLIC TENDERS (PRAZ/ZPC) -->
+              <!-- COLUMN 1: PUBLIC TENDERS -->
               <div style="display:flex; flex-direction:column; gap:24px;">
                 <div style="font-size:13px; font-weight:900; color:#800000; text-transform:uppercase; letter-spacing:0.12em; display:flex; align-items:center; gap:12px;">
                   <span style="width:8px; height:8px; border-radius:50%; background:#800000;"></span>
-                  Public Tenders (18)
+                  Public Tenders
                 </div>
-                <div style="display:flex; flex-direction:column; gap:16px;">
-                  <!-- Tender Card -->
-                  <div style="background:#fff; border:1px solid #e2e8f0; border-radius:18px; padding:20px; box-shadow:0 8px 25px rgba(0,0,0,0.04); cursor:pointer; transition:all 0.3s; position:relative;" onmouseover="this.style.transform='translateY(-4px)'; this.style.borderColor='#800000';">
-                    <div style="display:flex; justify-content:space-between; margin-bottom:12px;">
-                      <span style="font-size:10px; font-weight:900; color:#800000; background:#fff1f2; padding:3px 10px; border-radius:8px;">PRAZ/ZPC/HW/2026</span>
-                      <span style="font-size:10px; color:#ef4444; font-weight:900;"><i class="fas fa-clock"></i> 24D LEFT</span>
-                    </div>
-                    <h4 style="font-size:15px; font-weight:900; color:#0f172a; margin:0 0 10px; line-height:1.5;">Supply & Delivery of 10x Front End Loaders for Hwange.</h4>
-                    <div style="padding-top:12px; margin-top:12px; border-top:1px solid #f1f5f9; display:grid; grid-template-columns:1fr 1fr; gap:8px;">
-                      <div style="font-size:10px; color:#94a3b8; font-weight:700;">BUDGET: <span style="color:#0f172a;">$1.2M+</span></div>
-                      <div style="font-size:10px; color:#94a3b8; font-weight:700;">REGION: <span style="color:#0f172a;">MAT NORTH</span></div>
-                    </div>
-                  </div>
-                  <div style="background:#fff; border:1px solid #e2e8f0; border-radius:18px; padding:20px; box-shadow:0 8px 25px rgba(0,0,0,0.04); cursor:pointer; transition:all 0.3s;" onmouseover="this.style.transform='translateY(-4px)';">
-                    <div style="display:flex; justify-content:space-between; margin-bottom:12px;">
-                      <span style="font-size:10px; font-weight:900; color:#800000; background:#fff1f2; padding:3px 10px; border-radius:8px;">DDF/ROAD/2026</span>
-                      <span style="font-size:10px; color:#ef4444; font-weight:900;"><i class="fas fa-clock"></i> 11D LEFT</span>
-                    </div>
-                    <h4 style="font-size:15px; font-weight:900; color:#0f172a; margin:0 0 10px; line-height:1.5;">National Grading & Compaction Framework (Lot 4).</h4>
-                    <div style="padding-top:12px; margin-top:12px; border-top:1px solid #f1f5f9; display:grid; grid-template-columns:1fr 1fr; gap:8px;">
-                      <div style="font-size:10px; color:#94a3b8; font-weight:700;">BUDGET: <span style="color:#0f172a;">$450K</span></div>
-                      <div style="font-size:10px; color:#94a3b8; font-weight:700;">REGION: <span style="color:#0f172a;">MIDLANDS</span></div>
-                    </div>
-                  </div>
+                <div id="col-public-tenders" style="display:flex; flex-direction:column; gap:16px;">
+                  <!-- Dynamically populated -->
+                  <div style="padding:20px; text-align:center; color:#94a3b8; font-style:italic;">Loading...</div>
                 </div>
               </div>
 
-              <!-- COLUMN 2: STRATEGIC INFRASTRUCTURE -->
+              <!-- COLUMN 2: STRATEGIC PROJECTS -->
               <div style="display:flex; flex-direction:column; gap:24px;">
                 <div style="font-size:13px; font-weight:900; color:#2563eb; text-transform:uppercase; letter-spacing:0.12em; display:flex; align-items:center; gap:12px;">
                   <span style="width:8px; height:8px; border-radius:50%; background:#2563eb;"></span>
-                  Strategic Projects (12)
+                  Strategic Projects
                 </div>
-                <div style="display:flex; flex-direction:column; gap:16px;">
-                  <div style="background:#fff; border:1px solid #e2e8f0; border-radius:18px; padding:20px; box-shadow:0 8px 25px rgba(0,0,0,0.04); cursor:pointer; transition:all 0.3s;" onmouseover="this.style.transform='translateY(-4px)'; this.style.borderColor='#2563eb';">
-                    <div style="display:flex; justify-content:space-between; margin-bottom:12px;">
-                      <span style="font-size:10px; font-weight:900; color:#2563eb; background:#eff6ff; padding:3px 10px; border-radius:8px;">INFRASTRUCTURE</span>
-                      <span style="font-size:10px; color:#10b981; font-weight:900;"><i class="fas fa-check-circle"></i> ACTIVE</span>
-                    </div>
-                    <h4 style="font-size:15px; font-weight:900; color:#0f172a; margin:0 0 10px; line-height:1.5;">Harare-Chirundu Highway Rehabilitation Phase 4.</h4>
-                    <div style="padding-top:12px; margin-top:12px; border-top:1px solid #f1f5f9;">
-                      <div style="font-size:11px; color:#64748b; font-weight:700; margin-bottom:4px;"><i class="fas fa-hard-hat"></i> MIN. OF TRANSPORT</div>
-                      <div style="font-size:10px; color:#94a3b8; font-weight:700;">LEAD CONTRACTOR: <span style="color:#0f172a;">TBD</span></div>
-                    </div>
-                  </div>
-                  <div style="background:#fff; border:1px solid #e2e8f0; border-radius:18px; padding:20px; box-shadow:0 8px 25px rgba(0,0,0,0.04); cursor:pointer; transition:all 0.3s;" onmouseover="this.style.transform='translateY(-4px)';">
-                    <div style="display:flex; justify-content:space-between; margin-bottom:12px;">
-                      <span style="font-size:10px; font-weight:900; color:#2563eb; background:#eff6ff; padding:3px 10px; border-radius:8px;">ENERGY</span>
-                      <span style="font-size:10px; color:#3b82f6; font-weight:900;"><i class="fas fa-search"></i> PLANNING</span>
-                    </div>
-                    <h4 style="font-size:15px; font-weight:900; color:#0f172a; margin:0 0 10px; line-height:1.5;">Insukamini Solar Farm Expansion (100MW).</h4>
-                    <div style="padding-top:12px; margin-top:12px; border-top:1px solid #f1f5f9;">
-                      <div style="font-size:11px; color:#64748b; font-weight:700; margin-bottom:4px;"><i class="fas fa-bolt"></i> ZPC RENEWABLES</div>
-                      <div style="font-size:10px; color:#94a3b8; font-weight:700;">EST. VALUE: <span style="color:#0f172a;">$85M</span></div>
-                    </div>
-                  </div>
+                <div id="col-strategic-projects" style="display:flex; flex-direction:column; gap:16px;">
+                  <!-- Dynamically populated -->
+                  <div style="padding:20px; text-align:center; color:#94a3b8; font-style:italic;">Loading...</div>
                 </div>
               </div>
 
-              <!-- COLUMN 3: MARKET LEADS & OPPORTUNITIES -->
+              <!-- COLUMN 3: BUSINESS LEADS -->
               <div style="display:flex; flex-direction:column; gap:24px;">
-                <div style="font-size:13px; font-weight:900; color:#f59e0b; text-transform:uppercase; letter-spacing:0.12em; display:flex; align-items:center; gap:12px;">
-                  <span style="width:8px; height:8px; border-radius:50%; background:#f59e0b;"></span>
-                  Business Leads (9)
+                <div style="font-size:13px; font-weight:900; color:#d97706; text-transform:uppercase; letter-spacing:0.12em; display:flex; align-items:center; gap:12px;">
+                  <span style="width:8px; height:8px; border-radius:50%; background:#d97706;"></span>
+                  Business Leads
                 </div>
-                <div style="display:flex; flex-direction:column; gap:16px;">
-                  <div style="background:#fff; border:1px solid #e2e8f0; border-radius:18px; padding:20px; box-shadow:0 8px 25px rgba(0,0,0,0.04); cursor:pointer; transition:all 0.3s;" onmouseover="this.style.transform='translateY(-4px)'; this.style.borderColor='#f59e0b';">
-                    <div style="display:flex; justify-content:space-between; margin-bottom:12px;">
-                      <span style="font-size:10px; font-weight:900; color:#b45309; background:#fffbeb; padding:3px 10px; border-radius:8px;">MINING</span>
-                      <span style="font-size:10px; color:#d97706; font-weight:900;"><i class="fas fa-star"></i> HIGH PRIORITY</span>
-                    </div>
-                    <h4 style="font-size:15px; font-weight:900; color:#0f172a; margin:0 0 10px; line-height:1.5;">Manicaland Lithium Fleet: Phase 1 Excavation.</h4>
-                    <div style="padding-top:12px; margin-top:12px; border-top:1px solid #f1f5f9;">
-                      <div style="font-size:11px; color:#64748b; font-weight:700; margin-bottom:4px;"><i class="fas fa-gem"></i> LITHIUM ZIMBABWE</div>
-                      <div style="font-size:10px; color:#94a3b8; font-weight:700;">RELEVANCE: <span style="color:#0f172a;">DIRECT FLEET OPPORTUNITY</span></div>
-                    </div>
-                  </div>
-                  <div style="background:#fff; border:1px solid #e2e8f0; border-radius:18px; padding:20px; box-shadow:0 8px 25px rgba(0,0,0,0.04); cursor:pointer; transition:all 0.3s;" onmouseover="this.style.transform='translateY(-4px)';">
-                    <div style="display:flex; justify-content:space-between; margin-bottom:12px;">
-                      <span style="font-size:10px; font-weight:900; color:#b45309; background:#fffbeb; padding:3px 10px; border-radius:8px;">AGRO-IND</span>
-                      <span style="font-size:10px; color:#10b981; font-weight:900;"><i class="fas fa-seedling"></i> OPEN</span>
-                    </div>
-                    <h4 style="font-size:15px; font-weight:900; color:#0f172a; margin:0 0 10px; line-height:1.5;">Middle Sabi Expansion: 20x High-HP Tractors.</h4>
-                    <div style="padding-top:12px; margin-top:12px; border-top:1px solid #f1f5f9;">
-                      <div style="font-size:11px; color:#64748b; font-weight:700; margin-bottom:4px;"><i class="fas fa-tractor"></i> ARDA ZIMBABWE</div>
-                      <div style="font-size:10px; color:#94a3b8; font-weight:700;">EST. TIMELINE: <span style="color:#0f172a;">Q3 2026</span></div>
-                    </div>
-                  </div>
+                <div id="col-business-leads" style="display:flex; flex-direction:column; gap:16px;">
+                  <!-- Dynamically populated -->
+                  <div style="padding:20px; text-align:center; color:#94a3b8; font-style:italic;">Loading...</div>
                 </div>
               </div>
 
-              <!-- COLUMN 4: MARKET INTELLIGENCE & ACTIVITY -->
+              <!-- COLUMN 4: MARKET INTELLIGENCE -->
               <div style="display:flex; flex-direction:column; gap:24px;">
                 <div style="font-size:13px; font-weight:900; color:#475569; text-transform:uppercase; letter-spacing:0.12em; display:flex; align-items:center; gap:12px;">
                   <span style="width:8px; height:8px; border-radius:50%; background:#475569;"></span>
                   Market Intelligence
                 </div>
-                <div style="background:#fff; border:1px solid #e2e8f0; border-radius:22px; padding:24px; box-shadow:0 10px 30px rgba(0,0,0,0.03); flex:1; display:flex; flex-direction:column; gap:20px;">
-                  <div>
-                    <div style="font-size:11px; font-weight:900; color:#800000; margin-bottom:8px; display:flex; align-items:center; gap:6px;">
-                      <i class="fas fa-bullhorn"></i> POLICY ALERT
-                    </div>
-                    <p style="font-size:13px; color:#334155; font-weight:600; line-height:1.6; margin:0;">Ministry of Mines confirms new procurement guidelines for PGM sector effective Q3.</p>
-                  </div>
-                  <div style="height:1px; background:#f1f5f9;"></div>
-                  <div>
-                    <div style="font-size:11px; font-weight:900; color:#2563eb; margin-bottom:8px; display:flex; align-items:center; gap:6px;">
-                      <i class="fas fa-chart-line"></i> SECTOR TREND
-                    </div>
-                    <p style="font-size:13px; color:#334155; font-weight:600; line-height:1.6; margin:0;">Heavy machinery import volumes up 14% YoY in Manicaland region.</p>
-                  </div>
-                  <div style="height:1px; background:#f1f5f9;"></div>
-                  <div style="margin-top:auto; background:#f8fafc; border-radius:14px; padding:16px;">
-                    <div style="font-size:10px; font-weight:800; color:#64748b; text-transform:uppercase; margin-bottom:4px;">Total Pipeline Value</div>
-                    <div style="font-size:24px; font-weight:950; color:#0f172a;">$142.5M</div>
-                    <div style="font-size:11px; color:#10b981; font-weight:800; margin-top:2px;">+12.4% vs Last Month</div>
-                  </div>
+                <div id="col-market-intelligence" style="display:flex; flex-direction:column; gap:16px;">
+                  <!-- Dynamically populated -->
+                  <div style="padding:20px; text-align:center; color:#94a3b8; font-style:italic;">Loading...</div>
                 </div>
               </div>
 
@@ -13181,7 +13260,7 @@
         showOnly(targetView);
         // Robust enforcement of visibility - scrollable views need block not flex
         targetView.classList.remove("hidden");
-        const scrollableViewIds = ['view-credit-terms', 'view-dashboard', 'view-tenders', 'view-orders-list', 'view-stock', 'view-group-sales-list', 'view-quotations-list', 'view-ce-list', 'view-command-center', 'view-customers-list', 'view-products-list', 'view-salestrack-reports', 'view-debug', 'view-settings', 'view-psv', 'view-cdv', 'view-marketing', 'view-training', 'view-training-library'];
+        const scrollableViewIds = ['view-credit-terms', 'view-dashboard', 'view-tenders', 'view-orders-list', 'view-stock', 'view-group-sales-list', 'view-quotations-list', 'view-ce-list', 'view-command-center', 'view-customers-list', 'view-products-list', 'view-salestrack-reports', 'view-debug', 'view-settings', 'view-user-management', 'view-psv', 'view-cdv', 'view-marketing', 'view-training', 'view-training-library'];
         if (scrollableViewIds.includes(viewId)) {
           targetView.style.setProperty("display", "block", "important");
           targetView.style.setProperty("overflow-y", "auto", "important");
@@ -13262,6 +13341,9 @@
             }, 50);
           }
         }
+      } else if (viewId === "view-user-management") {
+        if (mainTitle) mainTitle.textContent = "User Management";
+        if (mainSubtitle) mainSubtitle.textContent = "Manage user access across modules";
       } else if (viewId === "view-orders-list") {
         if (mainTitle) mainTitle.textContent = "Order Tracking";
         if (mainSubtitle) mainSubtitle.textContent = "Real-time production and logistical status monitoring.";
@@ -15173,36 +15255,33 @@
         switchToView('view-dashboard');
 
         // Update Greeting with real name
-        const dashUsername = document.getElementById("dash-username");
-        if (dashUsername) {
-          // Try to get full name, fallback to user ID
-          let fullName = user;
-          // check for common frappe locations for full name
-          if (typeof frappe !== "undefined" && frappe.boot && frappe.boot.user && frappe.boot.user.fullname) {
-            fullName = frappe.boot.user.fullname;
-          } else if (typeof frappe !== "undefined" && frappe.session && frappe.session.user_fullname) {
-            fullName = frappe.session.user_fullname;
-          }
-
-          // If it is an email, try to take only the name part
-          if (fullName.includes("@")) {
-            fullName = fullName.split("@")[0];
-          }
-
-          dashUsername.textContent = fullName;
-        }
-
         // Personalise welcome guide
-        (function() {
+        (async function() {
           let displayName = user;
-          if (typeof frappe !== 'undefined' && frappe.boot && frappe.boot.user && frappe.boot.user.fullname) {
+          
+          // Check Supabase first
+          if (window.electron && window.electron.invoke) {
+              try {
+                  const sbRes = await window.electron.invoke('supabase:getSession');
+                  if (sbRes && sbRes.ok && sbRes.session && sbRes.session.user && sbRes.session.user.user_metadata) {
+                      const meta = sbRes.session.user.user_metadata;
+                      if (meta.display_name) displayName = meta.display_name;
+                      else if (meta.full_name) displayName = meta.full_name;
+                  }
+              } catch (e) {}
+          }
+
+          if (displayName === user && typeof frappe !== 'undefined' && frappe.boot && frappe.boot.user && frappe.boot.user.fullname) {
             displayName = frappe.boot.user.fullname;
-          } else if (typeof frappe !== 'undefined' && frappe.session && frappe.session.user_fullname) {
+          } else if (displayName === user && typeof frappe !== 'undefined' && frappe.session && frappe.session.user_fullname) {
             displayName = frappe.session.user_fullname;
           }
           if (displayName.includes('@')) displayName = displayName.split('@')[0];
           // Capitalise first letter of each word
           displayName = displayName.replace(/\b\w/g, c => c.toUpperCase());
+
+          const dashUsername = document.getElementById("dash-username");
+          if (dashUsername) dashUsername.textContent = displayName;
 
           const hour = new Date().getHours();
           const timeGreeting = hour < 12 ? 'Good morning' : hour < 17 ? 'Good afternoon' : 'Good evening';
@@ -19697,6 +19776,7 @@ thead th { padding:11px 12px; font-size:10px; font-weight:800; color:#fff; text-
   <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
   <script src="certificates_logic.js?v=12"></script>
   <script src="cyber_fx.js"></script>
+  <script src="tender_hub.js?v=2"></script>
 
 
   <script>
@@ -27537,104 +27617,7 @@ Commercial Team`);
 
 <script>
     /* ---------- WHATSAPP AUTOMATION & SALES PERSONS ---------- */
-    let ALL_SALES_PERSONS = [];
 
-    async function fetchSalesPersons() {
-      try {
-        const { data, error } = await window.electron.invoke('supabase:query', {
-          table: 'omnis_sales_persons',
-          method: 'select',
-          params: { columns: '*', order: { column: 'name', ascending: true } }
-        });
-        if (error) throw error;
-        ALL_SALES_PERSONS = data || [];
-        renderSalesPersonsTable();
-      } catch (err) {
-        console.error("Error fetching sales persons:", err);
-      }
-    }
-
-    function renderSalesPersonsTable() {
-      const tbody = document.getElementById('sales-persons-table-body');
-      if (!tbody) return;
-      tbody.innerHTML = '';
-      if (ALL_SALES_PERSONS.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="5" style="padding:20px; text-align:center; color:#94a3b8;">No sales persons configured.</td></tr>';
-        return;
-      }
-
-      ALL_SALES_PERSONS.forEach(sp => {
-        const tr = document.createElement('tr');
-        tr.style.borderBottom = '1px solid #f1f5f9';
-        
-        const statusBadge = sp.is_active 
-          ? '<span style="padding:4px 8px; background:#dcfce7; color:#166534; border-radius:12px; font-size:11px; font-weight:600;">Active</span>'
-          : '<span style="padding:4px 8px; background:#f1f5f9; color:#64748b; border-radius:12px; font-size:11px; font-weight:600;">Inactive</span>';
-
-        tr.innerHTML = `
-          <td style="padding:12px; font-weight:600; color:#1e293b;">${sp.name}</td>
-          <td style="padding:12px; color:#475569;">${sp.email || '-'}</td>
-          <td style="padding:12px; color:#475569; font-family:monospace;">${sp.whatsapp_number || '-'}</td>
-          <td style="padding:12px;">${statusBadge}</td>
-          <td style="padding:12px; text-align:right;">
-            <button onclick='editSalesPerson(${JSON.stringify(sp).replace(/'/g, "&#39;")})' style="background:transparent; border:none; color:#3b82f6; cursor:pointer; padding:4px 8px;"><i class="fas fa-edit"></i> Edit</button>
-          </td>
-        `;
-        tbody.appendChild(tr);
-      });
-    }
-
-    function openAddSalesPersonModal() {
-      document.getElementById('sp-modal-title').textContent = 'Add Sales Person';
-      document.getElementById('sp-id').value = '';
-      document.getElementById('sp-name').value = '';
-      document.getElementById('sp-email').value = '';
-      document.getElementById('sp-phone').value = '';
-      document.getElementById('sp-active').checked = true;
-      document.getElementById('sales-person-modal').style.display = 'flex';
-    }
-
-    function editSalesPerson(sp) {
-      document.getElementById('sp-modal-title').textContent = 'Edit Sales Person';
-      document.getElementById('sp-id').value = sp.id;
-      document.getElementById('sp-name').value = sp.name;
-      document.getElementById('sp-email').value = sp.email || '';
-      document.getElementById('sp-phone').value = sp.whatsapp_number || '';
-      document.getElementById('sp-active').checked = sp.is_active;
-      document.getElementById('sales-person-modal').style.display = 'flex';
-    }
-
-    function closeSalesPersonModal() {
-      document.getElementById('sales-person-modal').style.display = 'none';
-    }
-
-    async function saveSalesPerson() {
-      const id = document.getElementById('sp-id').value;
-      const name = document.getElementById('sp-name').value.trim();
-      const email = document.getElementById('sp-email').value.trim();
-      const whatsapp_number = document.getElementById('sp-phone').value.trim();
-      const is_active = document.getElementById('sp-active').checked;
-
-      if (!name) { alert('Name is required'); return; }
-
-      const payload = { name, email, whatsapp_number, is_active };
-      if (id) payload.id = parseInt(id);
-
-      try {
-        const { error } = await window.electron.invoke('supabase:query', {
-          table: 'omnis_sales_persons',
-          method: 'upsert',
-          data: payload
-        });
-        if (error) throw error;
-        alert('Sales Person saved successfully');
-        closeSalesPersonModal();
-        fetchSalesPersons();
-      } catch (err) {
-        console.error("Failed to save sales person", err);
-        alert('Failed to save: ' + (err.message || err));
-      }
-    }
 
     function startWhatsAppAutomatedDispatcher() {
       setInterval(async () => {
@@ -27702,43 +27685,10 @@ Commercial Team`);
       } catch (err) {
         console.error("[WhatsApp Automation] Error running dispatch:", err);
       }
+    function startWhatsAppAutomatedDispatcher() {
+        // Obsolete function, logic removed.
     }
-
-    setTimeout(() => fetchSalesPersons(), 2000);
 </script>
-
-  <!-- ADD/EDIT SALES PERSON MODAL -->
-  <div id="sales-person-modal" class="modal-overlay" style="display:none; position:fixed; inset:0; background:rgba(15,23,42,0.6); z-index:9999; align-items:center; justify-content:center; backdrop-filter:blur(4px);">
-    <div style="background:#fff; width:100%; max-width:400px; border-radius:16px; box-shadow:0 20px 25px -5px rgba(0,0,0,0.1), 0 10px 10px -5px rgba(0,0,0,0.04); overflow:hidden;">
-      <div style="padding:20px 24px; border-bottom:1px solid #e2e8f0; display:flex; justify-content:space-between; align-items:center; background:#f8fafc;">
-        <h3 id="sp-modal-title" style="margin:0; font-size:16px; font-weight:700; color:#0f172a;">Add Sales Person</h3>
-        <button onclick="closeSalesPersonModal()" style="background:transparent; border:none; color:#64748b; cursor:pointer; padding:4px;"><i class="fas fa-times"></i></button>
-      </div>
-      <div style="padding:24px;">
-        <input type="hidden" id="sp-id">
-        <div style="margin-bottom:16px;">
-          <label style="display:block; font-size:12px; font-weight:600; color:#475569; margin-bottom:6px;">Full Name</label>
-          <input type="text" id="sp-name" placeholder="e.g. Mathew Ferreira" style="width:100%; box-sizing:border-box; padding:10px 12px; border:1px solid #cbd5e1; border-radius:8px; font-size:14px; outline:none;">
-        </div>
-        <div style="margin-bottom:16px;">
-          <label style="display:block; font-size:12px; font-weight:600; color:#475569; margin-bottom:6px;">Email Address</label>
-          <input type="email" id="sp-email" placeholder="antony@example.com" style="width:100%; box-sizing:border-box; padding:10px 12px; border:1px solid #cbd5e1; border-radius:8px; font-size:14px; outline:none;">
-        </div>
-        <div style="margin-bottom:16px;">
-          <label style="display:block; font-size:12px; font-weight:600; color:#475569; margin-bottom:6px;">WhatsApp Number</label>
-          <input type="text" id="sp-phone" placeholder="e.g. 263772000000" style="width:100%; box-sizing:border-box; padding:10px 12px; border:1px solid #cbd5e1; border-radius:8px; font-size:14px; outline:none;">
-          <p style="font-size:11px; color:#94a3b8; margin:4px 0 0 0;">Include country code without '+', e.g. 26377...</p>
-        </div>
-        <div style="margin-bottom:20px;">
-          <label style="display:flex; align-items:center; gap:8px; cursor:pointer;">
-            <input type="checkbox" id="sp-active" checked>
-            <span style="font-size:13px; font-weight:600; color:#334155;">Active Account</span>
-          </label>
-        </div>
-        <button onclick="saveSalesPerson()" style="width:100%; padding:12px; background:#2563eb; color:#fff; border:none; border-radius:8px; font-weight:600; font-size:14px; cursor:pointer;">Save Details</button>
-      </div>
-    </div>
-  </div>
 
 
 

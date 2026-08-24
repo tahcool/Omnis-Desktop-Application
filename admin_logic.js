@@ -98,7 +98,8 @@ document.addEventListener('DOMContentLoaded', () => {
          return;
       }
       
-      tbody.innerHTML = res.users.map(u => {
+      window.activeUsers = res.users;
+      tbody.innerHTML = res.users.map((u, index) => {
         const roleHtml = u.is_admin 
           ? '<span class="pill admin">Admin</span>' 
           : '<span class="pill">Standard</span>';
@@ -113,7 +114,7 @@ document.addEventListener('DOMContentLoaded', () => {
             <td>${roleHtml}</td>
             <td>${sysHtml}</td>
             <td>
-              <button class="btn secondary" style="padding:4px 8px; font-size:11px;" onclick="alert('Edit user coming soon!')">Edit</button>
+              <button class="btn secondary" style="padding:4px 8px; font-size:11px;" onclick="window.editUser(${index})">Edit</button>
             </td>
           </tr>
         `;
@@ -168,6 +169,68 @@ document.addEventListener('DOMContentLoaded', () => {
       statusCreate.textContent = 'Error: ' + err.message;
     } finally {
       btnCreate.disabled = false;
+    }
+  });
+
+  // Edit User Modal Logic
+  const editModal = document.getElementById('edit-user-modal');
+  const btnCloseEditModal = document.getElementById('btn-close-edit-modal');
+  const btnCancelEdit = document.getElementById('btn-cancel-edit');
+  const btnSaveEdit = document.getElementById('btn-save-edit');
+  const statusEdit = document.getElementById('edit-user-status');
+  
+  function closeEditModal() {
+    editModal.classList.remove('active');
+    statusEdit.textContent = '';
+  }
+
+  btnCloseEditModal.addEventListener('click', closeEditModal);
+  btnCancelEdit.addEventListener('click', closeEditModal);
+
+  window.editUser = function(index) {
+    if (!window.activeUsers || !window.activeUsers[index]) return;
+    const user = window.activeUsers[index];
+    
+    document.getElementById('edit-user-id').value = user.id;
+    document.getElementById('edit-user-email').value = user.email;
+    document.getElementById('edit-user-admin').checked = !!user.is_admin;
+    
+    document.querySelectorAll('#edit-system-checkboxes input[type="checkbox"]').forEach(c => {
+      c.checked = user.systems && user.systems.includes(c.value);
+    });
+    
+    statusEdit.textContent = '';
+    editModal.classList.add('active');
+  };
+
+  btnSaveEdit.addEventListener('click', async () => {
+    const userId = document.getElementById('edit-user-id').value;
+    if (!userId) return;
+    
+    const isAdmin = document.getElementById('edit-user-admin').checked;
+    const checkboxes = document.querySelectorAll('#edit-system-checkboxes input[type="checkbox"]:checked');
+    const systems = Array.from(checkboxes).map(c => c.value);
+    
+    btnSaveEdit.disabled = true;
+    statusEdit.style.color = 'var(--text-muted)';
+    statusEdit.textContent = 'Saving changes...';
+    
+    try {
+      const res = await window.electron.invoke('supabase:updateUserAccess', { user_id: userId, is_admin: isAdmin, systems });
+      if (!res.ok) throw new Error(res.error || 'Failed to update user');
+      
+      statusEdit.style.color = '#10b981';
+      statusEdit.textContent = 'Changes saved successfully!';
+      
+      setTimeout(() => {
+        closeEditModal();
+        loadUsers();
+      }, 1000);
+    } catch(err) {
+      statusEdit.style.color = 'var(--primary)';
+      statusEdit.textContent = 'Error: ' + err.message;
+    } finally {
+      btnSaveEdit.disabled = false;
     }
   });
 

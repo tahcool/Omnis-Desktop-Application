@@ -1221,7 +1221,11 @@ ipcMain.handle('supabase:getSession', async () => {
     return {
       ok: true,
       session: {
-        user: { id: data.session.user.id, email: data.session.user.email },
+        user: { 
+          id: data.session.user.id, 
+          email: data.session.user.email,
+          user_metadata: data.session.user.user_metadata
+        },
         access_token: data.session.access_token,
         expires_at: data.session.expires_at,
       }
@@ -1236,6 +1240,46 @@ ipcMain.handle('supabase:resetPwd', async (event, { email }) => {
     const { error } = await supabase.auth.resetPasswordForEmail(email);
     if (error) return { ok: false, error: error.message };
     return { ok: true };
+  } catch (e) {
+    return { ok: false, error: e.message };
+  }
+});
+
+ipcMain.handle('supabase:updateUser', async (event, updates) => {
+  try {
+    const { data, error } = await supabase.auth.updateUser(updates);
+    if (error) return { ok: false, error: error.message };
+    return { ok: true, data };
+  } catch (e) {
+    return { ok: false, error: e.message };
+  }
+});
+
+ipcMain.handle('supabase:enrollMfa', async () => {
+  try {
+    const { data, error } = await supabase.auth.mfa.enroll({ factorType: 'totp' });
+    if (error) return { ok: false, error: error.message };
+    return { ok: true, data };
+  } catch (e) {
+    return { ok: false, error: e.message };
+  }
+});
+
+ipcMain.handle('supabase:challengeMfa', async (event, { factorId }) => {
+  try {
+    const { data, error } = await supabase.auth.mfa.challenge({ factorId });
+    if (error) return { ok: false, error: error.message };
+    return { ok: true, data };
+  } catch (e) {
+    return { ok: false, error: e.message };
+  }
+});
+
+ipcMain.handle('supabase:verifyMfa', async (event, { factorId, challengeId, code }) => {
+  try {
+    const { data, error } = await supabase.auth.mfa.verify({ factorId, challengeId, code });
+    if (error) return { ok: false, error: error.message };
+    return { ok: true, data };
   } catch (e) {
     return { ok: false, error: e.message };
   }

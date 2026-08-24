@@ -462,3 +462,6 @@
   Files: .mcp/knowledge/_shared/commit_log.md,release_notes_v4.3.3.md,
 - `2661536` 2026-08-21 [supabase-migration] v4.3.3
   Files: package-lock.json,package.json,
+\n## 2026-08-24
+- `a0b5fef` 2026-08-24 [supabase-migration] Restore point: UI styling updates for Certificates and OEM intelligence
+  Files: .mcp/knowledge/_shared/commit_log.md,omnis_dashboard.py,systems/salestrack/certificates_logic.js,systems/salestrack/index.html,systems/salestrack/temp_marketing_check.html,

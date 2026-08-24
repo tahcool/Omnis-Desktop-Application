@@ -586,6 +586,47 @@ server.tool(
   }
 );
 
+// ═══════════════════════════════════════════════════════════════════════════
+// TOOL: create_release
+// Bumps version, updates release notes in Supabase, and commits the release
+// ═══════════════════════════════════════════════════════════════════════════
+server.tool(
+  'create_release',
+  'Creates a new release by bumping the version in package.json, updating the release notes in Supabase, and committing/tagging via git.',
+  {
+    version: z.string().describe('The new version string (e.g. "4.3.4")'),
+    notes: z.string().describe('The markdown release notes content to be saved to Supabase'),
+  },
+  async ({ version, notes }) => {
+    try {
+      // 1. Bump package.json
+      const pkgPath = path.join(ROOT, 'package.json');
+      const pkgRaw = fs.readFileSync(pkgPath, 'utf8');
+      const pkg = JSON.parse(pkgRaw);
+      pkg.version = version.replace(/^v/, '');
+      fs.writeFileSync(pkgPath, JSON.stringify(pkg, null, 2) + '\n', 'utf8');
+
+      // 2. Update Supabase
+      const cleanVersion = 'v' + pkg.version;
+      const { error } = await sb
+        .from('omnis_release_notes')
+        .upsert({ version: cleanVersion, notes: notes }, { onConflict: 'version' });
+        
+      if (error) {
+        throw new Error('Supabase error: ' + error.message);
+      }
+
+      // 3. Git commit and tag
+      execSync(`git add package.json && git commit -m "chore: bump version to ${cleanVersion}"`, { cwd: ROOT, encoding: 'utf8' });
+      execSync(`git tag -a ${cleanVersion} -m "Release ${cleanVersion}"`, { cwd: ROOT, encoding: 'utf8' });
+
+      return { content: [{ type: 'text', text: `✅ Successfully created release ${cleanVersion}, updated package.json, and published notes to Supabase.` }] };
+    } catch (e) {
+      return { content: [{ type: 'text', text: `Error creating release: ${e.message}` }] };
+    }
+  }
+);
+
 const transport = new StdioServerTransport();
 await server.connect(transport);
 console.error('[Omnis MCP] Server running');

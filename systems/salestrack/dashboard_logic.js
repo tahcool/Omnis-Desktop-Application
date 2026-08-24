@@ -2089,7 +2089,11 @@ window.OmnisDashboardV6 = class OmnisDashboardV6 {
 
         try {
             const reqData = { period: periodText, company: companyText };
-            const res = await window.callFrappeSequenced(this.sys.baseUrl, "powerstar_salestrack.omnis_dashboard.get_mer_report_data", reqData);
+            const [res, stockRes, mappingsRes] = await Promise.all([
+                window.callFrappeSequenced(this.sys.baseUrl, "powerstar_salestrack.omnis_dashboard.get_mer_report_data", reqData),
+                window.electron.invoke('supabase:query', { table: 'stock_inventory', method: 'select' }),
+                window.electron.invoke('supabase:query', { table: 'stock_company_mappings', method: 'select' })
+            ]);
 
             if (this._activeModalSession !== currentSession) return;
 
@@ -2111,6 +2115,98 @@ window.OmnisDashboardV6 = class OmnisDashboardV6 {
             } else if (companyText === 'Machinery Exchange') {
                 logoHtml = `<img src="file:///C:/Users/Administrator/omnis/assets/images/MXG Logo.png" style="height:110px;" alt="MXG Logo">`;
             }
+
+            const allStock = stockRes.data || [];
+            const mappings = mappingsRes.data || [];
+            
+            const today = new Date();
+            today.setHours(0,0,0,0);
+            const parseDate = (dStr) => {
+                if (!dStr || dStr === '-' || dStr === '0000-00-00') return null;
+                const d = new Date(dStr);
+                return isNaN(d.getTime()) ? null : d;
+            };
+
+            let filteredStock = allStock.map(s => {
+                const dProd = parseDate(s.prod_date);
+                const dShip = parseDate(s.ship_date);
+                const dDurban = parseDate(s.eta_durban);
+                const dBeira = parseDate(s.eta_beira);
+                const dHarare = parseDate(s.eta_harare);
+
+                let statusText = "OTHER";
+                if (dHarare && dHarare <= today) {
+                    statusText = "STOCK ON HAND";
+                } else if (dBeira && dBeira <= today && (!dHarare || dHarare > today)) {
+                    statusText = "EN ROUTE FROM BEIRA";
+                } else if (dDurban && dDurban <= today && (!dBeira || dBeira > today)) {
+                    statusText = "EN ROUTE FROM DURBAN";
+                } else if (dShip && dShip <= today && ((dBeira && dBeira > today) || (dDurban && dDurban > today))) {
+                    statusText = "IN TRANSIT (SHIPPED)";
+                } else if (dShip && dShip > today) {
+                    statusText = "ARRANGING SHIPPING";
+                } else if (dProd && dProd > today) {
+                    statusText = "IN PRODUCTION";
+                }
+                
+                s.statusText = statusText;
+                s.sortEta = dHarare || dBeira || dDurban || dShip || dProd;
+                return s;
+            }).filter(s => {
+                const qty = s.actual_qty || 0;
+                const propQty = s.proposed_qty || 0;
+                if (qty === 0 && propQty === 0) return false;
+                if (!s.model) return false;
+                return true;
+            });
+
+            if (companyText !== 'All') {
+                const allowedBrands = mappings.filter(m => m.company === companyText).map(m => m.brand);
+                filteredStock = filteredStock.filter(s => allowedBrands.includes(s.brand));
+            }
+
+            filteredStock.sort((a, b) => {
+                if (!a.sortEta && !b.sortEta) return 0;
+                if (!a.sortEta) return 1;
+                if (!b.sortEta) return -1;
+                return a.sortEta.getTime() - b.sortEta.getTime();
+            });
+
+            let stockHtml = `
+                <div class="mer-page">
+                    <div class="mer-header">
+                        ${logoHtml}
+                        <div style="text-align:right;">
+                            <div class="mer-title">STOCK PIPELINE</div>
+                            <div class="mer-subtitle">CURRENT INVENTORY & TRANSIT STATUS</div>
+                        </div>
+                    </div>
+                    <table class="mer-table">
+                        <thead>
+                            <tr>
+                                <th>Brand</th>
+                                <th>Model</th>
+                                <th style="text-align:center;">Qty</th>
+                                <th>Status</th>
+                                <th>ETA</th>
+                                <th>Contract</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${filteredStock.length === 0 ? `<tr><td colspan="6" style="text-align:center;">No active stock pipeline items found.</td></tr>` : filteredStock.map(s => `
+                                <tr>
+                                    <td style="font-weight:700;">${s.brand || '-'}</td>
+                                    <td>${s.model || '-'}</td>
+                                    <td style="text-align:center; font-weight:800;">${s.actual_qty || s.proposed_qty || '-'}</td>
+                                    <td style="font-weight:600; color:#0f172a;">${s.statusText || '-'}</td>
+                                    <td style="font-weight:700; color:#2563eb;">${s.sortEta ? s.sortEta.toLocaleDateString() : 'TBD'}</td>
+                                    <td style="font-size:11px; color:#475569;">${s.contract_name || '-'}</td>
+                                </tr>
+                            `).join('')}
+                        </tbody>
+                    </table>
+                </div>
+            `;
 
             const renderOEMTable = (title, rawData, accentColor) => {
                 if (!rawData || rawData.length === 0) return "";
@@ -2527,6 +2623,8 @@ window.OmnisDashboardV6 = class OmnisDashboardV6 {
                             </table>
                         </div>
                     `).join('')}
+
+                    ${stockHtml}
 
                     <div class="no-print" style="position: sticky; bottom: 0; background: #f8fafc; padding: 20px 0; border-top: 1px solid #e2e8f0; width: 100%; display: flex; justify-content: center; gap: 15px; align-items: center; z-index: 10;">
                         <span id="mer-page-indicator" style="background:#f1f5f9; padding:12px 20px; border-radius:99px; font-weight:800; font-size:14px; box-shadow:0 10px 20px rgba(0,0,0,0.1); border:1px solid #cbd5e1; color:#334155;">Page 1</span>
@@ -7849,6 +7947,148 @@ window.OmnisDashboardV6 = class OmnisDashboardV6 {
         }
     }
 
+    /* ---------- USER & ACCESS MANAGEMENT ---------- */
+    async loadTeamUsers() {
+        try {
+            const tbody = document.getElementById('team-users-table-body');
+            if (tbody) tbody.innerHTML = '<tr><td colspan="4" style="padding:20px; text-align:center;"><i class="fas fa-spinner fa-spin"></i> Loading users...</td></tr>';
+            
+            const res = await window.electron.invoke('supabase:getUsers');
+            if (!res.ok) {
+                if (tbody) tbody.innerHTML = `<tr><td colspan="4" style="padding:20px; text-align:center; color:red;">Error: ${res.error}</td></tr>`;
+                return;
+            }
+            this.renderTeamUsers(res.users || []);
+        } catch (e) {
+            console.error("Failed to load team users", e);
+        }
+    }
+
+    renderTeamUsers(users) {
+        const tbody = document.getElementById('team-users-table-body');
+        if (!tbody) return;
+        tbody.innerHTML = '';
+        
+        if (users.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="4" style="padding:20px; text-align:center; color:#64748b;">No users found.</td></tr>';
+            return;
+        }
+
+        users.forEach(u => {
+            const tr = document.createElement('tr');
+            tr.style.borderBottom = '1px solid #f1f5f9';
+            
+            const roleBadge = u.is_admin 
+                ? '<span style="padding:4px 8px; background:#fef2f2; color:#991b1b; border-radius:12px; font-size:11px; font-weight:700;"><i class="fas fa-crown"></i> Admin</span>'
+                : '<span style="padding:4px 8px; background:#f0fdf4; color:#166534; border-radius:12px; font-size:11px; font-weight:600;">Standard User</span>';
+                
+            let systemsHTML = '';
+            if (u.is_admin) {
+                systemsHTML = '<span style="color:#64748b; font-size:12px; font-style:italic;">All Systems</span>';
+            } else if (u.systems && u.systems.length > 0) {
+                systemsHTML = u.systems.map(s => `<span style="display:inline-block; margin:2px; padding:2px 6px; background:#e2e8f0; color:#334155; border-radius:4px; font-size:11px;">${s}</span>`).join('');
+            } else {
+                systemsHTML = '<span style="color:#94a3b8; font-size:12px;">No Access</span>';
+            }
+
+            tr.innerHTML = `
+                <td style="padding:12px; font-weight:600; color:#1e293b;">${u.email}</td>
+                <td style="padding:12px;">${roleBadge}</td>
+                <td style="padding:12px; max-width:200px;">${systemsHTML}</td>
+                <td style="padding:12px; text-align:right;">
+                    <button onclick='salestrack.editUser(${JSON.stringify(u).replace(/'/g, "&#39;")})' style="background:transparent; border:none; color:#3b82f6; cursor:pointer; padding:4px 8px; font-weight:600;"><i class="fas fa-edit"></i> Edit</button>
+                </td>
+            `;
+            tbody.appendChild(tr);
+        });
+    }
+
+    openCreateUserModal() {
+        document.getElementById('ou-modal-title').textContent = 'Create New User';
+        document.getElementById('ou-id').value = '';
+        document.getElementById('ou-email').value = '';
+        document.getElementById('ou-email').disabled = false;
+        document.getElementById('ou-password').value = '';
+        document.getElementById('ou-password-group').style.display = 'block';
+        document.getElementById('ou-is-admin').checked = false;
+        
+        document.querySelectorAll('.ou-sys-cb').forEach(cb => { cb.checked = false; cb.disabled = false; });
+        document.getElementById('omnis-user-modal').style.display = 'flex';
+    }
+
+    editUser(u) {
+        document.getElementById('ou-modal-title').textContent = 'Edit User Access';
+        document.getElementById('ou-id').value = u.id;
+        document.getElementById('ou-email').value = u.email;
+        document.getElementById('ou-email').disabled = true; // Can't edit email easily
+        document.getElementById('ou-password-group').style.display = 'none'; // Don't show password for edit
+        document.getElementById('ou-is-admin').checked = !!u.is_admin;
+        
+        document.querySelectorAll('.ou-sys-cb').forEach(cb => {
+            cb.checked = (u.systems || []).includes(cb.value);
+            cb.disabled = !!u.is_admin;
+        });
+        
+        document.getElementById('omnis-user-modal').style.display = 'flex';
+    }
+
+    closeUserModal() {
+        document.getElementById('omnis-user-modal').style.display = 'none';
+    }
+
+    toggleAdminCheck() {
+        const isAdmin = document.getElementById('ou-is-admin').checked;
+        document.querySelectorAll('.ou-sys-cb').forEach(cb => {
+            cb.disabled = isAdmin;
+            if (isAdmin) cb.checked = true;
+        });
+    }
+
+    async saveUser() {
+        const id = document.getElementById('ou-id').value;
+        const email = document.getElementById('ou-email').value.trim();
+        const pwd = document.getElementById('ou-password').value;
+        const isAdmin = document.getElementById('ou-is-admin').checked;
+        
+        let systems = [];
+        document.querySelectorAll('.ou-sys-cb').forEach(cb => {
+            if (cb.checked) systems.push(cb.value);
+        });
+
+        if (!email) { this.showToast("Email is required", "error"); return; }
+
+        this.showToast("Saving user data...", "info");
+
+        try {
+            if (!id) {
+                // Create New User
+                if (!pwd) { this.showToast("Password is required for new users", "error"); return; }
+                const res = await window.electron.invoke('supabase:createUser', {
+                    email: email,
+                    password: pwd,
+                    is_admin: isAdmin,
+                    systems: systems
+                });
+                if (!res.ok) throw new Error(res.error);
+            } else {
+                // Update Existing User Access via Direct SQL (or API)
+                const res = await window.electron.invoke('supabase:updateUserAccess', {
+                    user_id: id,
+                    is_admin: isAdmin,
+                    systems: systems
+                });
+                if (!res.ok) throw new Error(res.error);
+            }
+            
+            this.showToast("User saved successfully!", "success");
+            this.closeUserModal();
+            this.loadTeamUsers();
+        } catch (e) {
+            console.error("Save user error", e);
+            this.showToast("Failed to save user: " + e.message, "error");
+        }
+    }
+
     async initWhatsAppUpdate(reportId, machineId) {
         if (!window.electron) {
             console.error("WhatsApp built-in requires Desktop environment");
@@ -8781,23 +9021,41 @@ window.OmnisDashboardV6 = class OmnisDashboardV6 {
         if (!container) return;
 
         try {
-            // Fetch relative to app root
-            const response = await fetch('../../RELEASE_NOTES.md');
-            if (!response.ok) throw new Error("Stream unreachable");
-
-            const text = await response.text();
+            let text = "";
+            // Fetch from Supabase
+            if (window.electron && window.electron.invoke) {
+                const res = await window.electron.invoke('supabase:query', {
+                    table: 'omnis_release_notes',
+                    method: 'select',
+                    params: { order: { column: 'created_at', options: { ascending: false } }, limit: 1 }
+                });
+                if (res && res.data && res.data.length > 0) {
+                    text = res.data[0].notes;
+                    
+                    // Update version label in UI if possible
+                    if (res.data[0].version) {
+                        const vLabel = document.querySelector('.dash-card .fa-cloud-download-alt')?.parentElement?.nextElementSibling?.querySelector('div:nth-child(2)');
+                        if(vLabel) vLabel.innerText = `Version ${res.data[0].version}`;
+                    }
+                } else {
+                    throw new Error("No release notes found in database.");
+                }
+            } else {
+                throw new Error("IPC not available");
+            }
 
             // Extract "What's New" section
             const startMarker = "## 🚀 What's New";
             const endMarker = "---";
 
+            let relevantContent = text;
             const startIndex = text.indexOf(startMarker);
-            if (startIndex === -1) throw new Error("Changelog format mismatch");
-
-            let relevantContent = text.substring(startIndex + startMarker.length);
-            const endIndex = relevantContent.indexOf(endMarker);
-            if (endIndex !== -1) {
-                relevantContent = relevantContent.substring(0, endIndex);
+            if (startIndex !== -1) {
+                relevantContent = text.substring(startIndex + startMarker.length);
+                const endIndex = relevantContent.indexOf(endMarker);
+                if (endIndex !== -1) {
+                    relevantContent = relevantContent.substring(0, endIndex);
+                }
             }
 
             // Simple parser for markdown-ish lines
@@ -8809,8 +9067,8 @@ window.OmnisDashboardV6 = class OmnisDashboardV6 {
                 if (trimmed.startsWith('###')) {
                     const title = trimmed.replace('###', '').trim();
                     html += `<div style="font-size:12px; font-weight:850; color:#0f172a; margin-top:8px; border-left:3px solid #2563eb; padding-left:8px; text-transform:uppercase; letter-spacing:0.5px;">${title}</div>`;
-                } else if (trimmed.startsWith('*')) {
-                    const content = trimmed.replace('*', '').trim();
+                } else if (trimmed.startsWith('*') || trimmed.startsWith('-')) {
+                    const content = trimmed.replace(/^[\*-]/, '').trim();
                     // Basic bold parsing
                     const boldContent = content.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
                     html += `
@@ -9137,7 +9395,11 @@ window.OmnisDashboardV6 = class OmnisDashboardV6 {
                 btn.style.color = '#64748b';
                 btn.style.boxShadow = 'none';
             }
-        });
+            // 3. Optional hooks
+        if (tabId === 'security') {
+            this.loadProfile();
+        }
+    });
 
         if (window.omnisLog) window.omnisLog(`[Settings] Switched to tab: ${tabId.toUpperCase()}`);
 
@@ -9188,10 +9450,119 @@ window.OmnisDashboardV6 = class OmnisDashboardV6 {
         }, this.IDLE_TIMEOUT);
     }
 
+    async changePassword() {
+        const oldPwd = document.getElementById('sec-old-pwd').value;
+        const newPwd = document.getElementById('sec-new-pwd').value;
+        const confirmPwd = document.getElementById('sec-confirm-pwd').value;
+
+        if (!newPwd || !confirmPwd) {
+            this.showToast("Please enter and confirm your new password.", "error");
+            return;
+        }
+
+        if (newPwd !== confirmPwd) {
+            this.showToast("New passwords do not match.", "error");
+            return;
+        }
+
+        if (newPwd.length < 6) {
+            this.showToast("Password must be at least 6 characters.", "error");
+            return;
+        }
+
+        try {
+            if (!window.electron || !window.electron.invoke) throw new Error("Environment not supported");
+            this.showToast("Updating password...", "info");
+            
+            const res = await window.electron.invoke('supabase:updateUser', { password: newPwd });
+            if (res.ok) {
+                this.showToast("Password successfully updated!", "success");
+                document.getElementById('sec-old-pwd').value = "";
+                document.getElementById('sec-new-pwd').value = "";
+                document.getElementById('sec-confirm-pwd').value = "";
+            } else {
+                this.showToast("Failed to update password: " + (res.error || "Unknown error"), "error");
+            }
+        } catch (err) {
+            this.showToast("Error updating password.", "error");
+            console.error(err);
+        }
+    }
+
+    async startMfaEnrollment() {
+        try {
+            if (!window.electron || !window.electron.invoke) throw new Error("Environment not supported");
+            this.showToast("Initializing Two-Step Auth...", "info");
+            
+            const res = await window.electron.invoke('supabase:enrollMfa');
+            if (res.ok && res.data && res.data.totp) {
+                this.mfaFactorId = res.data.id;
+                
+                document.getElementById('mfa-action-container').style.display = 'none';
+                document.getElementById('mfa-setup-container').style.display = 'flex';
+                
+                // Display SVG QR code returned by Supabase
+                const qrContainer = document.getElementById('mfa-qr-code');
+                qrContainer.innerHTML = res.data.totp.qr_code;
+                
+                this.showToast("Scan the QR code with your authenticator app.", "success");
+            } else {
+                this.showToast("Failed to start MFA setup: " + (res.error || "Unknown error"), "error");
+            }
+        } catch (err) {
+            this.showToast("Error initializing MFA.", "error");
+            console.error(err);
+        }
+    }
+
+    async verifyMfaCode() {
+        const code = document.getElementById('mfa-verify-code').value;
+        if (!code || code.length !== 6) {
+            this.showToast("Please enter the 6-digit code.", "error");
+            return;
+        }
+
+        if (!this.mfaFactorId) {
+            this.showToast("MFA Factor ID missing. Please restart setup.", "error");
+            return;
+        }
+
+        try {
+            this.showToast("Verifying code...", "info");
+            
+            // 1. Challenge
+            const challengeRes = await window.electron.invoke('supabase:challengeMfa', { factorId: this.mfaFactorId });
+            if (!challengeRes.ok) throw new Error(challengeRes.error || "Failed to challenge MFA");
+            
+            // 2. Verify
+            const verifyRes = await window.electron.invoke('supabase:verifyMfa', { 
+                factorId: this.mfaFactorId, 
+                challengeId: challengeRes.data.id, 
+                code 
+            });
+            
+            if (verifyRes.ok) {
+                this.showToast("Two-Step Auth successfully enabled!", "success");
+                document.getElementById('mfa-setup-container').style.display = 'none';
+                document.getElementById('mfa-action-container').innerHTML = `
+                    <div style="background:#dcfce7; color:#166534; padding:12px; border-radius:8px; font-weight:700; text-align:center;">
+                        <i class="fas fa-check-circle"></i> Two-Step Auth is Enabled
+                    </div>
+                `;
+                document.getElementById('mfa-action-container').style.display = 'block';
+            } else {
+                this.showToast("Invalid code. Please try again.", "error");
+            }
+        } catch (err) {
+            this.showToast("Verification failed: " + err.message, "error");
+            console.error(err);
+        }
+    }
+
     showInactivityWarning() {
         const overlay = document.getElementById('inactivity-warning-overlay');
         if (overlay) overlay.classList.remove('hidden');
-
+        
         let secondsLeft = 60;
         const countdownEl = document.getElementById('inactivity-countdown');
         if (countdownEl) countdownEl.innerText = secondsLeft;
@@ -9205,47 +9576,160 @@ window.OmnisDashboardV6 = class OmnisDashboardV6 {
         }, 1000);
     }
 
+    async loadProfile() {
+        try {
+            if (!window.electron || !window.electron.invoke) return;
+            const res = await window.electron.invoke('supabase:getSession');
+            if (res && res.ok && res.session && res.session.user) {
+                const metadata = res.session.user.user_metadata || {};
+                
+                const displayNameInput = document.getElementById('sec-display-name');
+                const emailInput = document.getElementById('sec-email');
+                const avatarPreview = document.getElementById('sec-avatar-preview');
+                const dashAvatar = document.getElementById('dash-user-avatar'); // generic if exists
+                
+                if (displayNameInput) displayNameInput.value = metadata.display_name || metadata.full_name || "";
+                if (emailInput) emailInput.value = res.session.user.email || "";
+
+                if (metadata.avatar_url) {
+                    if (avatarPreview) {
+                        avatarPreview.style.backgroundImage = `url('${metadata.avatar_url}')`;
+                        avatarPreview.style.backgroundSize = "cover";
+                    }
+                    if (dashAvatar) dashAvatar.src = metadata.avatar_url;
+                    
+                    // Specific to Salestrack's greeting component
+                    const profileImg = document.getElementById('profile-avatar-img');
+                    const profileLetter = document.getElementById('profile-avatar-letter');
+                    if (profileImg && profileLetter) {
+                        profileImg.src = metadata.avatar_url;
+                        profileImg.style.display = 'block';
+                        profileLetter.style.display = 'none';
+                    }
+                }
+
+                // Add preview listener for file input
+                const fileInput = document.getElementById('sec-avatar-file');
+                if (fileInput) {
+                    fileInput.onchange = (e) => {
+                        const file = e.target.files[0];
+                        if (file && avatarPreview) {
+                            const reader = new FileReader();
+                            reader.onload = (e) => {
+                                avatarPreview.style.backgroundImage = `url('${e.target.result}')`;
+                            };
+                            reader.readAsDataURL(file);
+                        }
+                    };
+                }
+            }
+        } catch (e) {
+            console.error("Failed to load profile", e);
+        }
+    }
+
+    async updateProfile() {
+        const displayName = document.getElementById('sec-display-name').value.trim();
+        const email = document.getElementById('sec-email').value.trim();
+        const fileInput = document.getElementById('sec-avatar-file');
+
+        if (!displayName) {
+            this.showToast("Display name cannot be empty.", "error");
+            return;
+        }
+        
+        if (!email) {
+            this.showToast("Email address cannot be empty.", "error");
+            return;
+        }
+
+        try {
+            if (!window.electron || !window.electron.invoke) throw new Error("Environment not supported");
+            this.showToast("Saving profile...", "info");
+            
+            let avatarUrl = null;
+
+            if (fileInput && fileInput.files.length > 0) {
+                const file = fileInput.files[0];
+                const reader = new FileReader();
+                const base64Promise = new Promise((resolve, reject) => {
+                    reader.onload = () => resolve(reader.result.split(',')[1]);
+                    reader.onerror = error => reject(error);
+                });
+                reader.readAsDataURL(file);
+                
+                const base64Data = await base64Promise;
+                const path = `user_${Date.now()}_${file.name}`;
+                
+                const uploadRes = await window.electron.invoke('storage:upload', {
+                    bucket: 'avatars',
+                    path: path,
+                    base64Data: base64Data,
+                    contentType: file.type
+                });
+
+                if (uploadRes.ok) {
+                    avatarUrl = uploadRes.url;
+                } else {
+                    console.error("Failed to upload avatar", uploadRes.error);
+                    this.showToast("Failed to upload profile picture.", "error");
+                }
+            }
+
+            const updates = {
+                email: email,
+                data: {
+                    display_name: displayName,
+                    full_name: displayName
+                }
+            };
+            
+            if (avatarUrl) {
+                updates.data.avatar_url = avatarUrl;
+            }
+
+            const res = await window.electron.invoke('supabase:updateUser', updates);
+            if (res.ok) {
+                this.showToast("Profile updated successfully!", "success");
+                
+                // Dynamically update dashboard
+                const formattedName = displayName.replace(/\b\w/g, c => c.toUpperCase());
+                const dashUsername = document.getElementById("dash-username");
+                if (dashUsername) dashUsername.textContent = formattedName;
+                
+                const greetEl = document.getElementById('welcome-greeting');
+                if (greetEl) {
+                    const hour = new Date().getHours();
+                    const timeGreeting = hour < 12 ? 'Good morning' : hour < 17 ? 'Good afternoon' : 'Good evening';
+                    greetEl.textContent = `${timeGreeting}, ${formattedName}!`;
+                }
+
+                if (avatarUrl) {
+                    const profileImg = document.getElementById('profile-avatar-img');
+                    const profileLetter = document.getElementById('profile-avatar-letter');
+                    if (profileImg && profileLetter) {
+                        profileImg.src = avatarUrl;
+                        profileImg.style.display = 'block';
+                        profileLetter.style.display = 'none';
+                    }
+                }
+            } else {
+                this.showToast("Failed to update profile: " + (res.error || "Unknown error"), "error");
+            }
+        } catch (err) {
+            this.showToast("Error updating profile.", "error");
+            console.error(err);
+        }
+    }
+
+
     dismissInactivityWarning() {
         const overlay = document.getElementById('inactivity-warning-overlay');
         if (overlay) overlay.classList.add('hidden');
         this.resetIdleTimer();
     }
 
-    async requestPasswordReset() {
-        const userEmail = localStorage.getItem("omnisUser") || (typeof frappe !== "undefined" && frappe.session && frappe.session.user);
 
-        if (!userEmail || userEmail === "Guest") {
-            this.showToast("Could not identify user for password reset.", "error");
-            return;
-        }
-
-        const confirmReset = await this.confirm("Reset Password", `Are you sure you want to request a password reset for ${userEmail}? A link will be sent to your email.`);
-        if (!confirmReset) return;
-
-        try {
-            const baseUrl = window.CURRENT_SYSTEM ? window.CURRENT_SYSTEM.baseUrl : "https://salestrack.powerstar.co.zw";
-            const url = baseUrl + "/api/method/powerstar_salestrack.omnis_dashboard.trigger_password_reset";
-
-            const params = new URLSearchParams();
-            params.append('user_email', userEmail);
-
-            const res = await fetch(url, {
-                method: "POST",
-                headers: { "Content-Type": "application/x-www-form-urlencoded" },
-                body: params.toString()
-            });
-            const data = await res.json();
-
-            if (data.message && data.message.ok) {
-                this.showToast("Reset instructions sent! Check your email.", "success");
-            } else {
-                this.showToast("Error: " + (data.message?.error || "Failed to trigger reset"), "error");
-            }
-        } catch (err) {
-            console.error("Password reset error:", err);
-            this.showToast("Could not connect to security service.", "error");
-        }
-    }
 
     updateApiMetricsUI() {
         if (!window.apiMetrics) return;
