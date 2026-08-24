@@ -6073,7 +6073,7 @@
         <span style="font-size:12px; font-weight:700; color:#fff;">Switch Module</span>
         <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="rgba(255,255,255,0.5)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="margin-left:4px;"><polyline points="6 9 12 15 18 9"></polyline></svg>
         
-        <div class="dropdown-content" style="display:none; position:absolute; top:100%; right:0; margin-top:5px; background:#0f172a; border:1px solid rgba(255,255,255,0.1); border-radius:6px; box-shadow:0 10px 25px rgba(0,0,0,0.5); min-width:180px; z-index:9999; padding:8px;">
+        <div class="dropdown-content" style="display:none; position:absolute; top:100%; right:0; margin-top:5px; background:#ffffff; border:1px solid #e2e8f0; border-radius:6px; box-shadow:0 10px 25px rgba(0,0,0,0.5); min-width:180px; z-index:9999; padding:8px;">
           <div style="padding: 8px; font-size: 12px; color: #64748b; text-align: center;">Loading...</div>
         </div>
         
@@ -6084,13 +6084,13 @@
             try {
               const modules = JSON.parse(localStorage.getItem('omnis_modules')) || [];
               if (modules.length > 0) {
-                  let html = modules.map(m => '<a href="../../' + m.url + '" style="display:flex; align-items:center; gap:8px; padding:10px 12px; color:white; text-decoration:none; font-size:13px; border-radius:4px; transition:background 0.2s;" onmouseover="this.style.background=\'rgba(255,255,255,0.1)\'" onmouseout="this.style.background=\'transparent\'"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="#8b2219" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path><polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline><line x1="12" y1="22.08" x2="12" y2="12"></line></svg> ' + m.name + '</a>').join('');
+                  let html = modules.map(m => '<a href="../../' + m.url + '" style="display:flex; align-items:center; gap:8px; padding:10px 12px; color:#334155; text-decoration:none; font-size:13px; border-radius:4px; transition:background 0.2s;" onmouseover="this.style.background=\'#f1f5f9\'" onmouseout="this.style.background=\'transparent\'"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="#8b2219" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path><polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline><line x1="12" y1="22.08" x2="12" y2="12"></line></svg> ' + m.name + '</a>').join('');
                   if (localStorage.getItem('omnis_is_admin') === 'true') {
-                      html += '<a href="../../admin_dashboard.html" style="display:flex; align-items:center; gap:8px; padding:10px 12px; color:#ef4444; text-decoration:none; font-size:13px; border-radius:4px; border-top:1px solid rgba(255,255,255,0.1); margin-top:4px; transition:background 0.2s;" onmouseover="this.style.background=\'rgba(255,255,255,0.1)\'" onmouseout="this.style.background=\'transparent\'"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg> Admin Console</a>';
+                      html += '<a href="../../admin_dashboard.html" style="display:flex; align-items:center; gap:8px; padding:10px 12px; color:#ef4444; text-decoration:none; font-size:13px; border-radius:4px; border-top:1px solid #e2e8f0; margin-top:4px; transition:background 0.2s;" onmouseover="this.style.background=\'#f1f5f9\'" onmouseout="this.style.background=\'transparent\'"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg> Admin Console</a>';
                   }
                   dropdown.innerHTML = html;
               } else {
-                  dropdown.innerHTML = '<a href="../../index.html?switch=1" style="display:block; padding:10px; color:white; text-decoration:none;">Go to Launcher</a>';
+                  dropdown.innerHTML = '<a href="../../index.html?switch=1" style="display:block; padding:10px; color:#334155; text-decoration:none;">Go to Launcher</a>';
               }
             } catch(e) {}
           })();
@@ -12473,7 +12473,7 @@
           view.style.setProperty("z-index", "2", "important");
         }
 
-        const scrollableViews = ['view-orders-list', 'view-stock', 'view-group-sales-list', 'view-quotations-list', 'view-ce-list', 'view-customers-list', 'view-products-list', 'view-settings', 'view-aftersales', 'view-rental-defects', 'view-rental-fleet', 'view-fleet-manager', 'view-customer-profiles', 'view-psv', 'view-cdv', 'view-marketing', 'view-ft-defect-queue', 'view-training', 'view-training-library'];
+        const scrollableViews = ['view-orders-list', 'view-stock', 'view-group-sales-list', 'view-quotations-list', 'view-ce-list', 'view-customers-list', 'view-products-list', 'view-settings', 'view-user-management', 'view-aftersales', 'view-rental-defects', 'view-rental-fleet', 'view-fleet-manager', 'view-customer-profiles', 'view-psv', 'view-cdv', 'view-marketing', 'view-ft-defect-queue', 'view-training', 'view-training-library'];
         if (scrollableViews.includes(view.id)) {
           view.style.setProperty("overflow-y", "auto", "important");
         }
@@ -16063,6 +16063,7 @@
   <\/script>
   
   
+  <script src="user_management_logic.js"></script>
 </body>
 </html>`);
       win.document.close();
