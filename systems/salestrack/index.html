@@ -14729,20 +14729,45 @@
         const startInt = parseInt(startVal);
         const limitInt = parseInt(limitVal);
 
-        const savedCircuit = window.frappeCircuitOpenedUntil || 0;
-        window.frappeCircuitOpenedUntil = 0; // Bypass circuit breaker for guest endpoint
         let res;
-        try {
-          res = await window.callFrappeSequenced(base, "powerstar_salestrack.omnis_dashboard.get_group_sales_list", {
-            start: startInt,
-            page_length: limitInt,
-            search: searchVal,
-            company: companyVal,
-            from_date: fromDate,
-            to_date: toDate
-          });
-        } finally {
-          window.frappeCircuitOpenedUntil = savedCircuit;
+        if (window.supabase) {
+            let query = window.supabase.from('group_sales').select('*', { count: 'exact' });
+            
+            if (searchVal) {
+                query = query.or(`customer.ilike.%${searchVal}%,oem.ilike.%${searchVal}%,model.ilike.%${searchVal}%,salesperson.ilike.%${searchVal}%`);
+            }
+            if (companyVal) {
+                if (companyVal.toLowerCase() === 'machinery') {
+                    query = query.ilike('company', '%machinery%');
+                } else {
+                    query = query.ilike('company', `%${companyVal}%`);
+                }
+            }
+            if (fromDate) query = query.gte('order_date', fromDate);
+            if (toDate) query = query.lte('order_date', toDate);
+            
+            query = query.order('order_date', { ascending: false });
+            query = query.range(startInt, startInt + limitInt - 1);
+            
+            const { data, error, count } = await query;
+            if (error) throw error;
+            
+            res = { message: { ok: true, data: data || [], total_count: count || 0 } };
+        } else {
+            const savedCircuit = window.frappeCircuitOpenedUntil || 0;
+            window.frappeCircuitOpenedUntil = 0;
+            try {
+              res = await window.callFrappeSequenced(base, "powerstar_salestrack.omnis_dashboard.get_group_sales_list", {
+                start: startInt,
+                page_length: limitInt,
+                search: searchVal,
+                company: companyVal,
+                from_date: fromDate,
+                to_date: toDate
+              });
+            } finally {
+              window.frappeCircuitOpenedUntil = savedCircuit;
+            }
         }
 
         console.log('[SalesEntries] Raw API response:', res);
