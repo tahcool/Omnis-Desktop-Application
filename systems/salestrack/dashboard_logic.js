@@ -6521,6 +6521,7 @@ window.OmnisDashboardV6 = class OmnisDashboardV6 {
                             qty: m.quantity,
                             target_handover_date: m.target_date,
                             revised_handover_date: m.revised_date,
+                            actual_handover_date: m.actual_date,
                             notes: m.notes,
                             images_one: m.image_1_url,
                             image_two: m.image_2_url
@@ -7127,6 +7128,7 @@ window.OmnisDashboardV6 = class OmnisDashboardV6 {
                         quantity: m.qty || 1,
                         target_date: m.target_handover_date || null,
                         revised_date: m.revised_handover_date || null,
+                        actual_date: m.actual_handover_date || null,
                         notes: m.notes,
                         image_1_url: m.images_one,
                         image_2_url: m.image_two
