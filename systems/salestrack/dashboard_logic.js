@@ -1015,7 +1015,7 @@ window.OmnisDashboardV6 = class OmnisDashboardV6 {
                                 position:relative;
                             " onmouseover="this.style.transform='scale(1.1) translateY(-5px)'; this.style.borderColor='${loc.color}';">
                                 
-                                ${isActive ? `<div style="position:absolute; top:-8px; right:-8px; background:${loc.color}; color:#fff; width:24px; height:24px; border-radius:8px; display:flex; align-items:center; justify-content:center; font-size:12px; font-weight:900; border:2.5px solid #fff; box-shadow:0 4px 10px ${loc.color}44;">${count}</div>` : ''}
+                                ${isActive ? `<div style="position:absolute; top:-8px; right:-8px; background:${loc.color}; color:#fff; width:24px; height:24px; border-radius:4px; display:flex; align-items:center; justify-content:center; font-size:12px; font-weight:900; border:2.5px solid #fff; box-shadow:0 4px 10px ${loc.color}44;">${count}</div>` : ''}
                                 
                                 <i class="fas ${loc.icon}" style="font-size:${isHub ? '32px' : '20px'}; color:${isActive ? loc.color : '#475569'};"></i>
                             </div>
@@ -1226,20 +1226,20 @@ window.OmnisDashboardV6 = class OmnisDashboardV6 {
                 <div style="display:flex; align-items:center; gap:10px;">
                     <select id="eff-company-select-v5" 
                         onchange="window.salestrack.openEfficiencyReportModalV5(null, this.value)" 
-                        style="padding:6px 12px; border-radius:6px; border:1px solid #cbd5e1; font-size:13px; font-weight:600; color:#334155; outline:none; cursor:pointer;">
+                        style="padding:6px 12px; border-radius:4px; border:1px solid #cbd5e1; font-size:13px; font-weight:600; color:#334155; outline:none; cursor:pointer;">
                         <option value="All" ${companyText === 'All' ? 'selected' : ''}>All Companies</option>
                         <option value="Machinery Exchange" ${companyText === 'Machinery Exchange' ? 'selected' : ''}>Machinery Exchange</option>
                         <option value="Sinopower" ${companyText === 'Sinopower' ? 'selected' : ''}>Sinopower Zimbabwe</option>
                     </select>
                     <select id="eff-period-select-v5" 
                         onchange="window.salestrack.openEfficiencyReportModalV5(this.value, null)" 
-                        style="padding:6px 12px; border-radius:6px; border:1px solid #cbd5e1; font-size:13px; font-weight:600; color:#334155; outline:none; cursor:pointer;">
+                        style="padding:6px 12px; border-radius:4px; border:1px solid #cbd5e1; font-size:13px; font-weight:600; color:#334155; outline:none; cursor:pointer;">
                         <option value="This Month" ${periodText === 'This Month' ? 'selected' : ''}>This Month</option>
                         <option value="Last Month" ${periodText === 'Last Month' ? 'selected' : ''}>Last Month</option>
                         <option value="This Year" ${periodText === 'This Year' ? 'selected' : ''}>This Year</option>
                         <option value="All Time" ${periodText === 'All Time' ? 'selected' : ''}>All Time</option>
                     </select>
-                    <button onclick="window.print()" class="no-print" style="padding:6px 12px; background:#475569; color:white; border:none; border-radius:6px; cursor:pointer; font-size:13px; font-weight:600; display:flex; align-items:center; gap:6px;">
+                    <button onclick="window.print()" class="no-print" style="padding:6px 12px; background:#475569; color:white; border:none; border-radius:4px; cursor:pointer; font-size:13px; font-weight:600; display:flex; align-items:center; gap:6px;">
                         Print PDF
                     </button>
                 </div>
@@ -1439,25 +1439,25 @@ window.OmnisDashboardV6 = class OmnisDashboardV6 {
                     <!-- Summary Cards -->
                     <div class="eff-summary-grid" style="display:grid; grid-template-columns: repeat(4, 1fr); gap:1px; background:#e2e8f0; border:1px solid #e2e8f0; border-radius:12px; overflow:hidden; margin-bottom:40px; box-shadow:0 4px 12px rgba(0,0,0,0.05);">
                         <div style="background:white; padding:24px; text-align:center;">
-                            <div style="font-size:12px; font-weight:800; color:white; background:#1e40af; padding:6px 12px; display:inline-block; border-radius:6px; margin-bottom:12px; text-transform:uppercase; letter-spacing:0.05em;">Total Machines</div>
+                            <div style="font-size:12px; font-weight:800; color:white; background:#1e40af; padding:6px 12px; display:inline-block; border-radius:4px; margin-bottom:12px; text-transform:uppercase; letter-spacing:0.05em;">Total Machines</div>
                             <div style="font-size:32px; font-weight:900; color:#1e40af;">${summary.total_machines}</div>
                         </div>
                         <div style="background:white; padding:24px; text-align:center;">
-                            <div style="font-size:12px; font-weight:800; color:white; background:#166534; padding:6px 12px; display:inline-block; border-radius:6px; margin-bottom:12px; text-transform:uppercase; letter-spacing:0.05em;">On Time or Early</div>
+                            <div style="font-size:12px; font-weight:800; color:white; background:#166534; padding:6px 12px; display:inline-block; border-radius:4px; margin-bottom:12px; text-transform:uppercase; letter-spacing:0.05em;">On Time or Early</div>
                             <div style="font-size:32px; font-weight:900; color:#166534;">${summary.on_time_or_early}</div>
                         </div>
                         <div style="background:white; padding:24px; text-align:center;">
-                            <div style="font-size:12px; font-weight:800; color:white; background:${effColor}; padding:6px 12px; display:inline-block; border-radius:6px; margin-bottom:12px; text-transform:uppercase; letter-spacing:0.05em;">Efficiency %</div>
+                            <div style="font-size:12px; font-weight:800; color:white; background:${effColor}; padding:6px 12px; display:inline-block; border-radius:4px; margin-bottom:12px; text-transform:uppercase; letter-spacing:0.05em;">Efficiency %</div>
                             <div style="font-size:32px; font-weight:900; color:${effColor};">${summary.efficiency_pct}%</div>
                         </div>
                         <div style="background:white; padding:24px; text-align:center;">
-                            <div style="font-size:12px; font-weight:800; color:white; background:#991b1b; padding:6px 12px; display:inline-block; border-radius:6px; margin-bottom:12px; text-transform:uppercase; letter-spacing:0.05em;">Average Delay (days)</div>
+                            <div style="font-size:12px; font-weight:800; color:white; background:#991b1b; padding:6px 12px; display:inline-block; border-radius:4px; margin-bottom:12px; text-transform:uppercase; letter-spacing:0.05em;">Average Delay (days)</div>
                             <div style="font-size:32px; font-weight:900; color:#991b1b;">${summary.avg_delay}</div>
                         </div>
                     </div>
 
                     <!-- Efficiency Calculation Explanation -->
-                    <div class="no-print" style="background:#f8fafc; border:1px solid #e2e8f0; border-left:4px solid #3b82f6; border-radius:8px; padding:16px 20px; margin-bottom:40px; display:flex; gap:16px; align-items:flex-start;">
+                    <div class="no-print" style="background:#f8fafc; border:1px solid #e2e8f0; border-left:4px solid #3b82f6; border-radius:4px; padding:16px 20px; margin-bottom:40px; display:flex; gap:16px; align-items:flex-start;">
                         <i class="fa fa-info-circle" style="color:#3b82f6; font-size:20px; margin-top:2px;"></i>
                         <div style="font-size:13px; color:#475569; line-height:1.6;">
                             <h4 style="margin:0 0 8px 0; color:#0f172a; font-size:14px; font-weight:700;">How is Efficiency Calculated?</h4>
@@ -1500,7 +1500,7 @@ window.OmnisDashboardV6 = class OmnisDashboardV6 {
                                         </td>
                                         <td style="padding:14px 20px;">
                                             <span style="
-                                                padding:4px 10px; border-radius:6px; font-size:11px; font-weight:800; text-transform:uppercase; letter-spacing:0.05em;
+                                                padding:4px 10px; border-radius:4px; font-size:11px; font-weight:800; text-transform:uppercase; letter-spacing:0.05em;
                                                 ${r.status === 'Early' ? 'background:#dcfce7; color:#15803d;' : (r.status === 'On Time' ? 'background:#f1f5f9; color:#475569;' : (r.status === 'Within Buffer' ? 'background:#fef3c7; color:#b45309;' : 'background:#fee2e2; color:#b91c1c;'))}
                                             ">
                                                 ${r.status}
@@ -1619,7 +1619,7 @@ window.OmnisDashboardV6 = class OmnisDashboardV6 {
             : 'background:#fdf2f2; color:#dc2626; border:1px solid #fee2e2;';
 
         const equipmentHtml = lead.equipment
-            ? `<div style="font-size:10px; color:#475569; background:#f8fafc; padding:4px 8px; border-radius:6px; margin-top:6px; font-weight:600; border:1px solid #e2e8f0; display:block; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">
+            ? `<div style="font-size:10px; color:#475569; background:#f8fafc; padding:4px 8px; border-radius:4px; margin-top:6px; font-weight:600; border:1px solid #e2e8f0; display:block; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;">
                 <span style="opacity:0.7;">&#x1F4E6;</span> ${lead.equipment}
                </div>`
             : '';
@@ -1641,7 +1641,7 @@ window.OmnisDashboardV6 = class OmnisDashboardV6 {
 
                 <div style="margin-top:auto;">
                     <div style="display:flex; justify-content:space-between; align-items:center;">
-                         <span style="font-size:10px; background:#f0f9ff; color:#0369a1; padding:2px 8px; border-radius:6px; font-weight:700; text-transform:uppercase; letter-spacing:0.02em;">
+                         <span style="font-size:10px; background:#f0f9ff; color:#0369a1; padding:2px 8px; border-radius:4px; font-weight:700; text-transform:uppercase; letter-spacing:0.02em;">
                             ${lead.status || 'Open'}
                          </span>
                          <a href="#" onclick="salestrack.openDoc('Hot Lead', '${(lead.name || '').replace(/'/g, "\\'")}'); return false;" 
@@ -1662,10 +1662,10 @@ window.OmnisDashboardV6 = class OmnisDashboardV6 {
         const salespersons = [...new Set(leads.map(l => l.sales_person_name || 'No Rep'))].sort();
 
         const content = `
-            <div style="margin-bottom:16px; display:flex; gap:16px; align-items:flex-end; background:#f8fafc; padding:16px; border-radius:8px; border:1px solid #e2e8f0; flex-wrap:wrap;">
+            <div style="margin-bottom:16px; display:flex; gap:16px; align-items:flex-end; background:#f8fafc; padding:16px; border-radius:4px; border:1px solid #e2e8f0; flex-wrap:wrap;">
                 <div style="display:flex; flex-direction:column; gap:6px; flex:1; min-width:200px;">
                     <label style="font-size:11px; font-weight:700; color:#64748b; letter-spacing:0.5px;">SALES PERSON</label>
-                    <select id="modal-filter-rep" onchange="salestrack.filterHotLeadsModal()" style="padding:8px; border:1px solid #cbd5e1; border-radius:6px; font-size:13px; width:100%; background:white;">
+                    <select id="modal-filter-rep" onchange="salestrack.filterHotLeadsModal()" style="padding:8px; border:1px solid #cbd5e1; border-radius:4px; font-size:13px; width:100%; background:white;">
                         <option value="All">All Salespersons</option>
                         ${salespersons.map(s => `<option value="${s}">${s}</option>`).join('')}
                     </select>
@@ -1673,12 +1673,12 @@ window.OmnisDashboardV6 = class OmnisDashboardV6 {
                 <div style="display:flex; flex-direction:column; gap:6px; flex:1.5; min-width:240px;">
                      <label style="font-size:11px; font-weight:700; color:#64748b; letter-spacing:0.5px;">DATE RANGE</label>
                      <div style="display:flex; gap:8px;">
-                        <input type="date" id="modal-filter-date-start" placeholder="From" onchange="salestrack.filterHotLeadsModal()" style="flex:1; padding:7px; border:1px solid #cbd5e1; border-radius:6px; font-size:13px; min-width:100px;">
-                        <input type="date" id="modal-filter-date-end" placeholder="To" onchange="salestrack.filterHotLeadsModal()" style="flex:1; padding:7px; border:1px solid #cbd5e1; border-radius:6px; font-size:13px; min-width:100px;">
+                        <input type="date" id="modal-filter-date-start" placeholder="From" onchange="salestrack.filterHotLeadsModal()" style="flex:1; padding:7px; border:1px solid #cbd5e1; border-radius:4px; font-size:13px; min-width:100px;">
+                        <input type="date" id="modal-filter-date-end" placeholder="To" onchange="salestrack.filterHotLeadsModal()" style="flex:1; padding:7px; border:1px solid #cbd5e1; border-radius:4px; font-size:13px; min-width:100px;">
                      </div>
                 </div>
                  <div style="padding-bottom:1px;">
-                     <button onclick="salestrack.clearHotLeadsFilters()" style="padding:8px 16px; background:white; border:1px solid #cbd5e1; border-radius:6px; font-size:13px; font-weight:600; color:#475569; cursor:pointer; transition:all 0.2s; white-space:nowrap;" onmouseover="this.style.borderColor='#94a3b8'" onmouseout="this.style.borderColor='#cbd5e1'">
+                     <button onclick="salestrack.clearHotLeadsFilters()" style="padding:8px 16px; background:white; border:1px solid #cbd5e1; border-radius:4px; font-size:13px; font-weight:600; color:#475569; cursor:pointer; transition:all 0.2s; white-space:nowrap;" onmouseover="this.style.borderColor='#94a3b8'" onmouseout="this.style.borderColor='#cbd5e1'">
                         Clear Filters
                      </button>
                 </div>
@@ -2039,16 +2039,16 @@ window.OmnisDashboardV6 = class OmnisDashboardV6 {
             <div style="display:flex; align-items:center; gap:15px; width:100%; justify-content:space-between;">
                 <span style="font-size:18px; font-weight:800; color:#0f172a;">MER Management Report</span>
                 <div style="display:flex; align-items:center; gap:10px;">
-                    <select id="mer-company-select" onchange="window.salestrack.openMERReportModal(document.getElementById('mer-period-select').value, this.value)" style="padding:6px 12px; border-radius:6px; border:1px solid #cbd5e1; font-size:13px; font-weight:600; color:#334155; outline:none; cursor:pointer;">
+                    <select id="mer-company-select" onchange="window.salestrack.openMERReportModal(document.getElementById('mer-period-select').value, this.value)" style="padding:6px 12px; border-radius:4px; border:1px solid #cbd5e1; font-size:13px; font-weight:600; color:#334155; outline:none; cursor:pointer;">
                         <option value="All" ${companyText === 'All' ? 'selected' : ''}>All Companies</option>
                         <option value="Machinery Exchange" ${companyText === 'Machinery Exchange' ? 'selected' : ''}>Machinery Exchange</option>
                         <option value="Sinopower" ${companyText === 'Sinopower' ? 'selected' : ''}>Sinopower Zimbabwe</option>
                     </select>
-                    <select id="mer-period-select" onchange="window.salestrack.openMERReportModal(this.value, document.getElementById('mer-company-select').value)" style="padding:6px 12px; border-radius:6px; border:1px solid #cbd5e1; font-size:13px; font-weight:600; color:#334155; outline:none; cursor:pointer;">
+                    <select id="mer-period-select" onchange="window.salestrack.openMERReportModal(this.value, document.getElementById('mer-company-select').value)" style="padding:6px 12px; border-radius:4px; border:1px solid #cbd5e1; font-size:13px; font-weight:600; color:#334155; outline:none; cursor:pointer;">
                         <option value="This Month" ${periodText === 'This Month' ? 'selected' : ''}>This Month</option>
                         <option value="Last Month" ${periodText === 'Last Month' ? 'selected' : ''}>Last Month</option>
                     </select>
-                    <button onclick="window.print()" class="no-print" style="padding:6px 12px; background:#475569; color:white; border:none; border-radius:6px; cursor:pointer; font-size:13px; font-weight:600; display:flex; align-items:center; gap:6px;">
+                    <button onclick="window.print()" class="no-print" style="padding:6px 12px; background:#475569; color:white; border:none; border-radius:4px; cursor:pointer; font-size:13px; font-weight:600; display:flex; align-items:center; gap:6px;">
                         <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"></path></svg> 
                         Print PDF
                     </button>
@@ -2814,7 +2814,7 @@ window.OmnisDashboardV6 = class OmnisDashboardV6 {
             let itemsHtml = '';
             if (items.length > 0) {
                 itemsHtml = `
-                <div style="margin-top:16px; background:#f8fafc; border:1px solid #e2e8f0; border-radius:8px; padding:12px;">
+                <div style="margin-top:16px; background:#f8fafc; border:1px solid #e2e8f0; border-radius:4px; padding:12px;">
                     <div style="font-size:11px; font-weight:800; color:#64748b; text-transform:uppercase; margin-bottom:8px;"><i class="fas fa-box-open" style="margin-right:4px;"></i> Items Quoted (${items.length})</div>
                     <ul style="margin:0; padding-left:20px; font-size:12px; color:#334155;">
                         ${items.map(i => `<li style="margin-bottom:4px;"><strong>${i.qty}x</strong> ${i.item_code} ${i.item_name ? ` - ${i.item_name}` : ''}</li>`).join('')}
@@ -2839,7 +2839,7 @@ window.OmnisDashboardV6 = class OmnisDashboardV6 {
                     icon = '<i class="fas fa-check-circle"></i>';
                     contentHtml = `
                         <div style="font-size:12px; color:#64748b; margin-top:4px;">Logged on ${new Date(loggedAt).toLocaleDateString()}</div>
-                        <div style="font-size:13px; color:#334155; background:#f8fafc; padding:8px; border-radius:6px; margin-top:8px; border:1px solid #e2e8f0;">${notes || 'No notes provided.'}</div>
+                        <div style="font-size:13px; color:#334155; background:#f8fafc; padding:8px; border-radius:4px; margin-top:8px; border:1px solid #e2e8f0;">${notes || 'No notes provided.'}</div>
                         ${lateReason ? `<div style="font-size:12px; color:#ef4444; margin-top:4px;"><strong>Late Reason:</strong> ${lateReason}</div>` : ''}
                     `;
                 } else if (isCurrent) {
@@ -2850,18 +2850,18 @@ window.OmnisDashboardV6 = class OmnisDashboardV6 {
                     const isLate = today > due;
                     
                     contentHtml = `
-                        <div style="margin-top:12px; background:#f0f9ff; border:1px solid #bae6fd; padding:16px; border-radius:8px;">
-                            <textarea id="lifecycle_notes_${stageNum}" placeholder="Enter follow-up notes..." style="width:100%; min-height:80px; padding:10px; border:1px solid #cbd5e1; border-radius:6px; font-family:inherit; font-size:13px; resize:vertical; margin-bottom:10px;"></textarea>
+                        <div style="margin-top:12px; background:#f0f9ff; border:1px solid #bae6fd; padding:16px; border-radius:4px;">
+                            <textarea id="lifecycle_notes_${stageNum}" placeholder="Enter follow-up notes..." style="width:100%; min-height:80px; padding:10px; border:1px solid #cbd5e1; border-radius:4px; font-family:inherit; font-size:13px; resize:vertical; margin-bottom:10px;"></textarea>
                             
                             ${isLate ? `
-                                <div style="background:#fef2f2; border:1px solid #fecaca; padding:10px; border-radius:6px; margin-bottom:10px;">
+                                <div style="background:#fef2f2; border:1px solid #fecaca; padding:10px; border-radius:4px; margin-bottom:10px;">
                                     <div style="color:#ef4444; font-size:12px; font-weight:700; margin-bottom:4px;"><i class="fas fa-exclamation-triangle"></i> This follow-up is late. A reason is required.</div>
                                     <input type="text" id="lifecycle_late_reason_${stageNum}" placeholder="Reason for late entry..." style="width:100%; padding:8px; border:1px solid #fca5a5; border-radius:4px; font-size:13px;">
                                 </div>
                             ` : ''}
                             
                             <div style="display:flex; gap:10px;">
-                                <button onclick="window.salestrack.submitLifecycleStage('${quoteName}', ${stageNum}, ${isLate})" style="background:#2563eb; color:white; border:none; padding:8px 16px; border-radius:6px; font-weight:600; cursor:pointer; font-size:13px;">Complete Stage ${stageNum}</button>
+                                <button onclick="window.salestrack.submitLifecycleStage('${quoteName}', ${stageNum}, ${isLate})" style="background:#2563eb; color:white; border:none; padding:8px 16px; border-radius:4px; font-weight:600; cursor:pointer; font-size:13px;">Complete Stage ${stageNum}</button>
                             </div>
                         </div>
                     `;
@@ -2891,21 +2891,21 @@ window.OmnisDashboardV6 = class OmnisDashboardV6 {
                     <div style="border-top:1px solid #e2e8f0; margin-top:30px; padding-top:20px;">
                         <h4 style="margin:0 0 10px 0; font-size:14px; color:#0f172a;">Close Quotation</h4>
                         <div style="display:flex; gap:10px; align-items:center;">
-                            <select id="lifecycle_close_reason" style="padding:8px; border:1px solid #cbd5e1; border-radius:6px; font-size:13px; width:200px;">
+                            <select id="lifecycle_close_reason" style="padding:8px; border:1px solid #cbd5e1; border-radius:4px; font-size:13px; width:200px;">
                                 <option value="">Select Closing Reason...</option>
                                 <option value="Tire Kicker">Tire Kicker</option>
                                 <option value="No Funding">No Funding</option>
                                 <option value="Lost Sale">Lost Sale (Bought Elsewhere)</option>
                             </select>
-                            <input type="text" id="lifecycle_close_notes" placeholder="Additional Notes..." style="flex:1; padding:8px; border:1px solid #cbd5e1; border-radius:6px; font-size:13px;">
-                            <button onclick="window.salestrack.markQuoteClosed('${quoteName}')" style="background:#ef4444; color:white; border:none; padding:8px 16px; border-radius:6px; font-weight:600; cursor:pointer; font-size:13px;">Mark as Closed</button>
+                            <input type="text" id="lifecycle_close_notes" placeholder="Additional Notes..." style="flex:1; padding:8px; border:1px solid #cbd5e1; border-radius:4px; font-size:13px;">
+                            <button onclick="window.salestrack.markQuoteClosed('${quoteName}')" style="background:#ef4444; color:white; border:none; padding:8px 16px; border-radius:4px; font-weight:600; cursor:pointer; font-size:13px;">Mark as Closed</button>
                         </div>
                     </div>
                 `;
             } else {
                 let badgeColor = q.manager_signoff_status === 'approved' ? '#10b981' : (q.manager_signoff_status === 'rejected' ? '#ef4444' : '#f59e0b');
                 closingHtml = `
-                    <div style="background:#fef2f2; border:1px solid #fecaca; border-radius:8px; padding:16px; margin-top:20px;">
+                    <div style="background:#fef2f2; border:1px solid #fecaca; border-radius:4px; padding:16px; margin-top:20px;">
                         <h4 style="margin:0 0 8px 0; color:#991b1b; font-size:14px;"><i class="fas fa-lock"></i> Quotation Closed</h4>
                         <div style="font-size:13px; color:#7f1d1d; margin-bottom:4px;"><strong>Reason:</strong> ${q.closing_reason}</div>
                         <div style="font-size:13px; color:#7f1d1d; margin-bottom:12px;"><strong>Manager Status:</strong> <span style="background:${badgeColor}20; color:${badgeColor}; padding:2px 8px; border-radius:12px; font-size:11px; font-weight:700; text-transform:uppercase;">${q.manager_signoff_status}</span></div>
@@ -2923,7 +2923,7 @@ window.OmnisDashboardV6 = class OmnisDashboardV6 {
                                 <div style="font-size:14px; color:#64748b; margin-top:4px;">Customer: <strong>${fq ? fq.customer_name : 'Unknown'}</strong> | Rep: <strong>${fq ? fq.custom_sales_person : 'Unknown'}</strong></div>
                             </div>
                             <div style="display:flex; align-items:center; gap:16px;">
-                                <button onclick="window.salestrack.sendQuoteWhatsAppReminder('${quoteName}', '${fq ? fq.custom_sales_person : ''}')" style="background:#25d366; color:white; border:none; padding:6px 12px; border-radius:6px; font-weight:700; cursor:pointer; font-size:12px; display:flex; align-items:center; gap:6px; box-shadow:0 2px 4px rgba(37,211,102,0.2);">
+                                <button onclick="window.salestrack.sendQuoteWhatsAppReminder('${quoteName}', '${fq ? fq.custom_sales_person : ''}')" style="background:#25d366; color:white; border:none; padding:6px 12px; border-radius:4px; font-weight:700; cursor:pointer; font-size:12px; display:flex; align-items:center; gap:6px; box-shadow:0 2px 4px rgba(37,211,102,0.2);">
                                     <i class="fab fa-whatsapp" style="font-size:14px;"></i> Send Reminder
                                 </button>
                                 <div style="display:flex; align-items:center; gap:8px;">
@@ -3232,7 +3232,7 @@ window.OmnisDashboardV6 = class OmnisDashboardV6 {
                         <div style="font-size:24px; font-weight:800; color:#0f172a;">${repName}</div>
                         <div style="font-size:14px; color:#64748b; margin-top:4px;">Sales Representative Performance Report</div>
                         <div style="margin-top:8px;">
-                            <select onchange="window.salestrack.openRepProfile('${repName}', this.value)" style="background:#f1f5f9; color:#475569; padding:6px 12px; border-radius:8px; font-size:12px; font-weight:700; border:1px solid #cbd5e1; outline:none; cursor:pointer;">
+                            <select onchange="window.salestrack.openRepProfile('${repName}', this.value)" style="background:#f1f5f9; color:#475569; padding:6px 12px; border-radius:4px; font-size:12px; font-weight:700; border:1px solid #cbd5e1; outline:none; cursor:pointer;">
                                 <option value="This Year" ${stats.period === 'This Year' ? 'selected' : ''}>THIS YEAR</option>
                                 <option value="This Month" ${stats.period === 'This Month' ? 'selected' : ''}>THIS MONTH</option>
                                 <option value="Last 30 Days" ${stats.period === 'Last 30 Days' ? 'selected' : ''}>LAST 30 DAYS</option>
@@ -3790,23 +3790,23 @@ window.OmnisDashboardV6 = class OmnisDashboardV6 {
                         </div>
                     </div>
                     <div style="display:flex; gap:10px; align-items:center;">
-                        <select id="cc_global_company" onchange="window.salestrack.applyGlobalCompanyFilter(${isFullView})" style="padding:10px 16px; border:1px solid #cbd5e1; border-radius:8px; font-size:13px; outline:none; background:white; font-weight:700; color:#475569; cursor:pointer;">
+                        <select id="cc_global_company" onchange="window.salestrack.applyGlobalCompanyFilter(${isFullView})" style="padding:10px 16px; border:1px solid #cbd5e1; border-radius:4px; font-size:13px; outline:none; background:white; font-weight:700; color:#475569; cursor:pointer;">
                             <option value="All" ${companyFilter === 'All' ? 'selected' : ''}>All Companies</option>
                             <option value="Sinopower" ${companyFilter === 'Sinopower' ? 'selected' : ''}>Sinopower</option>
                             <option value="Machinery Exchange" ${companyFilter === 'Machinery Exchange' ? 'selected' : ''}>Machinery Exchange</option>
                         </select>
-                        <button onclick="window.salestrack.forceEmailDispatch()" style="background:#2563eb; color:#ffffff; border:none; padding:10px 16px; border-radius:8px; font-weight:700; cursor:pointer; font-size:13px; box-shadow:0 4px 6px -1px rgba(37,99,235,0.2);"><i class="fas fa-paper-plane" style="margin-right:6px;"></i> FORCE DISPATCH</button>
-                        <button onclick="window.salestrack.openCommandCenter(${isFullView})" style="background:#f1f5f9; color:#475569; border:none; padding:10px 16px; border-radius:8px; font-weight:700; cursor:pointer; font-size:13px;"><i class="fas fa-sync-alt" style="margin-right:6px;"></i> REFRESH</button>
+                        <button onclick="window.salestrack.forceEmailDispatch()" style="background:#2563eb; color:#ffffff; border:none; padding:10px 16px; border-radius:4px; font-weight:700; cursor:pointer; font-size:13px; box-shadow:0 4px 6px -1px rgba(37,99,235,0.2);"><i class="fas fa-paper-plane" style="margin-right:6px;"></i> FORCE DISPATCH</button>
+                        <button onclick="window.salestrack.openCommandCenter(${isFullView})" style="background:#f1f5f9; color:#475569; border:none; padding:10px 16px; border-radius:4px; font-weight:700; cursor:pointer; font-size:13px;"><i class="fas fa-sync-alt" style="margin-right:6px;"></i> REFRESH</button>
                     </div>
                 </div>
 
                 <!-- Tab Bar -->
                 <div style="display:flex; gap:8px; margin-bottom:24px; border-bottom:1px solid #e2e8f0; padding-bottom:16px;">
-                    <button id="cc_btn_overview" onclick="window.salestrack.switchCommandCenterTab('overview')" style="background:#0f172a; color:white; border:none; padding:8px 16px; border-radius:8px; font-weight:700; cursor:pointer; font-size:13px; transition:all 0.2s;">Overview</button>
-                    <button id="cc_btn_due" onclick="window.salestrack.switchCommandCenterTab('due')" style="background:#f1f5f9; color:#475569; border:none; padding:8px 16px; border-radius:8px; font-weight:700; cursor:pointer; font-size:13px; transition:all 0.2s;">Due Quotes</button>
-                    <button id="cc_btn_approvals" onclick="window.salestrack.switchCommandCenterTab('approvals')" style="background:#f1f5f9; color:#475569; border:none; padding:8px 16px; border-radius:8px; font-weight:700; cursor:pointer; font-size:13px; transition:all 0.2s;">Approvals (${pendingCount})</button>
-                    <button id="cc_btn_logs" onclick="window.salestrack.switchCommandCenterTab('logs')" style="background:#f1f5f9; color:#475569; border:none; padding:8px 16px; border-radius:8px; font-weight:700; cursor:pointer; font-size:13px; transition:all 0.2s;">Dispatch Logs</button>
-                    <button id="cc_btn_wa" onclick="window.salestrack.switchCommandCenterTab('wa')" style="background:#f1f5f9; color:#475569; border:none; padding:8px 16px; border-radius:8px; font-weight:700; cursor:pointer; font-size:13px; transition:all 0.2s;"><i class="fab fa-whatsapp" style="color:#25d366; margin-right:4px;"></i> WA Reminders</button>
+                    <button id="cc_btn_overview" onclick="window.salestrack.switchCommandCenterTab('overview')" style="background:#0f172a; color:white; border:none; padding:8px 16px; border-radius:4px; font-weight:700; cursor:pointer; font-size:13px; transition:all 0.2s;">Overview</button>
+                    <button id="cc_btn_due" onclick="window.salestrack.switchCommandCenterTab('due')" style="background:#f1f5f9; color:#475569; border:none; padding:8px 16px; border-radius:4px; font-weight:700; cursor:pointer; font-size:13px; transition:all 0.2s;">Due Quotes</button>
+                    <button id="cc_btn_approvals" onclick="window.salestrack.switchCommandCenterTab('approvals')" style="background:#f1f5f9; color:#475569; border:none; padding:8px 16px; border-radius:4px; font-weight:700; cursor:pointer; font-size:13px; transition:all 0.2s;">Approvals (${pendingCount})</button>
+                    <button id="cc_btn_logs" onclick="window.salestrack.switchCommandCenterTab('logs')" style="background:#f1f5f9; color:#475569; border:none; padding:8px 16px; border-radius:4px; font-weight:700; cursor:pointer; font-size:13px; transition:all 0.2s;">Dispatch Logs</button>
+                    <button id="cc_btn_wa" onclick="window.salestrack.switchCommandCenterTab('wa')" style="background:#f1f5f9; color:#475569; border:none; padding:8px 16px; border-radius:4px; font-weight:700; cursor:pointer; font-size:13px; transition:all 0.2s;"><i class="fab fa-whatsapp" style="color:#25d366; margin-right:4px;"></i> WA Reminders</button>
                 </div>
 
                 <!-- OVERVIEW TAB -->
@@ -4026,7 +4026,7 @@ window.OmnisDashboardV6 = class OmnisDashboardV6 {
                     <div style="font-size:12px; font-weight:800; color:#166534; text-transform:uppercase; letter-spacing:0.05em; margin-bottom:10px; display:flex; align-items:center; gap:6px;">
                         <i class="fab fa-whatsapp" style="font-size:16px;"></i> WhatsApp Message Preview
                     </div>
-                    <div style="background:white; border-radius:8px; padding:15px; font-size:13px; line-height:1.6; color:#1e293b; white-space:pre-wrap; border:1px solid #e2e8f0; font-family:monospace;">${messageBody}</div>
+                    <div style="background:white; border-radius:4px; padding:15px; font-size:13px; line-height:1.6; color:#1e293b; white-space:pre-wrap; border:1px solid #e2e8f0; font-family:monospace;">${messageBody}</div>
                 </div>
                 
                 <div style="display:flex; align-items:center; gap:12px; background:#f8fafc; padding:15px; border-radius:10px; margin-bottom:20px; border:1px solid #f1f5f9;">
@@ -4195,7 +4195,7 @@ window.OmnisDashboardV6 = class OmnisDashboardV6 {
                 <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:10px; padding:12px 16px; margin-bottom:20px; display:flex; align-items:center; justify-content:space-between; gap:12px;">
                     <div style="font-size:12px; color:#64748b; font-weight:600;">Want the full Frappe experience?</div>
                     <button onclick="window.open('${frappeUrl}', '_blank')"
-                            style="padding:8px 16px; background:#4f46e5; color:white; border:none; border-radius:8px; font-size:12px; font-weight:800; cursor:pointer; display:flex; align-items:center; gap:6px; white-space:nowrap;">
+                            style="padding:8px 16px; background:#4f46e5; color:white; border:none; border-radius:4px; font-size:12px; font-weight:800; cursor:pointer; display:flex; align-items:center; gap:6px; white-space:nowrap;">
                         <i class="fas fa-external-link-alt"></i> Open in Frappe
                     </button>
                 </div>
@@ -4825,7 +4825,7 @@ window.OmnisDashboardV6 = class OmnisDashboardV6 {
                             <!-- Filter & Export -->
                             <div style="display:flex; align-items:center; gap:8px;">
                                 <label style="font-size:11px; font-weight:600; color:#64748b; white-space:nowrap;">Period:</label>
-                                <select id="oem-period-filter" style="padding:5px 10px; border:1px solid #cbd5e1; border-radius:6px; font-size:11px; font-weight:500; cursor:pointer; background:white;">
+                                <select id="oem-period-filter" style="padding:5px 10px; border:1px solid #cbd5e1; border-radius:4px; font-size:11px; font-weight:500; cursor:pointer; background:white;">
                                     <option value="This Month" ${period === 'This Month' ? 'selected' : ''}>This Month</option>
                                     <option value="Last Month" ${period === 'Last Month' ? 'selected' : ''}>Last Month</option>
                                     <option value="This Quarter" ${period === 'This Quarter' ? 'selected' : ''}>This Quarter</option>
@@ -4839,7 +4839,7 @@ window.OmnisDashboardV6 = class OmnisDashboardV6 {
                                     <input type="date" id="oem-custom-end" value="${customEnd || ''}" style="padding:4px; border:1px solid #cbd5e1; border-radius:4px; font-size:10px;">
                                     <button id="oem-custom-apply" style="padding:4px 8px; background:#0f172a; color:white; border:none; border-radius:4px; font-size:10px; cursor:pointer;">Apply</button>
                                 </div>
-                                <button id="btn-export-oem-pdf" class="report-btn-print" style="padding:5px 12px; background:#0f172a; color:white; border:none; border-radius:6px; font-size:11px; font-weight:600; cursor:pointer; display:flex; align-items:center; gap:5px; margin-left:10px;">
+                                <button id="btn-export-oem-pdf" class="report-btn-print" style="padding:5px 12px; background:#0f172a; color:white; border:none; border-radius:4px; font-size:11px; font-weight:600; cursor:pointer; display:flex; align-items:center; gap:5px; margin-left:10px;">
                                     <svg width="12" height="12" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M6 9V2h12v7M6 18H4a2 2 0 01-2-2v-5a2 2 0 012-2h16a2 2 0 012 2v5a2 2 0 012 2h-2m-2 0v5H6v-5"></path></svg>
                                     Export / Print PDF
                                 </button>
@@ -5085,17 +5085,17 @@ window.OmnisDashboardV6 = class OmnisDashboardV6 {
                                 });
 
                                 return `
-                                    <div style="flex:1; background:white; border:1px solid #e2e8f0; border-radius:8px; padding:12px 16px; box-shadow:0 1px 2px rgba(0,0,0,0.05); display:flex; flex-direction:column; justify-content:center;">
+                                    <div style="flex:1; background:white; border:1px solid #e2e8f0; border-radius:4px; padding:12px 16px; box-shadow:0 1px 2px rgba(0,0,0,0.05); display:flex; flex-direction:column; justify-content:center;">
                                         <div style="color:#64748b; font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:0.5px; margin-bottom:4px;">Total Quotes</div>
                                         <div style="font-size:24px; font-weight:800; color:#0f172a; line-height:1;">${quotesYtd.length}</div>
                                     </div>
-                                    <div style="flex:1; background:white; border:1px solid #e2e8f0; border-radius:8px; padding:12px 16px; box-shadow:0 1px 2px rgba(0,0,0,0.05); display:flex; flex-direction:column; justify-content:center;">
+                                    <div style="flex:1; background:white; border:1px solid #e2e8f0; border-radius:4px; padding:12px 16px; box-shadow:0 1px 2px rgba(0,0,0,0.05); display:flex; flex-direction:column; justify-content:center;">
                                         <div style="color:#64748b; font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:0.5px; margin-bottom:4px;">Hot Leads</div>
                                         <div style="font-size:24px; font-weight:800; color:#f97316; line-height:1; display:flex; align-items:center; gap:8px;">
                                             ${hqCount} <i class="fas fa-fire" style="font-size:18px;"></i>
                                         </div>
                                     </div>
-                                    <div style="flex:1; background:white; border:1px solid #e2e8f0; border-radius:8px; padding:12px 16px; box-shadow:0 1px 2px rgba(0,0,0,0.05); display:flex; flex-direction:column; justify-content:center; min-width:0;">
+                                    <div style="flex:1; background:white; border:1px solid #e2e8f0; border-radius:4px; padding:12px 16px; box-shadow:0 1px 2px rgba(0,0,0,0.05); display:flex; flex-direction:column; justify-content:center; min-width:0;">
                                         <div style="color:#64748b; font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:0.5px; margin-bottom:4px;">Most Quoted Item</div>
                                         <div style="font-size:14px; font-weight:700; color:#0f172a; line-height:1.2; display:flex; align-items:center; justify-content:space-between; gap:8px;">
                                             <span style="white-space:nowrap; overflow:hidden; text-overflow:ellipsis; flex:1;" title="${maxModel}">${maxModel}</span>
@@ -5199,7 +5199,7 @@ window.OmnisDashboardV6 = class OmnisDashboardV6 {
                     <div style="font-weight:700; margin-bottom:10px;">Error: ${e.message}</div>
                     <div style="margin-top:20px; border-top:1px solid #fee2e2; padding-top:20px;">
                         <p style="font-size:12px; color:#64748b; margin-bottom:12px;">The server encountered an internal error. Please use the diagnostic tool below.</p>
-                        <button onclick="window.salestrack.runOEMDebug()" style="padding:10px 20px; background:#0f172a; color:white; border:none; border-radius:8px; font-weight:600; cursor:pointer; box-shadow:0 4px 6px -1px rgba(0,0,0,0.1);">[DEBUG] Show Server Traceback</button>
+                        <button onclick="window.salestrack.runOEMDebug()" style="padding:10px 20px; background:#0f172a; color:white; border:none; border-radius:4px; font-weight:600; cursor:pointer; box-shadow:0 4px 6px -1px rgba(0,0,0,0.1);">[DEBUG] Show Server Traceback</button>
                     </div>
                 </div>
             `;
@@ -5216,7 +5216,7 @@ window.OmnisDashboardV6 = class OmnisDashboardV6 {
                 : '<div style="padding:20px; color:#64748b;">No recent Error Logs found for this method.</div>';
 
             const schemaHtml = `
-                <div style="text-align:left; font-size:11px; margin-top:10px; padding:12px; background:white; border:1px solid #e2e8f0; border-radius:6px;">
+                <div style="text-align:left; font-size:11px; margin-top:10px; padding:12px; background:white; border:1px solid #e2e8f0; border-radius:4px;">
                     <b style="color:#0f172a;">Group Sales Columns:</b><br><span style="color:#475569;">${log.group_sales_columns ? log.group_sales_columns.join(', ') : 'N/A'}</span><br><br>
                     <b style="color:#0f172a;">Item Columns:</b><br><span style="color:#475569;">${log.item_columns ? log.item_columns.join(', ') : 'N/A'}</span>
                 </div>
@@ -5236,7 +5236,7 @@ window.OmnisDashboardV6 = class OmnisDashboardV6 {
                             ${schemaHtml}
                         </div>
                         <div style="margin-top:24px; text-align:center;">
-                            <button onclick="location.reload()" style="padding:8px 16px; background:#e2e8f0; border:none; border-radius:6px; color:#475569; font-weight:600; cursor:pointer;">Close Diagnostics</button>
+                            <button onclick="location.reload()" style="padding:8px 16px; background:#e2e8f0; border:none; border-radius:4px; color:#475569; font-weight:600; cursor:pointer;">Close Diagnostics</button>
                         </div>
                     </div>
                 `;
@@ -5466,7 +5466,7 @@ window.OmnisDashboardV6 = class OmnisDashboardV6 {
                     background:#fefffec; 
                     color:#b91c1c;
                     border:1px solid #fee2e2;
-                    border-radius:8px;
+                    border-radius:4px;
                     font-size:12px;
                     font-weight:700;
                     cursor:pointer;
@@ -5529,7 +5529,7 @@ window.OmnisDashboardV6 = class OmnisDashboardV6 {
             const urgency = o._daysLeft <= 3 ? '#ef4444' : o._daysLeft <= 7 ? '#f59e0b' : '#10b981';
             const label = o._daysLeft === 0 ? 'TODAY' : o._daysLeft === 1 ? 'TOMORROW' : `${o._daysLeft}d`;
             return `<div style="display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid #f1f5f9;">
-                <div style="min-width:40px;height:40px;border-radius:8px;background:${urgency}15;border:1px solid ${urgency}40;display:flex;flex-direction:column;align-items:center;justify-content:center;">
+                <div style="min-width:40px;height:40px;border-radius:4px;background:${urgency}15;border:1px solid ${urgency}40;display:flex;flex-direction:column;align-items:center;justify-content:center;">
                     <span style="font-size:9px;font-weight:900;color:${urgency};line-height:1;">${label}</span>
                 </div>
                 <div style="flex:1;min-width:0;">
@@ -5619,11 +5619,11 @@ window.OmnisDashboardV6 = class OmnisDashboardV6 {
                                 <!-- Right: Buttons -->
                                 <div style="display:flex; gap:6px; flex-shrink:0; align-items:center;">
                                     ${r.status === 'Handed Over' ?
-                `<div style="display:flex; align-items:center; gap:4px; font-size:10px; font-weight:700; color:#059669; background:#ecfdf5; padding:4px 8px; border-radius:6px; border:1px solid #a7f3d0;">
+                `<div style="display:flex; align-items:center; gap:4px; font-size:10px; font-weight:700; color:#059669; background:#ecfdf5; padding:4px 8px; border-radius:4px; border:1px solid #a7f3d0;">
                                         <span>...</span> <span>Handed Over</span>
                                         </div>`
                 :
-                `<button onclick="salestrack.openHandoverModal('${r.name}')" style="background:#64748b; color:white; border:none; padding:4px 8px; border-radius:6px; font-size:10px; font-weight:600; cursor:pointer; white-space:nowrap; display:flex; align-items:center; gap:4px;">
+                `<button onclick="salestrack.openHandoverModal('${r.name}')" style="background:#64748b; color:white; border:none; padding:4px 8px; border-radius:4px; font-size:10px; font-weight:600; cursor:pointer; white-space:nowrap; display:flex; align-items:center; gap:4px;">
                                         <span style="font-size:12px;">&larr;</span> <span>Handover</span>
                                         </button>`
             }
@@ -5631,7 +5631,7 @@ window.OmnisDashboardV6 = class OmnisDashboardV6 {
                             </div>
 
                             <!-- AI Insight Section -->
-                            <div class="ai-insight" style="background:#fff; border:1px solid #e2e8f0; border-radius:6px; padding:6px 8px; display:flex; gap:6px; clear:both; margin-top:6px;">
+                            <div class="ai-insight" style="background:#fff; border:1px solid #e2e8f0; border-radius:4px; padding:6px 8px; display:flex; gap:6px; clear:both; margin-top:6px;">
                             <div style="font-size:12px;">&#x1F451;</div>
                             <div style="font-size:10px; color:#475569; line-height:1.4;">
                                 <span style="font-weight:700; color:#64748b;">AI Insight:</span> ${insight}
@@ -5672,7 +5672,7 @@ window.OmnisDashboardV6 = class OmnisDashboardV6 {
                     background:#f8fafc;
                     color:#475569;
                     border:1px solid #e2e8f0;
-                    border-radius:8px;
+                    border-radius:4px;
                     font-size:12px;
                     font-weight:600;
                     cursor:pointer;
@@ -5688,7 +5688,7 @@ window.OmnisDashboardV6 = class OmnisDashboardV6 {
 
     _generateFollowUpRow(item) {
         return `
-            <div class="followup-item" style="display:flex; justify-content:space-between; align-items:center; padding:8px 10px; background:#f9fafb; border-radius:8px;">
+            <div class="followup-item" style="display:flex; justify-content:space-between; align-items:center; padding:8px 10px; background:#f9fafb; border-radius:4px;">
                 <div class="f-name" style="font-size:12px; font-weight:500; color:#374151;">${item.sales_person}</div>
                 <div class="f-count" style="background:#e0e7ff; color:#4338ca; font-size:11px; font-weight:700; padding:2px 8px; border-radius:10px;">${item.count}</div>
             </div>
@@ -6626,21 +6626,21 @@ window.OmnisDashboardV6 = class OmnisDashboardV6 {
                     <td style="padding:8px 12px; border-bottom:1px solid #f1f5f9;">
                          <div style="display:flex; gap:8px; align-items:stretch; width:100%;">
                             <div style="flex:1; display:flex; flex-direction:column; gap:6px;">
-                                <textarea class="m-notes" rows="2" style="flex:1; min-height:60px; padding:8px; border:1px solid #cbd5e1; border-radius:8px; font-size:12px; font-family:inherit; background:white; line-height:1.4; resize:vertical; border-color:#d1d5db;" placeholder="Machine status...">${m.notes || ''}</textarea>
+                                <textarea class="m-notes" rows="2" style="flex:1; min-height:60px; padding:8px; border:1px solid #cbd5e1; border-radius:4px; font-size:12px; font-family:inherit; background:white; line-height:1.4; resize:vertical; border-color:#d1d5db;" placeholder="Machine status...">${m.notes || ''}</textarea>
                                 <div style="display:flex; gap:6px; flex-wrap:wrap; align-items:center;">
-                                    <button onclick="salestrack.openDefectsModal('${(m.item_name || m.machine || m.item || '').replace(/'/g, "\\'").replace(/"/g, '&quot;')}', '${(reportId || '').replace(/'/g, "\\'")}', '${safeCustomerName}')" title="Log Defects" style="background:#fffbeb; color:#d97706; border:1px solid #fde68a; border-radius:6px; padding:4px 10px; font-size:11px; font-weight:700; cursor:pointer; display:flex; align-items:center; gap:4px; transition:all 0.2s;"><i class="fas fa-exclamation-triangle"></i> Defects Log</button>
-                                    <button onclick="salestrack.openBookTrainingModal('${(m.item_name || m.machine || m.item || '').replace(/'/g, "\\'").replace(/"/g, '&quot;')}', '${(reportId || '').replace(/'/g, "\\'")}', '${safeCustomerName}')" title="Book Operator Training" style="background:#ecfeff; color:#0891b2; border:1px solid #a5f3fc; border-radius:6px; padding:4px 10px; font-size:11px; font-weight:700; cursor:pointer; display:flex; align-items:center; gap:4px; transition:all 0.2s;"><i class="fas fa-user-graduate"></i> Training</button>
+                                    <button onclick="salestrack.openDefectsModal('${(m.item_name || m.machine || m.item || '').replace(/'/g, "\\'").replace(/"/g, '&quot;')}', '${(reportId || '').replace(/'/g, "\\'")}', '${safeCustomerName}')" title="Log Defects" style="background:#fffbeb; color:#d97706; border:1px solid #fde68a; border-radius:4px; padding:4px 10px; font-size:11px; font-weight:700; cursor:pointer; display:flex; align-items:center; gap:4px; transition:all 0.2s;"><i class="fas fa-exclamation-triangle"></i> Defects Log</button>
+                                    <button onclick="salestrack.openBookTrainingModal('${(m.item_name || m.machine || m.item || '').replace(/'/g, "\\'").replace(/"/g, '&quot;')}', '${(reportId || '').replace(/'/g, "\\'")}', '${safeCustomerName}')" title="Book Operator Training" style="background:#ecfeff; color:#0891b2; border:1px solid #a5f3fc; border-radius:4px; padding:4px 10px; font-size:11px; font-weight:700; cursor:pointer; display:flex; align-items:center; gap:4px; transition:all 0.2s;"><i class="fas fa-user-graduate"></i> Training</button>
                                 </div>
                             </div>
                             <div style="display:flex; flex-direction:column; gap:4px; flex-shrink:0;">
-                                <div class="photo-slot" data-field="images_one" onclick="salestrack.triggerMachineImageUpload(this)" title="Attach Photo 1" style="width:34px; height:34px; border:1.5px dashed #cbd5e1; border-radius:6px; display:flex; align-items:center; justify-content:center; cursor:pointer; background:white; position:relative; overflow:hidden; transition:all 0.2s;">
+                                <div class="photo-slot" data-field="images_one" onclick="salestrack.triggerMachineImageUpload(this)" title="Attach Photo 1" style="width:34px; height:34px; border:1.5px dashed #cbd5e1; border-radius:4px; display:flex; align-items:center; justify-content:center; cursor:pointer; background:white; position:relative; overflow:hidden; transition:all 0.2s;">
                                     ${img1 ? `
                                         <img src="${img1}" style="width:100%; height:100%; object-fit:cover;">
                                         <div class="delete-photo" onclick="salestrack.removeMachineImage(this, event)" style="position:absolute; top:2px; right:2px; background:rgba(239, 68, 68, 0.9); color:white; width:14px; height:14px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:10px; font-weight:bold; cursor:pointer; z-index:5;">&times;</div>
                                     ` : `<span style="font-size:16px; color:#94a3b8;">+</span>`}
                                     <input type="hidden" class="m-img-one" value="${m.images_one || ''}">
                                 </div>
-                                <div class="photo-slot" data-field="image_two" onclick="salestrack.triggerMachineImageUpload(this)" title="Attach Photo 2" style="width:34px; height:34px; border:1.5px dashed #cbd5e1; border-radius:6px; display:flex; align-items:center; justify-content:center; cursor:pointer; background:white; position:relative; overflow:hidden; transition:all 0.2s;">
+                                <div class="photo-slot" data-field="image_two" onclick="salestrack.triggerMachineImageUpload(this)" title="Attach Photo 2" style="width:34px; height:34px; border:1.5px dashed #cbd5e1; border-radius:4px; display:flex; align-items:center; justify-content:center; cursor:pointer; background:white; position:relative; overflow:hidden; transition:all 0.2s;">
                                     ${img2 ? `
                                         <img src="${img2}" style="width:100%; height:100%; object-fit:cover;">
                                         <div class="delete-photo" onclick="salestrack.removeMachineImage(this, event)" style="position:absolute; top:2px; right:2px; background:rgba(239, 68, 68, 0.9); color:white; width:14px; height:14px; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:10px; font-weight:bold; cursor:pointer; z-index:5;">&times;</div>
@@ -6661,7 +6661,7 @@ window.OmnisDashboardV6 = class OmnisDashboardV6 {
         const content = `
            <div style="padding: 16px; display:flex; flex-direction:column; gap:16px; background:#f8fafc;">
                <!-- Header Info -->
-               <div style="display:flex; justify-content:space-between; align-items:flex-start; background:white; padding:16px; border-radius:8px; border:1px solid #e2e8f0; box-shadow:0 1px 2px rgba(0,0,0,0.05);">
+               <div style="display:flex; justify-content:space-between; align-items:flex-start; background:white; padding:16px; border-radius:4px; border:1px solid #e2e8f0; box-shadow:0 1px 2px rgba(0,0,0,0.05);">
                     <div>
                         <div style="font-size:11px; font-weight:700; color:#64748b; margin-bottom:6px; text-transform:uppercase; letter-spacing:0.5px;">Customer</div>
                         <div style="font-size:18px; font-weight:700; color:#0f172a;">${(order ? order.customer : (fullDoc ? fullDoc.customer_name : 'Unknown')).replace(/"/g, '')}</div>
@@ -6670,14 +6670,14 @@ window.OmnisDashboardV6 = class OmnisDashboardV6 {
                     <div id="edit-order-terms-section" style="width:160px; display:flex; flex-direction:column; justify-content:center;">
                        <label style="font-size:11px; font-weight:700; color:#64748b; display:block; margin-bottom:8px; text-transform:uppercase; letter-spacing:0.5px;">Payment Terms Deal</label>
                        <label style="display:flex; align-items:center; gap:8px; cursor:pointer;">
-                           <input type="checkbox" id="edit-order-is-terms" ${order && order.is_payment_terms === true ? 'checked' : ''} style="width:18px; height:18px; accent-color:#10b981; cursor:pointer;">
-                           <span style="font-size:13px; font-weight:700; color:#10b981;">On Terms</span>
+                           <input type="checkbox" id="edit-order-is-terms" ${order && order.is_payment_terms === true ? 'checked' : ''} style="width:18px; height:18px; accent-color:#8b2219; cursor:pointer;">
+                           <span style="font-size:13px; font-weight:700; color:#8b2219;">On Terms</span>
                        </label>
                     </div>
 
                     <div id="edit-order-status-section" style="width:220px;">
                        <label style="font-size:11px; font-weight:700; color:#64748b; display:block; margin-bottom:6px; text-transform:uppercase; letter-spacing:0.5px;">Order Status</label>
-                       <select id="edit-order-status" style="width:100%; padding:10px; border:1px solid #cbd5e1; border-radius:8px; font-size:14px; background:white; font-weight:600; color:#334155; cursor:pointer;">
+                       <select id="edit-order-status" style="width:100%; padding:10px; border:1px solid #cbd5e1; border-radius:4px; font-size:14px; background:white; font-weight:600; color:#334155; cursor:pointer;">
                             <option value="New Sale" ${order && order.status === 'New Sale' ? 'selected' : ''}>New Sale</option>
                             <option value="In Progress" ${order && order.status === 'In Progress' ? 'selected' : ''}>In Progress</option>
                             <option value="On Hold" ${order && order.status === 'On Hold' ? 'selected' : ''}>On Hold</option>
@@ -6711,9 +6711,9 @@ window.OmnisDashboardV6 = class OmnisDashboardV6 {
                             <span>MACHINES</span>
                             <span style="background:#e2e8f0; color:#64748b; font-size:10px; padding:2px 8px; border-radius:99px; font-weight:600;">${machines.length}</span>
                        </div>
-                       <button onclick="salestrack.addMachineRow()" style="font-size:12px; background:#ffffff; color:#0f172a; border:1px solid #cbd5e1; padding:6px 12px; border-radius:6px; font-weight:600; cursor:pointer; box-shadow:0 1px 2px rgba(0,0,0,0.05); transition:all 0.2s;">+ Add Machine</button>
+                       <button onclick="salestrack.addMachineRow()" style="font-size:12px; background:#f8fafc; color:#334155; border:1px solid #e2e8f0; padding:6px 12px; border-radius:4px; font-weight:600; cursor:pointer; transition:all 0.2s;">+ Add Machine</button>
                    </div>
-                   <div style="border:1px solid #e2e8f0; border-radius:8px; overflow:hidden; box-shadow:0 1px 2px rgba(0,0,0,0.05); background:white;">
+                   <div style="border:1px solid #e2e8f0; border-top:3px solid #8b2219; border-radius:4px; overflow:hidden; background:white;">
                        <table style="width:100%; border-collapse:separate; border-spacing:0; font-size:12px;">
                            <thead style="background:#f8fafc; color:#475569; font-weight:700; font-size:11px; text-transform:uppercase; letter-spacing:0.05em; border-bottom:1px solid #e2e8f0;">
                                <tr style="background: transparent;">
@@ -6737,12 +6737,12 @@ window.OmnisDashboardV6 = class OmnisDashboardV6 {
                     <div style="display:flex; justify-content:space-between; align-items:center;">
                         <div style="font-size:14px; font-weight:700; color:#334155;">CONTACTS</div>
                         <div>
-                            <button onclick="salestrack.loadPastContacts(event)" style="font-size:12px; background:#f0f9ff; color:#0369a1; border:1px solid #bae6fd; padding:6px 12px; border-radius:6px; font-weight:600; cursor:pointer; margin-right: 8px; box-shadow:0 1px 2px rgba(0,0,0,0.05); transition:all 0.2s;"><i class="fas fa-history" style="margin-right:4px;"></i> Load Past Contacts</button>
-                            <button onclick="salestrack.addContactRow()" style="font-size:12px; background:#ffffff; color:#0f172a; border:1px solid #cbd5e1; padding:6px 12px; border-radius:6px; font-weight:600; cursor:pointer; box-shadow:0 1px 2px rgba(0,0,0,0.05); transition:all 0.2s;">+ Add Contact</button>
+                            <button onclick="salestrack.loadPastContacts(event)" style="font-size:12px; background:#f0f9ff; color:#0369a1; border:1px solid #bae6fd; padding:6px 12px; border-radius:4px; font-weight:600; cursor:pointer; margin-right: 8px; box-shadow:0 1px 2px rgba(0,0,0,0.05); transition:all 0.2s;"><i class="fas fa-history" style="margin-right:4px;"></i> Load Past Contacts</button>
+                            <button onclick="salestrack.addContactRow()" style="font-size:12px; background:#f8fafc; color:#334155; border:1px solid #e2e8f0; padding:6px 12px; border-radius:4px; font-weight:600; cursor:pointer; transition:all 0.2s;">+ Add Contact</button>
                         </div>
                     </div>
                     
-                    <div style="border:1px solid #e2e8f0; border-radius:8px; overflow:hidden; background:white; box-shadow:0 1px 2px rgba(0,0,0,0.05);">
+                    <div style="border:1px solid #e2e8f0; border-radius:4px; overflow:hidden; background:white; box-shadow:0 1px 2px rgba(0,0,0,0.05);">
                         <table style="width:100%; border-collapse:separate; border-spacing:0; font-size:12px;">
                             <thead style="background:#f8fafc; color:#475569; font-weight:700; font-size:11px; text-transform:uppercase; letter-spacing:0.05em; border-bottom:1px solid #e2e8f0;">
                                 <tr style="background: transparent;">
@@ -6763,21 +6763,21 @@ window.OmnisDashboardV6 = class OmnisDashboardV6 {
                 <div style="display:flex; justify-content:space-between; align-items:center; margin-top:12px; border-top:1px solid #e2e8f0; padding-top:24px;">
                      <!-- Left: Delete with Safety -->
                      <div style="position:relative; display:flex; gap:8px; align-items:center;">
-                        <button id="btn-init-delete" onclick="salestrack.toggleDeleteConfirm(true)" style="color:#ef4444; background:white; border:1px solid #e2e8f0; font-size:13px; font-weight:600; cursor:pointer; padding:10px 16px; border-radius:8px; transition:all 0.2s;">
+                        <button id="btn-init-delete" onclick="salestrack.toggleDeleteConfirm(true)" style="color:#ef4444; background:white; border:1px solid #e2e8f0; font-size:13px; font-weight:600; cursor:pointer; padding:10px 16px; border-radius:4px; transition:all 0.2s;">
                             Delete Order
                         </button>
 
-                        <div id="delete-confirm-box" style="display:none; position:absolute; bottom:110%; left:0; background:white; border:1px solid #e2e8f0; box-shadow:0 10px 15px -3px rgba(0,0,0,0.1); padding:16px; border-radius:8px; width:280px; z-index:20;">
+                        <div id="delete-confirm-box" style="display:none; position:absolute; bottom:110%; left:0; background:white; border:1px solid #e2e8f0; box-shadow:0 10px 15px -3px rgba(0,0,0,0.1); padding:16px; border-radius:4px; width:280px; z-index:20;">
                              <div style="font-size:13px; font-weight:700; color:#1e293b; margin-bottom:4px;">Permanently Delete?</div>
                              <div style="font-size:12px; color:#64748b; margin-bottom:12px; line-height:1.4;">This action cannot be undone.</div>
                              <div style="display:flex; gap:8px;">
-                                 <button onclick="salestrack.toggleDeleteConfirm(false)" style="flex:1; padding:8px; background:#eff6ff; color:#1d4ed8; border:1px solid #dbeafe; border-radius:6px; font-size:12px; font-weight:600; cursor:pointer;">Cancel</button>
-                                 <button id="btn-confirm-delete-order" style="flex:1; padding:8px; background:#ef4444; color:white; border:none; border-radius:6px; font-size:12px; font-weight:600; cursor:pointer;">Delete</button>
+                                 <button onclick="salestrack.toggleDeleteConfirm(false)" style="flex:1; padding:8px; background:#eff6ff; color:#1d4ed8; border:1px solid #dbeafe; border-radius:4px; font-size:12px; font-weight:600; cursor:pointer;">Cancel</button>
+                                 <button id="btn-confirm-delete-order" style="flex:1; padding:8px; background:#ef4444; color:white; border:none; border-radius:4px; font-size:12px; font-weight:600; cursor:pointer;">Delete</button>
                              </div>
                         </div>
 
                         ${(reportId || '').startsWith('TRACK-') ? `
-                        <button onclick="window.promoteTrackingOrder('${(reportId || '').replace(/'/g, "\\'")}')" style="color:#0f172a; background:#f8fafc; border:1px solid #cbd5e1; font-size:13px; font-weight:700; cursor:pointer; padding:10px 16px; border-radius:8px; transition:all 0.2s; display:flex; align-items:center; gap:6px;">
+                        <button onclick="window.promoteTrackingOrder('${(reportId || '').replace(/'/g, "\\'")}')" style="color:#0f172a; background:#f8fafc; border:1px solid #cbd5e1; font-size:13px; font-weight:700; cursor:pointer; padding:10px 16px; border-radius:4px; transition:all 0.2s; display:flex; align-items:center; gap:6px;">
                             <i class="fas fa-arrow-up"></i> Promote to Actual Order
                         </button>
                         ` : ''}
@@ -6785,15 +6785,15 @@ window.OmnisDashboardV6 = class OmnisDashboardV6 {
 
                      <!-- Right: Standard Actions -->
                      <div style="display:flex; gap:12px; flex-wrap:wrap; align-items:center;">
-                        <span id="auto-save-indicator" style="font-size:12px; font-weight:700; color:#10b981; margin-right:8px; opacity:0; transition:opacity 0.3s;">&#10003; Auto-saved</span>
-                        <button id="btn-save-order-changes" onclick="salestrack.saveOrderFull('${(reportId || '').replace(/'/g, "\\'").replace(/"/g, '&quot;')}', '${(machineId || '').replace(/'/g, "\\'").replace(/"/g, '&quot;')}', true)" style="padding:12px 24px; background:#10b981; color:white; border:none; border-radius:8px; font-size:14px; font-weight:700; cursor:pointer; display:flex; align-items:center; gap:8px; box-shadow:0 10px 15px -3px rgba(16, 185, 129, 0.25); transition:all 0.2s;">
+                        <span id="auto-save-indicator" style="font-size:12px; font-weight:700; color:#8b2219; margin-right:8px; opacity:0; transition:opacity 0.3s;">&#10003; Auto-saved</span>
+                        <button id="btn-save-order-changes" class="maroon-btn" onclick="salestrack.saveOrderFull('${(reportId || '').replace(/'/g, "\\'").replace(/"/g, '&quot;')}', '${(machineId || '').replace(/'/g, "\\'").replace(/"/g, '&quot;')}', true)" style="padding:10px 20px; background:linear-gradient(135deg, #8b2219 0%, #5a1512 100%); color:white; border:none; border-radius:4px; font-size:13px; font-weight:600; cursor:pointer; display:flex; align-items:center; gap:8px; box-shadow:0 2px 4px rgba(139, 34, 25, 0.2); transition:all 0.2s;">
                             <i class="fas fa-save"></i> Save Details
                         </button>
-                        <button onclick="salestrack.closeListModal()" style="padding:12px 24px; border:1px solid #cbd5e1; background:white; color:#475569; border-radius:8px; font-size:14px; font-weight:600; cursor:pointer;">Close</button>
-                        <button id="btn-send-email-update" onclick="salestrack.initEmailUpdate('${(reportId || '').replace(/'/g, "\\'").replace(/"/g, '&quot;')}')" style="padding:12px 24px; background:#1d4ed8; color:white; border:none; border-radius:8px; font-size:14px; font-weight:700; cursor:pointer; display:flex; align-items:center; gap:8px; box-shadow:0 10px 15px -3px rgba(29, 78, 216, 0.25); transition:all 0.2s;">
+                        <button onclick="salestrack.closeListModal()" style="padding:10px 20px; border:1px solid #cbd5e1; background:white; color:#475569; border-radius:4px; font-size:13px; font-weight:600; cursor:pointer;">Close</button>
+                        <button id="btn-send-email-update" onclick="salestrack.initEmailUpdate('${(reportId || '').replace(/'/g, "\\'").replace(/"/g, '&quot;')}')" style="padding:10px 20px; background:#f1f5f9; color:#334155; border:1px solid #cbd5e1; border-radius:4px; font-size:13px; font-weight:600; cursor:pointer; display:flex; align-items:center; gap:8px; transition:all 0.2s;">
                            <span style="font-size:18px;">&#128231;</span> Send Email
                         </button>
-                        <button id="btn-send-whatsapp-update" onclick="salestrack.initWhatsAppUpdate('${(reportId || '').replace(/'/g, "\\'").replace(/"/g, '&quot;')}', '${(machineId || '').replace(/'/g, "\\'").replace(/"/g, '&quot;')}')" style="padding:12px 24px; background:#25d366; color:white; border:none; border-radius:8px; font-size:14px; font-weight:700; cursor:pointer; display:flex; align-items:center; gap:8px; box-shadow:0 10px 15px -3px rgba(37, 211, 102, 0.2); transition:all 0.2s;">
+                        <button id="btn-send-whatsapp-update" onclick="salestrack.initWhatsAppUpdate('${(reportId || '').replace(/'/g, "\\'").replace(/"/g, '&quot;')}', '${(machineId || '').replace(/'/g, "\\'").replace(/"/g, '&quot;')}')" style="padding:10px 20px; background:#25d366; color:white; border:none; border-radius:4px; font-size:13px; font-weight:600; cursor:pointer; display:flex; align-items:center; gap:8px; box-shadow:0 2px 4px rgba(37, 211, 102, 0.2); transition:all 0.2s;">
                            <span style="font-size:18px;">&#128172;</span> WhatsApp Update
                         </button>
                      </div>
@@ -6851,20 +6851,20 @@ window.OmnisDashboardV6 = class OmnisDashboardV6 {
         row.style.borderBottom = '1px solid #e2e8f0';
 
         row.innerHTML = `
-            <td style="padding:12px; border-bottom:1px solid #f1f5f9;"><input type="text" class="new-item" placeholder="Model Name" style="width:100%; padding:8px; border:1px solid #cbd5e1; border-radius:6px; font-size:12px; background:white;"></td>
-            <td style="padding:12px; border-bottom:1px solid #f1f5f9;"><input type="number" class="new-qty" value="1" style="width:100%; padding:8px; border:1px solid #cbd5e1; border-radius:6px; font-size:12px; text-align:center; background:white;"></td>
-            <td style="padding:12px; border-bottom:1px solid #f1f5f9;"><input type="date" class="new-target" style="width:100%; padding:8px; border:1px solid #cbd5e1; border-radius:6px; font-size:12px; background:white;"></td>
-            <td style="padding:12px; border-bottom:1px solid #f1f5f9;"><input type="date" class="new-revised" style="width:100%; padding:8px; border:1px solid #cbd5e1; border-radius:6px; font-size:12px; background:white;"></td>
-            <td style="padding:12px; border-bottom:1px solid #f1f5f9;"><input type="date" class="new-actual" style="width:100%; padding:8px; border:1px solid #cbd5e1; border-radius:6px; font-size:12px; background:white;"></td>
+            <td style="padding:12px; border-bottom:1px solid #f1f5f9;"><input type="text" class="new-item" placeholder="Model Name" style="width:100%; padding:8px; border:1px solid #cbd5e1; border-radius:4px; font-size:12px; background:white;"></td>
+            <td style="padding:12px; border-bottom:1px solid #f1f5f9;"><input type="number" class="new-qty" value="1" style="width:100%; padding:8px; border:1px solid #cbd5e1; border-radius:4px; font-size:12px; text-align:center; background:white;"></td>
+            <td style="padding:12px; border-bottom:1px solid #f1f5f9;"><input type="date" class="new-target" style="width:100%; padding:8px; border:1px solid #cbd5e1; border-radius:4px; font-size:12px; background:white;"></td>
+            <td style="padding:12px; border-bottom:1px solid #f1f5f9;"><input type="date" class="new-revised" style="width:100%; padding:8px; border:1px solid #cbd5e1; border-radius:4px; font-size:12px; background:white;"></td>
+            <td style="padding:12px; border-bottom:1px solid #f1f5f9;"><input type="date" class="new-actual" style="width:100%; padding:8px; border:1px solid #cbd5e1; border-radius:4px; font-size:12px; background:white;"></td>
             <td style="padding:10px 12px; border-bottom:1px solid #f1f5f9;">
                 <div style="display:flex; gap:8px; align-items:stretch; width:100%;">
-                    <textarea class="new-notes" rows="2" placeholder="Notes" style="flex:1; min-height:60px; padding:8px; border:1px solid #cbd5e1; border-radius:8px; font-size:12px; font-family:inherit; background:white; line-height:1.4; resize:vertical;"></textarea>
+                    <textarea class="new-notes" rows="2" placeholder="Notes" style="flex:1; min-height:60px; padding:8px; border:1px solid #cbd5e1; border-radius:4px; font-size:12px; font-family:inherit; background:white; line-height:1.4; resize:vertical;"></textarea>
                     <div style="display:flex; flex-direction:column; gap:4px; flex-shrink:0;">
-                        <div class="photo-slot" data-field="images_one" onclick="salestrack.triggerMachineImageUpload(this)" title="Attach Photo 1" style="width:34px; height:34px; border:1.5px dashed #cbd5e1; border-radius:6px; display:flex; align-items:center; justify-content:center; cursor:pointer; background:white; position:relative; overflow:hidden;">
+                        <div class="photo-slot" data-field="images_one" onclick="salestrack.triggerMachineImageUpload(this)" title="Attach Photo 1" style="width:34px; height:34px; border:1.5px dashed #cbd5e1; border-radius:4px; display:flex; align-items:center; justify-content:center; cursor:pointer; background:white; position:relative; overflow:hidden;">
                             <span style="font-size:16px; color:#94a3b8;">+</span>
                             <input type="hidden" class="new-img-one" value="">
                         </div>
-                        <div class="photo-slot" data-field="image_two" onclick="salestrack.triggerMachineImageUpload(this)" title="Attach Photo 2" style="width:34px; height:34px; border:1.5px dashed #cbd5e1; border-radius:6px; display:flex; align-items:center; justify-content:center; cursor:pointer; background:white; position:relative; overflow:hidden;">
+                        <div class="photo-slot" data-field="image_two" onclick="salestrack.triggerMachineImageUpload(this)" title="Attach Photo 2" style="width:34px; height:34px; border:1.5px dashed #cbd5e1; border-radius:4px; display:flex; align-items:center; justify-content:center; cursor:pointer; background:white; position:relative; overflow:hidden;">
                             <span style="font-size:16px; color:#94a3b8;">+</span>
                             <input type="hidden" class="new-img-two" value="">
                         </div>
@@ -6968,10 +6968,10 @@ window.OmnisDashboardV6 = class OmnisDashboardV6 {
             ? '<tr><td colspan="5" style="text-align:center; padding:16px; color:#94a3b8; font-style:italic;">No contacts added.</td></tr>'
             : this._tempContacts.map((c, i) => `
                 <tr style="background:${i % 2 === 0 ? '#ffffff' : '#f8fafc'}; border-bottom:1px solid #e2e8f0;">
-                    <td style="padding:8px;"><input type="text" data-idx="${i}" data-field="salutation" value="${c.salutation || ''}" placeholder="Title" style="width:100%; padding:8px; border:1px solid #e2e8f0; border-radius:6px; font-size:13px; background:white;"></td>
-                    <td style="padding:8px;"><input type="text" data-idx="${i}" data-field="name1" value="${c.name1 || ''}" placeholder="Name" style="width:100%; padding:8px; border:1px solid #e2e8f0; border-radius:6px; font-size:13px; background:white;"></td>
-                    <td style="padding:8px;"><input type="text" data-idx="${i}" data-field="phone_number" value="${c.phone_number || ''}" placeholder="Phone" style="width:100%; padding:8px; border:1px solid #e2e8f0; border-radius:6px; font-size:13px; background:white;"></td>
-                    <td style="padding:8px;"><input type="text" data-idx="${i}" data-field="email_address" value="${c.email_address || ''}" placeholder="Email" style="width:100%; padding:8px; border:1px solid #e2e8f0; border-radius:6px; font-size:13px; background:white;"></td>
+                    <td style="padding:8px;"><input type="text" data-idx="${i}" data-field="salutation" value="${c.salutation || ''}" placeholder="Title" style="width:100%; padding:8px; border:1px solid #e2e8f0; border-radius:4px; font-size:13px; background:white;"></td>
+                    <td style="padding:8px;"><input type="text" data-idx="${i}" data-field="name1" value="${c.name1 || ''}" placeholder="Name" style="width:100%; padding:8px; border:1px solid #e2e8f0; border-radius:4px; font-size:13px; background:white;"></td>
+                    <td style="padding:8px;"><input type="text" data-idx="${i}" data-field="phone_number" value="${c.phone_number || ''}" placeholder="Phone" style="width:100%; padding:8px; border:1px solid #e2e8f0; border-radius:4px; font-size:13px; background:white;"></td>
+                    <td style="padding:8px;"><input type="text" data-idx="${i}" data-field="email_address" value="${c.email_address || ''}" placeholder="Email" style="width:100%; padding:8px; border:1px solid #e2e8f0; border-radius:4px; font-size:13px; background:white;"></td>
                     <td style="text-align:center;">
                         <button onclick="salestrack.removeContactRow(${i})" style="color:#94a3b8; background:none; border:none; cursor:pointer; font-weight:bold; padding:8px; font-size:14px; transition:color 0.2s; hover:text-red-500;">&times;</button>
                     </td>
@@ -7172,7 +7172,7 @@ window.OmnisDashboardV6 = class OmnisDashboardV6 {
                 this.showToast("Order Saved Successfully", "success");
 
                 const indicator = document.getElementById('auto-save-indicator');
-                if (indicator) { indicator.innerHTML = '&#10003; Auto-saved'; indicator.style.color = '#10b981'; indicator.style.opacity = '1'; setTimeout(() => { if(indicator.innerHTML.includes('Auto-saved')) indicator.style.opacity = '0'; }, 2000); }
+                if (indicator) { indicator.innerHTML = '&#10003; Auto-saved'; indicator.style.color = '#8b2219'; indicator.style.opacity = '1'; setTimeout(() => { if(indicator.innerHTML.includes('Auto-saved')) indicator.style.opacity = '0'; }, 2000); }
 
                 if (closeAfter) {
                     this.closeListModal();
@@ -8276,7 +8276,7 @@ window.OmnisDashboardV6 = class OmnisDashboardV6 {
                                 <div style="font-size:12px; color:rgba(255,255,255,0.75); margin-top:2px;">Review before sending to customer</div>
                             </div>
                         </div>
-                        <button onclick="document.getElementById('wa-preview-modal').remove()" style="background:rgba(255,255,255,0.1); border:none; color:white; width:32px; height:32px; border-radius:8px; font-size:18px; cursor:pointer;">&times;</button>
+                        <button onclick="document.getElementById('wa-preview-modal').remove()" style="background:rgba(255,255,255,0.1); border:none; color:white; width:32px; height:32px; border-radius:4px; font-size:18px; cursor:pointer;">&times;</button>
                     </div>
 
                     <!-- Scrollable body -->
@@ -8319,8 +8319,8 @@ window.OmnisDashboardV6 = class OmnisDashboardV6 {
 
                         <!-- Actions -->
                         <div style="display:flex; gap:12px; justify-content:flex-end; padding-top:8px; border-top:1px solid #f1f5f9;">
-                            <button onclick="document.getElementById('wa-preview-modal').remove()" style="padding:10px 24px; border:1px solid #e2e8f0; background:white; color:#64748b; border-radius:8px; font-size:14px; font-weight:600; cursor:pointer;">Cancel</button>
-                            <button id="btn-confirm-send-wa" style="padding:10px 28px; background:#25d366; color:white; border:none; border-radius:8px; font-size:14px; font-weight:700; cursor:pointer; display:flex; align-items:center; gap:8px; box-shadow:0 4px 14px rgba(37,211,102,0.35);">
+                            <button onclick="document.getElementById('wa-preview-modal').remove()" style="padding:10px 24px; border:1px solid #e2e8f0; background:white; color:#64748b; border-radius:4px; font-size:14px; font-weight:600; cursor:pointer;">Cancel</button>
+                            <button id="btn-confirm-send-wa" style="padding:10px 28px; background:#25d366; color:white; border:none; border-radius:4px; font-size:14px; font-weight:700; cursor:pointer; display:flex; align-items:center; gap:8px; box-shadow:0 4px 14px rgba(37,211,102,0.35);">
                                 <span>&#x1F4AC;</span> Send Now
                             </button>
                         </div>
@@ -8702,7 +8702,7 @@ window.OmnisDashboardV6 = class OmnisDashboardV6 {
             const bg = i%2===0 ? '#f5fafd' : '#ffffff';
             const sn = m.serial ? `<div style="color:#64748b;font-size:12px;margin-top:3px;">SN: ${m.serial}</div>` : '';
             // Image thumbnail inline if present - increased size and made clickable
-            const imgHtml = m.imageUrl ? `<div style="margin-top:12px;"><a href="${m.imageUrl}" target="_blank" style="display:inline-block;"><img src="${m.imageUrl}" alt="Click to enlarge" style="height:160px;width:auto;border-radius:8px;border:2px solid #cbd5e1;box-shadow:0 3px 10px rgba(0,0,0,0.08);transition:opacity 0.2s;"></a></div>` : '';
+            const imgHtml = m.imageUrl ? `<div style="margin-top:12px;"><a href="${m.imageUrl}" target="_blank" style="display:inline-block;"><img src="${m.imageUrl}" alt="Click to enlarge" style="height:160px;width:auto;border-radius:4px;border:2px solid #cbd5e1;box-shadow:0 3px 10px rgba(0,0,0,0.08);transition:opacity 0.2s;"></a></div>` : '';
             let row = `<td style="padding:20px 24px;font-size:15px;color:#0f172a;font-weight:600;border-bottom:1px solid #cbd5e1;vertical-align:middle;"><strong>${m.name}</strong>${sn}${imgHtml}</td>`;
             if (showQty)   row += `<td style="padding:20px 24px;text-align:center;font-size:15px;color:#334155;vertical-align:middle;border-bottom:1px solid #cbd5e1;">${m.qty||doc.quantity||''}</td>`;
             if (showStat)  row += `<td style="padding:20px 24px;font-size:15px;color:#334155;vertical-align:middle;border-bottom:1px solid #cbd5e1;">${m.status||doc.status_issue||''}</td>`;
@@ -8754,7 +8754,7 @@ window.OmnisDashboardV6 = class OmnisDashboardV6 {
     </p>
   </div>
   <div style="padding:16px 32px 36px;overflow-x:auto;">
-    <table style="width:100%;border-collapse:separate;border-spacing:0;font-size:15px;border:1px solid #cbd5e1;border-radius:8px;overflow:hidden;box-shadow:0 4px 6px -1px rgba(0,0,0,0.05);" cellpadding="0" cellspacing="0">
+    <table style="width:100%;border-collapse:separate;border-spacing:0;font-size:15px;border:1px solid #cbd5e1;border-radius:4px;overflow:hidden;box-shadow:0 4px 6px -1px rgba(0,0,0,0.05);" cellpadding="0" cellspacing="0">
       <thead><tr style="background:${colour};">${headers}</tr></thead>
       <tbody>${rows}</tbody>
     </table>
@@ -8902,7 +8902,7 @@ window.OmnisDashboardV6 = class OmnisDashboardV6 {
                             <div style="font-size:13px; color:rgba(255,255,255,0.7); margin-top:2px;">Equipment Order Status Report</div>
                         </div>
                     </div>
-                    <button onclick="document.getElementById('email-preview-modal').remove()" style="background:rgba(255,255,255,0.1); border:none; color:white; width:36px; height:36px; border-radius:8px; font-size:20px; cursor:pointer;">&times;</button>
+                    <button onclick="document.getElementById('email-preview-modal').remove()" style="background:rgba(255,255,255,0.1); border:none; color:white; width:36px; height:36px; border-radius:4px; font-size:20px; cursor:pointer;">&times;</button>
                 </div>
                 <div style="padding:32px; display:flex; flex-direction:column; gap:20px; overflow-y:auto; flex:1;">
                     <div style="background:#fef2f2; border:1px solid #fecaca; border-radius:10px; padding:16px 20px;">
@@ -8924,8 +8924,8 @@ window.OmnisDashboardV6 = class OmnisDashboardV6 {
                         </div>
                     </div>
                     <div style="display:flex; gap:16px; justify-content:flex-end; padding-top:16px; border-top:1px solid #f1f5f9; margin-top:auto;">
-                        <button onclick="document.getElementById('email-preview-modal').remove()" style="padding:12px 28px; border:1px solid #e2e8f0; background:white; color:#64748b; border-radius:8px; font-size:15px; font-weight:600; cursor:pointer;">Cancel</button>
-                        <button id="btn-confirm-send-email" style="padding:12px 32px; background:${themeColor}; color:white; border:none; border-radius:8px; font-size:15px; font-weight:700; cursor:pointer; display:flex; align-items:center; gap:8px; box-shadow:0 4px 14px ${isSino ? 'rgba(123,21,21,0.3)' : 'rgba(29,78,216,0.3)'};">
+                        <button onclick="document.getElementById('email-preview-modal').remove()" style="padding:12px 28px; border:1px solid #e2e8f0; background:white; color:#64748b; border-radius:4px; font-size:15px; font-weight:600; cursor:pointer;">Cancel</button>
+                        <button id="btn-confirm-send-email" style="padding:12px 32px; background:${themeColor}; color:white; border:none; border-radius:4px; font-size:15px; font-weight:700; cursor:pointer; display:flex; align-items:center; gap:8px; box-shadow:0 4px 14px ${isSino ? 'rgba(123,21,21,0.3)' : 'rgba(29,78,216,0.3)'};">
                             <span>&#128231;</span> Send Now
                         </button>
                     </div>
@@ -9552,7 +9552,7 @@ window.OmnisDashboardV6 = class OmnisDashboardV6 {
                 this.showToast("Two-Step Auth successfully enabled!", "success");
                 document.getElementById('mfa-setup-container').style.display = 'none';
                 document.getElementById('mfa-action-container').innerHTML = `
-                    <div style="background:#dcfce7; color:#166534; padding:12px; border-radius:8px; font-weight:700; text-align:center;">
+                    <div style="background:#dcfce7; color:#166534; padding:12px; border-radius:4px; font-weight:700; text-align:center;">
                         <i class="fas fa-check-circle"></i> Two-Step Auth is Enabled
                     </div>
                 `;
@@ -9987,7 +9987,7 @@ window.OmnisDashboardV6 = class OmnisDashboardV6 {
                                 <span style="font-size:10px; font-weight:700; color:#94a3b8; display:block; margin-bottom:4px;">${dateStr}</span>
                                 ${d.description}
                             </div>
-                            <button onclick="salestrack.markDefectClosed('${d.name}', '${machineName.replace(/'/g, "\\'")}', '${orderId.replace(/'/g, "\\'")}')" title="Remove" style="background:#fef2f2; border:1px solid #fecaca; border-radius:6px; padding:6px 10px; font-size:12px; font-weight:600; cursor:pointer; color:#ef4444; flex-shrink:0; transition:all 0.2s hover:bg-red-50;"><i class="fas fa-trash"></i></button>
+                            <button onclick="salestrack.markDefectClosed('${d.name}', '${machineName.replace(/'/g, "\\'")}', '${orderId.replace(/'/g, "\\'")}')" title="Remove" style="background:#fef2f2; border:1px solid #fecaca; border-radius:4px; padding:6px 10px; font-size:12px; font-weight:600; cursor:pointer; color:#ef4444; flex-shrink:0; transition:all 0.2s hover:bg-red-50;"><i class="fas fa-trash"></i></button>
                         </div>
                     </td>
                 </tr>
@@ -10145,7 +10145,7 @@ window._renderOEMProcurementTable = function (container, oemData, period) {
                             data-sales="${sales}"
                             data-quotes="${quotes}"
                             onclick="event.stopPropagation(); window._oemRowClick(this)"
-                            style="padding:4px 10px; background:#8b2219; color:#fff; border:none; border-radius:6px;
+                            style="padding:4px 10px; background:#8b2219; color:#fff; border:none; border-radius:4px;
                                    font-size:11px; font-weight:700; cursor:pointer; white-space:nowrap;"
                             onmouseover="this.style.background='#6d1a14'"
                             onmouseout="this.style.background='#8b2219'">
@@ -10450,7 +10450,7 @@ async function fetchGSMAIRiskAnalysis() {
             if (data.risk_alerts && data.risk_alerts.length > 0) {
                 alerts.innerHTML = data.risk_alerts.map(a => {
                     const severityColor = a.severity === "High" ? "#ef4444" : (a.severity === "Medium" ? "#f59e0b" : "#64748b");
-                    return `<div style="background:#fef2f2; border:1px solid #fee2e2; border-radius:8px; padding:8px 12px; display:flex; justify-content:space-between; align-items:center; margin-top:8px;">
+                    return `<div style="background:#fef2f2; border:1px solid #fee2e2; border-radius:4px; padding:8px 12px; display:flex; justify-content:space-between; align-items:center; margin-top:8px;">
                         <div style="font-size:13px; font-weight:600; color:#1e1b4b;">${a.order_id} at Risk</div>
                         <div style="font-size:12px; color:#64748b; flex:1; margin: 0 16px;">${a.reason}</div>
                         <span style="background:${severityColor}; color:white; padding:2px 8px; border-radius:99px; font-size:10px; font-weight:800;">${a.severity}</span>
@@ -10521,40 +10521,40 @@ window.OmnisDashboardV6.prototype.openBookTrainingModal = async function(machine
             
             <div style="margin-bottom:16px;">
                 <label style="display:block; font-size:12px; font-weight:700; color:#64748b; margin-bottom:4px;">Customer / Order</label>
-                <input type="text" value="${customerName}" readonly style="width:100%; padding:10px; border:1px solid #cbd5e1; border-radius:8px; font-size:13px; background:#f8fafc; color:#475569; cursor:not-allowed;">
+                <input type="text" value="${customerName}" readonly style="width:100%; padding:10px; border:1px solid #cbd5e1; border-radius:4px; font-size:13px; background:#f8fafc; color:#475569; cursor:not-allowed;">
                 <input type="hidden" id="tr-order-id" value="${orderId}">
                 <input type="hidden" id="tr-customer" value="${customerName}">
             </div>
             
             <div style="margin-bottom:16px;">
                 <label style="display:block; font-size:12px; font-weight:700; color:#64748b; margin-bottom:4px;">Machine</label>
-                <input type="text" id="tr-machine" value="${machineName}" readonly style="width:100%; padding:10px; border:1px solid #cbd5e1; border-radius:8px; font-size:13px; background:#f8fafc; color:#475569; cursor:not-allowed;">
+                <input type="text" id="tr-machine" value="${machineName}" readonly style="width:100%; padding:10px; border:1px solid #cbd5e1; border-radius:4px; font-size:13px; background:#f8fafc; color:#475569; cursor:not-allowed;">
             </div>
             
             <div style="margin-bottom:16px;">
                 <label style="display:block; font-size:12px; font-weight:700; color:#64748b; margin-bottom:4px;">Training Location <span style="color:#ef4444;">*</span></label>
-                <input type="text" id="tr-location" placeholder="e.g. Customer Site, Workshop..." style="width:100%; padding:10px; border:1px solid #cbd5e1; border-radius:8px; font-size:13px; outline:none; focus:border-blue-500;">
+                <input type="text" id="tr-location" placeholder="e.g. Customer Site, Workshop..." style="width:100%; padding:10px; border:1px solid #cbd5e1; border-radius:4px; font-size:13px; outline:none; focus:border-blue-500;">
             </div>
             
             <div style="margin-bottom:16px; display:flex; gap:16px;">
                 <div style="flex:1;">
                     <label style="display:block; font-size:12px; font-weight:700; color:#64748b; margin-bottom:4px;">Training Date <span style="color:#ef4444;">*</span></label>
-                    <input type="date" id="tr-date" style="width:100%; padding:10px; border:1px solid #cbd5e1; border-radius:8px; font-size:13px; outline:none;">
+                    <input type="date" id="tr-date" style="width:100%; padding:10px; border:1px solid #cbd5e1; border-radius:4px; font-size:13px; outline:none;">
                 </div>
                 <div style="flex:1;">
                     <label style="display:block; font-size:12px; font-weight:700; color:#64748b; margin-bottom:4px;">Number of Operators <span style="color:#ef4444;">*</span></label>
-                    <input type="number" id="tr-operators" value="1" min="1" style="width:100%; padding:10px; border:1px solid #cbd5e1; border-radius:8px; font-size:13px; outline:none;">
+                    <input type="number" id="tr-operators" value="1" min="1" style="width:100%; padding:10px; border:1px solid #cbd5e1; border-radius:4px; font-size:13px; outline:none;">
                 </div>
             </div>
 
             <div style="margin-bottom:24px;">
                 <label style="display:block; font-size:12px; font-weight:700; color:#64748b; margin-bottom:4px;">Trainer Name</label>
-                <input type="text" id="tr-trainer" placeholder="Assigned trainer..." style="width:100%; padding:10px; border:1px solid #cbd5e1; border-radius:8px; font-size:13px; outline:none;">
+                <input type="text" id="tr-trainer" placeholder="Assigned trainer..." style="width:100%; padding:10px; border:1px solid #cbd5e1; border-radius:4px; font-size:13px; outline:none;">
             </div>
             
             <div style="display:flex; justify-content:flex-end; gap:12px;">
-                <button onclick="salestrack.closeListModal()" style="padding:10px 20px; border:1px solid #cbd5e1; background:white; color:#475569; border-radius:8px; font-size:13px; font-weight:600; cursor:pointer;">Cancel</button>
-                <button id="btn-save-training" onclick="salestrack.submitOperatorTraining()" style="padding:10px 24px; background:#0891b2; color:white; border:none; border-radius:8px; font-size:13px; font-weight:700; cursor:pointer; box-shadow:0 4px 6px -1px rgba(8, 145, 178, 0.2);">Save Training</button>
+                <button onclick="salestrack.closeListModal()" style="padding:10px 20px; border:1px solid #cbd5e1; background:white; color:#475569; border-radius:4px; font-size:13px; font-weight:600; cursor:pointer;">Cancel</button>
+                <button id="btn-save-training" onclick="salestrack.submitOperatorTraining()" style="padding:10px 24px; background:#0891b2; color:white; border:none; border-radius:4px; font-size:13px; font-weight:700; cursor:pointer; box-shadow:0 4px 6px -1px rgba(8, 145, 178, 0.2);">Save Training</button>
             </div>
         </div>
     `;
@@ -10664,7 +10664,7 @@ window.OmnisDashboardV6.prototype.loadStockMappings = async function() {
                 <tr style="border-bottom:1px solid #f1f5f9;">
                     <td style="padding:16px 20px; font-size:14px; font-weight:800; color:#0f172a;">${m.brand}</td>
                     <td style="padding:16px 20px;">
-                        <span style="background:${companyBg}; color:${companyColor}; padding:4px 10px; border-radius:6px; font-size:11px; font-weight:800; border:1px solid ${companyColor}33;">
+                        <span style="background:${companyBg}; color:${companyColor}; padding:4px 10px; border-radius:4px; font-size:11px; font-weight:800; border:1px solid ${companyColor}33;">
                             ${m.company}
                         </span>
                     </td>
@@ -10672,10 +10672,10 @@ window.OmnisDashboardV6.prototype.loadStockMappings = async function() {
                         ${logoHtml}
                     </td>
                     <td style="padding:16px 20px; text-align:right; display:flex; gap:8px; justify-content:flex-end;">
-                        <button onclick="window.salestrack.editStockMapping('${m.brand.replace(/'/g, "\\'")}', '${m.company.replace(/'/g, "\\'")}', '${(m.logo_url || '').replace(/'/g, "\\'")}')" style="padding:6px 12px; background:white; border:1px solid #e2e8f0; border-radius:6px; color:#3b82f6; font-size:12px; font-weight:700; cursor:pointer; transition:all 0.2s;" onmouseover="this.style.background='#eff6ff'; this.style.borderColor='#bfdbfe';" onmouseout="this.style.background='white'; this.style.borderColor='#e2e8f0';">
+                        <button onclick="window.salestrack.editStockMapping('${m.brand.replace(/'/g, "\\'")}', '${m.company.replace(/'/g, "\\'")}', '${(m.logo_url || '').replace(/'/g, "\\'")}')" style="padding:6px 12px; background:white; border:1px solid #e2e8f0; border-radius:4px; color:#3b82f6; font-size:12px; font-weight:700; cursor:pointer; transition:all 0.2s;" onmouseover="this.style.background='#eff6ff'; this.style.borderColor='#bfdbfe';" onmouseout="this.style.background='white'; this.style.borderColor='#e2e8f0';">
                             <i class="fas fa-edit"></i> Edit
                         </button>
-                        <button onclick="window.salestrack.deleteStockMapping('${m.brand.replace(/'/g, "\\'")}')" style="padding:6px 12px; background:white; border:1px solid #e2e8f0; border-radius:6px; color:#ef4444; font-size:12px; font-weight:700; cursor:pointer; transition:all 0.2s;" onmouseover="this.style.background='#fef2f2'; this.style.borderColor='#fecaca';" onmouseout="this.style.background='white'; this.style.borderColor='#e2e8f0';">
+                        <button onclick="window.salestrack.deleteStockMapping('${m.brand.replace(/'/g, "\\'")}')" style="padding:6px 12px; background:white; border:1px solid #e2e8f0; border-radius:4px; color:#ef4444; font-size:12px; font-weight:700; cursor:pointer; transition:all 0.2s;" onmouseover="this.style.background='#fef2f2'; this.style.borderColor='#fecaca';" onmouseout="this.style.background='white'; this.style.borderColor='#e2e8f0';">
                             <i class="fas fa-trash-alt"></i> Delete
                         </button>
                     </td>
@@ -10987,7 +10987,7 @@ window.OutboxManager = {
         container.innerHTML = this.queue.map(item => {
             if (item.status === 'error') {
                 return `
-                <div style="background:#fff; border:1px solid var(--accent-red); border-radius:8px; padding:10px; display:flex; flex-direction:column; gap:8px;">
+                <div style="background:#fff; border:1px solid var(--accent-red); border-radius:4px; padding:10px; display:flex; flex-direction:column; gap:8px;">
                     <div style="display:flex; justify-content:space-between; align-items:center;">
                         <div style="font-weight:700; font-size:12px; color:var(--text);">${item.displayTitle}</div>
                         <span style="color:var(--accent-red); font-size:11px; font-weight:700;">Failed</span>
@@ -11002,7 +11002,7 @@ window.OutboxManager = {
             
             if (item.status === 'sending') {
                 return `
-                <div style="background:#fff; border:1px solid var(--border); border-radius:8px; padding:10px; display:flex; justify-content:space-between; align-items:center;">
+                <div style="background:#fff; border:1px solid var(--border); border-radius:4px; padding:10px; display:flex; justify-content:space-between; align-items:center;">
                     <div>
                         <div style="font-weight:700; font-size:12px; color:var(--text);">${item.displayTitle}</div>
                         <div style="font-size:11px; color:#64748b;">Sending...</div>
@@ -11014,7 +11014,7 @@ window.OutboxManager = {
             const secondsLeft = Math.max(0, Math.ceil((item.sendAt - now) / 1000));
             
             return `
-            <div style="background:#fff; border:1px solid var(--border); border-radius:8px; padding:10px; display:flex; flex-direction:column; gap:8px;">
+            <div style="background:#fff; border:1px solid var(--border); border-radius:4px; padding:10px; display:flex; flex-direction:column; gap:8px;">
                 <div style="display:flex; justify-content:space-between; align-items:center;">
                     <div style="font-weight:700; font-size:12px; color:var(--text);">${item.displayTitle}</div>
                     <span style="color:var(--accent-orange); font-size:11px; font-weight:700;"><i class="fas fa-stopwatch"></i> ${secondsLeft}s</span>
