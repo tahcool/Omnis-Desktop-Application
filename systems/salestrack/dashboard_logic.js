@@ -7127,17 +7127,20 @@ window.OmnisDashboardV6 = class OmnisDashboardV6 {
                         quantity: m.qty || 1,
                         target_date: m.target_handover_date || null,
                         revised_date: m.revised_handover_date || null,
-                        actual_date: m.actual_handover_date || null,
                         notes: m.notes,
                         image_1_url: m.images_one,
                         image_2_url: m.image_two
                     }));
                     
-                    await window.electron.invoke('supabase:query', {
+                    const insRes = await window.electron.invoke('supabase:query', {
                         table: 'order_machines',
                         method: 'insert',
                         params: { data: machinePayloads }
                     });
+                    if (!insRes.ok) {
+                        console.error("Machine Insert Error:", insRes.error);
+                        throw new Error("Failed to save machines: " + JSON.stringify(insRes.error));
+                    }
                 }
 
                 // 3. Sync Contacts
@@ -7156,11 +7159,12 @@ window.OmnisDashboardV6 = class OmnisDashboardV6 {
                         email: c.email_address
                     }));
                     
-                    await window.electron.invoke('supabase:query', {
+                    const conRes = await window.electron.invoke('supabase:query', {
                         table: 'order_contacts',
                         method: 'insert',
                         params: { data: contactPayloads }
                     });
+                    if (!conRes.ok) throw new Error("Failed to save contacts: " + JSON.stringify(conRes.error));
                 }
 
                 this.showToast("Order Saved Successfully", "success");
