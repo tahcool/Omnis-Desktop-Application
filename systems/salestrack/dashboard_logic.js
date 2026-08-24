@@ -4432,8 +4432,13 @@ window.OmnisDashboardV6 = class OmnisDashboardV6 {
                     };
                 }
             }
-            const res = await window.callFrappeSequenced(this.sys.baseUrl, "powerstar_salestrack.omnis_dashboard.get_omnis_oem_details_v2", reqData);
-            const payload = res.message || res;
+            let payload;
+            if (window.fetchOemDetailsFromSupabase) {
+                payload = await window.fetchOemDetailsFromSupabase(reqData);
+            } else {
+                const res = await window.callFrappeSequenced(this.sys.baseUrl, "powerstar_salestrack.omnis_dashboard.get_omnis_oem_details_v2", reqData);
+                payload = res.message || res;
+            }
 
             if (!payload.ok) throw new Error(payload.error || "Failed to fetch details");
 
