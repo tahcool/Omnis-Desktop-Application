@@ -6716,7 +6716,7 @@ window.OmnisDashboardV6 = class OmnisDashboardV6 {
                    <div style="border:1px solid #e2e8f0; border-radius:8px; overflow:hidden; box-shadow:0 1px 2px rgba(0,0,0,0.05); background:white;">
                        <table style="width:100%; border-collapse:separate; border-spacing:0; font-size:12px;">
                            <thead style="background:#f8fafc; color:#475569; font-weight:700; font-size:11px; text-transform:uppercase; letter-spacing:0.05em; border-bottom:1px solid #e2e8f0;">
-                               <tr>
+                               <tr style="background: transparent;">
                                    <th style="padding:10px 12px; text-align:left; width:22%; color:#475569; border-bottom:1px solid #e2e8f0;">Machine / Item</th>
                                    <th style="padding:10px 12px; text-align:center; width:6%; color:#475569; border-bottom:1px solid #e2e8f0;">Qty</th>
                                    <th style="padding:10px 12px; text-align:left; width:13%; color:#475569; border-bottom:1px solid #e2e8f0;">Target Date</th>
@@ -6745,7 +6745,7 @@ window.OmnisDashboardV6 = class OmnisDashboardV6 {
                     <div style="border:1px solid #e2e8f0; border-radius:8px; overflow:hidden; background:white; box-shadow:0 1px 2px rgba(0,0,0,0.05);">
                         <table style="width:100%; border-collapse:separate; border-spacing:0; font-size:12px;">
                             <thead style="background:#f8fafc; color:#475569; font-weight:700; font-size:11px; text-transform:uppercase; letter-spacing:0.05em; border-bottom:1px solid #e2e8f0;">
-                                <tr>
+                                <tr style="background: transparent;">
                                     <th style="padding:10px 12px; text-align:left; width:15%; color:#475569; border-bottom:1px solid #e2e8f0;">Salutation</th>
                                     <th style="padding:10px 12px; text-align:left; width:30%; color:#475569; border-bottom:1px solid #e2e8f0;">Name</th>
                                     <th style="padding:10px 12px; text-align:left; width:25%; color:#475569; border-bottom:1px solid #e2e8f0;">Phone</th>
