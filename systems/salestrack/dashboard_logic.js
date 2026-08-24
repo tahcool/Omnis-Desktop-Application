@@ -6785,7 +6785,7 @@ window.OmnisDashboardV6 = class OmnisDashboardV6 {
                      <!-- Right: Standard Actions -->
                      <div style="display:flex; gap:12px; flex-wrap:wrap; align-items:center;">
                         <span id="auto-save-indicator" style="font-size:12px; font-weight:700; color:#10b981; margin-right:8px; opacity:0; transition:opacity 0.3s;">&#10003; Auto-saved</span>
-                        <button id="btn-save-order-changes" onclick="salestrack.saveOrderFull('${(reportId || '').replace(/'/g, "\\'")}', '${(machineId || '').replace(/'/g, "\\'")}', false)" style="padding:12px 24px; background:#10b981; color:white; border:none; border-radius:8px; font-size:14px; font-weight:700; cursor:pointer; display:flex; align-items:center; gap:8px; box-shadow:0 10px 15px -3px rgba(16, 185, 129, 0.25); transition:all 0.2s;">
+                        <button id="btn-save-order-changes" onclick="salestrack.saveOrderFull('${(reportId || '').replace(/'/g, "\\'").replace(/"/g, '&quot;')}', '${(machineId || '').replace(/'/g, "\\'").replace(/"/g, '&quot;')}', true)" style="padding:12px 24px; background:#10b981; color:white; border:none; border-radius:8px; font-size:14px; font-weight:700; cursor:pointer; display:flex; align-items:center; gap:8px; box-shadow:0 10px 15px -3px rgba(16, 185, 129, 0.25); transition:all 0.2s;">
                             <i class="fas fa-save"></i> Save Details
                         </button>
                         <button onclick="salestrack.closeListModal()" style="padding:12px 24px; border:1px solid #cbd5e1; background:white; color:#475569; border-radius:8px; font-size:14px; font-weight:600; cursor:pointer;">Close</button>
@@ -7127,6 +7127,7 @@ window.OmnisDashboardV6 = class OmnisDashboardV6 {
                         quantity: m.qty || 1,
                         target_date: m.target_handover_date || null,
                         revised_date: m.revised_handover_date || null,
+                        actual_date: m.actual_handover_date || null,
                         notes: m.notes,
                         image_1_url: m.images_one,
                         image_2_url: m.image_two
@@ -7165,7 +7166,7 @@ window.OmnisDashboardV6 = class OmnisDashboardV6 {
                 this.showToast("Order Saved Successfully", "success");
 
                 const indicator = document.getElementById('auto-save-indicator');
-                if (indicator) { indicator.innerHTML = '&#10003; Auto-saved'; indicator.style.color = '#10b981'; setTimeout(() => { if(indicator.innerHTML.includes('Auto-saved')) indicator.style.opacity = '0'; }, 2000); }
+                if (indicator) { indicator.innerHTML = '&#10003; Auto-saved'; indicator.style.color = '#10b981'; indicator.style.opacity = '1'; setTimeout(() => { if(indicator.innerHTML.includes('Auto-saved')) indicator.style.opacity = '0'; }, 2000); }
 
                 if (closeAfter) {
                     this.closeListModal();
