@@ -6386,7 +6386,7 @@ window.OmnisDashboardV6 = class OmnisDashboardV6 {
             list.className = 'hidden';
             list.style.cssText = `
                 position: absolute; background: white; border: 1px solid #e2e8f0; 
-                z-index: 100000; border-radius: 8px; 
+                z-index: 9999999; border-radius: 8px; 
                 box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1); 
                 max-height: 200px; overflow-y: auto;
             `;
@@ -6407,12 +6407,24 @@ window.OmnisDashboardV6 = class OmnisDashboardV6 {
                 return;
             }
             try {
-                let baseUrl = "https://salestrack.powerstar.co.zw";
-                if (this.sys) baseUrl = this.sys.baseUrl;
-                else if (window.getCurrentSystem) baseUrl = window.getCurrentSystem().baseUrl;
-
-                const res = await window.callFrappeSequenced(baseUrl, "powerstar_salestrack.omnis_dashboard.search_item_for_omnis", { txt: query });
-                const data = res.message || res || [];
+                let data = [];
+                if (window.electron && window.electron.invoke) {
+                    const params = { limit: 15 };
+                    if (query) params.or = `item_code.ilike.%${query}%,item_name.ilike.%${query}%`;
+                    const res = await window.electron.invoke('supabase:query', { 
+                        table: 'products', 
+                        method: 'select', 
+                        params 
+                    });
+                    if (res.data) {
+                        // Keep the unique data mapping for the UI
+                        data = res.data.map(i => ({
+                            value: i.item_name || i.item_code,
+                            description: i.item_name || i.item_code,
+                            details: i.item_code !== i.item_name ? i.item_code : ''
+                        }));
+                    }
+                }
 
                 if (data.length > 0) {
                     list.innerHTML = data.map(item => `
