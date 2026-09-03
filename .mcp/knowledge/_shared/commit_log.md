@@ -490,3 +490,7 @@
 \n## 2026-09-03
 - `a52e052` 2026-09-03 [supabase-migration] Fix Email Queue RLS issue with dedicated supabaseAdmin client and update UI theme for Email Queue
   Files: .mcp/knowledge/_shared/commit_log.md,main.js,omnis-web-deploy/systems/salestrack/dashboard_logic.js,omnis-web-deploy/systems/salestrack/index.html,package.json,replace_nav.js,systems/salestrack/dashboard_logic.js,systems/salestrack/index.html,temp_script.js,test-electron-supabase.js,
+- `551945f` 2026-09-03 [supabase-migration] [checkpoint] Fix lead time mapping and clear date filters on Order Tracking
+  Files: .mcp/knowledge/_shared/commit_log.md,alter_db.js,check_supa.js,get_group_sales.js,get_schemas.js,systems/salestrack/index.html,systems/salestrack/orders_logic.js,
+- `0ea8af6` 2026-09-03 [supabase-migration] v4.3.5: fixes for order tracking and machine add search
+  Files: RELEASE_NOTES.md,package.json,systems/salestrack/dashboard_logic.js,version.json,
