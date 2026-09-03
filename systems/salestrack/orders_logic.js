@@ -18,15 +18,12 @@ function initOrdersLogic() {
 
     console.log("[OrdersLogic] Initializing UI Bindings...");
 
-    const today = new Date();
-    const start = new Date();
-    start.setDate(today.getDate() - 30);
-
     const fStart = document.getElementById("ol-from-date");
     const fEnd = document.getElementById("ol-to-date");
 
-    if (fStart && !fStart.value) fStart.valueAsDate = start;
-    if (fEnd && !fEnd.value) fEnd.valueAsDate = today;
+    // Start with cleared filters as requested
+    if (fStart && !fStart.value) fStart.value = "";
+    if (fEnd && !fEnd.value) fEnd.value = "";
 
     // Bind Filters - Scoped to the Order Tracking view to avoid conflicts
     const filterContainer = document.getElementById("ol-orders-filters");
@@ -177,20 +174,57 @@ async function loadOrdersList(force = false) {
     if (info) info.innerHTML = `<i class="fas fa-sync fa-spin"></i> Fetching <strong>${company || "All Companies"}</strong>...`;
 
     try {
-        // Fetch all orders from Supabase (Now the Source of Truth)
-        let sbRes = await window.electron.invoke('supabase:query', {
-            table: 'fmb_reports',
-            method: 'select',
-            params: { columns: '*, order_machines(*)' }
-        });
+        // Fetch all orders from Supabase (Now the Source of Truth) + Group Sales for Lead Times
+        let [sbRes, gsRes] = await Promise.all([
+            window.electron.invoke('supabase:query', {
+                table: 'fmb_reports',
+                method: 'select',
+                params: { columns: '*, order_machines(*)' }
+            }),
+            window.electron.invoke('supabase:query', {
+                table: 'group_sales',
+                method: 'select',
+                params: { columns: 'frappe_id, committed_lead_time, customer, model' }
+            })
+        ]);
+
+        const getFuzzy = (id) => (id || '').replace(/-\d+$/, '');
+        const normStr = (s) => (s || '').toString().toLowerCase().trim();
+        
+        const ltMap = new Map();
+        const ltFuzzy = new Map();
+        const ltCustModel = new Map();
+        const ltCust = new Map();
+        
+        if (gsRes && gsRes.ok && gsRes.data) {
+            gsRes.data.forEach(d => { 
+                if (d.committed_lead_time !== undefined && d.committed_lead_time !== null && d.committed_lead_time !== "" && d.committed_lead_time !== "—") {
+                    ltMap.set(d.frappe_id, d.committed_lead_time);
+                    ltFuzzy.set(getFuzzy(d.frappe_id), d.committed_lead_time);
+                    if (d.customer && d.model) {
+                        ltCustModel.set(normStr(d.customer) + '|' + normStr(d.model), d.committed_lead_time);
+                    }
+                    if (d.customer) {
+                        ltCust.set(normStr(d.customer), d.committed_lead_time);
+                    }
+                }
+            });
+        }
 
         let ordersList = [];
         
         if (sbRes.ok && sbRes.data) {
             sbRes.data.forEach(order => {
-
-
                 const machines = order.order_machines || [];
+                
+                const fuzzyId = getFuzzy(order.frappe_id);
+                const nCust = normStr(order.customer_id || order.customer_name);
+                
+                let orderBaseLt = null;
+                if (ltMap.has(order.frappe_id)) orderBaseLt = ltMap.get(order.frappe_id);
+                else if (ltFuzzy.has(fuzzyId)) orderBaseLt = ltFuzzy.get(fuzzyId);
+                else if (ltCust.has(nCust)) orderBaseLt = ltCust.get(nCust);
+
                 if (machines.length === 0) {
                     // Create a dummy row so the order still shows up if it has no machines
                     ordersList.push({
@@ -210,7 +244,8 @@ async function loadOrdersList(force = false) {
                         company: order.company || '',
                         is_payment_terms: order.is_payment_terms,
                         is_tracking_only: false,
-                        days_left: "-"
+                        days_left: "-",
+                        committed_lead_time: orderBaseLt
                     });
                 } else {
                     machines.forEach(m => {
@@ -232,11 +267,6 @@ async function loadOrdersList(force = false) {
                             clean_notes = clean_notes.replace(/\[COMPLETED\]\s*/, '');
                         }
                         
-                        // **CRITICAL MATCH FOR FRAPPE BEHAVIOR**:
-                        // The original get_weekly_gsm_report ALWAYS excluded machines with an actual_handover_date or completed status.
-                        // This dashboard is exclusively for active/pending tracking.
-                        // UPDATE: User requested to show all historic orders, so we no longer exclude them.
-                        
                         let days_left = 0;
                         let targetDateStr = m.target_date;
                         if (targetDateStr) {
@@ -247,6 +277,14 @@ async function loadOrdersList(force = false) {
                             days_left = Math.ceil((target - now) / (1000 * 60 * 60 * 24));
                         } else {
                             days_left = "-";
+                        }
+                        
+                        const nMach = normStr(m.item_code || '');
+                        const custModelKey = nCust + '|' + nMach;
+                        
+                        let finalLt = orderBaseLt;
+                        if (ltCustModel.has(custModelKey)) {
+                            finalLt = ltCustModel.get(custModelKey);
                         }
                         
                         ordersList.push({
@@ -266,7 +304,8 @@ async function loadOrdersList(force = false) {
                             company: order.company || '',
                             is_payment_terms: order.is_payment_terms,
                             is_tracking_only: false,
-                            days_left: days_left
+                            days_left: days_left,
+                            committed_lead_time: finalLt
                         });
                     });
                 }

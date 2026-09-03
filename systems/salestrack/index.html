@@ -8343,20 +8343,26 @@
               </div>
 
               <div id="mxg-orders-filters"
-                style="display:flex; flex-wrap:wrap; gap:8px; margin-bottom:12px; padding:8px 12px; background:#fff; border-radius:6px; border:1px solid #e2e8f0; align-items:center;">
-                <span style="font-size:12px; font-weight:600; color:#64748b; margin-right:4px;">Filter:</span>
-                <input type="text" data-filter="customer" placeholder="Customer"
-                  style="border:1px solid #e2e8f0; background:#f8fafc; border-radius:4px; padding:6px 10px; font-size:12px; width:140px; outline:none;"
-                  onfocus="this.style.borderColor='#3b82f6'; this.style.background='#fff'"
-                  onblur="this.style.borderColor='#e2e8f0'; this.style.background='#f8fafc'">
+                style="display:flex; flex-wrap:wrap; gap:12px; margin-bottom:20px; padding:16px 20px; background:#fff; border-radius:10px; border:1px solid #e2e8f0; align-items:center; box-shadow: 0 1px 3px rgba(0,0,0,0.03);">
+                <span style="font-size:10px; font-weight:850; color:#94a3b8; text-transform:uppercase; letter-spacing:0.05em; margin-right:4px;">Filter:</span>
+                
+                <div style="position:relative;">
+                  <i class="fas fa-search" style="position:absolute; left:12px; top:50%; transform:translateY(-50%); color:#94a3b8; font-size:12px;"></i>
+                  <input type="text" data-filter="customer" placeholder="Customer"
+                    style="border:1px solid #e2e8f0; background:#f8fafc; border-radius:10px; padding:0 12px 0 32px; font-size:12px; font-weight:600; color:#334155; width:160px; height:38px; outline:none; transition:all 0.2s;"
+                    onfocus="this.style.borderColor='#3b82f6'; this.style.background='#fff'; this.style.boxShadow='0 0 0 3px rgba(59,130,246,0.1)'"
+                    onblur="this.style.borderColor='#e2e8f0'; this.style.background='#f8fafc'; this.style.boxShadow='none'">
+                </div>
+
                 <input type="text" data-filter="machine" placeholder="Machine"
-                  style="border:1px solid #e2e8f0; background:#f8fafc; border-radius:4px; padding:6px 10px; font-size:12px; width:120px; outline:none;"
-                  onfocus="this.style.borderColor='#3b82f6'; this.style.background='#fff'"
-                  onblur="this.style.borderColor='#e2e8f0'; this.style.background='#f8fafc'">
+                  style="border:1px solid #e2e8f0; background:#f8fafc; border-radius:10px; padding:0 14px; font-size:12px; font-weight:600; color:#334155; width:140px; height:38px; outline:none; transition:all 0.2s;"
+                  onfocus="this.style.borderColor='#3b82f6'; this.style.background='#fff'; this.style.boxShadow='0 0 0 3px rgba(59,130,246,0.1)'"
+                  onblur="this.style.borderColor='#e2e8f0'; this.style.background='#f8fafc'; this.style.boxShadow='none'">
+                  
                 <select data-filter="status"
-                  style="border:1px solid #e2e8f0; background:#f8fafc; border-radius:4px; padding:6px 10px; font-size:12px; width:110px; outline:none; cursor:pointer;"
-                  onfocus="this.style.borderColor='#3b82f6'; this.style.background='#fff'"
-                  onblur="this.style.borderColor='#e2e8f0'; this.style.background='#f8fafc'">
+                  style="border:1px solid #e2e8f0; background:#f8fafc; border-radius:10px; padding:0 14px; font-size:12px; font-weight:700; color:#334155; width:130px; height:38px; outline:none; cursor:pointer; transition:all 0.2s;"
+                  onfocus="this.style.borderColor='#3b82f6'; this.style.background='#fff'; this.style.boxShadow='0 0 0 3px rgba(59,130,246,0.1)'"
+                  onblur="this.style.borderColor='#e2e8f0'; this.style.background='#f8fafc'; this.style.boxShadow='none'">
                   <option value="">Status</option>
                   <option value="pending">Pending</option>
                   <option value="in progress" selected>In Progress</option>
@@ -8364,27 +8370,30 @@
                   <option value="draft">Draft</option>
                   <option value="cancelled">Cancelled</option>
                 </select>
+                
                 <input type="text" data-filter="notes" placeholder="Notes..."
-                  style="border:1px solid #e2e8f0; background:#f8fafc; border-radius:4px; padding:6px 10px; font-size:12px; flex:1; min-width:100px; outline:none;"
-                  onfocus="this.style.borderColor='#3b82f6'; this.style.background='#fff'"
-                  onblur="this.style.borderColor='#e2e8f0'; this.style.background='#f8fafc'">
+                  style="border:1px solid #e2e8f0; background:#f8fafc; border-radius:10px; padding:0 14px; font-size:12px; font-weight:600; color:#334155; flex:1; min-width:120px; height:38px; outline:none; transition:all 0.2s;"
+                  onfocus="this.style.borderColor='#3b82f6'; this.style.background='#fff'; this.style.boxShadow='0 0 0 3px rgba(59,130,246,0.1)'"
+                  onblur="this.style.borderColor='#e2e8f0'; this.style.background='#f8fafc'; this.style.boxShadow='none'">
+                  
                 <input type="text" data-filter="order_date" placeholder="Order Date"
-                  style="border:1px solid #e2e8f0; background:#f8fafc; border-radius:4px; padding:6px 10px; font-size:12px; width:100px; outline:none;"
-                  onfocus="this.style.borderColor='#3b82f6'; this.style.background='#fff'"
-                  onblur="this.style.borderColor='#e2e8f0'; this.style.background='#f8fafc'">
+                  style="border:1px solid #e2e8f0; background:#f8fafc; border-radius:10px; padding:0 14px; font-size:12px; font-weight:600; color:#334155; width:100px; height:38px; outline:none; transition:all 0.2s;"
+                  onfocus="this.style.borderColor='#3b82f6'; this.style.background='#fff'; this.style.boxShadow='0 0 0 3px rgba(59,130,246,0.1)'"
+                  onblur="this.style.borderColor='#e2e8f0'; this.style.background='#f8fafc'; this.style.boxShadow='none'">
+                  
                 <input type="text" data-filter="target_handover" placeholder="Handover"
-                  style="border:1px solid #e2e8f0; background:#f8fafc; border-radius:4px; padding:6px 10px; font-size:12px; width:100px; outline:none;"
-                  onfocus="this.style.borderColor='#3b82f6'; this.style.background='#fff'"
-                  onblur="this.style.borderColor='#e2e8f0'; this.style.background='#f8fafc'">
+                  style="border:1px solid #e2e8f0; background:#f8fafc; border-radius:10px; padding:0 14px; font-size:12px; font-weight:600; color:#334155; width:100px; height:38px; outline:none; transition:all 0.2s;"
+                  onfocus="this.style.borderColor='#3b82f6'; this.style.background='#fff'; this.style.boxShadow='0 0 0 3px rgba(59,130,246,0.1)'"
+                  onblur="this.style.borderColor='#e2e8f0'; this.style.background='#f8fafc'; this.style.boxShadow='none'">
+                  
                 <input type="text" data-filter="days_left" placeholder="Days"
-                  style="border:1px solid #e2e8f0; background:#f8fafc; border-radius:4px; padding:6px 10px; font-size:12px; width:60px; outline:none;"
-                  onfocus="this.style.borderColor='#3b82f6'; this.style.background='#fff'"
-                  onblur="this.style.borderColor='#e2e8f0'; this.style.background='#f8fafc'">
-
+                  style="border:1px solid #e2e8f0; background:#f8fafc; border-radius:10px; padding:0 14px; font-size:12px; font-weight:600; color:#334155; width:70px; height:38px; outline:none; transition:all 0.2s;"
+                  onfocus="this.style.borderColor='#3b82f6'; this.style.background='#fff'; this.style.boxShadow='0 0 0 3px rgba(59,130,246,0.1)'"
+                  onblur="this.style.borderColor='#e2e8f0'; this.style.background='#f8fafc'; this.style.boxShadow='none'">
 
                 <button id="mxg-orders-reset" class="btn-secondary"
-                  style="font-size:11px; padding:6px 10px; border-radius:4px; cursor:pointer;">
-                  Reset
+                  style="font-size:12px; font-weight:700; padding:0 16px; border-radius:10px; height:38px; cursor:pointer; background:#fff; color:#0f172a; border:1.5px solid #e2e8f0; transition:all 0.2s; box-shadow:0 1px 3px rgba(0,0,0,0.06);">
+                  RESET
                 </button>
               </div>
 
@@ -14280,12 +14289,34 @@
               window.frappeCircuitOpenedUntil = Date.now() + 5000; // Pause for 5s
               throw new Error(`Authentication failed (${res.status}). Circuit breaker opened.`);
             }
+            
+            // If it's a Frappe validation error (417) or other bad request, extract the message
+            if (res.status >= 400 && res.status < 500 && res.data) {
+                let errorText = res.error || `IPC Call Failed: ${res.status}`;
+                if (res.data._server_messages) {
+                    try {
+                        const msgs = JSON.parse(res.data._server_messages);
+                        errorText = msgs.map(m => {
+                            const parsed = JSON.parse(m);
+                            return parsed.message;
+                        }).join(' | ');
+                    } catch(e) {
+                        errorText = res.data._server_messages;
+                    }
+                } else if (res.data.exc_type) {
+                    errorText = res.data.exc_type;
+                }
+                const err = new Error(errorText);
+                err.isFrappeValidationError = true; // Mark it so we don't fallback to fetch
+                throw err;
+            }
+
             // If IPC returns { ok: false, error: ... }
             throw new Error(res.error || `IPC Call Failed: ${res.status}`);
           }
         } catch (err) {
-          // If we already threw an auth error, don't fallback to fetch
-          if (err.message.includes("Authentication failed") || err.message.includes("Circuit breaker")) throw err;
+          // If we already threw an auth error or validation error, don't fallback to fetch
+          if (err.isFrappeValidationError || err.message.includes("Authentication failed") || err.message.includes("Circuit breaker")) throw err;
 
           omnisLog(`IPC failed for ${method}: ${err.message}. Trying Fetch fallback...`, "warning");
         }
@@ -14333,7 +14364,26 @@
               window.frappeCircuitOpenedUntil = Date.now() + 5000;
               throw new Error(`Authentication failed(${res.status}).Circuit breaker opened.`);
             }
-            throw new Error(`Fetch Failed: ${res.status} ${res.statusText} `);
+            
+            let errorText = `Fetch Failed: ${res.status} ${res.statusText}`;
+            try {
+                const errData = await res.json();
+                if (errData._server_messages) {
+                    try {
+                        const msgs = JSON.parse(errData._server_messages);
+                        errorText = msgs.map(m => {
+                            const parsed = JSON.parse(m);
+                            return parsed.message;
+                        }).join(' | ');
+                    } catch(e) {
+                        errorText = errData._server_messages;
+                    }
+                } else if (errData.exc_type) {
+                    errorText = errData.exc_type;
+                }
+            } catch(e) {}
+            
+            throw new Error(errorText);
           }
 
           const data = await res.json();
@@ -16806,6 +16856,11 @@ thead th { padding:11px 12px; font-size:10px; font-weight:800; color:#fff; text-
 
     console.log("Defining window.saveGroupSaleRecord now!");
     window.saveGroupSaleRecord = async function () {
+      // By default, automatically push new sales to tracking!
+      if (!window._editingGroupSaleName) {
+        window._forceTrackingPush = true;
+      }
+      
       const btn = document.getElementById('btn-save-group-sale');
       const originalText = btn.textContent;
 
@@ -16874,21 +16929,39 @@ thead th { padding:11px 12px; font-size:10px; font-weight:800; color:#fff; text-
         // ---------------------------
 
         if (!CURRENT_SYSTEM) throw new Error("System not connected.");
-        const base = CURRENT_SYSTEM.baseUrl.replace(/\/$/, "");
 
-        // Include edit name if in edit mode
+        let recordId;
+        const supabasePayload = { ...payload };
+        delete supabasePayload.comments; // Not in group_sales schema
+
         if (window._editingGroupSaleName) {
-          payload.name = window._editingGroupSaleName;
+            const { data, error } = await window.electron.invoke('supabase:query', {
+                table: 'group_sales',
+                method: 'update',
+                data: supabasePayload,
+                params: { match: { frappe_id: window._editingGroupSaleName } }
+            });
+            if (error) throw new Error("Supabase update failed: " + error.message);
+            recordId = window._editingGroupSaleName;
+        } else {
+            const tempId = `GS-${Date.now()}`;
+            supabasePayload.frappe_id = tempId; 
+            const { data, error } = await window.electron.invoke('supabase:query', {
+                table: 'group_sales',
+                method: 'insert',
+                data: supabasePayload
+            });
+            if (error) throw new Error("Supabase insert failed: " + error.message);
+            recordId = tempId;
         }
 
-        const res = await window.callFrappeSequenced(base, "powerstar_salestrack.omnis_dashboard.save_group_sales", payload);
-        const response = res.message || res;
+        const response = { ok: true, name: recordId };
 
         if (response && response.ok) {
           // --- PUSH TO ORDER TRACKING (Supabase) ---
           try {
             if (window._forceTrackingPush) {
-              const saleFrappeId = response.name; // e.g. "SM Projects-031125-1492"
+              const saleFrappeId = response.name;
 
               // 1. Check if this group sale is already in fmb_reports
               const { data: existing } = await window.electron.invoke('supabase:query', {
@@ -16933,7 +17006,8 @@ thead th { padding:11px 12px; font-size:10px; font-weight:800; color:#fff; text-
                   item_code:   payload.model,
                   quantity:    parseInt(payload.qty) || 1,
                   target_date: targetDate16w,
-                  notes:       `${payload.oem ? payload.oem + ' ' : ''}${payload.model} | Salesperson: ${payload.salesperson}`
+                  notes:       `${payload.oem ? payload.oem + ' ' : ''}${payload.model} | Salesperson: ${payload.salesperson}`,
+                  internal_notes: 'New Sale'
                 }
               });
 
@@ -18940,7 +19014,7 @@ thead th { padding:11px 12px; font-size:10px; font-weight:800; color:#fff; text-
         try {
           S.loading = true;
           const company = document.getElementById('mxg-company-filter')?.value || 'all';
-          const cacheKey = `mxg_gsm_cache_${company}`;
+          const cacheKey = `mxg_gsm_cache_v2_${company}`;
           if (force) localStorage.removeItem(cacheKey);
 
           const cached = localStorage.getItem(cacheKey);
@@ -18983,17 +19057,77 @@ thead th { padding:11px 12px; font-size:10px; font-weight:800; color:#fff; text-
                     const sbRes = await window.electron.invoke('supabase:query', {
                         table: 'fmb_reports', method: 'select', params:{columns:'frappe_id, company'}
                     });
+                    
+                    const gsRes = await window.electron.invoke('supabase:query', {
+                        table: 'group_sales', method: 'select', params:{columns:'frappe_id, committed_lead_time'}
+                    });
+
                     if(sbRes.ok && sbRes.data) {
                         const compMap = new Map();
-                        sbRes.data.forEach(d => { if (d.company) compMap.set(d.frappe_id, d.company); });
-                        data.current_orders.forEach(o => {
-                            if (compMap.has(o.report_id)) o.company = compMap.get(o.report_id);
+                        const compFuzzy = new Map();
+                        const compCust = new Map();
+                        
+                        const getFuzzy = (id) => (id || '').replace(/-\d+$/, '');
+                        const normStr = (s) => (s || '').toString().toLowerCase().trim();
+
+                        sbRes.data.forEach(d => { 
+                            if (d.company) {
+                                compMap.set(d.frappe_id, d.company); 
+                                compFuzzy.set(getFuzzy(d.frappe_id), d.company);
+                                if (d.customer_name) compCust.set(normStr(d.customer_name), d.company);
+                            }
                         });
-                        if (data.orders) {
-                            data.orders.forEach(o => {
-                                if (compMap.has(o.report_id)) o.company = compMap.get(o.report_id);
+                        
+                        const ltMap = new Map();
+                        const ltFuzzy = new Map();
+                        const ltCustModel = new Map();
+                        const ltCust = new Map();
+                        
+                        if (gsRes && gsRes.ok && gsRes.data) {
+                            gsRes.data.forEach(d => { 
+                                if (d.committed_lead_time !== undefined && d.committed_lead_time !== null && d.committed_lead_time !== "" && d.committed_lead_time !== "—") {
+                                    ltMap.set(d.frappe_id, d.committed_lead_time);
+                                    ltFuzzy.set(getFuzzy(d.frappe_id), d.committed_lead_time);
+                                    if (d.customer && d.model) {
+                                        ltCustModel.set(normStr(d.customer) + '|' + normStr(d.model), d.committed_lead_time);
+                                    }
+                                    if (d.customer) {
+                                        ltCust.set(normStr(d.customer), d.committed_lead_time);
+                                    }
+                                }
                             });
+                        } else {
+                            console.error('[Omnis] Failed to fetch group_sales for lead times', gsRes);
                         }
+                        
+                        console.log('[Omnis] Lead time map built:', {ltMap, ltFuzzy, ltCustModel, ltCust});
+
+                        const applyMapping = (ordersList) => {
+                            if (!ordersList) return;
+                            ordersList.forEach(o => {
+                                const fuzzyId = getFuzzy(o.report_id);
+                                const nCust = normStr(o.customer);
+                                const nMach = normStr(o.machine);
+                                const custModelKey = nCust + '|' + nMach;
+                                
+                                // Map Company
+                                if (compMap.has(o.report_id)) o.company = compMap.get(o.report_id);
+                                else if (compFuzzy.has(fuzzyId)) o.company = compFuzzy.get(fuzzyId);
+                                else if (compCust.has(nCust)) o.company = compCust.get(nCust);
+
+                                // Map Lead Time (only overwrite if we have a valid mapping)
+                                let foundLt = null;
+                                if (ltMap.has(o.report_id)) foundLt = ltMap.get(o.report_id);
+                                else if (ltFuzzy.has(fuzzyId)) foundLt = ltFuzzy.get(fuzzyId);
+                                else if (ltCustModel.has(custModelKey)) foundLt = ltCustModel.get(custModelKey);
+                                else if (ltCust.has(nCust)) foundLt = ltCust.get(nCust);
+                                
+                                if (foundLt) o.committed_lead_time = foundLt;
+                            });
+                        };
+
+                        applyMapping(data.current_orders);
+                        applyMapping(data.orders);
                     }
                 }
             } catch(e) { console.error('[Omnis] Failed to augment company from Supabase', e); }

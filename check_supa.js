@@ -1,12 +1,13 @@
 const { createClient } = require('@supabase/supabase-js');
-const url = 'https://pfqaeewmlwfayxbgmuaq.supabase.co';
-const key = 'sb_' + 'secret_QDTpvp_agRT3cuB9nXrfPw_I9fZHEOc';
-const supabase = createClient(url, key);
+const SUPABASE_URL = "https://pfqaeewmlwfayxbgmuaq.supabase.co";
+const SUPABASE_KEY = "sb_secret_JZwRYG9k0mZ9x86o92O5sA__fuofVcU";
+const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
 
-async function check() {
-  let res1 = await supabase.from('cdv_logs').select('*').limit(3);
-  console.log('cdv_logs:', JSON.stringify(res1, null, 2));
-  let res2 = await supabase.from('cdv_schedules').select('*').limit(3);
-  console.log('cdv_schedules:', JSON.stringify(res2, null, 2));
+async function run() {
+  let { data: gs } = await supabase.from('group_sales').select('frappe_id, customer, model, committed_lead_time').order('id', {ascending: false}).limit(5);
+  let { data: fm } = await supabase.from('fmb_reports').select('frappe_id, customer_name, machine').order('id', {ascending: false}).limit(5);
+  
+  console.log("Group Sales:", gs);
+  console.log("FMB Reports:", fm);
 }
-check();
+run();

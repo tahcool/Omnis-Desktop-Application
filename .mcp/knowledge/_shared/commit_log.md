@@ -487,3 +487,6 @@
   Files: systems/salestrack/dashboard_logic.js,
 - `0ea3635` 2026-08-24 [supabase-migration] Migrate group sales list to Supabase
   Files: systems/salestrack/index.html,
+\n## 2026-09-03
+- `a52e052` 2026-09-03 [supabase-migration] Fix Email Queue RLS issue with dedicated supabaseAdmin client and update UI theme for Email Queue
+  Files: .mcp/knowledge/_shared/commit_log.md,main.js,omnis-web-deploy/systems/salestrack/dashboard_logic.js,omnis-web-deploy/systems/salestrack/index.html,package.json,replace_nav.js,systems/salestrack/dashboard_logic.js,systems/salestrack/index.html,temp_script.js,test-electron-supabase.js,
