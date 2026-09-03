@@ -14179,16 +14179,31 @@
       let responseData = null;
 
       // 1. Try IPC (Robust, handles CORS/Headers/SSL via Main Process)
+      // NOTE: Do NOT send X-Omnis-Data header via IPC — the main process makes direct server
+      // calls (not through a WAF/browser), so the custom header is unnecessary and can
+      // trigger 417 EXPECTATION FAILED on Frappe/nginx. The bypass payload is in the body.
       if (window.frappeAPI && window.frappeAPI.request) {
         try {
           const ipcUrl = (httpMethod.toUpperCase() === "GET") ? (url + (url.includes("?") ? "&" : "?") + new URLSearchParams(bypassPayload).toString()) : url;
-          const res = await window.frappeAPI.request({
+          let res = await window.frappeAPI.request({
             url: ipcUrl,
             method: httpMethod,
             data: (httpMethod.toUpperCase() === "GET") ? {} : bypassPayload,
-            headers: customHeaders,
+            headers: {}, // No custom headers via IPC — avoids 417 from X-Omnis-Data
             syncCookies: true
           });
+
+          // If server returned 417 (Expectation Failed), retry once with completely clean headers
+          if (!res.ok && res.status === 417) {
+            omnisLog(`[IPC] Got 417 for ${method} — retrying with clean headers...`, "warning");
+            res = await window.frappeAPI.request({
+              url: ipcUrl,
+              method: httpMethod,
+              data: (httpMethod.toUpperCase() === "GET") ? {} : bypassPayload,
+              headers: {},
+              syncCookies: true
+            });
+          }
 
           if (res.ok) {
             omnisLog(`Success calling ${method} (via IPC)`);
@@ -14231,8 +14246,10 @@
           const fetchOptions = {
             method: httpMethod,
             headers: { 
-              "Content-Type": "application/x-www-form-urlencoded",
-              ...customHeaders
+              "Content-Type": "application/x-www-form-urlencoded"
+              // Note: X-Omnis-Data header intentionally omitted — it can trigger
+              // 417 EXPECTATION FAILED on Frappe/nginx WAF rules.
+              // The bypass payload is already in the body as `d=<base64>`.
             },
             credentials: "include"
           };

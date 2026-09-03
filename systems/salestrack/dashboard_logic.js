@@ -434,6 +434,18 @@ window.OmnisDashboardV6 = class OmnisDashboardV6 {
         }
     }
 
+    /**
+     * Always returns the salestrack server URL, regardless of which system the user
+     * is currently logged into (e.g. fleetrack, engtrack, etc.).
+     * powerstar_salestrack APIs only live on the salestrack server — calling them
+     * against this.sys.baseUrl when that points to another server causes 417 errors.
+     */
+    get salestrackBaseUrl() {
+        const url = this.sys && this.sys.baseUrl;
+        if (url && url.includes("salestrack")) return url;
+        return "https://salestrack.powerstar.co.zw";
+    }
+
     async fetchData(period = "This Year") {
         this.sys = (window.getCurrentSystem && window.getCurrentSystem()) || { baseUrl: "https://salestrack.powerstar.co.zw" };
         this.data = this.data || {};
@@ -501,7 +513,7 @@ window.OmnisDashboardV6 = class OmnisDashboardV6 {
         // 2. Fetch from Network (Sequenced)
         try {
             omnisLog(`[Network] Sequenced Sync for ${label}...`);
-            const res = await window.callFrappeSequenced(this.sys.baseUrl, `powerstar_salestrack.omnis_dashboard.${method}`, { period: period });
+            const res = await window.callFrappeSequenced(this.salestrackBaseUrl, `powerstar_salestrack.omnis_dashboard.${method}`, { period: period });
             const payload = res.message || res;
 
             if (payload.ok) {
@@ -532,7 +544,7 @@ window.OmnisDashboardV6 = class OmnisDashboardV6 {
             const key = localStorage.getItem("omnis_openai_key");
             const payload = key ? { api_key: key } : {};
 
-            const res = await window.callFrappeSequenced(this.sys.baseUrl, "powerstar_salestrack.omnis_dashboard.get_omnis_ai_dashboard_insights", payload, "GET");
+            const res = await window.callFrappeSequenced(this.salestrackBaseUrl, "powerstar_salestrack.omnis_dashboard.get_omnis_ai_dashboard_insights", payload, "GET");
             if (res && res.message && res.message.ok) {
                 this.renderAIInsights(res.message);
             } else {
@@ -552,7 +564,7 @@ window.OmnisDashboardV6 = class OmnisDashboardV6 {
         try {
             const key = localStorage.getItem("omnis_openai_key");
             const payload = key ? { api_key: key } : {};
-            const res = await window.callFrappeSequenced(this.sys.baseUrl, "powerstar_salestrack.omnis_dashboard.get_omnis_industry_news", payload, "GET");
+            const res = await window.callFrappeSequenced(this.salestrackBaseUrl, "powerstar_salestrack.omnis_dashboard.get_omnis_industry_news", payload, "GET");
 
             if (res && res.message && res.message.ok) {
                 this.renderIndustryNews(res.message.news);
@@ -1281,7 +1293,12 @@ window.OmnisDashboardV6 = class OmnisDashboardV6 {
                 _ts: Date.now()
             };
             console.log(`[EFF V5] Requesting:`, apiParams);
-            const res = await window.callFrappeSequenced(this.sys.baseUrl, "powerstar_salestrack.omnis_dashboard.get_eff_final_v10", apiParams);
+            // IMPORTANT: powerstar_salestrack APIs live exclusively on the salestrack server.
+            // this.sys.baseUrl may point to fleetrack or another system — use salestrack URL directly.
+            const salestrackUrl = (this.sys && this.sys.baseUrl && this.sys.baseUrl.includes("salestrack"))
+                ? this.sys.baseUrl
+                : "https://salestrack.powerstar.co.zw";
+            const res = await window.callFrappeSequenced(salestrackUrl, "powerstar_salestrack.omnis_dashboard.get_eff_final_v10", apiParams);
             console.log(`[EFF V5] Received Response:`, res);
 
             if (this._activeModalSession !== currentSession) return;
@@ -1388,6 +1405,149 @@ window.OmnisDashboardV6 = class OmnisDashboardV6 {
                 }
             } catch(err) {
                 console.error("[EFF V5] Error merging Supabase tracking orders:", err);
+            }
+
+            // ----------------------------------------------------
+            // SUPABASE ORDER MACHINES INJECTION (Edit Order modal data)
+            // Orders saved via saveOrderFull() store machine-level handover
+            // dates in order_machines.actual_date + fmb_reports.customer_name.
+            // This is separate from omnis_tracking_orders (tracking widget).
+            // ----------------------------------------------------
+            try {
+                if (window.electron) {
+                    // Two direct queries — join in JS (no supabase:rpc handler exists)
+                    let orderMachineRows = [];
+                    const omFetch = await window.electron.invoke('supabase:query', {
+                        table: 'order_machines',
+                        method: 'select',
+                        params: { columns: 'id, order_id, item_code, actual_date, target_date, revised_date, quantity' }
+                    });
+                    const frFetch = await window.electron.invoke('supabase:query', {
+                        table: 'fmb_reports',
+                        method: 'select',
+                        params: { columns: 'id, customer_name, company' }
+                    });
+                    console.log('[EFF ORDER_MACHINES] omFetch ok:', omFetch?.ok, 'rows:', omFetch?.data?.length, 'frFetch ok:', frFetch?.ok, 'rows:', frFetch?.data?.length);
+                    if (omFetch.ok && frFetch.ok) {
+                        const reportMap = {};
+                        (frFetch.data || []).forEach(r => { reportMap[r.id] = r; });
+                        orderMachineRows = (omFetch.data || [])
+                            .filter(m => m.actual_date)
+                            .map(m => {
+                                const parent = reportMap[m.order_id] || {};
+                                return {
+                                    actual_date: m.actual_date,
+                                    target_date: m.target_date,
+                                    revised_date: m.revised_date,
+                                    item_code: m.item_code,
+                                    quantity: m.quantity,
+                                    customer_name: parent.customer_name || '',
+                                    company: parent.company || ''
+                                };
+                            });
+                    }
+                    console.log('[EFF ORDER_MACHINES] joined rows with actual_date:', orderMachineRows.length);
+
+                    if (orderMachineRows.length > 0) {
+                        const now = new Date();
+                        const currentMonth = now.getMonth();
+                        const currentYear = now.getFullYear();
+
+                        // Build a Set of deduplification keys already in rows (from Frappe or omnis_tracking_orders)
+                        const existingKeys = new Set(rows.map(r =>
+                            `${(r.customer || '').toLowerCase().replace(/"/g, '').trim()}|${(r.machine || '').toLowerCase().trim()}|${r.actual_date}`
+                        ));
+
+                        let addedFmbRows = false;
+
+                        orderMachineRows.forEach(m => {
+                            if (!m.actual_date) return;
+
+                            // Clean customer name — strip stray surrounding quotes
+                            const cleanCustomer = (m.customer_name || '').replace(/^"+|"+$/g, '').trim();
+                            const cleanCompany = (m.company || '').trim();
+
+                            // Company filter
+                            if (companyText !== 'All' && cleanCompany !== companyText) return;
+
+                            const actualDate = new Date(m.actual_date + 'T00:00:00');
+                            const targetDateStr = m.revised_date || m.target_date;
+                            if (!targetDateStr) return;
+
+                            // Period filter
+                            let include = false;
+                            if (periodText === 'All Time') {
+                                include = true;
+                            } else if (periodText === 'This Year') {
+                                if (actualDate.getFullYear() === currentYear) include = true;
+                            } else if (periodText === 'This Month') {
+                                if (actualDate.getFullYear() === currentYear && actualDate.getMonth() === currentMonth) include = true;
+                            } else if (periodText === 'Last Month') {
+                                let lastM = currentMonth - 1;
+                                let lastY = currentYear;
+                                if (lastM < 0) { lastM = 11; lastY--; }
+                                if (actualDate.getFullYear() === lastY && actualDate.getMonth() === lastM) include = true;
+                            }
+                            if (!include) return;
+
+                            // Deduplicate: skip if this machine/customer/date already in rows
+                            const dedupeKey = `${cleanCustomer.toLowerCase()}|${(m.item_code || '').toLowerCase().trim()}|${m.actual_date}`;
+                            if (existingKeys.has(dedupeKey)) return;
+                            existingKeys.add(dedupeKey);
+
+                            // Compute delay
+                            const aD = new Date(actualDate.getFullYear(), actualDate.getMonth(), actualDate.getDate());
+                            const tD = new Date(targetDateStr + 'T00:00:00');
+                            const tDLocal = new Date(tD.getFullYear(), tD.getMonth(), tD.getDate());
+                            const rawDelay = Math.ceil((aD - tDLocal) / (1000 * 60 * 60 * 24));
+
+                            let displayDelay = rawDelay;
+                            if (rawDelay > 0 && rawDelay <= 3) displayDelay = 0;
+                            else if (rawDelay > 3) displayDelay = rawDelay - 3;
+
+                            let status = '';
+                            if (rawDelay < 0) status = 'Early';
+                            else if (rawDelay === 0) status = 'On Time';
+                            else if (rawDelay <= 3) status = 'Within Buffer';
+                            else status = 'Late';
+
+                            rows.push({
+                                customer: cleanCustomer,
+                                machine: m.item_code || '',
+                                target_date: targetDateStr,
+                                actual_date: m.actual_date,
+                                delay: displayDelay,
+                                status: status,
+                                qty: parseInt(m.quantity) || 1
+                            });
+                            addedFmbRows = true;
+                        });
+
+                        if (addedFmbRows) {
+                            // Recalculate summary from all rows combined
+                            let totalM = 0, totalS = 0, totalD = 0, onTime = 0;
+                            rows.forEach(r => {
+                                const q = parseInt(r.qty) || 1;
+                                const d = parseInt(r.delay) || 0;
+                                totalM += q;
+                                if (d > 0) {
+                                    totalD += (d * q);
+                                    totalS += (Math.max(0, 100 - (d * 1.5)) * q);
+                                } else {
+                                    onTime += q;
+                                    totalS += (100 * q);
+                                }
+                            });
+                            summary.total_machines = totalM;
+                            summary.on_time_or_early = onTime;
+                            summary.efficiency_pct = totalM > 0 ? (totalS / totalM).toFixed(1) : "0.0";
+                            summary.avg_delay = totalM > 0 ? (totalD / totalM).toFixed(1) : "0.0";
+                            rows.sort((a, b) => parseInt(b.delay) - parseInt(a.delay));
+                        }
+                    }
+                }
+            } catch(err) {
+                console.error("[EFF V5] Error merging order_machines data:", err);
             }
             // ----------------------------------------------------
             
@@ -2090,7 +2250,7 @@ window.OmnisDashboardV6 = class OmnisDashboardV6 {
         try {
             const reqData = { period: periodText, company: companyText };
             const [res, stockRes, mappingsRes] = await Promise.all([
-                window.callFrappeSequenced(this.sys.baseUrl, "powerstar_salestrack.omnis_dashboard.get_mer_report_data", reqData),
+                window.callFrappeSequenced(this.salestrackBaseUrl, "powerstar_salestrack.omnis_dashboard.get_mer_report_data", reqData),
                 window.electron.invoke('supabase:query', { table: 'stock_inventory', method: 'select' }),
                 window.electron.invoke('supabase:query', { table: 'stock_company_mappings', method: 'select' })
             ]);
@@ -3186,7 +3346,7 @@ window.OmnisDashboardV6 = class OmnisDashboardV6 {
             sales_value: 0, sales_count: 0, open_quotes_value: 0, open_quotes_count: 0, handovers_count: 0, new_customers_count: 0, period: "This Year"
         };
         try {
-            const res = await window.callFrappeSequenced(this.sys.baseUrl || "https://salestrack.powerstar.co.zw", "powerstar_salestrack.omnis_dashboard.get_sales_rep_report_card", { rep_name: repName, period: period });
+            const res = await window.callFrappeSequenced(this.salestrackBaseUrl, "powerstar_salestrack.omnis_dashboard.get_sales_rep_report_card", { rep_name: repName, period: period });
             if (res && res.message && res.message.ok) {
                 stats = res.message.data;
             }
@@ -4121,7 +4281,7 @@ window.OmnisDashboardV6 = class OmnisDashboardV6 {
 
 
             // 2. Mark as sent on backend to log comment and bump stage
-            const backendRes = await window.callFrappeSequenced(this.sys.baseUrl, "powerstar_salestrack.omnis_dashboard.mark_report_state_sent", { quote_name: q.name });
+            const backendRes = await window.callFrappeSequenced(this.salestrackBaseUrl, "powerstar_salestrack.omnis_dashboard.mark_report_state_sent", { quote_name: q.name });
             const payload = backendRes.message || backendRes;
 
             if (payload.ok) {
@@ -4436,7 +4596,7 @@ window.OmnisDashboardV6 = class OmnisDashboardV6 {
             if (window.fetchOemDetailsFromSupabase) {
                 payload = await window.fetchOemDetailsFromSupabase(reqData);
             } else {
-                const res = await window.callFrappeSequenced(this.sys.baseUrl, "powerstar_salestrack.omnis_dashboard.get_omnis_oem_details_v2", reqData);
+                const res = await window.callFrappeSequenced(this.salestrackBaseUrl, "powerstar_salestrack.omnis_dashboard.get_omnis_oem_details_v2", reqData);
                 payload = res.message || res;
             }
 
@@ -5213,7 +5373,7 @@ window.OmnisDashboardV6 = class OmnisDashboardV6 {
 
     async runOEMDebug() {
         try {
-            const res = await window.callFrappeSequenced(this.sys.baseUrl, "powerstar_salestrack.omnis_dashboard.debug_oem_breakdown", {});
+            const res = await window.callFrappeSequenced(this.salestrackBaseUrl, "powerstar_salestrack.omnis_dashboard.debug_oem_breakdown", {});
             const log = res.message || res;
 
             const errHtml = log.last_errors && log.last_errors.length > 0
@@ -6332,7 +6492,7 @@ window.OmnisDashboardV6 = class OmnisDashboardV6 {
                 this.sys = { name: "Salestrack", baseUrl: "https://salestrack.powerstar.co.zw", key: "salestrack" };
             }
 
-            const res = await window.callFrappeSequenced(this.sys.baseUrl, "powerstar_salestrack.omnis_dashboard.mark_order_handed_over", {
+            const res = await window.callFrappeSequenced(this.salestrackBaseUrl, "powerstar_salestrack.omnis_dashboard.mark_order_handed_over", {
                 order_name: this.currentHandoverOrder,
                 handover_date: date,
                 salesperson: salesperson,
@@ -6516,7 +6676,8 @@ window.OmnisDashboardV6 = class OmnisDashboardV6 {
                     fullDoc = {
                         name: row.frappe_id,
                         db_id: row.id, // Store for saving
-                        customer_name: row.customer_id,
+                        db_company: row.company || "", // Preserve existing Supabase company value
+                        customer_name: row.customer_name || row.customer_id,
                         status: row.status,
                         is_payment_terms: row.is_payment_terms ? 1 : 0,
                         machines: (row.order_machines || []).map(m => ({
@@ -7073,12 +7234,18 @@ window.OmnisDashboardV6 = class OmnisDashboardV6 {
 
                 const rawOwner = (this._currentFullDoc?.owner || "").toLowerCase();
                 const rawCompany = (safeCompany || "").toLowerCase();
-                let companyTag = "Sinopower"; 
-                if (rawOwner.includes("machinery") || rawCompany.includes("machinery")) {
+                // Also check frappe_quotation.company and the existing Supabase record
+                const frappeCompany = (this._currentFullDoc?.frappe_quotation?.company || this._currentFullDoc?.company || "").toLowerCase();
+                const existingSupabaseCompany = this._currentFullDoc?.db_company || ""; // set from Supabase load if available
+
+                let companyTag = existingSupabaseCompany || ""; // Preserve existing value; don't overwrite with a wrong default
+                const combinedHint = rawOwner + " " + rawCompany + " " + frappeCompany;
+                if (combinedHint.includes("machinery") || combinedHint.includes("mxg") || combinedHint.includes("exchange")) {
                     companyTag = "Machinery Exchange";
-                } else if (rawOwner.includes("sinopower") || rawCompany.includes("sinopower")) {
+                } else if (combinedHint.includes("sinopower") || combinedHint.includes("sino")) {
                     companyTag = "Sinopower";
                 }
+                // If still empty, leave blank — better than wrong. User can correct via company filter.
 
                 const parentPayload = {
                     frappe_id: reportId,
@@ -9142,9 +9309,10 @@ window.OmnisDashboardV6 = class OmnisDashboardV6 {
             const offset = (this.emailQueuePage - 1) * pageSize;
             
             let queryParams = {
+                columns: '*',
                 order: { column: 'created_at', ascending: false },
                 range: { from: offset, to: offset + pageSize - 1 },
-                count: 'exact',
+                options: { count: 'exact' },
                 or: []
             };
             
@@ -9175,13 +9343,19 @@ window.OmnisDashboardV6 = class OmnisDashboardV6 {
                 method: 'select',
                 params: queryParams
             });
-                
+
             if (!res.ok) throw new Error(res.error || 'Unknown DB error');
+
             const data = res.data;
             const count = res.count || 0;
             
             this.emailQueueTotalPages = Math.ceil(count / pageSize) || 1;
-            
+
+            if (!data || data.length === 0) {
+                listEl.innerHTML = '<div style="text-align: center; color: #10b981; padding: 20px; font-weight: 600;"><i class="fas fa-check-circle" style="margin-right:8px;"></i> Queue is healthy. No emails found for this view.</div>';
+                if (document.getElementById('email-queue-count')) document.getElementById('email-queue-count').innerText = '(0 items)';
+                return;
+            }            
             if (document.getElementById('email-queue-page-current')) {
                 document.getElementById('email-queue-page-current').innerText = this.emailQueuePage;
                 document.getElementById('email-queue-page-total').innerText = this.emailQueueTotalPages;

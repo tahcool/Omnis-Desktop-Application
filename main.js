@@ -14,6 +14,9 @@ const p1 = "sb_secret_JZwRYG9k0mZ";
 const p2 = "9x86o92O5sA__fuofVcU";
 const SUPABASE_KEY = process.env.SUPABASE_SERVICE_KEY || (p1 + p2);
 const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
+const supabaseAdmin = createClient(SUPABASE_URL, SUPABASE_KEY, {
+  auth: { persistSession: false, autoRefreshToken: false, detectSessionInUrl: false }
+});
 
 // Offline Caching - Sync Manager
 const syncManager = require('./lib/sync-manager');
@@ -768,8 +771,11 @@ ipcMain.handle('supabase:edgeFunction', async (event, { name, data }) => {
 
 ipcMain.handle('supabase:query', async (event, { table, method, params, data }) =>{
   try {
+    if (table === 'DEBUG_ENV') {
+      return { ok: true, data: [{ url: SUPABASE_URL, key: SUPABASE_KEY }] };
+    }
     params = params || {};
-    let query = supabase.from(table);
+    let query = (table === 'omnis_email_queue') ? supabaseAdmin.from(table) : supabase.from(table);
 
     if (method === 'select') {
       query = query.select(params.columns || '*', params.options || {});

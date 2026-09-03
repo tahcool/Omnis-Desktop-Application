@@ -1364,7 +1364,12 @@ window.OmnisDashboardV6 = class OmnisDashboardV6 {
                 _ts: Date.now()
             };
             console.log(`[EFF V5] Requesting:`, apiParams);
-            const res = await window.callFrappeSequenced(this.sys.baseUrl, "powerstar_salestrack.omnis_dashboard.get_eff_final_v10", apiParams);
+            // IMPORTANT: powerstar_salestrack APIs live exclusively on the salestrack server.
+            // this.sys.baseUrl may point to fleetrack or another system — use salestrack URL directly.
+            const salestrackUrl = (this.sys && this.sys.baseUrl && this.sys.baseUrl.includes("salestrack"))
+                ? this.sys.baseUrl
+                : "https://salestrack.powerstar.co.zw";
+            const res = await window.callFrappeSequenced(salestrackUrl, "powerstar_salestrack.omnis_dashboard.get_eff_final_v10", apiParams);
             console.log(`[EFF V5] Received Response:`, res);
 
             if (this._activeModalSession !== currentSession) return;

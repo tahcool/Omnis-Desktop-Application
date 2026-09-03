@@ -7568,21 +7568,21 @@
                                 <div style="display: flex; gap: 12px; align-items: center;">
                                     <div style="position:relative;">
                                         <i class="fas fa-search" style="position:absolute; left:12px; top:50%; transform:translateY(-50%); color:#64748b; font-size:12px;"></i>
-                                        <input type="text" id="email-queue-search" placeholder="Search emails..." onkeyup="if(event.key === 'Enter' && window.salestrack) window.salestrack.loadFailedEmails(true)" style="padding: 9px 12px 9px 32px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.1); background: #111111; font-size: 13px; font-weight: 500; color: #f9fafb; outline: none; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); width:200px;">
+                                        <input type="text" id="email-queue-search" placeholder="Search emails..." onkeyup="if(event.key === 'Enter' && window.salestrack) window.salestrack.loadFailedEmails(true)" style="padding: 9px 12px 9px 32px; border-radius: 8px; border: 1px solid #e2e8f0; background: #ffffff; font-size: 13px; font-weight: 500; color: #334155; outline: none; box-shadow: 0 1px 2px rgba(0,0,0,0.05); width:200px;">
                                     </div>
-                                    <select id="email-queue-category" onchange="if(window.salestrack) window.salestrack.loadFailedEmails(true)" style="padding: 9px 12px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.1); background: #111111; font-size: 13px; font-weight: 600; color: #f9fafb; outline: none; cursor: pointer; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);">
+                                    <select id="email-queue-category" onchange="if(window.salestrack) window.salestrack.loadFailedEmails(true)" style="padding: 9px 12px; border-radius: 8px; border: 1px solid #e2e8f0; background: #ffffff; font-size: 13px; font-weight: 600; color: #334155; outline: none; cursor: pointer; box-shadow: 0 1px 2px rgba(0,0,0,0.05);">
                                         <option value="all" selected>All Categories</option>
                                         <option value="order">Order Tracking</option>
                                         <option value="psv">PSV Reports</option>
                                         <option value="aftersales">Aftersales</option>
                                         <option value="marketing">Marketing</option>
                                     </select>
-                                    <select id="email-queue-filter" onchange="if(window.salestrack) window.salestrack.loadFailedEmails(true)" style="padding: 9px 12px; border-radius: 8px; border: 1px solid rgba(255,255,255,0.1); background: #111111; font-size: 13px; font-weight: 600; color: #f9fafb; outline: none; cursor: pointer; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);">
+                                    <select id="email-queue-filter" onchange="if(window.salestrack) window.salestrack.loadFailedEmails(true)" style="padding: 9px 12px; border-radius: 8px; border: 1px solid #e2e8f0; background: #ffffff; font-size: 13px; font-weight: 600; color: #334155; outline: none; cursor: pointer; box-shadow: 0 1px 2px rgba(0,0,0,0.05);">
                                         <option value="all">All Status</option>
                                         <option value="failed_pending" selected>Pending & Failed</option>
                                         <option value="sent">Sent Successfully</option>
                                     </select>
-                                    <button onclick="if(window.salestrack) window.salestrack.requeueFailedEmails()" style="background: #3b82f6; color: white; border: none; padding: 10px 20px; border-radius: 8px; font-weight: 700; cursor: pointer; font-size: 13px; transition: all 0.2s; display: flex; align-items: center; gap: 8px; box-shadow: 0 4px 10px rgba(59,130,246,0.3);">
+                                    <button onclick="if(window.salestrack) window.salestrack.requeueFailedEmails()" style="background: #1e293b; color: white; border: none; padding: 10px 20px; border-radius: 8px; font-weight: 700; cursor: pointer; font-size: 13px; transition: all 0.2s; display: flex; align-items: center; gap: 8px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);">
                                         <i class="fas fa-sync-alt"></i> Retry All Failed
                                     </button>
                                 </div>
@@ -14244,16 +14244,31 @@
       let responseData = null;
 
       // 1. Try IPC (Robust, handles CORS/Headers/SSL via Main Process)
+      // NOTE: Do NOT send X-Omnis-Data header via IPC — the main process makes direct server
+      // calls (not through a WAF/browser), so the custom header is unnecessary and can
+      // trigger 417 EXPECTATION FAILED on Frappe/nginx. The bypass payload is in the body.
       if (window.frappeAPI && window.frappeAPI.request) {
         try {
           const ipcUrl = (httpMethod.toUpperCase() === "GET") ? (url + (url.includes("?") ? "&" : "?") + new URLSearchParams(bypassPayload).toString()) : url;
-          const res = await window.frappeAPI.request({
+          let res = await window.frappeAPI.request({
             url: ipcUrl,
             method: httpMethod,
             data: (httpMethod.toUpperCase() === "GET") ? {} : bypassPayload,
-            headers: customHeaders,
+            headers: {}, // No custom headers via IPC — avoids 417 from X-Omnis-Data
             syncCookies: true
           });
+
+          // If server returned 417 (Expectation Failed), retry once with completely clean headers
+          if (!res.ok && res.status === 417) {
+            omnisLog(`[IPC] Got 417 for ${method} — retrying with clean headers...`, "warning");
+            res = await window.frappeAPI.request({
+              url: ipcUrl,
+              method: httpMethod,
+              data: (httpMethod.toUpperCase() === "GET") ? {} : bypassPayload,
+              headers: {},
+              syncCookies: true
+            });
+          }
 
           if (res.ok) {
             omnisLog(`Success calling ${method} (via IPC)`);
@@ -14296,8 +14311,10 @@
           const fetchOptions = {
             method: httpMethod,
             headers: { 
-              "Content-Type": "application/x-www-form-urlencoded",
-              ...customHeaders
+              "Content-Type": "application/x-www-form-urlencoded"
+              // Note: X-Omnis-Data header intentionally omitted — it can trigger
+              // 417 EXPECTATION FAILED on Frappe/nginx WAF rules.
+              // The bypass payload is already in the body as `d=<base64>`.
             },
             credentials: "include"
           };
@@ -14631,33 +14648,148 @@
     async function loadGroupSalesKPI() {
       const ctr = document.getElementById("sales-kpi-row") || document.getElementById("kpi-container") || document.getElementById("kpi-group-sales");
       if (!ctr) return;
+
+      // Helper: format email/username to display name
+      function _fmtSalesperson(sp) {
+        if (!sp) return "-";
+        // Strip domain if it looks like an email
+        const local = sp.includes("@") ? sp.split("@")[0] : sp;
+        // Convert dots/underscores to spaces, title-case
+        return local.replace(/[._]/g, " ").replace(/\b\w/g, c => c.toUpperCase()).trim() || sp;
+      }
+
       try {
-        if (!CURRENT_SYSTEM) return;
-        const base = CURRENT_SYSTEM.baseUrl.replace(/\/$/, "");
-        
         // Extract filters from UI
         const searchVal = document.getElementById("group-sales-search")?.value || "";
         const companyVal = document.getElementById("group-sales-company")?.value || "";
         const fromDate = document.getElementById("gs-from-date")?.value || "";
         const toDate = document.getElementById("gs-to-date")?.value || "";
 
-        const res = await window.callFrappeSequenced(base, "powerstar_salestrack.omnis_dashboard.get_omnis_group_sales_kpi", {
-          search: searchVal,
-          company: companyVal,
-          from_date: fromDate,
-          to_date: toDate
+        let rows = [];
+
+        if (window.supabase) {
+          // Build filtered query — fetch all matching rows for KPI computation
+          let query = window.supabase.from("group_sales").select("order_date, oem, model, qty, customer, salesperson, company");
+          if (searchVal) {
+            query = query.or(`customer.ilike.%${searchVal}%,oem.ilike.%${searchVal}%,model.ilike.%${searchVal}%,salesperson.ilike.%${searchVal}%`);
+          }
+          if (companyVal) {
+            if (companyVal.toLowerCase() === "machinery") {
+              query = query.ilike("company", "%machinery%");
+            } else {
+              query = query.ilike("company", `%${companyVal}%`);
+            }
+          }
+          if (fromDate) query = query.gte("order_date", fromDate);
+          if (toDate) query = query.lte("order_date", toDate);
+
+          const { data, error } = await query;
+          if (error) throw error;
+          rows = data || [];
+        } else {
+          // No Supabase — show empty placeholders rather than hitting dead Frappe endpoint
+          ctr.innerHTML = "";
+          [
+            { label: "THIS MONTH", value: "-", sub: "Units Closed", status: "neutral", icon: "fa-calendar-check" },
+            { label: "YTD SALES", value: "-", sub: "Cumulative units", status: "neutral", icon: "fa-chart-line" },
+            { label: "TOP BRAND", value: "-", sub: "Most Units Sold", status: "neutral", icon: "fa-industry" },
+            { label: "TOP CUSTOMER", value: "-", sub: "Highest Volume", status: "positive", icon: "fa-trophy" },
+            { label: "UNIQUE CUSTOMERS", value: "-", sub: "Distinct Entities", status: "neutral", icon: "fa-users" },
+            { label: "TOP MODEL", value: "-", sub: "Best Selling Model", status: "warning", icon: "fa-truck" }
+          ].forEach(c => {
+            const card = document.createElement("div");
+            card.className = "mxg-kpi-card";
+            card.innerHTML = `
+              <div style="position: absolute; right: -5px; bottom: -15px; opacity: 0.12; font-size: 85px; color: rgba(139, 34, 25, 1); transform: rotate(-10deg); pointer-events: none;">
+                <i class="fas ${c.icon}"></i>
+              </div>
+              <div class="mxg-kpi-label" style="position: relative; z-index: 1;">${c.label}</div>
+              <div class="mxg-kpi-value ${c.status}" style="position: relative; z-index: 1;">${c.value}</div>
+              <div class="mxg-kpi-sub" style="position: relative; z-index: 1;">${c.sub}</div>
+            `;
+            ctr.appendChild(card);
+          });
+          return;
+        }
+
+        // ── Compute KPIs from rows ─────────────────────────────────────────
+        const now = new Date();
+        const thisYear = now.getFullYear();
+        const thisMonth = now.getMonth(); // 0-indexed
+
+        let unitsThisMonth = 0;
+        let unitsYTD = 0;
+        const oemCount = {};
+        const modelCount = {};
+        const customerCount = {};
+        const salespersonCount = {};
+
+        rows.forEach(r => {
+          const qty = parseInt(r.qty) || 1;
+          const d = r.order_date ? new Date(r.order_date) : null;
+
+          if (d) {
+            if (d.getFullYear() === thisYear && d.getMonth() === thisMonth) unitsThisMonth += qty;
+            if (d.getFullYear() === thisYear) unitsYTD += qty;
+          }
+
+          if (r.oem && r.oem !== "Unknown") oemCount[r.oem] = (oemCount[r.oem] || 0) + qty;
+          if (r.model) modelCount[r.model] = (modelCount[r.model] || 0) + qty;
+          if (r.customer) customerCount[r.customer] = (customerCount[r.customer] || 0) + qty;
+          if (r.salesperson) salespersonCount[r.salesperson] = (salespersonCount[r.salesperson] || 0) + qty;
         });
-        const data = (res.message || res).data;
-        ctr.innerHTML = "";
-        if (!data) return;
+
+        const topEntry = obj => Object.entries(obj).sort((a, b) => b[1] - a[1])[0];
+        const topOEM = topEntry(oemCount);
+        const topModel = topEntry(modelCount);
+        const topCustomer = topEntry(customerCount);
+        const uniqueCustomers = Object.keys(customerCount).length;
+
         const cards = [
-          { label: "THIS MONTH", value: data.sales_this_month, sub: "Units Closed", status: "positive", icon: "fa-calendar-check" },
-          { label: "YTD SALES", value: data.sales_ytd, sub: "Cumulative units", status: "neutral", icon: "fa-chart-line" },
-          { label: "TOP SECTOR", value: data.top_sector || "-", sub: "Highest Volume", status: "neutral", icon: "fa-industry" },
-          { label: "TOP SALESPERSON", value: data.top_salesperson || "-", sub: "Best Performer", status: "positive", icon: "fa-trophy" },
-          { label: "ACTIVE CUSTOMERS", value: data.active_dealers, sub: "Unique Entities", status: "neutral", icon: "fa-users" },
-          { label: "TOP MODEL", value: data.top_model, sub: "Best Selling Model", status: "warning", icon: "fa-truck" }
+          {
+            label: "THIS MONTH",
+            value: unitsThisMonth || 0,
+            sub: now.toLocaleString("default", { month: "long" }) + " " + thisYear,
+            status: unitsThisMonth > 0 ? "positive" : "neutral",
+            icon: "fa-calendar-check"
+          },
+          {
+            label: "YTD SALES",
+            value: unitsYTD || 0,
+            sub: "Units in " + thisYear,
+            status: "neutral",
+            icon: "fa-chart-line"
+          },
+          {
+            label: "TOP BRAND",
+            value: topOEM ? topOEM[0] : "-",
+            sub: topOEM ? topOEM[1] + " units" : "No data",
+            status: "neutral",
+            icon: "fa-industry"
+          },
+          {
+            label: "TOP CUSTOMER",
+            value: topCustomer ? topCustomer[0] : "-",
+            sub: topCustomer ? topCustomer[1] + " unit" + (topCustomer[1] !== 1 ? "s" : "") : "No data",
+            status: "positive",
+            icon: "fa-trophy"
+          },
+          {
+            label: "UNIQUE CUSTOMERS",
+            value: uniqueCustomers,
+            sub: "Distinct Entities",
+            status: "neutral",
+            icon: "fa-users"
+          },
+          {
+            label: "TOP MODEL",
+            value: topModel ? topModel[0] : "-",
+            sub: topModel ? topModel[1] + " sold" : "No data",
+            status: "warning",
+            icon: "fa-truck"
+          }
         ];
+
         ctr.innerHTML = "";
         cards.forEach(c => {
           const card = document.createElement("div");
@@ -14672,11 +14804,10 @@
           `;
           ctr.appendChild(card);
         });
-        if (ctr.id === "kpi-group-sales" && cards.length > 0) {
-          // If it's the hidden one, optionally you could move it or show it, 
-          // but for now we'll rely on the header button we just added.
-        }
-      } catch (e) { console.error(e); }
+
+      } catch (e) {
+        console.error("[SalesKPI] Failed to load KPIs from Supabase:", e);
+      }
     }
 
     async function loadGroupSalesList(force = false) {
@@ -14752,7 +14883,14 @@
             const { data, error, count } = await query;
             if (error) throw error;
             
-            res = { message: { ok: true, data: data || [], total_count: count || 0 } };
+            // Normalize: add item.name = item.frappe_id so editGroupSale() works uniformly
+            const normalizedData = (data || []).map(r => ({
+                ...r,
+                name: r.frappe_id || r.id, // Frappe name — used by edit/push modal
+                supabase_id: r.id          // Keep UUID for Supabase operations
+            }));
+            res = { message: { ok: true, data: normalizedData, total_count: count || 0 } };
+
         } else {
             const savedCircuit = window.frappeCircuitOpenedUntil || 0;
             window.frappeCircuitOpenedUntil = 0;
@@ -14908,7 +15046,117 @@
       }
     };
 
-    function editGroupSale(name) {
+    // ── Show/hide the New/Edit Sale overlay ──
+    var groupSalesInited = (typeof groupSalesInited !== 'undefined') ? groupSalesInited : false;
+    function showGroupSalesForm() {
+      const overlay = document.getElementById('gs-form-overlay');
+      if (overlay) {
+        // Escape any hidden ancestor: position:fixed is still invisible when a
+        // parent has display:none. Move to document.body exactly once.
+        if (overlay.parentElement !== document.body) {
+          document.body.appendChild(overlay);
+        }
+        if (window.clearGsErrors) window.clearGsErrors();
+        else console.warn("clearGsErrors not defined on window yet");
+
+        // Reset edit tracking and title
+        window._editingGroupSaleName = null;
+        const titleEl = document.querySelector('#gs-form-overlay h2');
+        if (titleEl) titleEl.textContent = 'New Sale';
+        
+        // Hide Push to Tracking button for new sales
+        const pushBtn = document.getElementById('btn-push-tracking');
+        if (pushBtn) pushBtn.style.display = 'none';
+
+        // Reset form
+        document.getElementById('gs-customer').value = "";
+        document.getElementById('gs-order_date').valueAsDate = new Date();
+        document.getElementById('gs-lead-time').value = "";
+        document.getElementById('gs-oem').value = "";
+        document.getElementById('gs-condition').value = "New";
+        document.getElementById('gs-model').value = "";
+        document.getElementById('gs-qty').value = "1";
+        document.getElementById('gs-cust-status').value = "Existing";
+        document.getElementById('gs-salesperson').value = "";
+        document.getElementById('gs-sector').value = "";
+        document.getElementById('gs-company').value = "Machinery Exchange";
+        document.getElementById('gs-comments').value = "";
+
+        // Determine Company from current user email
+        const omnisUser = (localStorage.getItem("omnisUser") || "").toLowerCase();
+        let autoCompany = "Machinery Exchange";
+        if (omnisUser.includes("sinopower") || omnisUser.includes("spz") || omnisUser.includes("sino")) {
+          autoCompany = "Sinopower";
+        } else if (omnisUser.includes("exchange") || omnisUser.includes("powerstar") || omnisUser.includes("mxg")) {
+          autoCompany = "Machinery Exchange";
+        }
+        document.getElementById('gs-company').value = autoCompany;
+
+        // Wire up suggestions only once (defer to runtime so helpers are loaded)
+        if (!groupSalesInited) {
+          if (window.setupSuggestions) {
+            window.setupSuggestions(document.getElementById('gs-customer'), document.getElementById('gs-customer-suggest'), "search_customer_for_omnis");
+          }
+          if (window.setupSupabaseSuggestions) {
+            window.setupSupabaseSuggestions(document.getElementById('gs-oem'), document.getElementById('gs-oem-suggest'), "brands", "name");
+            window.setupSupabaseSuggestions(document.getElementById('gs-model'), document.getElementById('gs-model-suggest'), "products", "item_name,item_code", (item) => {
+              const oemInput = document.getElementById('gs-oem');
+              if (item && item.brand) {
+                oemInput.value = item.brand;
+                oemInput.classList.remove('gs-input-error');
+                oemInput.readOnly = true;
+                oemInput.style.background = "#f1f5f9";
+                oemInput.placeholder = "Auto-filled...";
+                oemInput.style.animation = "pulse 0.5s ease-in-out";
+                setTimeout(() => oemInput.style.animation = "", 500);
+              } else {
+                oemInput.value = "";
+                oemInput.readOnly = false;
+                oemInput.style.background = "#fff";
+                oemInput.placeholder = "Select or Type OEM...";
+                oemInput.focus();
+              }
+              if (typeof window.checkStockAvailability === 'function') window.checkStockAvailability();
+            });
+          }
+          const gsModelEl = document.getElementById('gs-model');
+          if (gsModelEl) {
+            let stockCheckTimer = null;
+            gsModelEl.addEventListener('input', () => {
+              clearTimeout(stockCheckTimer);
+              stockCheckTimer = setTimeout(() => {
+                if (typeof window.checkStockAvailability === 'function') window.checkStockAvailability();
+              }, 500);
+            });
+          }
+          if (window.setupSuggestions) {
+            window.setupSuggestions(document.getElementById('gs-salesperson'), document.getElementById('gs-salesperson-suggest'), "search_salesperson_for_omnis");
+          }
+          document.querySelectorAll('.gs-input').forEach(input => {
+            input.addEventListener('input', () => {
+              input.classList.remove('gs-input-error');
+              if (document.querySelectorAll('.gs-input-error').length === 0) {
+                const summary = document.getElementById('gs-error-summary');
+                if (summary) summary.classList.add('hidden');
+              }
+            });
+            input.addEventListener('change', () => {
+              input.classList.remove('gs-input-error');
+              if (document.querySelectorAll('.gs-input-error').length === 0) {
+                const summary = document.getElementById('gs-error-summary');
+                if (summary) summary.classList.add('hidden');
+              }
+            });
+          });
+          groupSalesInited = true;
+        }
+
+        overlay.style.display = "flex";
+      }
+    }
+    window.showGroupSalesForm = showGroupSalesForm; // expose for inline onclick= handlers
+
+    window.editGroupSale = function(name) {
       if (!name) {
         window.showOmnisConfirm({ title: 'Error', message: 'Cannot edit: record name is missing.', confirmText: 'OK' });
         return;
@@ -15985,9 +16233,9 @@
     };
 
 
-    let groupSalesInited = false;
+    var groupSalesInited = false;
 
-    function clearGsErrors() {
+    window.clearGsErrors = function() {
       document.querySelectorAll('.gs-input-error').forEach(el => el.classList.remove('gs-input-error'));
       const summary = document.getElementById('gs-error-summary');
       if (summary) summary.classList.add('hidden');
@@ -16083,126 +16331,21 @@
     <span>Omnis AI · SalesTrack</span>
     <span>Confidential — Internal Use Only</span>
   </div>
-  <script>
+  \x3Cscript>
     window.onload = function() { window.print(); };
-  <\/script>
+  \x3C/script>
   
   
-  <script src="user_management_logic.js"></script>
+  \x3Cscript src="user_management_logic.js">\x3C/script>
 </body>
 </html>`);
       win.document.close();
     };
 
-    window.showGroupSalesForm = function () {
-      const overlay = document.getElementById('gs-form-overlay');
-      if (overlay) {
-        // Escape any hidden ancestor: position:fixed is still invisible when a
-        // parent has display:none. Move to document.body exactly once.
-        if (overlay.parentElement !== document.body) {
-          document.body.appendChild(overlay);
-        }
-        clearGsErrors();
-
-        // Reset edit tracking and title
-        window._editingGroupSaleName = null;
-        const titleEl = document.querySelector('#gs-form-overlay h2');
-        if (titleEl) titleEl.textContent = 'New Sale';
-        
-        // Hide Push to Tracking button for new sales
-        const pushBtn = document.getElementById('btn-push-tracking');
-        if (pushBtn) pushBtn.style.display = 'none';
-
-        // Reset form
-        document.getElementById('gs-customer').value = "";
-        document.getElementById('gs-order_date').valueAsDate = new Date();
-        document.getElementById('gs-lead-time').value = "";
-        document.getElementById('gs-oem').value = "";
-        document.getElementById('gs-condition').value = "New";
-        document.getElementById('gs-model').value = "";
-        document.getElementById('gs-qty').value = "1";
-        document.getElementById('gs-cust-status').value = "Existing";
-        document.getElementById('gs-sector').value = "";
-        document.getElementById('gs-salesperson').value = "";
-        document.getElementById('gs-company').value = "Machinery Exchange";
-        document.getElementById('gs-comments').value = "";
-
-        // 1. Determine Company from current user email
-        const omnisUser = (localStorage.getItem("omnisUser") || "").toLowerCase();
-        let autoCompany = "Machinery Exchange"; // Default
-        if (omnisUser.includes("sinopower") || omnisUser.includes("spz") || omnisUser.includes("sino")) {
-          autoCompany = "Sinopower";
-        } else if (omnisUser.includes("exchange") || omnisUser.includes("powerstar") || omnisUser.includes("mxg")) {
-          autoCompany = "Machinery Exchange";
-        }
-        document.getElementById('gs-company').value = autoCompany;
-
-        // Reset Suggestions only once
-        if (!groupSalesInited) {
-          setupSuggestions(document.getElementById('gs-customer'), document.getElementById('gs-customer-suggest'), "search_customer_for_omnis");
-          setupSupabaseSuggestions(document.getElementById('gs-oem'), document.getElementById('gs-oem-suggest'), "brands", "name");
-
-          // Model Select -> Auto fill OEM
-          setupSupabaseSuggestions(document.getElementById('gs-model'), document.getElementById('gs-model-suggest'), "products", "item_name,item_code", (item) => {
-            const oemInput = document.getElementById('gs-oem');
-            if (item && item.brand) {
-              oemInput.value = item.brand;
-              oemInput.classList.remove('gs-input-error'); // Clear error on auto-fill
-              oemInput.readOnly = true;
-              oemInput.style.background = "#f1f5f9";
-              oemInput.placeholder = "Auto-filled...";
-              oemInput.style.animation = "pulse 0.5s ease-in-out";
-              setTimeout(() => oemInput.style.animation = "", 500);
-            } else {
-              oemInput.value = "";
-              oemInput.readOnly = false;
-              oemInput.style.background = "#fff";
-              oemInput.placeholder = "Select or Type OEM...";
-              oemInput.focus();
-            }
-            if (typeof window.checkStockAvailability === 'function') window.checkStockAvailability();
-          });
-
-          const gsModelEl = document.getElementById('gs-model');
-          if (gsModelEl) {
-             let stockCheckTimer = null;
-             gsModelEl.addEventListener('input', () => {
-               clearTimeout(stockCheckTimer);
-               stockCheckTimer = setTimeout(() => {
-                 if (typeof window.checkStockAvailability === 'function') window.checkStockAvailability();
-               }, 500);
-             });
-          }
-
-          setupSuggestions(document.getElementById('gs-salesperson'), document.getElementById('gs-salesperson-suggest'), "search_salesperson_for_omnis");
-
-          // Clear errors on input
-          document.querySelectorAll('.gs-input').forEach(input => {
-            input.addEventListener('input', () => {
-              input.classList.remove('gs-input-error');
-              // Hide summary if no errors left
-              if (document.querySelectorAll('.gs-input-error').length === 0) {
-                const summary = document.getElementById('gs-error-summary');
-                if (summary) summary.classList.add('hidden');
-              }
-            });
-            input.addEventListener('change', () => {
-              input.classList.remove('gs-input-error');
-              if (document.querySelectorAll('.gs-input-error').length === 0) {
-                const summary = document.getElementById('gs-error-summary');
-                if (summary) summary.classList.add('hidden');
-              }
-            });
-          });
-
-          groupSalesInited = true;
-        }
-
-        overlay.style.display = "flex";
-      }
-    }
+    // showGroupSalesForm moved to block 1 (before editGroupSale) — see above
 
     /* ===== GIFT LIST ===== */
+
     window._giftListAllRows = [];
 
     /* ===== NEW SALE EMAIL ALERT ===== */
@@ -16569,7 +16712,7 @@ thead th { padding:11px 12px; font-size:10px; font-weight:800; color:#fff; text-
 <tbody>${rows || '<tr><td colspan="6" style="padding:40px;text-align:center;color:#94a3b8;">No customers meet threshold</td></tr>'}</tbody>
 </table>
 <div class="footer"><span>Omnis AI &middot; SalesTrack &mdash; Customer Appreciation</span><span>Confidential &mdash; Internal Use Only</span></div>
-<script>window.onload=function(){window.print();};<\/script>
+\x3Cscript>window.onload=function(){window.print();};\x3C/script>
   
   
 </body></html>`);
@@ -16661,6 +16804,7 @@ thead th { padding:11px 12px; font-size:10px; font-weight:800; color:#fff; text-
       window.saveGroupSaleRecord();
     }
 
+    console.log("Defining window.saveGroupSaleRecord now!");
     window.saveGroupSaleRecord = async function () {
       const btn = document.getElementById('btn-save-group-sale');
       const originalText = btn.textContent;
@@ -16681,7 +16825,7 @@ thead th { padding:11px 12px; font-size:10px; font-weight:800; color:#fff; text-
       };
 
       // 2. Advanced Validation & Highlighting
-      clearGsErrors();
+      if (window.clearGsErrors) window.clearGsErrors();
       let missing = [];
       const required = ["customer", "order_date", "committed_lead_time", "oem", "model", "qty", "sector", "salesperson", "company"];
 
@@ -16741,20 +16885,73 @@ thead th { padding:11px 12px; font-size:10px; font-weight:800; color:#fff; text-
         const response = res.message || res;
 
         if (response && response.ok) {
-          // --- AUTO SYNC TO ORDER TRACKING ---
+          // --- PUSH TO ORDER TRACKING (Supabase) ---
           try {
-             if (window._forceTrackingPush) {
-                 const resTracking = await window.callFrappeSequenced(base, "powerstar_salestrack.omnis_dashboard.force_push_to_fmb", { sale_name: response.name });
-                 if (resTracking && resTracking.ok) {
-                     alert("Sale successfully pushed to Order Tracking! (It will appear shortly)");
-                 } else {
-                     alert("This sale is already being tracked in the Order Tracking module, or an error occurred.");
-                 }
-                 window._forceTrackingPush = false;
-             }
-          } catch(syncErr) {
-              console.error("[Auto-Sync Error]", syncErr);
+            if (window._forceTrackingPush) {
+              const saleFrappeId = response.name; // e.g. "SM Projects-031125-1492"
+
+              // 1. Check if this group sale is already in fmb_reports
+              const { data: existing } = await window.electron.invoke('supabase:query', {
+                table: 'fmb_reports',
+                method: 'select',
+                params: { filters: { frappe_id: saleFrappeId } }
+              });
+
+              let fmbId = existing && existing.length > 0 ? existing[0].id : null;
+
+              if (!fmbId) {
+                // 2. Create the fmb_reports header
+                const { data: newFmb, error: fmbErr } = await window.electron.invoke('supabase:query', {
+                  table: 'fmb_reports',
+                  method: 'insert',
+                  data: {
+                    frappe_id:     saleFrappeId,
+                    customer_id:   payload.customer,
+                    customer_name: payload.customer,
+                    order_date:    payload.order_date,
+                    company:       payload.company || '',
+                    status:        'In Progress'
+                  }
+                });
+                if (fmbErr) throw new Error('fmb_reports insert failed: ' + fmbErr.message);
+                fmbId = newFmb && newFmb[0] ? newFmb[0].id : null;
+              }
+
+              if (!fmbId) throw new Error('Could not get fmb_reports ID after insert.');
+
+              // 3. Calculate target_date = order_date + 16 weeks (112 days)
+              const saleDate = new Date(payload.order_date + 'T00:00:00');
+              saleDate.setDate(saleDate.getDate() + 112);
+              const targetDate16w = saleDate.toISOString().split('T')[0]; // YYYY-MM-DD
+
+              // 4. Add the machine line item
+              await window.electron.invoke('supabase:query', {
+                table: 'order_machines',
+                method: 'insert',
+                data: {
+                  order_id:    fmbId,
+                  item_code:   payload.model,
+                  quantity:    parseInt(payload.qty) || 1,
+                  target_date: targetDate16w,
+                  notes:       `${payload.oem ? payload.oem + ' ' : ''}${payload.model} | Salesperson: ${payload.salesperson}`
+                }
+              });
+
+              // 5. Bump updated_at on header
+              await window.electron.invoke('supabase:query', {
+                table: 'fmb_reports',
+                method: 'update',
+                data: { updated_at: new Date().toISOString() },
+                params: { match: { id: fmbId } }
+              });
+
+              alert('✅ Sale pushed to Order Tracking!');
               window._forceTrackingPush = false;
+            }
+          } catch(syncErr) {
+            console.error('[Push to Tracking Error]', syncErr);
+            alert('⚠️ Could not push to Order Tracking: ' + syncErr.message);
+            window._forceTrackingPush = false;
           }
 
           // --- AUTO DEDUCT FROM STOCK ---

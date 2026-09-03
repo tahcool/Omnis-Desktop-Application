@@ -465,3 +465,25 @@
 \n## 2026-08-24
 - `a0b5fef` 2026-08-24 [supabase-migration] Restore point: UI styling updates for Certificates and OEM intelligence
   Files: .mcp/knowledge/_shared/commit_log.md,omnis_dashboard.py,systems/salestrack/certificates_logic.js,systems/salestrack/index.html,systems/salestrack/temp_marketing_check.html,
+- `c0cc3e9` 2026-08-24 [supabase-migration] [checkpoint] Add User Management Interface and Admin Console Switch Module link
+  Files: .mcp/knowledge/_shared/commit_log.md,.mcp/server.js,admin_dashboard.html,admin_logic.js,find_nav.js,fix_storage.js,index.html,main.js,make_admin.js,scratch_script_0.js,supabase/config.toml,supabase/functions/migrate-frappe-user/.npmrc,supabase/functions/migrate-frappe-user/deno.json,supabase/functions/migrate-frappe-user/index.ts,systems/fleetrack/index.html,systems/group_accounts/index.html,systems/medicals/index.html,systems/powertrack/dashboard.html,systems/salestrack/dashboard_logic.js,systems/salestrack/index.html,
+- `71e1dd9` 2026-08-24 [supabase-migration] Fix save details button missing actual_date and UI feedback
+  Files: systems/salestrack/dashboard_logic.js,
+- `6dce923` 2026-08-24 [supabase-migration] Remove actual_date to fix machine deletion bug, add error checking to insert
+  Files: systems/salestrack/dashboard_logic.js,
+- `4839dd2` 2026-08-24 [supabase-migration] Add actual_date to order_machines in supabase and frontend
+  Files: systems/salestrack/dashboard_logic.js,
+- `40341bf` 2026-08-24 [supabase-migration] Fix edit order details table header theme to match other tables
+  Files: systems/salestrack/dashboard_logic.js,
+- `28328c1` 2026-08-24 [supabase-migration] Polish edit order modal styles to maroon theme
+  Files: systems/salestrack/dashboard_logic.js,
+- `81023cf` 2026-08-24 [supabase-migration] Update Switch Module dropdown to clean white theme with maroon accents
+  Files: systems/fleetrack/index.html,systems/salestrack/index.html,
+- `017ac4c` 2026-08-24 [supabase-migration] Fix Switch Module icon color to match text
+  Files: systems/salestrack/index.html,
+- `c9927bd` 2026-08-24 [supabase-migration] Update Training dashboard shortcut to link to Operator Certificates
+  Files: systems/salestrack/index.html,
+- `8e48729` 2026-08-24 [supabase-migration] Migrate OEM details report to use Supabase
+  Files: systems/salestrack/dashboard_logic.js,
+- `0ea3635` 2026-08-24 [supabase-migration] Migrate group sales list to Supabase
+  Files: systems/salestrack/index.html,
