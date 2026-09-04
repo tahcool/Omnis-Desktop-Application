@@ -503,3 +503,5 @@
   Files: .mcp/knowledge/_shared/commit_log.md,supabase/migrations/20260904000000_add_cohabitants.sql,systems/medicals/index.html,systems/medicals/medicals_logic.js,systems/medicals/styles.css,
 - `47be4f1` 2026-09-04 [supabase-migration] [checkpoint] UI: Update Medicals profile and KPI layout to match Salestrack
   Files: .mcp/knowledge/_shared/commit_log.md,systems/medicals/index.html,
+- `f484b8c` 2026-09-04 [supabase-migration] Restore point: Live search logic and layout fixes for Medicals module
+  Files: .mcp/knowledge/_shared/commit_log.md,supabase/migrations/20260904000001_add_injury_to_sick_notes.sql,supabase/migrations/20260904000002_add_patient_fields.sql,systems/medicals/index.html,systems/medicals/medicals_logic.js,systems/medicals/styles.css,

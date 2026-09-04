@@ -38,6 +38,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // Initialize custom live search dropdowns
     initPatientLiveSearch('note-patient-search', 'note-patient-list', 'note-patient');
     initPatientLiveSearch('consult-patient-search', 'consult-patient-list', 'consult-patient');
+    initPatientLiveSearch('appt-patient-search', 'appt-patient-list', 'appt-patient');
 });
 
 // Utility: Modal Management
@@ -61,6 +62,7 @@ function showGenerateNoteModal() {
 function showNewConsultationModal() {
     document.getElementById('consultation-form').reset();
     document.getElementById('consult-patient').value = '';
+    document.getElementById('dispensary-container').innerHTML = ''; // clear rows
     document.getElementById('modal-consultation').classList.add('active');
 }
 
@@ -660,12 +662,29 @@ async function loadStats() {
             if (lowStock.length === 0) {
                 feedStock.innerHTML = '<span style="color:var(--text-light);font-size:12px;">All stock levels are optimal.</span>';
             } else {
-                feedStock.innerHTML = lowStock.map(i => `
-                    <div style="padding:10px; border-left:3px solid var(--accent-red); background:#fef2f2; border-radius:4px; font-size:12px;">
+                feedStock.innerHTML = lowStock.slice(0, 3).map(i => `
+                    <div style="padding:10px; border-left:3px solid #ef4444; background:#fef2f2; border-radius:4px; font-size:12px;">
                         <strong>${escapeHtml(i.item_name)}</strong><br>
-                        <span style="color:var(--accent-red);">Qty: ${i.quantity} (Min: ${i.min_stock_level})</span>
+                        <span style="color:#ef4444;">${i.quantity} left (Min: ${i.min_stock_level})</span>
                     </div>
                 `).join('');
+            }
+        }
+        
+        // Low Stock Alerts Widget at the top of the dashboard
+        const alertContainer = document.getElementById('low-stock-alerts-container');
+        const alertList = document.getElementById('low-stock-items-list');
+        if (alertContainer && alertList) {
+            if (lowStock.length > 0) {
+                alertContainer.style.display = 'block';
+                alertList.innerHTML = lowStock.map(i => `
+                    <div style="display:flex; justify-content:space-between; align-items:center; background:#fff; padding:8px 12px; border-radius:6px; border:1px solid #fde68a;">
+                        <span style="font-weight:600; color:#1e293b; font-size:14px;">${escapeHtml(i.item_name)}</span>
+                        <span style="color:#dc2626; font-size:13px; font-weight:700;">${i.quantity} in stock (Min: ${i.min_stock_level})</span>
+                    </div>
+                `).join('');
+            } else {
+                alertContainer.style.display = 'none';
             }
         }
 
@@ -740,11 +759,83 @@ function renderChart(consults) {
 
 // ----------------- CONSULTATIONS -----------------
 
-async function showNewConsultationModal() {
-    if (patientsList.length === 0) await loadPatients();
-    document.getElementById('consultation-form').reset();
-    populateSelect('consult-patient', patientsList);
-    document.getElementById('modal-consultation').classList.add('active');
+// Dispensary specific logic
+let dispRowCount = 0;
+function addDispensaryRow() {
+    const container = document.getElementById('dispensary-container');
+    const rowId = 'disp-row-' + (++dispRowCount);
+    
+    const rowHTML = `
+        <div id="${rowId}" class="form-row dispensary-row" style="align-items:flex-end;">
+            <div class="form-group custom-dropdown-container" style="flex:2;">
+                <label>Select Medication</label>
+                <input type="text" id="${rowId}-search" placeholder="Search inventory..." autocomplete="off" class="search-input">
+                <div id="${rowId}-list" class="custom-dropdown-list"></div>
+                <input type="hidden" id="${rowId}-inv" class="disp-inv-id" required>
+            </div>
+            <div class="form-group" style="flex:1;">
+                <label>Qty to Dispense</label>
+                <input type="number" id="${rowId}-qty" class="disp-qty" min="1" placeholder="Qty" required>
+            </div>
+            <div class="form-group" style="flex:0.5; padding-bottom: 5px;">
+                <button type="button" class="btn btn-outline" style="color:#ef4444; border-color:#ef4444;" onclick="document.getElementById('${rowId}').remove()"><i class="fas fa-trash"></i></button>
+            </div>
+        </div>
+    `;
+    container.insertAdjacentHTML('beforeend', rowHTML);
+    
+    // Init live search for this row
+    initInventoryLiveSearch(`${rowId}-search`, `${rowId}-list`, `${rowId}-inv`, `${rowId}-qty`);
+}
+
+function initInventoryLiveSearch(searchInputId, listContainerId, hiddenInputId, qtyInputId) {
+    const searchInput = document.getElementById(searchInputId);
+    const listContainer = document.getElementById(listContainerId);
+    const hiddenInput = document.getElementById(hiddenInputId);
+    const qtyInput = document.getElementById(qtyInputId);
+    
+    if (!searchInput || !listContainer || !hiddenInput) return;
+
+    function renderList(filterText = '') {
+        listContainer.innerHTML = '';
+        listContainer.style.zIndex = '99999';
+        let count = 0;
+        
+        inventoryList.forEach(item => {
+            // Only allow dispensing if stock is > 0
+            if (item.quantity <= 0) return;
+            
+            const name = item.item_name || '';
+            if (name.toLowerCase().includes(filterText.toLowerCase())) {
+                const row = document.createElement('div');
+                row.className = 'custom-dropdown-item';
+                row.innerHTML = `<strong>${escapeHtml(name)}</strong> <span style="color:#64748b;font-size:12px;margin-left:8px;">(Stock: ${item.quantity})</span>`;
+                row.addEventListener('mousedown', () => {
+                    searchInput.value = name;
+                    hiddenInput.value = item.id;
+                    qtyInput.max = item.quantity;
+                    listContainer.style.display = 'none';
+                });
+                listContainer.appendChild(row);
+                count++;
+            }
+        });
+        
+        if (count > 0) {
+            listContainer.style.display = 'block';
+        } else {
+            listContainer.style.display = 'none';
+        }
+    }
+
+    searchInput.addEventListener('focus', () => {
+        if (inventoryList.length === 0) loadInventory().then(() => renderList(searchInput.value));
+        else renderList(searchInput.value);
+    });
+    searchInput.addEventListener('input', (e) => renderList(e.target.value));
+    searchInput.addEventListener('blur', () => {
+        setTimeout(() => { listContainer.style.display = 'none'; }, 200);
+    });
 }
 
 let consultationsList = [];
@@ -755,7 +846,7 @@ async function loadConsultations() {
         const res = await window.electron.invoke('supabase:query', {
             table: 'omnis_consultations',
             method: 'select',
-            params: { columns: '*, omnis_patients(name, surname, ibu, division)', order: { column: 'consultation_date', options: { ascending: false } } }
+            params: { columns: '*, omnis_patients(name, surname, ibu, division), omnis_dispensary(quantity_dispensed, omnis_inventory(item_name))', order: { column: 'consultation_date', options: { ascending: false } } }
         });
         if (res.error) throw res.error;
         consultationsList = res.data || [];
@@ -798,6 +889,11 @@ function renderConsultationsTable(data) {
         const patName = c.omnis_patients ? `${c.omnis_patients.name} ${c.omnis_patients.surname}` : 'Unknown';
         const dateStr = c.consultation_date ? c.consultation_date.substring(0, 16).replace('T', ' ') : '-';
         
+        let dispensedHtml = '-';
+        if (c.omnis_dispensary && c.omnis_dispensary.length > 0) {
+            dispensedHtml = c.omnis_dispensary.map(d => `<span style="background:#f1f5f9;border:1px solid #e2e8f0;border-radius:4px;padding:2px 4px;font-size:11px;display:inline-block;margin:2px 2px 0 0;">${escapeHtml(d.omnis_inventory?.item_name)} (${d.quantity_dispensed})</span>`).join('');
+        }
+        
         const row = document.createElement('div');
         row.className = "ai-order-row ai-consultations-grid";
         row.style.borderLeft = "4px solid #8b5cf6"; // Purple accent for consultations
@@ -806,11 +902,14 @@ function renderConsultationsTable(data) {
             <div style="color:#64748b; font-size:12px; font-weight:600;">${dateStr}</div>
             <div style="color:#1e293b; font-weight:700; font-size:14px;">${escapeHtml(patName)}</div>
             <div style="color:#475569; font-size:13px; font-style:italic; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden;">${escapeHtml(c.symptoms || '-')}</div>
-            <div style="color:#1e293b; font-size:13px; font-weight:600;">${escapeHtml(c.diagnosis || '-')}</div>
-            <div style="color:#64748b; font-size:12px;">
+            <div style="color:#1e293b; font-size:12px;">
+                <span style="font-weight:600;">${escapeHtml(c.diagnosis || '-')}</span><br>
+                <span style="color:#64748b;">
                 ${c.vitals_bp ? `BP: <b>${escapeHtml(c.vitals_bp)}</b> ` : ''}
                 ${c.vitals_temp ? `Temp: <b>${escapeHtml(c.vitals_temp)}°C</b>` : ''}
+                </span>
             </div>
+            <div>${dispensedHtml}</div>
             <div style="text-align:right;">
                 <button class="btn btn-outline" style="padding: 6px 12px; font-size: 12px; border-radius: 20px; background:#f8fafc; border:1px solid #cbd5e1; color:#0f172a; font-weight:700; cursor:pointer;"><i class="fas fa-eye"></i> View</button>
             </div>
@@ -865,7 +964,42 @@ async function saveConsultation() {
         const res = await window.electron.invoke('supabase:query', {
             table: 'omnis_consultations', method: 'insert', params: { data: payload }
         });
+        
         if (res.error) throw res.error;
+        
+        const newConsultationId = res.data && res.data[0] ? res.data[0].id : null;
+        
+        // Handle dispensary saving if any
+        if (newConsultationId) {
+            const dispRows = document.querySelectorAll('.dispensary-row');
+            const dispPayloads = [];
+            for (let i = 0; i < dispRows.length; i++) {
+                const invId = dispRows[i].querySelector('.disp-inv-id').value;
+                const qty = parseInt(dispRows[i].querySelector('.disp-qty').value);
+                
+                if (invId && qty > 0) {
+                    dispPayloads.push({
+                        consultation_id: newConsultationId,
+                        inventory_id: invId,
+                        quantity_dispensed: qty
+                    });
+                }
+            }
+            
+            if (dispPayloads.length > 0) {
+                const dispRes = await window.electron.invoke('supabase:query', {
+                    table: 'omnis_dispensary', method: 'insert', params: { data: dispPayloads }
+                });
+                if (dispRes.error) {
+                    console.error("Dispensary Save Error", dispRes.error);
+                    alert("Consultation saved, but failed to save dispensed medicines: " + dispRes.error.message);
+                } else {
+                    // Update the local inventory cache since triggers deducted the stock on the server
+                    if (typeof loadInventory === 'function') loadInventory();
+                }
+            }
+        }
+        
         closeModal('modal-consultation');
         loadConsultations();
     } catch(e) {
@@ -876,10 +1010,9 @@ async function saveConsultation() {
 
 // ----------------- APPOINTMENTS -----------------
 
-async function showNewAppointmentModal() {
-    if (patientsList.length === 0) await loadPatients();
+function showNewAppointmentModal() {
     document.getElementById('appointment-form').reset();
-    populateSelect('appt-patient', patientsList);
+    document.getElementById('appt-patient').value = '';
     document.getElementById('modal-appointment').classList.add('active');
 }
 
@@ -891,10 +1024,28 @@ async function loadAppointments() {
         const res = await window.electron.invoke('supabase:query', {
             table: 'omnis_appointments',
             method: 'select',
-            params: { columns: '*, omnis_patients(name, surname)', order: { column: 'appointment_date', options: { ascending: true } } }
+            params: { columns: '*, omnis_patients(name, surname, ibu, division)', order: { column: 'appointment_date', options: { ascending: true } } }
         });
         if (res.error) throw res.error;
         appointmentsList = res.data || [];
+        
+        // Populate dropdowns
+        const uniqueIBUs = [...new Set(appointmentsList.map(a => a.omnis_patients?.ibu).filter(Boolean))].sort();
+        const uniqueDivs = [...new Set(appointmentsList.map(a => a.omnis_patients?.division).filter(Boolean))].sort();
+        
+        const ibuSel = document.getElementById('filter-appt-ibu');
+        if (ibuSel) {
+            const current = ibuSel.value;
+            ibuSel.innerHTML = '<option value="">All IBUs</option>' + uniqueIBUs.map(ibu => `<option value="${ibu}">${escapeHtml(ibu)}</option>`).join('');
+            ibuSel.value = current;
+        }
+        const divSel = document.getElementById('filter-appt-division');
+        if (divSel) {
+            const current = divSel.value;
+            divSel.innerHTML = '<option value="">All Divisions</option>' + uniqueDivs.map(d => `<option value="${d}">${escapeHtml(d)}</option>`).join('');
+            divSel.value = current;
+        }
+        
         renderAppointmentsTable(appointmentsList);
     } catch (e) {
         console.error("Error loading appointments:", e);
@@ -905,7 +1056,7 @@ function renderAppointmentsTable(data) {
     const tbody = document.getElementById('appointments-table-body');
     tbody.innerHTML = '';
     if (data.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;">No appointments found.</td></tr>';
+        tbody.innerHTML = `<div style="text-align:center;padding:40px;color:#94a3b8;font-style:italic;background:#fff;border-radius:12px;border:1px dotted #cbd5e1;">No appointments found.</div>`;
         return;
     }
     data.forEach(a => {
@@ -917,19 +1068,44 @@ function renderAppointmentsTable(data) {
         else if (a.status === 'Completed') statusBadge = '<span style="background:#10b981;color:#fff;padding:2px 8px;border-radius:12px;font-size:11px;">Completed</span>';
         else statusBadge = `<span style="background:var(--border);color:var(--text);padding:2px 8px;border-radius:12px;font-size:11px;">${escapeHtml(a.status)}</span>`;
 
-        tbody.innerHTML += `
-            <tr>
-                <td>${dateTime}</td>
-                <td style="font-weight:700;">${escapeHtml(patName)}</td>
-                <td>${escapeHtml(a.reason)}</td>
-                <td>${statusBadge}</td>
-                <td>
-                    <button class="btn btn-outline" style="padding:4px 8px;font-size:12px;" onclick="updateAppointmentStatus('${a.id}', 'Completed')">Mark Done</button>
-                </td>
-            </tr>
+        const row = document.createElement('div');
+        row.className = "ai-order-row ai-appointments-grid";
+        row.style.borderLeft = "4px solid #3b82f6"; // Blue accent for appointments
+        
+        row.innerHTML = `
+            <div style="color:#64748b; font-size:13px; font-weight:600;">${dateTime}</div>
+            <div style="color:#1e293b; font-weight:700; font-size:14px;">${escapeHtml(patName)}</div>
+            <div style="font-size:13px; color:#334155;">${escapeHtml(a.reason)}</div>
+            <div>${statusBadge}</div>
+            <div style="text-align:right;">
+                <button class="btn btn-outline" style="padding: 4px 10px; font-size: 11px; border-radius: 20px;" onclick="updateAppointmentStatus('${a.id}', 'Completed')"><i class="fas fa-check"></i> Done</button>
+            </div>
         `;
+        tbody.appendChild(row);
     });
 }
+
+function applyAppointmentsFilters() {
+    const q = (document.getElementById('appointments-search').value || '').toLowerCase();
+    const ibuF = document.getElementById('filter-appt-ibu').value;
+    const divF = document.getElementById('filter-appt-division').value;
+    const statF = document.getElementById('filter-appt-status').value;
+    
+    const filtered = appointmentsList.filter(a => {
+        const patName = a.omnis_patients ? `${a.omnis_patients.name} ${a.omnis_patients.surname}`.toLowerCase() : '';
+        const matchSearch = patName.includes(q) || (a.reason || '').toLowerCase().includes(q);
+        const matchIbu = ibuF === "" || (a.omnis_patients && a.omnis_patients.ibu === ibuF);
+        const matchDiv = divF === "" || (a.omnis_patients && a.omnis_patients.division === divF);
+        const matchStat = statF === "" || a.status === statF;
+        return matchSearch && matchIbu && matchDiv && matchStat;
+    });
+    renderAppointmentsTable(filtered);
+}
+
+['appointments-search', 'filter-appt-ibu', 'filter-appt-division', 'filter-appt-status'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.addEventListener('input', applyAppointmentsFilters);
+});
 
 async function saveAppointment() {
     const payload = {
@@ -982,6 +1158,25 @@ async function loadInventory() {
         });
         if (res.error) throw res.error;
         inventoryList = res.data || [];
+        
+        // Populate dropdowns
+        const uniqueCats = [...new Set(inventoryList.map(i => i.category).filter(Boolean))].sort();
+        const uniqueSuppliers = [...new Set(inventoryList.map(i => i.supplier).filter(Boolean))].sort();
+        
+        const catSel = document.getElementById('filter-inv-category');
+        if (catSel) {
+            const current = catSel.value;
+            catSel.innerHTML = '<option value="">All Categories</option>' + uniqueCats.map(c => `<option value="${c}">${escapeHtml(c)}</option>`).join('');
+            catSel.value = current;
+        }
+        
+        const supSel = document.getElementById('filter-inv-supplier');
+        if (supSel) {
+            const current = supSel.value;
+            supSel.innerHTML = '<option value="">All Suppliers</option>' + uniqueSuppliers.map(s => `<option value="${s}">${escapeHtml(s)}</option>`).join('');
+            supSel.value = current;
+        }
+        
         renderInventoryTable(inventoryList);
     } catch (e) {
         console.error("Error loading inventory:", e);
@@ -992,26 +1187,59 @@ function renderInventoryTable(data) {
     const tbody = document.getElementById('inventory-table-body');
     tbody.innerHTML = '';
     if (data.length === 0) {
-        tbody.innerHTML = '<tr><td colspan="6" style="text-align:center;">No stock items found.</td></tr>';
+        tbody.innerHTML = `<div style="text-align:center;padding:40px;color:#94a3b8;font-style:italic;background:#fff;border-radius:12px;border:1px dotted #cbd5e1;">No inventory items found.</div>`;
         return;
     }
     data.forEach(item => {
-        const isLow = item.quantity <= item.min_stock_level;
-        const qtyDisplay = isLow ? `<span style="color:var(--accent-red);font-weight:700;">${item.quantity} ⚠️ Low</span>` : `<span>${item.quantity}</span>`;
-        tbody.innerHTML += `
-            <tr style="${isLow ? 'background:#fef2f2;' : ''}">
-                <td style="font-weight:700;">${escapeHtml(item.item_name)}</td>
-                <td><span style="background:#e2e8f0;padding:2px 8px;border-radius:12px;font-size:11px;">${escapeHtml(item.category)}</span></td>
-                <td>${qtyDisplay}</td>
-                <td>$${Number(item.unit_cost).toFixed(2)}</td>
-                <td>${escapeHtml(item.supplier || '-')}</td>
-                <td>
-                    <button class="btn btn-outline" style="padding:4px 8px;font-size:12px;" onclick="editInventory('${item.id}')"><i class="fas fa-edit"></i> Edit</button>
-                </td>
-            </tr>
+        let levelBadge = '';
+        if (item.quantity > 50) levelBadge = `<span style="background:#dcfce7;color:#166534;padding:2px 8px;border-radius:12px;font-size:11px;">${item.quantity}</span>`;
+        else if (item.quantity > 10) levelBadge = `<span style="background:#fef9c3;color:#854d0e;padding:2px 8px;border-radius:12px;font-size:11px;">${item.quantity}</span>`;
+        else levelBadge = `<span style="background:#fee2e2;color:#991b1b;padding:2px 8px;border-radius:12px;font-size:11px;font-weight:700;">${item.quantity} (Low)</span>`;
+
+        const row = document.createElement('div');
+        row.className = "ai-order-row ai-inventory-grid";
+        row.style.borderLeft = "4px solid #10b981"; // Emerald green for inventory
+        
+        row.innerHTML = `
+            <div style="color:#1e293b; font-weight:700; font-size:14px;">${escapeHtml(item.item_name)}</div>
+            <div style="font-size:13px; color:#64748b;">${escapeHtml(item.category || '-')}</div>
+            <div>${levelBadge}</div>
+            <div style="font-size:13px; color:#334155;">$${Number(item.unit_cost).toFixed(2)}</div>
+            <div style="font-size:13px; color:#64748b;">${escapeHtml(item.supplier || '-')}</div>
+            <div style="text-align:right;">
+                <button class="btn btn-outline" style="padding: 4px 10px; font-size: 11px; border-radius: 20px;" onclick="editInventory('${item.id}')"><i class="fas fa-edit"></i> Edit</button>
+            </div>
         `;
+        tbody.appendChild(row);
     });
 }
+
+function applyInventoryFilters() {
+    const q = (document.getElementById('inventory-search').value || '').toLowerCase();
+    const catF = document.getElementById('filter-inv-category').value;
+    const supF = document.getElementById('filter-inv-supplier').value;
+    const statF = document.getElementById('filter-inv-status').value;
+    
+    const filtered = inventoryList.filter(item => {
+        const matchSearch = item.item_name.toLowerCase().includes(q);
+        const matchCat = catF === "" || item.category === catF;
+        const matchSup = supF === "" || item.supplier === supF;
+        
+        let matchStat = true;
+        if (statF === 'in_stock') matchStat = item.quantity > 10;
+        else if (statF === 'low_stock') matchStat = item.quantity > 0 && item.quantity <= 10;
+        else if (statF === 'out_of_stock') matchStat = item.quantity === 0;
+        
+        return matchSearch && matchCat && matchSup && matchStat;
+    });
+    
+    renderInventoryTable(filtered);
+}
+
+['inventory-search', 'filter-inv-category', 'filter-inv-supplier', 'filter-inv-status'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.addEventListener('input', applyInventoryFilters);
+});
 
 function editInventory(id) {
     const item = inventoryList.find(i => i.id === id);

@@ -93,7 +93,18 @@
             
             <!-- Dashboard View -->
             <div id="view-dashboard" class="view active" style="background-color: #f8fafc;">
-                                
+                
+                <!-- Low Stock Alerts Widget -->
+                <div id="low-stock-alerts-container" style="display:none; margin: 20px 40px 0 40px; background: #fffbeb; border: 1px solid #fcd34d; border-radius: 12px; padding: 16px 20px; box-shadow: 0 4px 6px -1px rgba(217, 119, 6, 0.1);">
+                    <div style="display:flex; align-items:center; gap: 12px; margin-bottom: 12px;">
+                        <i class="fas fa-exclamation-triangle" style="color: #d97706; font-size: 20px;"></i>
+                        <h4 style="margin:0; color: #92400e; font-weight: 700; font-size: 16px;">Low Stock Alerts</h4>
+                    </div>
+                    <div id="low-stock-items-list" style="display:flex; flex-direction:column; gap: 8px;">
+                        <!-- Alert items injected here -->
+                    </div>
+                </div>
+
             <div style="display:none;">
                 <span id="stat-patients">0</span>
                 <span id="stat-consults">0</span>
@@ -624,15 +635,15 @@
                     <style>
                         .ai-consultations-grid {
                             display: grid;
-                            grid-template-columns: 1fr 1.5fr 2fr 1.5fr 1fr 100px;
+                            grid-template-columns: 1fr 1.5fr 1.5fr 1.5fr 2fr 100px;
                         }
                     </style>
                     <div class="ai-order-header ai-consultations-grid">
                         <div>Date</div>
                         <div>Patient</div>
                         <div>Symptoms</div>
-                        <div>Diagnosis</div>
-                        <div>Vitals</div>
+                        <div>Diagnosis / Vitals</div>
+                        <div>Dispensed</div>
                         <div style="text-align:right;">Actions</div>
                     </div>
                     <div id="consultations-table-body" style="display:flex; flex-direction:column; gap:8px; margin-top:12px;">
@@ -643,54 +654,78 @@
 
             <!-- Appointments View -->
             <div id="view-appointments" class="view">
-                <div class="view-header">
+                <div class="view-header" style="display:flex; gap:12px; align-items:center; flex-wrap:wrap;">
                     <input type="text" id="appointments-search" placeholder="Search appointments..." class="search-input">
-                    <button class="btn btn-primary" onclick="showNewAppointmentModal()">
+                    
+                    <select id="filter-appt-ibu" class="search-input" style="width: auto; min-width: 120px;">
+                        <option value="">All IBUs</option>
+                    </select>
+                    
+                    <select id="filter-appt-division" class="search-input" style="width: auto; min-width: 140px;">
+                        <option value="">All Divisions</option>
+                    </select>
+                    
+                    <select id="filter-appt-status" class="search-input" style="width: auto; min-width: 140px;">
+                        <option value="">All Statuses</option>
+                        <option value="Scheduled">Scheduled</option>
+                        <option value="Completed">Completed</option>
+                        <option value="Cancelled">Cancelled</option>
+                    </select>
+                    
+                    <button class="btn btn-primary" onclick="showNewAppointmentModal()" style="margin-left: auto;">
                         <i class="fas fa-calendar-plus"></i> Schedule Appointment
                     </button>
                 </div>
-                <div class="table-container">
-                    <table class="data-table">
-                        <thead>
-                            <tr>
-                                <th>Date & Time</th>
-                                <th>Patient</th>
-                                <th>Reason</th>
-                                <th>Status</th>
-                                <th>Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody id="appointments-table-body">
-                            <!-- Populated by JS -->
-                        </tbody>
-                    </table>
+                <div class="table-container" style="background: transparent; box-shadow: none; border: none; padding: 0;">
+                    <div class="ai-order-header ai-appointments-grid">
+                        <div>Date & Time</div>
+                        <div>Patient</div>
+                        <div>Reason</div>
+                        <div>Status</div>
+                        <div style="text-align:right;">Actions</div>
+                    </div>
+                    <div id="appointments-table-body" style="display:flex; flex-direction:column; gap:8px; margin-top:12px;">
+                        <!-- Populated by JS -->
+                    </div>
                 </div>
             </div>
 
             <!-- Pharmacy Inventory View -->
             <div id="view-inventory" class="view">
-                <div class="view-header">
+                <div class="view-header" style="display:flex; gap:12px; align-items:center; flex-wrap:wrap;">
                     <input type="text" id="inventory-search" placeholder="Search stock..." class="search-input">
-                    <button class="btn btn-primary" onclick="showNewInventoryModal()">
+                    
+                    <select id="filter-inv-category" class="search-input" style="width: auto; min-width: 140px;">
+                        <option value="">All Categories</option>
+                    </select>
+                    
+                    <select id="filter-inv-supplier" class="search-input" style="width: auto; min-width: 140px;">
+                        <option value="">All Suppliers</option>
+                    </select>
+                    
+                    <select id="filter-inv-status" class="search-input" style="width: auto; min-width: 140px;">
+                        <option value="">All Stock Levels</option>
+                        <option value="in_stock">In Stock (Good)</option>
+                        <option value="low_stock">Low Stock (≤ 10)</option>
+                        <option value="out_of_stock">Out of Stock (0)</option>
+                    </select>
+                    
+                    <button class="btn btn-primary" onclick="showNewInventoryModal()" style="margin-left: auto;">
                         <i class="fas fa-box-open"></i> Add Stock Item
                     </button>
                 </div>
-                <div class="table-container">
-                    <table class="data-table">
-                        <thead>
-                            <tr>
-                                <th>Item Name</th>
-                                <th>Category</th>
-                                <th>Stock Level</th>
-                                <th>Unit Cost ($)</th>
-                                <th>Supplier</th>
-                                <th>Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody id="inventory-table-body">
-                            <!-- Populated by JS -->
-                        </tbody>
-                    </table>
+                <div class="table-container" style="background: transparent; box-shadow: none; border: none; padding: 0;">
+                    <div class="ai-order-header ai-inventory-grid">
+                        <div>Item Name</div>
+                        <div>Category</div>
+                        <div>Stock Level</div>
+                        <div>Unit Cost ($)</div>
+                        <div>Supplier</div>
+                        <div style="text-align:right;">Actions</div>
+                    </div>
+                    <div id="inventory-table-body" style="display:flex; flex-direction:column; gap:8px; margin-top:12px;">
+                        <!-- Populated by JS -->
+                    </div>
                 </div>
             </div>
 
@@ -1124,6 +1159,12 @@
                         </div>
                     </div>
                     
+                    <h4 class="form-section-title">Dispense Medication (Pharmacy)</h4>
+                    <div id="dispensary-container" style="display:flex; flex-direction:column; gap:10px;">
+                        <!-- Medicine rows will be injected here by JS -->
+                    </div>
+                    <button type="button" class="btn btn-outline" onclick="addDispensaryRow()" style="margin-top: 10px; font-size: 12px; border-radius: 12px; padding: 6px 12px;"><i class="fas fa-plus"></i> Add Medicine</button>
+                    
                     <div class="form-actions">
                         <button type="button" class="btn btn-outline" onclick="closeModal('modal-consultation')">Cancel</button>
                         <button type="button" class="btn btn-primary" onclick="saveConsultation()">Save Consultation</button>
@@ -1142,9 +1183,11 @@
             </div>
             <div class="modal-body">
                 <form id="appointment-form">
-                    <div class="form-group">
+                    <div class="form-group custom-dropdown-container">
                         <label>Patient *</label>
-                        <select id="appt-patient" required></select>
+                        <input type="text" id="appt-patient-search" placeholder="-- Search Patient --" autocomplete="off" class="search-input">
+                        <div id="appt-patient-list" class="custom-dropdown-list"></div>
+                        <input type="hidden" id="appt-patient" required>
                     </div>
                     <div class="form-row">
                         <div class="form-group">
