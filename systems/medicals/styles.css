@@ -234,22 +234,31 @@ body {
 }
 
 .btn-primary {
-    background: var(--accent-red);
+    background: linear-gradient(135deg, #e11c2a 0%, #b3121d 100%);
     color: white;
+    box-shadow: 0 4px 12px rgba(225, 28, 42, 0.25);
+    border: none;
+    transition: transform 0.1s ease-out, box-shadow 0.15s ease-out, filter 0.15s ease-out;
 }
 
 .btn-primary:hover {
-    background: var(--accent-red-hover);
+    transform: translateY(-1px);
+    filter: brightness(1.05);
+    box-shadow: 0 6px 16px rgba(225, 28, 42, 0.4);
 }
 
 .btn-outline {
     background: transparent;
     border: 1px solid var(--border);
     color: var(--text-main);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.02);
+    transition: all 0.2s ease-out;
 }
 
 .btn-outline:hover {
     background: var(--bg-main);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05);
+    border-color: #cbd5e1;
 }
 
 .table-container {

@@ -494,3 +494,5 @@
   Files: .mcp/knowledge/_shared/commit_log.md,alter_db.js,check_supa.js,get_group_sales.js,get_schemas.js,systems/salestrack/index.html,systems/salestrack/orders_logic.js,
 - `0ea8af6` 2026-09-03 [supabase-migration] v4.3.5: fixes for order tracking and machine add search
   Files: RELEASE_NOTES.md,package.json,systems/salestrack/dashboard_logic.js,version.json,
+- `aafc0a5` 2026-09-03 [supabase-migration] [checkpoint] before clinic UI restyle
+  Files: .mcp/knowledge/_shared/commit_log.md,
