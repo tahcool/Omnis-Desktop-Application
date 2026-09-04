@@ -499,3 +499,5 @@
 \n## 2026-09-04
 - `fbfcd8c` 2026-09-04 [supabase-migration] Restore point
   Files: .mcp/knowledge/_shared/commit_log.md,systems/medicals/styles.css,
+- `5d84495` 2026-09-04 [supabase-migration] Restore point: UI styling to match Fleetrack and separate Cohabitants field
+  Files: .mcp/knowledge/_shared/commit_log.md,supabase/migrations/20260904000000_add_cohabitants.sql,systems/medicals/index.html,systems/medicals/medicals_logic.js,systems/medicals/styles.css,

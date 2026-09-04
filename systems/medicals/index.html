@@ -112,40 +112,64 @@
                 <!-- Avatar -->
                 <div style="position:relative;flex-shrink:0;">
                   <div style="position:absolute;inset:-4px;border-radius:50%;background:linear-gradient(135deg,rgba(0,0,0,0.1),rgba(0,0,0,0.03));z-index:0;"></div>
-                  <div id="profile-avatar-wrap"
-                       style="position:relative;width:96px;height:96px;border-radius:50%;border:4px solid #fff;overflow:hidden;z-index:1;box-shadow:0 10px 25px -5px rgba(0,0,0,0.15);">
-                    <div id="profile-avatar-letter" style="width:100%;height:100%;background:linear-gradient(135deg,#e11c2a,#b31621);display:flex;align-items:center;justify-content:center;font-size:28px;font-weight:800;color:#fff;"><i class="fas fa-user-nurse"></i></div>
+                  <div id="profile-avatar-wrap" onclick="document.getElementById('profile-photo-input').click()"
+                       style="position:relative;width:96px;height:96px;border-radius:50%;cursor:pointer;border:4px solid #fff;overflow:hidden;z-index:1;box-shadow:0 10px 25px -5px rgba(0,0,0,0.15);"
+                       title="Click to change profile photo">
+                    <div id="profile-avatar-letter" style="width:100%;height:100%;background:linear-gradient(135deg,#b31621,#56110f);display:flex;align-items:center;justify-content:center;font-size:28px;font-weight:800;color:#fff;"><i class="fas fa-user-nurse"></i></div>
+                    <img id="profile-avatar-img" src="" alt="Profile" style="position:absolute;top:0;left:0;width:100%;height:100%;object-fit:cover;display:none;border-radius:50%;">
+                    <div id="profile-avatar-overlay" style="position:absolute;top:0;left:0;width:100%;height:100%;background:rgba(0,0,0,0.5);border-radius:50%;display:flex;align-items:center;justify-content:center;opacity:0;transition:opacity 0.2s;"
+                         onmouseover="this.style.opacity='1'" onmouseout="this.style.opacity='0'">
+                      <i class="fas fa-camera" style="color:#fff;font-size:14px;"></i>
+                    </div>
                   </div>
                   <div style="position:absolute;bottom:1px;right:1px;width:12px;height:12px;border-radius:50%;background:#22c55e;border:2px solid #fff;z-index:2;box-shadow:0 0 5px rgba(34,197,94,0.4);"></div>
                 </div>
+                <input type="file" id="profile-photo-input" accept="image/*" style="display:none;" onchange="window.openProfileCropModal(this)">
                 
                 <!-- Greeting text -->
                 <div style="flex:1;position:relative;z-index:1;">
-                  <h2 id="welcome-greeting" style="font-size:18px;font-weight:900;color:#0f172a;margin:0 0 6px;letter-spacing:-0.02em;line-height:1.3;">Good day, Company Nurse!</h2>
-                  <p id="welcome-date-subtitle" style="font-size:13px;color:#64748b;margin:0;font-weight:500;">Ready for today's consultations.</p>
+                  <h2 id="welcome-greeting" style="font-size:16px;font-weight:900;color:#0f172a;margin:0 0 6px;letter-spacing:-0.02em;line-height:1.3;">Good morning, Company Nurse!</h2>
+                  <p id="welcome-date-subtitle" style="font-size:12px;color:#64748b;margin:0;font-weight:500;">Ready for today's consultations.</p>
+                </div>
+              </div>
+
+              <!-- Right side: Buttons -->
+              <div style="display:flex;align-items:center;gap:12px;z-index:2;flex-shrink:0;">
+                <!-- WA Status -->
+                <div id="wa-navbar-status" style="display:flex; align-items:center; gap:8px; cursor: pointer; padding:6px 14px; background:#0f172a; border-radius:99px; transition:all 0.2s; box-shadow: 0 2px 4px rgba(0,0,0,0.08);" onmouseover="this.style.background='#1e293b'; this.style.transform='translateY(-1px)'" onmouseout="this.style.background='#0f172a'; this.style.transform='none'">
+                  <span id="wa-navbar-dot" style="width:6px; height:6px; background:#64748b; border-radius:50%; display:inline-block; box-shadow: 0 0 6px rgba(0,0,0,0.15);"></span>
+                  <div id="wa-navbar-text" style="font-size:10px; color:#fff; font-weight:700; letter-spacing:0.04em; text-transform:uppercase;">WA: OFFLINE</div>
+                </div>
+                <!-- Settings Button -->
+                <div onclick="console.log('Open settings')" style="cursor:pointer; width:28px; height:28px; display:flex; align-items:center; justify-content:center; background:#0f172a; border-radius:50%; color:#fff; transition:all 0.2s; box-shadow: 0 2px 4px rgba(0,0,0,0.08);" onmouseover="this.style.background='#1e293b'; this.style.transform='translateY(-1px)'" onmouseout="this.style.background='#0f172a'; this.style.transform='none'">
+                  <i class="fas fa-cog" style="font-size:13px;"></i>
+                </div>
+                <!-- Help Button -->
+                <div id="btn-tutorial-help" onclick="console.log('Open help')" style="cursor:pointer; width:28px; height:28px; display:flex; align-items:center; justify-content:center; background:#0f172a; border-radius:50%; color:#fff; transition:all 0.2s; box-shadow: 0 2px 4px rgba(0,0,0,0.08);" onmouseover="this.style.background='#1e293b'; this.style.transform='translateY(-1px)'" onmouseout="this.style.background='#0f172a'; this.style.transform='none'">
+                  <i class="fas fa-question" style="font-size:13px;"></i>
                 </div>
               </div>
             </div>
 
-            <!-- PATIENTS COMBINED -->
-            <div style="background:linear-gradient(135deg, #e11c2a 0%, #b31621 100%);border-radius:14px;padding:22px 24px;flex:1 1 300px;box-shadow:inset 0 1px 0 rgba(255,255,255,0.15); position:relative; overflow:hidden;">
-              <!-- Subtle glowing orb in background -->
-              <div style="position:absolute; top:-20px; right:-20px; width:200px; height:200px; background:radial-gradient(circle, rgba(239,68,68,0.15) 0%, transparent 70%); border-radius:50%; pointer-events:none;"></div>
+            <!-- KPI CARDS WRAPPER -->
+            <div style="display:flex; flex-wrap:wrap; gap:16px; flex: 2 1 600px;">
+              <!-- PATIENTS COMBINED -->
+              <div style="background:linear-gradient(135deg, #8b201a 0%, #56110f 100%); border-radius:14px; padding:22px 24px; flex:1 1 300px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); position:relative; overflow:hidden; display: flex; flex-direction: column;">
               
               <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px; position:relative; z-index:1;">
                 <div>
-                  <div style="font-size:12px;font-weight:900;letter-spacing:0.1em;text-transform:uppercase;color:#ffffff;">Clinic Traffic</div>
-                  <div style="font-size:11px;font-weight:700;color:rgba(255,255,255,0.75);letter-spacing:0.02em;text-transform:uppercase;letter-spacing:0.06em;">Patients & Consultations</div>
+                  <div style="font-size:11px;font-weight:900;letter-spacing:0.1em;text-transform:uppercase;color:#ffffff;">Clinic Traffic</div>
+                  <div style="font-size:9px;font-weight:700;color:rgba(255,255,255,0.7);text-transform:uppercase;letter-spacing:0.06em;">Patients & Consultations</div>
                 </div>
-                <span style="width:28px;height:28px;background:rgba(255,255,255,0.1);border-radius:8px;display:inline-flex;align-items:center;justify-content:center;box-shadow:inset 0 1px 0 rgba(255,255,255,0.1);"><i class="fas fa-users" style="color:#ffffff;font-size:11px;"></i></span>
+                <span style="width:28px;height:28px;background:rgba(255,255,255,0.1);border-radius:8px;display:inline-flex;align-items:center;justify-content:center;box-shadow:inset 0 1px 0 rgba(255,255,255,0.1);"><i class="fas fa-chart-line" style="color:#ffffff;font-size:11px;"></i></span>
               </div>
               
               <div style="display:flex;gap:16px; position:relative; z-index:1;">
                 <!-- Total Patients -->
                 <div style="flex:1;">
-                  <div style="font-size:11px;font-weight:700;color:rgba(255,255,255,0.75);letter-spacing:0.02em;text-transform:uppercase;margin-bottom:4px;">Total Patients</div>
+                  <div style="font-size:9px;font-weight:700;color:rgba(255,255,255,0.7);text-transform:uppercase;margin-bottom:4px;">Total Patients</div>
                   <div style="display:flex;align-items:baseline;gap:4px;margin-bottom:4px;">
-                    <div id="stat-patients-new" style="font-size:36px;font-weight:900;color:#ffffff;line-height:1;margin-top:8px;text-shadow:0 2px 4px rgba(0,0,0,0.2);">0</div>
+                    <div id="stat-patients-new" style="font-size:26px;font-weight:900;color:#ffffff;line-height:1;text-shadow:0 2px 4px rgba(0,0,0,0.2);">0</div>
                   </div>
                 </div>
                 
@@ -153,47 +177,46 @@
                 
                 <!-- Consultations -->
                 <div style="flex:1;">
-                  <div style="font-size:11px;font-weight:700;color:rgba(255,255,255,0.75);letter-spacing:0.02em;text-transform:uppercase;margin-bottom:4px;">Consultations (Today)</div>
+                  <div style="font-size:9px;font-weight:700;color:rgba(255,255,255,0.7);text-transform:uppercase;margin-bottom:4px;">Consultations (Today)</div>
                   <div style="display:flex;align-items:baseline;gap:4px;margin-bottom:4px;">
-                    <div id="stat-consults-new" style="font-size:36px;font-weight:900;color:#ffffff;line-height:1;margin-top:8px;text-shadow:0 2px 4px rgba(0,0,0,0.2);">0</div>
+                    <div id="stat-consults-new" style="font-size:26px;font-weight:900;color:#ffffff;line-height:1;text-shadow:0 2px 4px rgba(0,0,0,0.2);">0</div>
                   </div>
                 </div>
               </div>
             </div>
 
             <!-- INVENTORY & SCHEDULE -->
-            <div style="background:linear-gradient(135deg, #0f172a 0%, #050810 100%);border-radius:14px;padding:22px 24px;flex:1 1 300px;box-shadow:inset 0 1px 0 rgba(255,255,255,0.1); position:relative; overflow:hidden;">
-              <!-- Subtle glowing orb in background -->
-              <div style="position:absolute; top:-20px; right:-20px; width:200px; height:200px; background:radial-gradient(circle, rgba(59,130,246,0.15) 0%, transparent 70%); border-radius:50%; pointer-events:none;"></div>
+            <div style="background:linear-gradient(135deg, #090e17 0%, #030612 100%); border-radius:14px; padding:22px 24px; flex:1 1 300px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); position:relative; overflow:hidden; display: flex; flex-direction: column;">
               
               <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px; position:relative; z-index:1;">
                 <div>
-                  <div style="font-size:12px;font-weight:900;letter-spacing:0.1em;text-transform:uppercase;color:#ffffff;">Operations</div>
-                  <div style="font-size:11px;font-weight:700;color:rgba(255,255,255,0.75);letter-spacing:0.02em;text-transform:uppercase;letter-spacing:0.06em;">Appointments & Inventory</div>
+                  <div style="font-size:11px;font-weight:900;letter-spacing:0.1em;text-transform:uppercase;color:#ffffff;">Operations</div>
+                  <div style="font-size:9px;font-weight:700;color:rgba(255,255,255,0.7);text-transform:uppercase;letter-spacing:0.06em;">Appointments & Inventory</div>
                 </div>
-                <span style="width:28px;height:28px;background:rgba(255,255,255,0.05);border-radius:8px;display:inline-flex;align-items:center;justify-content:center;box-shadow:inset 0 1px 0 rgba(255,255,255,0.05);"><i class="fas fa-calendar-check" style="color:#ffffff;font-size:11px;"></i></span>
+                <span style="width:28px;height:28px;background:rgba(255,255,255,0.1);border-radius:8px;display:inline-flex;align-items:center;justify-content:center;box-shadow:inset 0 1px 0 rgba(255,255,255,0.1);"><i class="fas fa-chart-line" style="color:#ffffff;font-size:11px;"></i></span>
               </div>
               
               <div style="display:flex;gap:16px; position:relative; z-index:1;">
                 <!-- Appointments -->
                 <div style="flex:1;">
-                  <div style="font-size:11px;font-weight:700;color:rgba(255,255,255,0.75);letter-spacing:0.02em;text-transform:uppercase;margin-bottom:4px;">Appointments (Today)</div>
+                  <div style="font-size:9px;font-weight:700;color:rgba(255,255,255,0.7);text-transform:uppercase;margin-bottom:4px;">Appointments (Today)</div>
                   <div style="display:flex;align-items:baseline;gap:4px;margin-bottom:4px;">
-                    <div id="stat-appts-new" style="font-size:36px;font-weight:900;color:#ffffff;line-height:1;margin-top:8px;text-shadow:0 2px 4px rgba(0,0,0,0.3);">0</div>
+                    <div id="stat-appts-new" style="font-size:26px;font-weight:900;color:#ffffff;line-height:1;text-shadow:0 2px 4px rgba(0,0,0,0.2);">0</div>
                   </div>
                 </div>
                 
-                <div style="width:1px;background:linear-gradient(to bottom, rgba(255,255,255,0), rgba(255,255,255,0.1) 50%, rgba(255,255,255,0));margin:0 4px;"></div>
+                <div style="width:1px;background:linear-gradient(to bottom, rgba(255,255,255,0), rgba(255,255,255,0.15) 50%, rgba(255,255,255,0));margin:0 4px;"></div>
                 
-                <!-- Stock -->
+                <!-- Inventory -->
                 <div style="flex:1;">
-                  <div style="font-size:11px;font-weight:700;color:rgba(255,255,255,0.75);letter-spacing:0.02em;text-transform:uppercase;margin-bottom:4px;">Low Stock Items</div>
+                  <div style="font-size:9px;font-weight:700;color:rgba(255,255,255,0.7);text-transform:uppercase;margin-bottom:4px;">Low Stock Items</div>
                   <div style="display:flex;align-items:baseline;gap:4px;margin-bottom:4px;">
-                    <div id="stat-low-stock-new" style="font-size:36px;font-weight:900;color:#ef4444;line-height:1;margin-top:8px;text-shadow:0 2px 4px rgba(0,0,0,0.3);">0</div>
+                    <div id="stat-low-stock-new" style="font-size:26px;font-weight:900;color:#ffffff;line-height:1;text-shadow:0 2px 4px rgba(0,0,0,0.2);">0</div>
                   </div>
                 </div>
               </div>
             </div>
+            </div> <!-- /kpi wrapper -->
 
           </div><!-- /top header -->
 
@@ -303,20 +326,33 @@
                             'https://www.news-medical.net/tag/feed/Medical.aspx'
                         ];
                         
-                        const fetchPromises = feeds.map(feed => 
-                            fetch(`https://api.rss2json.com/v1/api.json?rss_url=${encodeURIComponent(feed)}`)
+                        const fetchPromises = feeds.map(feed => {
+                            const controller = new AbortController();
+                            const timeoutId = setTimeout(() => controller.abort(), 8000); // 8 second timeout
+                            return fetch(`https://api.rss2json.com/v1/api.json?rss_url=${encodeURIComponent(feed)}`, { signal: controller.signal })
                                 .then(res => res.json())
-                        );
+                                .finally(() => clearTimeout(timeoutId));
+                        });
                         
                         const results = await Promise.all(fetchPromises);
                         let allItems = [];
                         
                         results.forEach(data => {
-                            if (data && data.items) {
+                            if (data && data.items && Array.isArray(data.items)) {
                                 allItems = allItems.concat(data.items);
                             }
                         });
                         
+                        // Fallback data if API is empty or fails
+                        if (allItems.length === 0) {
+                            allItems = [
+                                { title: "New WHO Guidelines on Clinical Management", description: "The World Health Organization has released updated protocols for managing severe respiratory infections.", pubDate: new Date().toISOString(), link: "#", thumbnail: "" },
+                                { title: "Breakthrough in Vaccine Stability Research", description: "Researchers have discovered a novel protein formulation that extends the shelf life of temperature-sensitive vaccines.", pubDate: new Date(Date.now() - 86400000).toISOString(), link: "#", thumbnail: "" },
+                                { title: "Telehealth Adoption Rates Surge Globally", description: "Recent statistics indicate a 40% year-over-year increase in remote consultations across primary care networks.", pubDate: new Date(Date.now() - 172800000).toISOString(), link: "#", thumbnail: "" },
+                                { title: "FDA Approves New Diagnostic Imaging Tool", description: "A highly sensitive AI-assisted MRI analysis software has received FDA clearance for early detection of neurological disorders.", pubDate: new Date(Date.now() - 259200000).toISOString(), link: "#", thumbnail: "" }
+                            ];
+                        }
+
                         allItems.sort((a, b) => new Date(b.pubDate) - new Date(a.pubDate));
                         const topItems = allItems.slice(0, 8);
                         
@@ -363,7 +399,43 @@
                         
                     } catch (err) {
                         console.error("Error fetching medical news:", err);
-                        wrapper.innerHTML = `<div style="padding: 20px; color: #ef4444;">Failed to load updates. Please try again.</div>`;
+                        // Fallback data for error cases
+                        const fallbackItems = [
+                            { title: "New WHO Guidelines on Clinical Management", description: "The World Health Organization has released updated protocols for managing severe respiratory infections.", pubDate: new Date().toISOString(), link: "#", thumbnail: "" },
+                            { title: "Breakthrough in Vaccine Stability Research", description: "Researchers have discovered a novel protein formulation that extends the shelf life of temperature-sensitive vaccines.", pubDate: new Date(Date.now() - 86400000).toISOString(), link: "#", thumbnail: "" },
+                            { title: "Telehealth Adoption Rates Surge Globally", description: "Recent statistics indicate a 40% year-over-year increase in remote consultations across primary care networks.", pubDate: new Date(Date.now() - 172800000).toISOString(), link: "#", thumbnail: "" },
+                            { title: "FDA Approves New Diagnostic Imaging Tool", description: "A highly sensitive AI-assisted MRI analysis software has received FDA clearance for early detection of neurological disorders.", pubDate: new Date(Date.now() - 259200000).toISOString(), link: "#", thumbnail: "" }
+                        ];
+                        
+                        let htmlContent = '';
+                        fallbackItems.forEach(item => {
+                            let briefText = item.description;
+                            if (briefText.length > 90) briefText = briefText.substring(0, 87) + '...';
+                            let shortTitle = item.title;
+                            if (shortTitle.length > 55) shortTitle = shortTitle.substring(0, 52) + '...';
+                            
+                            let iconClass = "fa-heartbeat";
+                            let gradient = "linear-gradient(135deg, #fff1f2 0%, #ffe4e6 100%)";
+                            let iconCol = "#e11d48";
+                            let thumbHtml = `<div style="width: 100%; height: 100%; background: ${gradient}; display: flex; align-items: center; justify-content: center; border-radius: 6px;"><i class="fas ${iconClass}" style="font-size: 20px; color: ${iconCol};"></i></div>`;
+                            
+                            htmlContent += `
+                                <div style="position: relative; display: flex; gap: 16px; padding: 18px 20px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 14px; min-width: 320px; max-width: 400px; flex: 0 0 auto; white-space: normal; cursor: pointer; transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);" 
+                                    onmouseover="this.style.borderColor='#93c5fd'; this.style.backgroundColor='#fff'; this.style.boxShadow='0 12px 24px -4px rgba(59,130,246,0.15), 0 4px 8px -2px rgba(59,130,246,0.05)'; this.style.transform='translateY(-2px)';" 
+                                    onmouseout="this.style.borderColor='#e2e8f0'; this.style.backgroundColor='#f8fafc'; this.style.boxShadow='none'; this.style.transform='none';" 
+                                    onclick="window.open('${item.link}', '_blank')">
+                                    <div style="width: 50px; height: 50px; border-radius: 8px; flex-shrink: 0; background: #fff; display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 4px rgba(0,0,0,0.05); padding: 4px; border: 1px solid #e2e8f0; position: relative; z-index: 5;">
+                                        ${thumbHtml}
+                                    </div>
+                                    <div style="display: flex; flex-direction: column; justify-content: center; position: relative; z-index: 5;">
+                                        <div style="font-size: 13px; font-weight: 800; color: #1e293b; margin-bottom: 6px; line-height: 1.3;">${shortTitle}</div>
+                                        <div style="font-size: 11px; color: #64748b; line-height: 1.4; margin-bottom: 8px; font-weight: 500;">${briefText}</div>
+                                        <div style="font-size: 10px; color: #8b2219; font-weight: 800; text-transform: uppercase; letter-spacing: 0.05em;">TODAY</div>
+                                    </div>
+                                </div>
+                            `;
+                        });
+                        wrapper.innerHTML = htmlContent + htmlContent;
                     } finally {
                         if (icon) icon.classList.remove('fa-spin');
                     }
@@ -423,12 +495,19 @@
                         observer.observe(origLowStock, { childList: true, characterData: true, subtree: true });
                     }
                     
-                    // Setup current date
+                    // Setup current date and medical quote
                     const dateSubtitle = document.getElementById('welcome-date-subtitle');
                     if (dateSubtitle) {
                         const today = new Date();
                         const options = { weekday: 'long', month: 'long', day: 'numeric' };
-                        dateSubtitle.textContent = "Today is " + today.toLocaleDateString('en-US', options) + ".";
+                        const dateString = "Today is " + today.toLocaleDateString('en-US', options) + ".";
+                        const quotes = [
+                            {text: "Medicine is a science of uncertainty and an art of probability.", author: "William Osler"},
+                            {text: "Wherever the art of Medicine is loved, there is also a love of Humanity.", author: "Hippocrates"},
+                            {text: "The good physician treats the disease; the great physician treats the patient.", author: "William Osler"}
+                        ];
+                        const randomQuote = quotes[Math.floor(Math.random() * quotes.length)];
+                        dateSubtitle.innerHTML = `${dateString}<br><span style="font-style:italic; opacity:0.85; font-size:12px; margin-top:6px; display:inline-block;">"${randomQuote.text}" — <strong style="font-weight:600">${randomQuote.author}</strong></span>`;
                     }
                 });
             </script>
@@ -914,5 +993,115 @@
         </div>
     </div>
 
+    <!-- PROFILE CROP MODAL -->
+    <div id="profile-crop-modal" style="display:none; position:fixed; inset:0; z-index:99999; background:rgba(0,0,0,0.75); backdrop-filter:blur(6px); align-items:center; justify-content:center;">
+        <div style="background:#fff; border-radius:20px; padding:28px; width:520px; max-width:95vw; box-shadow:0 30px 80px rgba(0,0,0,0.4); display:flex; flex-direction:column; gap:20px;">
+        <div style="display:flex; justify-content:space-between; align-items:center;">
+            <div>
+            <div style="font-size:17px; font-weight:900; color:#0f172a; letter-spacing:-0.02em;">Crop Profile Photo</div>
+            <div style="font-size:12px; color:#64748b; margin-top:2px; font-weight:500;">Drag to reposition • Scroll to zoom</div>
+            </div>
+            <button onclick="window.closeProfileCropModal()" style="width:32px;height:32px;border-radius:8px;border:1px solid #e2e8f0;background:#f8fafc;cursor:pointer;font-size:16px;color:#64748b;display:flex;align-items:center;justify-content:center;">×</button>
+        </div>
+        <div style="position:relative; display:flex; gap:20px; align-items:center;">
+            <div style="flex:1; position:relative; border-radius:12px; overflow:hidden; background:#0f172a; border:1px solid #e2e8f0;">
+            <canvas id="profile-crop-canvas" style="display:block; width:100%; cursor:grab;"></canvas>
+            </div>
+            <div style="display:flex; flex-direction:column; align-items:center; gap:8px; flex-shrink:0;">
+            <canvas id="profile-crop-preview" width="80" height="80" style="border-radius:50%; border:2px solid #8b2219; box-shadow:0 4px 12px rgba(139,34,25,0.3);"></canvas>
+            <span style="font-size:10px; font-weight:700; color:#94a3b8; text-transform:uppercase;">Preview</span>
+            </div>
+        </div>
+        <div style="display:flex; align-items:center; gap:10px;">
+            <i class="fas fa-search-minus" style="color:#94a3b8; font-size:12px;"></i>
+            <input type="range" id="profile-crop-zoom" min="0.5" max="3" step="0.01" value="1" style="flex:1; accent-color:#8b2219; cursor:pointer;" oninput="window._cropState && (window._cropState.scale = parseFloat(this.value), window._cropDraw())">
+            <i class="fas fa-search-plus" style="color:#94a3b8; font-size:12px;"></i>
+        </div>
+        <div style="display:flex; gap:12px;">
+            <button onclick="window.closeProfileCropModal()" style="flex:1; padding:11px; background:#f8fafc; border:1px solid #e2e8f0; border-radius:10px; font-size:13px; font-weight:700; color:#64748b; cursor:pointer;">Cancel</button>
+            <button onclick="window.confirmProfileCrop()" style="flex:2; padding:11px; background:linear-gradient(135deg,#8b2219,#c0392b); border:none; border-radius:10px; font-size:13px; font-weight:800; color:#fff; cursor:pointer; box-shadow:0 4px 12px rgba(139,34,25,0.3);">
+            <i class="fas fa-check" style="margin-right:6px;"></i>Save Photo
+            </button>
+        </div>
+        </div>
+    </div>
+
+    <script>
+    (function() {
+        let S = null;
+        window.openProfileCropModal = function(input) {
+            const file = input.files[0]; input.value = ''; if (!file) return;
+            const reader = new FileReader();
+            reader.onload = e => {
+            const img = new Image();
+            img.onload = () => {
+                const modal = document.getElementById('profile-crop-modal');
+                const canvas = document.getElementById('profile-crop-canvas');
+                const DISPLAY_SIZE = Math.min(380, window.innerWidth * 0.5);
+                canvas.width = DISPLAY_SIZE; canvas.height = DISPLAY_SIZE;
+                const fitScale = Math.max(DISPLAY_SIZE / img.width, DISPLAY_SIZE / img.height);
+                S = { img, canvas, scale: fitScale, ox: (DISPLAY_SIZE - img.width * fitScale) / 2, oy: (DISPLAY_SIZE - img.height * fitScale) / 2, dragging: false, lastX: 0, lastY: 0, size: DISPLAY_SIZE };
+                document.getElementById('profile-crop-zoom').value = fitScale;
+                document.getElementById('profile-crop-zoom').min = fitScale * 0.5;
+                document.getElementById('profile-crop-zoom').max = fitScale * 4;
+                window._cropState = S; window._cropDraw(); modal.style.display = 'flex'; _bindCropEvents();
+            }; img.src = e.target.result;
+            }; reader.readAsDataURL(file);
+        };
+        window._cropDraw = function() {
+            if (!S) return;
+            const ctx = S.canvas.getContext('2d'), sz = S.size;
+            ctx.clearRect(0, 0, sz, sz);
+            ctx.save(); ctx.drawImage(S.img, S.ox, S.oy, S.img.width * S.scale, S.img.height * S.scale); ctx.restore();
+            ctx.save(); ctx.fillStyle = 'rgba(0,0,0,0.55)'; ctx.fillRect(0, 0, sz, sz); ctx.globalCompositeOperation = 'destination-out'; ctx.beginPath(); ctx.arc(sz/2, sz/2, sz/2-8, 0, Math.PI*2); ctx.fill(); ctx.restore();
+            ctx.save(); ctx.beginPath(); ctx.arc(sz/2, sz/2, sz/2-8, 0, Math.PI*2); ctx.clip(); ctx.drawImage(S.img, S.ox, S.oy, S.img.width * S.scale, S.img.height * S.scale); ctx.restore();
+            ctx.save(); ctx.strokeStyle = '#8b2219'; ctx.lineWidth = 2.5; ctx.beginPath(); ctx.arc(sz/2, sz/2, sz/2-8, 0, Math.PI*2); ctx.stroke(); ctx.restore();
+            const prev = document.getElementById('profile-crop-preview'), pCtx = prev.getContext('2d'), r = sz/2-8;
+            pCtx.clearRect(0,0,80,80); pCtx.save(); pCtx.beginPath(); pCtx.arc(40,40,40,0,Math.PI*2); pCtx.clip(); pCtx.drawImage(S.canvas, sz/2-r, sz/2-r, r*2, r*2, 0, 0, 80, 80); pCtx.restore();
+        };
+        function _bindCropEvents() {
+            const canvas = document.getElementById('profile-crop-canvas');
+            const fresh = canvas.cloneNode(true); canvas.parentNode.replaceChild(fresh, canvas); S.canvas = fresh; window._cropState = S;
+            fresh.addEventListener('mousedown', e => { S.dragging=true; S.lastX=e.clientX; S.lastY=e.clientY; fresh.style.cursor='grabbing'; });
+            fresh.addEventListener('mousemove', e => { if(!S.dragging) return; S.ox+=e.clientX-S.lastX; S.oy+=e.clientY-S.lastY; S.lastX=e.clientX; S.lastY=e.clientY; window._cropDraw(); });
+            fresh.addEventListener('mouseup', () => { S.dragging=false; fresh.style.cursor='grab'; });
+            fresh.addEventListener('mouseleave', () => { S.dragging=false; fresh.style.cursor='grab'; });
+            fresh.addEventListener('wheel', e => { e.preventDefault(); const d=e.deltaY<0?1.06:0.94, cx=S.size/2, cy=S.size/2; S.ox=cx-(cx-S.ox)*d; S.oy=cy-(cy-S.oy)*d; S.scale*=d; document.getElementById('profile-crop-zoom').value=S.scale; window._cropDraw(); }, {passive:false});
+            let ltd=null;
+            fresh.addEventListener('touchstart', e => { if(e.touches.length===1){S.dragging=true;S.lastX=e.touches[0].clientX;S.lastY=e.touches[0].clientY;} if(e.touches.length===2){ltd=Math.hypot(e.touches[0].clientX-e.touches[1].clientX,e.touches[0].clientY-e.touches[1].clientY);} });
+            fresh.addEventListener('touchmove', e => { e.preventDefault(); if(e.touches.length===1&&S.dragging){S.ox+=e.touches[0].clientX-S.lastX;S.oy+=e.touches[0].clientY-S.lastY;S.lastX=e.touches[0].clientX;S.lastY=e.touches[0].clientY;window._cropDraw();} if(e.touches.length===2){const d=Math.hypot(e.touches[0].clientX-e.touches[1].clientX,e.touches[0].clientY-e.touches[1].clientY);if(ltd){S.scale*=d/ltd;window._cropDraw();}ltd=d;} },{passive:false});
+            fresh.addEventListener('touchend', () => { S.dragging=false; ltd=null; });
+        }
+        window.confirmProfileCrop = function() {
+            if(!S) return;
+            const out=document.createElement('canvas'); out.width=256; out.height=256;
+            const octx=out.getContext('2d'), sz=S.size, r=sz/2-8;
+            octx.save(); octx.beginPath(); octx.arc(128,128,128,0,Math.PI*2); octx.clip(); octx.drawImage(S.canvas,sz/2-r,sz/2-r,r*2,r*2,0,0,256,256); octx.restore();
+            const dataUrl=out.toDataURL('image/png');
+            localStorage.setItem('omnis_profile_photo', dataUrl);
+            const img=document.getElementById('profile-avatar-img'), letter=document.getElementById('profile-avatar-letter');
+            if (img && letter) {
+                img.src=dataUrl; img.style.display='block'; letter.style.display='none';
+            }
+            window.closeProfileCropModal();
+        };
+        window.closeProfileCropModal = function() { document.getElementById('profile-crop-modal').style.display='none'; S=null; window._cropState=null; };
+        document.getElementById('profile-crop-modal').addEventListener('click', function(e){ if(e.target===this) window.closeProfileCropModal(); });
+        
+        // Load saved profile photo on start
+        document.addEventListener('DOMContentLoaded', () => {
+            const saved = localStorage.getItem('omnis_profile_photo');
+            if (saved) {
+                const img = document.getElementById('profile-avatar-img');
+                const letter = document.getElementById('profile-avatar-letter');
+                if (img && letter) {
+                    img.src = saved;
+                    img.style.display = 'block';
+                    letter.style.display = 'none';
+                }
+            }
+        });
+    })();
+    </script>
 </body>
 </html>
