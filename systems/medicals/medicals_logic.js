@@ -19,7 +19,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 'view-appointments': 'Appointments',
                 'view-inventory': 'Pharmacy Inventory'
             };
-            document.getElementById('top-bar-title').innerText = titleMap[target] || 'Medicals';
+            const topBarTitle = document.getElementById('top-bar-title');
+            if (topBarTitle) topBarTitle.innerText = titleMap[target] || 'Medicals';
 
             // Refresh data based on view
             if (target === 'view-patients') loadPatients();
@@ -143,6 +144,7 @@ async function savePatient() {
         ibu: document.getElementById('pat-ibu').value,
         division: document.getElementById('pat-division').value,
         address_location: document.getElementById('pat-address').value,
+        cohabitants: document.getElementById('pat-cohabitants').value,
         nok_contact: document.getElementById('pat-nok-contact').value,
         nok_address: document.getElementById('pat-nok-address').value,
         blood_type: document.getElementById('pat-blood').value,
@@ -159,7 +161,7 @@ async function savePatient() {
         if (id) {
             res = await window.electron.invoke('supabase:query', {
                 table: 'omnis_patients', method: 'update',
-                params: { data: payload, filters: { id } }
+                params: { data: payload, id }
             });
         } else {
             res = await window.electron.invoke('supabase:query', {
@@ -192,6 +194,7 @@ function editPatient(id) {
     document.getElementById('pat-ibu').value = pat.ibu || '';
     document.getElementById('pat-division').value = pat.division || '';
     document.getElementById('pat-address').value = pat.address_location || '';
+    document.getElementById('pat-cohabitants').value = pat.cohabitants || '';
     document.getElementById('pat-nok-contact').value = pat.nok_contact || '';
     document.getElementById('pat-nok-address').value = pat.nok_address || '';
     document.getElementById('pat-blood').value = pat.blood_type || '';
@@ -406,41 +409,47 @@ async function loadStats() {
 
         // Populate Feeds
         const feedAppts = document.getElementById('feed-todays-appts');
-        if (apptsToday.length === 0) {
-            feedAppts.innerHTML = '<span style="color:var(--text-light);font-size:12px;">No appointments today.</span>';
-        } else {
-            feedAppts.innerHTML = apptsToday.map(a => `
-                <div style="padding:10px; border-left:3px solid var(--accent-blue); background:#f8fafc; border-radius:4px; font-size:12px;">
-                    <strong>${a.appointment_time || ''}</strong> - ${escapeHtml(a.omnis_patients?.name || '')} ${escapeHtml(a.omnis_patients?.surname || '')}<br>
-                    <span style="color:var(--text-light);">${escapeHtml(a.reason)}</span>
-                </div>
-            `).join('');
+        if (feedAppts) {
+            if (apptsToday.length === 0) {
+                feedAppts.innerHTML = '<span style="color:var(--text-light);font-size:12px;">No appointments today.</span>';
+            } else {
+                feedAppts.innerHTML = apptsToday.map(a => `
+                    <div style="padding:10px; border-left:3px solid var(--accent-blue); background:#f8fafc; border-radius:4px; font-size:12px;">
+                        <strong>${a.appointment_time || ''}</strong> - ${escapeHtml(a.omnis_patients?.name || '')} ${escapeHtml(a.omnis_patients?.surname || '')}<br>
+                        <span style="color:var(--text-light);">${escapeHtml(a.reason)}</span>
+                    </div>
+                `).join('');
+            }
         }
 
         const feedStock = document.getElementById('feed-low-stock');
-        if (lowStock.length === 0) {
-            feedStock.innerHTML = '<span style="color:var(--text-light);font-size:12px;">All stock levels are optimal.</span>';
-        } else {
-            feedStock.innerHTML = lowStock.map(i => `
-                <div style="padding:10px; border-left:3px solid var(--accent-red); background:#fef2f2; border-radius:4px; font-size:12px;">
-                    <strong>${escapeHtml(i.item_name)}</strong><br>
-                    <span style="color:var(--accent-red);">Qty: ${i.quantity} (Min: ${i.min_stock_level})</span>
-                </div>
-            `).join('');
+        if (feedStock) {
+            if (lowStock.length === 0) {
+                feedStock.innerHTML = '<span style="color:var(--text-light);font-size:12px;">All stock levels are optimal.</span>';
+            } else {
+                feedStock.innerHTML = lowStock.map(i => `
+                    <div style="padding:10px; border-left:3px solid var(--accent-red); background:#fef2f2; border-radius:4px; font-size:12px;">
+                        <strong>${escapeHtml(i.item_name)}</strong><br>
+                        <span style="color:var(--accent-red);">Qty: ${i.quantity} (Min: ${i.min_stock_level})</span>
+                    </div>
+                `).join('');
+            }
         }
 
         const feedRecent = document.getElementById('feed-recent-consults');
         const recentConsults = [...consults].sort((a,b) => new Date(b.consultation_date) - new Date(a.consultation_date)).slice(0, 5);
-        if (recentConsults.length === 0) {
-            feedRecent.innerHTML = '<span style="color:var(--text-light);font-size:12px;">No recent activity.</span>';
-        } else {
-            feedRecent.innerHTML = recentConsults.map(c => `
-                <div style="padding:10px; border-bottom:1px solid var(--border); font-size:12px;">
-                    <strong>${escapeHtml(c.omnis_patients?.name || '')} ${escapeHtml(c.omnis_patients?.surname || '')}</strong>
-                    <span style="float:right;color:var(--text-light);">${new Date(c.consultation_date).toLocaleDateString()}</span><br>
-                    <span style="color:var(--text-light);">${escapeHtml(c.diagnosis || 'No diagnosis logged')}</span>
-                </div>
-            `).join('');
+        if (feedRecent) {
+            if (recentConsults.length === 0) {
+                feedRecent.innerHTML = '<span style="color:var(--text-light);font-size:12px;">No recent activity.</span>';
+            } else {
+                feedRecent.innerHTML = recentConsults.map(c => `
+                    <div style="padding:10px; border-bottom:1px solid var(--border); font-size:12px;">
+                        <strong>${escapeHtml(c.omnis_patients?.name || '')} ${escapeHtml(c.omnis_patients?.surname || '')}</strong>
+                        <span style="float:right;color:var(--text-light);">${new Date(c.consultation_date).toLocaleDateString()}</span><br>
+                        <span style="color:var(--text-light);">${escapeHtml(c.diagnosis || 'No diagnosis logged')}</span>
+                    </div>
+                `).join('');
+            }
         }
 
         // Render Chart
@@ -659,7 +668,7 @@ async function saveAppointment() {
 async function updateAppointmentStatus(id, status) {
     try {
         await window.electron.invoke('supabase:query', {
-            table: 'omnis_appointments', method: 'update', params: { data: { status }, filters: { id } }
+            table: 'omnis_appointments', method: 'update', params: { data: { status }, id }
         });
         loadAppointments();
     } catch (e) {
@@ -747,7 +756,7 @@ async function saveInventory() {
         let res;
         if (id) {
             res = await window.electron.invoke('supabase:query', {
-                table: 'omnis_inventory', method: 'update', params: { data: payload, filters: { id } }
+                table: 'omnis_inventory', method: 'update', params: { data: payload, id }
             });
         } else {
             res = await window.electron.invoke('supabase:query', {

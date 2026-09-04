@@ -496,3 +496,6 @@
   Files: RELEASE_NOTES.md,package.json,systems/salestrack/dashboard_logic.js,version.json,
 - `aafc0a5` 2026-09-03 [supabase-migration] [checkpoint] before clinic UI restyle
   Files: .mcp/knowledge/_shared/commit_log.md,
+\n## 2026-09-04
+- `fbfcd8c` 2026-09-04 [supabase-migration] Restore point
+  Files: .mcp/knowledge/_shared/commit_log.md,systems/medicals/styles.css,

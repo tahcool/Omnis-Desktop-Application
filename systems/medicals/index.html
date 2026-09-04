@@ -6,6 +6,9 @@
     <title>Omnis Clinic</title>
     
     <!-- External Dependencies -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;850&display=swap" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
@@ -13,159 +16,424 @@
     
     <!-- Custom Styles -->
     <link rel="stylesheet" href="styles.css">
+    <style>
+        body, .view { -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; }
+    </style>
 </head>
 <body>
-    <!-- Sidebar -->
-    <div class="sidebar">
-        <div class="sidebar-header">
-            <div class="logo-container" style="display:flex; flex-direction:column; align-items:flex-start; gap:2px; padding-bottom: 20px; border-bottom: 1px solid var(--border); width: 100%;">
-                <img src="../../assets/images/omnis-logo.png" alt="Omnis" style="height: 40px; width: auto; object-fit: contain; filter: brightness(0%); margin-left: -5px;">
-                <div class="logo-subtitle" style="color: var(--accent-red); font-size: 10px; letter-spacing: 0.5px; font-weight: 700; text-transform: uppercase;">Medical Division</div>
-            </div>
-        </div>
 
-        <div class="nav-menu">
-            <div class="nav-item active" data-target="view-dashboard">
-                <i class="fas fa-chart-pie"></i>
-                <span>Dashboard</span>
-            </div>
-            <div class="nav-item" data-target="view-patients">
-                <i class="fas fa-users"></i>
-                <span>Patient Directory</span>
-            </div>
-            <div class="nav-item" data-target="view-sick-notes">
-                <i class="fas fa-file-medical"></i>
-                <span>Sick Notes</span>
-            </div>
-            <div class="nav-item" data-target="view-consultations">
-                <i class="fas fa-stethoscope"></i>
-                <span>Consultations</span>
-            </div>
-            <div class="nav-item" data-target="view-appointments">
-                <i class="fas fa-calendar-alt"></i>
-                <span>Appointments</span>
-            </div>
-            <div class="nav-item" data-target="view-inventory">
-                <i class="fas fa-pills"></i>
-                <span>Pharmacy Inventory</span>
-            </div>
-        </div>
+    <!-- PREMIUM TOP NAV -->
+    <nav class="omnis-top-nav">
+      <div class="top-nav-logo" style="cursor: pointer; flex-shrink: 1; display: flex; flex-direction: column; align-items: flex-end;" onclick="document.querySelector('.nav-item[data-target=\'view-dashboard\']').click()">
+        <img src="../../assets/images/omnis-logo.png" alt="Omnis AI" style="height: clamp(24px, 4vh, 38px); width: auto; max-width: 100%; object-fit: contain; filter: brightness(0) invert(1);">
+        <span style="color:#f8fafc; font-weight:800; letter-spacing:0.12em; font-size: clamp(9px, 1.5vh, 11.5px); margin-right: 12px; margin-top: 2px; opacity: 0.9; text-shadow: none;">Medical Division</span>
+      </div>
 
-        <div style="flex-grow: 1;"></div>
-
-        <div class="nav-menu">
-            <div class="nav-item module-switcher-dropdown" style="position: relative; cursor: pointer;" onmouseenter="clearTimeout(this.hideTimeout); this.querySelector('.dropdown-content').style.display='block'" onmouseleave="this.hideTimeout = setTimeout(() => { this.querySelector('.dropdown-content').style.display='none' }, 250)">
-                <i class="fas fa-cube"></i>
-                <span>Switch Module</span>
-                <div class="dropdown-content" style="display:none; position:absolute; bottom:0; left:100%; margin-left:10px; background:#ffffff; border:1px solid #e2e8f0; border-radius:6px; box-shadow:0 10px 25px rgba(0,0,0,0.1); min-width:180px; z-index:9999; padding:8px;">
-                  <div style="padding: 8px; font-size: 12px; color: #64748b; text-align: center;">Loading...</div>
-                </div>
-                <script>
-                  (function() {
-                    const parent = document.currentScript.parentElement;
-                    const dropdown = parent.querySelector('.dropdown-content');
-                    try {
-                      const modules = JSON.parse(localStorage.getItem('omnis_modules')) || [];
-                      if (modules.length > 0) {
-                          dropdown.innerHTML = modules.map(m => '<a href="../../' + m.url + '" style="display:flex; align-items:center; gap:8px; padding:10px 12px; color:#0f172a; text-decoration:none; font-size:13px; border-radius:4px; transition:background 0.2s;" onmouseover="this.style.background=\'#f8fafc\'" onmouseout="this.style.background=\'transparent\'"><i class="fas fa-cube" style="color:#e11c2a;"></i> ' + m.name + '</a>').join('');
-                      } else {
-                          dropdown.innerHTML = '<a href="../../index.html?switch=1" style="display:block; padding:10px; color:#0f172a; text-decoration:none;">Go to Launcher</a>';
-                      }
-                    } catch(e) {}
-                  })();
-                </script>
-            </div>
-            
-            <div class="nav-item" onclick="window.location.href='../../index.html'">
-                <i class="fas fa-arrow-left"></i>
-                <span>Back to Hub</span>
-            </div>
+      <div class="top-nav-group">
+        <div class="nav-item active top-nav-item" data-target="view-dashboard">
+          <span class="icon"><i class="fas fa-chart-pie"></i></span> <span>Dashboard</span>
         </div>
-    </div>
+        <div class="nav-item top-nav-item" data-target="view-patients">
+          <span class="icon"><i class="fas fa-users"></i></span> <span>Patient Directory</span>
+        </div>
+        <div class="nav-item top-nav-item" data-target="view-sick-notes">
+          <span class="icon"><i class="fas fa-file-medical"></i></span> <span>Sick Notes</span>
+        </div>
+        <div class="nav-item top-nav-item" data-target="view-consultations">
+          <span class="icon"><i class="fas fa-stethoscope"></i></span> <span>Consultations</span>
+        </div>
+        <div class="nav-item top-nav-item" data-target="view-appointments">
+          <span class="icon"><i class="fas fa-calendar-alt"></i></span> <span>Appointments</span>
+        </div>
+        <div class="nav-item top-nav-item" data-target="view-inventory">
+          <span class="icon"><i class="fas fa-pills"></i></span> <span>Pharmacy Inventory</span>
+        </div>
+      </div>
+
+      <!-- Right Side (User Profile & Switches) -->
+      <div style="margin-left: auto; display: flex; align-items: center; gap: 16px;">
+          <div class="top-nav-item module-switcher-dropdown" style="position: relative; cursor: pointer; padding: 6px 12px;" onmouseenter="clearTimeout(this.hideTimeout); this.querySelector('.dropdown-content').style.display='block'" onmouseleave="this.hideTimeout = setTimeout(() => { this.querySelector('.dropdown-content').style.display='none' }, 250)">
+              <span class="icon"><i class="fas fa-cube"></i></span>
+              <span>Switch Module</span>
+              <div class="dropdown-content" style="display:none; position:absolute; top:100%; right:0; margin-top:10px; background:#ffffff; border:1px solid #e2e8f0; border-radius:6px; box-shadow:0 10px 25px rgba(0,0,0,0.1); min-width:180px; z-index:9999; padding:8px;">
+                <div style="padding: 8px; font-size: 12px; color: #64748b; text-align: center;">Loading...</div>
+              </div>
+              <script>
+                (function() {
+                  const parent = document.currentScript.parentElement;
+                  const dropdown = parent.querySelector('.dropdown-content');
+                  try {
+                    const modules = JSON.parse(localStorage.getItem('omnis_modules')) || [];
+                    if (modules.length > 0) {
+                        dropdown.innerHTML = modules.map(m => '<a href="../../' + m.url + '" style="display:flex; align-items:center; gap:8px; padding:10px 12px; color:#0f172a; text-decoration:none; font-size:13px; border-radius:4px; transition:background 0.2s;" onmouseover="this.style.background=\'#f8fafc\'" onmouseout="this.style.background=\'transparent\'"><i class="fas fa-cube" style="color:#e11c2a;"></i> ' + m.name + '</a>').join('');
+                    } else {
+                        dropdown.innerHTML = '<a href="../../index.html?switch=1" style="display:block; padding:10px; color:#0f172a; text-decoration:none;">Go to Launcher</a>';
+                    }
+                  } catch(e) {}
+                })();
+              </script>
+          </div>
+          <div class="top-nav-item" onclick="window.location.href='../../index.html'" style="cursor: pointer; padding: 6px 12px; background: rgba(255,255,255,0.1); border-radius: 6px;">
+              <span class="icon"><i class="fas fa-arrow-left"></i></span>
+              <span>Hub</span>
+          </div>
+          <div class="nurse-profile" style="color: white; display: flex; align-items: center; gap: 8px; padding-left: 16px; border-left: 1px solid rgba(255,255,255,0.2);">
+              <div class="avatar" style="width:30px; height:30px; font-size: 14px;"><i class="fas fa-user-nurse"></i></div>
+              <span>Company Nurse</span>
+          </div>
+      </div>
+    </nav>
 
     <!-- Main Content -->
     <div class="main-content">
-        <!-- Top Bar -->
-        <div class="top-bar">
-            <div class="page-title" id="top-bar-title">Dashboard</div>
-            <div class="top-bar-actions">
-                <div class="nurse-profile">
-                    <div class="avatar"><i class="fas fa-user-nurse"></i></div>
-                    <span>Company Nurse</span>
-                </div>
-            </div>
-        </div>
+
 
         <!-- Views Container -->
         <div class="views-container">
             
             <!-- Dashboard View -->
-            <div id="view-dashboard" class="view active">
-                <!-- Top KPI Stats -->
-                <div class="stats-grid" style="grid-template-columns: repeat(4, 1fr);">
-                    <div class="stat-card">
-                        <div class="stat-icon"><i class="fas fa-users"></i></div>
-                        <div class="stat-details">
-                            <div class="stat-title">Total Patients</div>
-                            <div class="stat-value" id="stat-patients">0</div>
+            <div id="view-dashboard" class="view active" style="background-color: #f8fafc;">
+                                
+            <div style="display:none;">
+                <span id="stat-patients">0</span>
+                <span id="stat-consults">0</span>
+                <span id="stat-appts">0</span>
+                <span id="stat-low-stock">0</span>
+            </div>
+    
+            <!-- Top Header: Profile + Company KPI Cards -->
+          <div style="display:flex; flex-wrap:wrap; align-items:stretch; gap:16px; padding:20px 40px 0;">
+
+            <!-- Profile / Greeting block -->
+            <div style="background:#fff; border-radius:20px; padding:24px 32px; display:flex; align-items:flex-start; justify-content:space-between; flex-wrap:wrap; gap:24px; flex: 1 1 450px; min-width: 300px; position:relative; overflow:hidden; box-shadow: 0 10px 30px -5px rgba(0,0,0,0.06), 0 4px 6px -4px rgba(0,0,0,0.02); border: 1px solid #e2e8f0;">
+              
+              <!-- Left side: Avatar + Greeting -->
+              <div style="display:flex; align-items:center; gap:24px; flex:1; min-width:250px;">
+                <!-- Avatar -->
+                <div style="position:relative;flex-shrink:0;">
+                  <div style="position:absolute;inset:-4px;border-radius:50%;background:linear-gradient(135deg,rgba(0,0,0,0.1),rgba(0,0,0,0.03));z-index:0;"></div>
+                  <div id="profile-avatar-wrap"
+                       style="position:relative;width:96px;height:96px;border-radius:50%;border:4px solid #fff;overflow:hidden;z-index:1;box-shadow:0 10px 25px -5px rgba(0,0,0,0.15);">
+                    <div id="profile-avatar-letter" style="width:100%;height:100%;background:linear-gradient(135deg,#e11c2a,#b31621);display:flex;align-items:center;justify-content:center;font-size:28px;font-weight:800;color:#fff;"><i class="fas fa-user-nurse"></i></div>
+                  </div>
+                  <div style="position:absolute;bottom:1px;right:1px;width:12px;height:12px;border-radius:50%;background:#22c55e;border:2px solid #fff;z-index:2;box-shadow:0 0 5px rgba(34,197,94,0.4);"></div>
+                </div>
+                
+                <!-- Greeting text -->
+                <div style="flex:1;position:relative;z-index:1;">
+                  <h2 id="welcome-greeting" style="font-size:18px;font-weight:900;color:#0f172a;margin:0 0 6px;letter-spacing:-0.02em;line-height:1.3;">Good day, Company Nurse!</h2>
+                  <p id="welcome-date-subtitle" style="font-size:13px;color:#64748b;margin:0;font-weight:500;">Ready for today's consultations.</p>
+                </div>
+              </div>
+            </div>
+
+            <!-- PATIENTS COMBINED -->
+            <div style="background:linear-gradient(135deg, #e11c2a 0%, #b31621 100%);border-radius:14px;padding:22px 24px;flex:1 1 300px;box-shadow:inset 0 1px 0 rgba(255,255,255,0.15); position:relative; overflow:hidden;">
+              <!-- Subtle glowing orb in background -->
+              <div style="position:absolute; top:-20px; right:-20px; width:200px; height:200px; background:radial-gradient(circle, rgba(239,68,68,0.15) 0%, transparent 70%); border-radius:50%; pointer-events:none;"></div>
+              
+              <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px; position:relative; z-index:1;">
+                <div>
+                  <div style="font-size:12px;font-weight:900;letter-spacing:0.1em;text-transform:uppercase;color:#ffffff;">Clinic Traffic</div>
+                  <div style="font-size:11px;font-weight:700;color:rgba(255,255,255,0.75);letter-spacing:0.02em;text-transform:uppercase;letter-spacing:0.06em;">Patients & Consultations</div>
+                </div>
+                <span style="width:28px;height:28px;background:rgba(255,255,255,0.1);border-radius:8px;display:inline-flex;align-items:center;justify-content:center;box-shadow:inset 0 1px 0 rgba(255,255,255,0.1);"><i class="fas fa-users" style="color:#ffffff;font-size:11px;"></i></span>
+              </div>
+              
+              <div style="display:flex;gap:16px; position:relative; z-index:1;">
+                <!-- Total Patients -->
+                <div style="flex:1;">
+                  <div style="font-size:11px;font-weight:700;color:rgba(255,255,255,0.75);letter-spacing:0.02em;text-transform:uppercase;margin-bottom:4px;">Total Patients</div>
+                  <div style="display:flex;align-items:baseline;gap:4px;margin-bottom:4px;">
+                    <div id="stat-patients-new" style="font-size:36px;font-weight:900;color:#ffffff;line-height:1;margin-top:8px;text-shadow:0 2px 4px rgba(0,0,0,0.2);">0</div>
+                  </div>
+                </div>
+                
+                <div style="width:1px;background:linear-gradient(to bottom, rgba(255,255,255,0), rgba(255,255,255,0.15) 50%, rgba(255,255,255,0));margin:0 4px;"></div>
+                
+                <!-- Consultations -->
+                <div style="flex:1;">
+                  <div style="font-size:11px;font-weight:700;color:rgba(255,255,255,0.75);letter-spacing:0.02em;text-transform:uppercase;margin-bottom:4px;">Consultations (Today)</div>
+                  <div style="display:flex;align-items:baseline;gap:4px;margin-bottom:4px;">
+                    <div id="stat-consults-new" style="font-size:36px;font-weight:900;color:#ffffff;line-height:1;margin-top:8px;text-shadow:0 2px 4px rgba(0,0,0,0.2);">0</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- INVENTORY & SCHEDULE -->
+            <div style="background:linear-gradient(135deg, #0f172a 0%, #050810 100%);border-radius:14px;padding:22px 24px;flex:1 1 300px;box-shadow:inset 0 1px 0 rgba(255,255,255,0.1); position:relative; overflow:hidden;">
+              <!-- Subtle glowing orb in background -->
+              <div style="position:absolute; top:-20px; right:-20px; width:200px; height:200px; background:radial-gradient(circle, rgba(59,130,246,0.15) 0%, transparent 70%); border-radius:50%; pointer-events:none;"></div>
+              
+              <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px; position:relative; z-index:1;">
+                <div>
+                  <div style="font-size:12px;font-weight:900;letter-spacing:0.1em;text-transform:uppercase;color:#ffffff;">Operations</div>
+                  <div style="font-size:11px;font-weight:700;color:rgba(255,255,255,0.75);letter-spacing:0.02em;text-transform:uppercase;letter-spacing:0.06em;">Appointments & Inventory</div>
+                </div>
+                <span style="width:28px;height:28px;background:rgba(255,255,255,0.05);border-radius:8px;display:inline-flex;align-items:center;justify-content:center;box-shadow:inset 0 1px 0 rgba(255,255,255,0.05);"><i class="fas fa-calendar-check" style="color:#ffffff;font-size:11px;"></i></span>
+              </div>
+              
+              <div style="display:flex;gap:16px; position:relative; z-index:1;">
+                <!-- Appointments -->
+                <div style="flex:1;">
+                  <div style="font-size:11px;font-weight:700;color:rgba(255,255,255,0.75);letter-spacing:0.02em;text-transform:uppercase;margin-bottom:4px;">Appointments (Today)</div>
+                  <div style="display:flex;align-items:baseline;gap:4px;margin-bottom:4px;">
+                    <div id="stat-appts-new" style="font-size:36px;font-weight:900;color:#ffffff;line-height:1;margin-top:8px;text-shadow:0 2px 4px rgba(0,0,0,0.3);">0</div>
+                  </div>
+                </div>
+                
+                <div style="width:1px;background:linear-gradient(to bottom, rgba(255,255,255,0), rgba(255,255,255,0.1) 50%, rgba(255,255,255,0));margin:0 4px;"></div>
+                
+                <!-- Stock -->
+                <div style="flex:1;">
+                  <div style="font-size:11px;font-weight:700;color:rgba(255,255,255,0.75);letter-spacing:0.02em;text-transform:uppercase;margin-bottom:4px;">Low Stock Items</div>
+                  <div style="display:flex;align-items:baseline;gap:4px;margin-bottom:4px;">
+                    <div id="stat-low-stock-new" style="font-size:36px;font-weight:900;color:#ef4444;line-height:1;margin-top:8px;text-shadow:0 2px 4px rgba(0,0,0,0.3);">0</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+          </div><!-- /top header -->
+
+          <!-- SHORTCUTS CARDS -->
+          <div style="padding:0 40px; margin-top:16px; margin-bottom:0;">
+            <div style="display:flex; align-items:center; gap:8px; margin-bottom:16px;">
+              <span style="font-size:18px;font-weight:900;letter-spacing:-0.02em;color:#0f172a;text-transform:uppercase;">Shortcuts</span>
+            </div>
+            <div style="display:grid; grid-template-columns:repeat(5, 1fr); gap:16px; padding-top:24px; padding-bottom:40px;">
+              
+              <!-- 1 -->
+              <div onclick="document.querySelector('.nav-item[data-target=\'view-patients\']').click()" class="rpt-card rpt-card-sky">
+                <div style="font-size:18px; width:40px; height:40px; display:flex; align-items:center; justify-content:center; border-radius:12px; background:rgba(0,0,0,0.04); box-shadow:inset 0 2px 4px rgba(255,255,255,0.5);">
+                  <i class="fas fa-users" style="color:#334155;"></i>
+                </div>
+                <div style="font-weight:700;font-size:13px;color:#0f172a;">Patient Directory</div>
+                <div style="font-size:10px;color:#64748b;line-height:1.2;">Manage patient records.</div>
+                <div style="margin-top:2px;font-size:9px;font-weight:700;color:#0ea5e9;text-transform:uppercase;letter-spacing:0.5px;">PATIENTS</div>
+              </div>
+              
+              <!-- 2 -->
+              <div onclick="document.querySelector('.nav-item[data-target=\'view-sick-notes\']').click()" class="rpt-card rpt-card-amber">
+                <div style="font-size:18px; width:40px; height:40px; display:flex; align-items:center; justify-content:center; border-radius:12px; background:rgba(0,0,0,0.04); box-shadow:inset 0 2px 4px rgba(255,255,255,0.5);">
+                  <i class="fas fa-file-medical" style="color:#334155;"></i>
+                </div>
+                <div style="font-weight:700;font-size:13px;color:#0f172a;">Sick Notes</div>
+                <div style="font-size:10px;color:#64748b;line-height:1.2;">Generate sick leave notes.</div>
+                <div style="margin-top:2px;font-size:9px;font-weight:700;color:#f59e0b;text-transform:uppercase;letter-spacing:0.5px;">NOTES</div>
+              </div>
+              
+              <!-- 3 -->
+              <div onclick="document.querySelector('.nav-item[data-target=\'view-consultations\']').click()" class="rpt-card rpt-card-purple">
+                <div style="font-size:18px; width:40px; height:40px; display:flex; align-items:center; justify-content:center; border-radius:12px; background:rgba(0,0,0,0.04); box-shadow:inset 0 2px 4px rgba(255,255,255,0.5);">
+                  <i class="fas fa-stethoscope" style="color:#334155;"></i>
+                </div>
+                <div style="font-weight:700;font-size:13px;color:#0f172a;">Consultations</div>
+                <div style="font-size:10px;color:#64748b;line-height:1.2;">View and log consultations.</div>
+                <div style="margin-top:2px;font-size:9px;font-weight:700;color:#a855f7;text-transform:uppercase;letter-spacing:0.5px;">CONSULT</div>
+              </div>
+
+              <!-- 4 -->
+              <div onclick="document.querySelector('.nav-item[data-target=\'view-appointments\']').click()" class="rpt-card rpt-card-green">
+                <div style="font-size:18px; width:40px; height:40px; display:flex; align-items:center; justify-content:center; border-radius:12px; background:rgba(0,0,0,0.04); box-shadow:inset 0 2px 4px rgba(255,255,255,0.5);">
+                  <i class="fas fa-calendar-alt" style="color:#334155;"></i>
+                </div>
+                <div style="font-weight:700;font-size:13px;color:#0f172a;">Appointments</div>
+                <div style="font-size:10px;color:#64748b;line-height:1.2;">Schedule and view bookings.</div>
+                <div style="margin-top:2px;font-size:9px;font-weight:700;color:#10b981;text-transform:uppercase;letter-spacing:0.5px;">SCHED</div>
+              </div>
+
+              <!-- 5 -->
+              <div onclick="document.querySelector('.nav-item[data-target=\'view-inventory\']').click()" class="rpt-card rpt-card-red">
+                <div style="font-size:18px; width:40px; height:40px; display:flex; align-items:center; justify-content:center; border-radius:12px; background:rgba(0,0,0,0.04); box-shadow:inset 0 2px 4px rgba(255,255,255,0.5);">
+                  <i class="fas fa-pills" style="color:#334155;"></i>
+                </div>
+                <div style="font-weight:700;font-size:13px;color:#0f172a;">Pharmacy Inventory</div>
+                <div style="font-size:10px;color:#64748b;line-height:1.2;">Manage stock and supplies.</div>
+                <div style="margin-top:2px;font-size:9px;font-weight:700;color:#ef4444;text-transform:uppercase;letter-spacing:0.5px;">PHARMA</div>
+              </div>
+
+            </div>
+          </div>
+
+          <!-- MEDICAL NEWS & UPDATES -->
+          <div style="padding: 24px 40px 80px; width: 100%;">
+            <div style="background: #fff; border: 1px solid #e2e8f0; border-radius: 20px; padding: 24px 20px; box-shadow: 0 10px 30px -5px rgba(0,0,0,0.06), 0 4px 6px -4px rgba(0,0,0,0.02); display: flex; flex-direction: column; gap: 20px;">
+                
+                <div style="display: flex; align-items: center; justify-content: space-between;">
+                    <div style="display: flex; align-items: center; gap: 10px;">
+                        <div>
+                            <div style="font-size: 18px; font-weight: 900; color: #0f172a; letter-spacing: -0.02em; text-transform: uppercase;">Medical News & Updates</div>
+                            <div style="font-size: 11px; color: #64748b; font-weight: 500;">Latest healthcare updates, research and medical alerts</div>
                         </div>
                     </div>
-                    <div class="stat-card">
-                        <div class="stat-icon" style="background: rgba(16, 185, 129, 0.1); color: #10b981;"><i class="fas fa-stethoscope"></i></div>
-                        <div class="stat-details">
-                            <div class="stat-title">Consultations (Today)</div>
-                            <div class="stat-value" id="stat-consults">0</div>
-                        </div>
-                    </div>
-                    <div class="stat-card">
-                        <div class="stat-icon" style="background: rgba(59, 130, 246, 0.1); color: #3b82f6;"><i class="fas fa-calendar-check"></i></div>
-                        <div class="stat-details">
-                            <div class="stat-title">Appointments (Today)</div>
-                            <div class="stat-value" id="stat-appts">0</div>
-                        </div>
-                    </div>
-                    <div class="stat-card">
-                        <div class="stat-icon" style="background: rgba(225, 28, 42, 0.1); color: var(--accent-red);"><i class="fas fa-exclamation-triangle"></i></div>
-                        <div class="stat-details">
-                            <div class="stat-title">Low Stock Items</div>
-                            <div class="stat-value" id="stat-low-stock">0</div>
-                        </div>
-                    </div>
+                    <button onclick="window.fetchMedicalNews()" style="display:flex; align-items:center; gap:6px; font-size: 12px; font-weight: 700; color: #334155; background: #fff; padding: 6px 14px; border-radius: 8px; cursor:pointer; border:1px solid #e2e8f0; transition:all 0.2s; box-shadow:0 1px 2px rgba(0,0,0,0.05);" onmouseover="this.style.background='#f8fafc'" onmouseout="this.style.background='#fff'"><i class="fas fa-sync-alt" id="med-news-refresh-icon"></i> <span>Refresh</span></button>
                 </div>
 
-                <!-- Main Dashboard Grid -->
-                <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 20px; margin-top: 20px;">
-                    <!-- Left Column: Chart & Recent Consults -->
-                    <div style="display: flex; flex-direction: column; gap: 20px;">
-                        <div style="background: #fff; border: 1px solid var(--border); border-radius: 12px; padding: 20px;">
-                            <h4 style="margin-bottom: 16px; font-size: 14px; font-weight: 700; color: var(--text);">Consultations (Last 7 Days)</h4>
-                            <canvas id="consultationsChart" height="100"></canvas>
-                        </div>
-                        <div style="background: #fff; border: 1px solid var(--border); border-radius: 12px; padding: 20px;">
-                            <h4 style="margin-bottom: 16px; font-size: 14px; font-weight: 700; color: var(--text);">Recent Consultations</h4>
-                            <div id="feed-recent-consults" style="display: flex; flex-direction: column; gap: 12px;">
-                                <!-- Rendered via JS -->
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- Right Column: Alerts & Schedules -->
-                    <div style="display: flex; flex-direction: column; gap: 20px;">
-                        <div style="background: #fff; border: 1px solid var(--border); border-radius: 12px; padding: 20px;">
-                            <h4 style="margin-bottom: 16px; font-size: 14px; font-weight: 700; color: var(--text);">📅 Today's Appointments</h4>
-                            <div id="feed-todays-appts" style="display: flex; flex-direction: column; gap: 12px;">
-                                <!-- Rendered via JS -->
-                            </div>
-                        </div>
-                        <div style="background: #fff; border: 1px solid var(--border); border-radius: 12px; padding: 20px;">
-                            <h4 style="margin-bottom: 16px; font-size: 14px; font-weight: 700; color: var(--accent-red);">⚠️ Low Stock Alerts</h4>
-                            <div id="feed-low-stock" style="display: flex; flex-direction: column; gap: 12px;">
-                                <!-- Rendered via JS -->
-                            </div>
+                <div id="med-news-marquee-wrapper" style="overflow-x: auto; white-space: nowrap; position: relative; width: 100%; margin: 0; padding: 20px 4px; scrollbar-width: none;" onmouseenter="window.pauseMedMarquee=true" onmouseleave="window.pauseMedMarquee=false">
+                    <style>
+                        #med-news-marquee-wrapper::-webkit-scrollbar { display: none; }
+                        .rpt-card:hover { transform: translateY(-4px); box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05) !important; }
+                    </style>
+                    <div id="med-news-marquee-content" style="display: inline-flex; gap: 16px; padding-right: 24px;">
+                        <div id="med-news-loading" style="padding: 20px; font-size: 14px; color: #64748b; display: flex; align-items: center; gap: 10px;">
+                            <i class="fas fa-spinner fa-spin"></i> Loading latest medical news...
                         </div>
                     </div>
                 </div>
             </div>
+            
+            <script>
+                window.fetchMedicalNews = async function() {
+                    const wrapper = document.getElementById('med-news-marquee-content');
+                    if (!wrapper) return;
+                    
+                    const icon = document.getElementById('med-news-refresh-icon');
+                    if (icon) icon.classList.add('fa-spin');
+                    
+                    if (wrapper.innerHTML.includes('med-news-loading')) {
+                        wrapper.innerHTML = `<div id="med-news-loading" style="padding: 20px; font-size: 14px; color: #64748b; display: flex; align-items: center; gap: 10px;">
+                            <i class="fas fa-spinner fa-spin"></i> Loading latest medical news...
+                        </div>`;
+                    }
+                    
+                    try {
+                        const feeds = [
+                            'https://www.news-medical.net/tag/feed/Medical.aspx'
+                        ];
+                        
+                        const fetchPromises = feeds.map(feed => 
+                            fetch(`https://api.rss2json.com/v1/api.json?rss_url=${encodeURIComponent(feed)}`)
+                                .then(res => res.json())
+                        );
+                        
+                        const results = await Promise.all(fetchPromises);
+                        let allItems = [];
+                        
+                        results.forEach(data => {
+                            if (data && data.items) {
+                                allItems = allItems.concat(data.items);
+                            }
+                        });
+                        
+                        allItems.sort((a, b) => new Date(b.pubDate) - new Date(a.pubDate));
+                        const topItems = allItems.slice(0, 8);
+                        
+                        let htmlContent = '';
+                        
+                        if (topItems.length === 0) {
+                            htmlContent = '<div style="padding: 20px; color: #64748b;">No recent updates found.</div>';
+                        } else {
+                            topItems.forEach(item => {
+                                let briefText = (item.description || '').replace(/<[^>]*>?/gm, '').trim();
+                                if (briefText.length > 90) briefText = briefText.substring(0, 87) + '...';
+                                
+                                let shortTitle = item.title || 'Medical Update';
+                                if (shortTitle.length > 55) shortTitle = shortTitle.substring(0, 52) + '...';
+                                
+                                let iconClass = "fa-heartbeat";
+                                let gradient = "linear-gradient(135deg, #fff1f2 0%, #ffe4e6 100%)";
+                                let iconCol = "#e11d48";
+                                
+                                let thumbHtml = `<div style="width: 100%; height: 100%; background: ${gradient}; display: flex; align-items: center; justify-content: center; border-radius: 6px;"><i class="fas ${iconClass}" style="font-size: 20px; color: ${iconCol};"></i></div>`;
+                                
+                                if (item.thumbnail && item.thumbnail !== '') {
+                                    thumbHtml = `<img src="${item.thumbnail}" style="width: 100%; height: 100%; object-fit: cover; border-radius: 6px;">`;
+                                }
+                                
+                                htmlContent += `
+                                    <div style="position: relative; display: flex; gap: 16px; padding: 18px 20px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 14px; min-width: 320px; max-width: 400px; flex: 0 0 auto; white-space: normal; cursor: pointer; transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);" 
+                                        onmouseover="this.style.borderColor='#93c5fd'; this.style.backgroundColor='#fff'; this.style.boxShadow='0 12px 24px -4px rgba(59,130,246,0.15), 0 4px 8px -2px rgba(59,130,246,0.05)'; this.style.transform='translateY(-2px)';" 
+                                        onmouseout="this.style.borderColor='#e2e8f0'; this.style.backgroundColor='#f8fafc'; this.style.boxShadow='none'; this.style.transform='none';" 
+                                        onclick="window.open('${item.link}', '_blank')">
+                                        <div style="width: 50px; height: 50px; border-radius: 8px; flex-shrink: 0; background: #fff; display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 4px rgba(0,0,0,0.05); padding: 4px; border: 1px solid #e2e8f0; position: relative; z-index: 5;">
+                                            ${thumbHtml}
+                                        </div>
+                                        <div style="display: flex; flex-direction: column; justify-content: center; position: relative; z-index: 5;">
+                                            <div style="font-size: 13px; font-weight: 800; color: #1e293b; margin-bottom: 6px; line-height: 1.3;">${shortTitle}</div>
+                                            <div style="font-size: 11px; color: #64748b; line-height: 1.4; margin-bottom: 8px; font-weight: 500;">${briefText}</div>
+                                            <div style="font-size: 10px; color: #8b2219; font-weight: 800; text-transform: uppercase; letter-spacing: 0.05em;">${item.pubDate ? new Date(item.pubDate).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' }) : 'TODAY'}</div>
+                                        </div>
+                                    </div>
+                                `;
+                            });
+                            wrapper.innerHTML = htmlContent + htmlContent;
+                        }
+                        
+                    } catch (err) {
+                        console.error("Error fetching medical news:", err);
+                        wrapper.innerHTML = `<div style="padding: 20px; color: #ef4444;">Failed to load updates. Please try again.</div>`;
+                    } finally {
+                        if (icon) icon.classList.remove('fa-spin');
+                    }
+                };
+
+                if (!window.medMarqueeInit) {
+                    window.medMarqueeInit = true;
+                    setInterval(() => {
+                        if (window.pauseMedMarquee) return;
+                        const container = document.getElementById('med-news-marquee-wrapper');
+                        if (container) {
+                            container.scrollLeft += 1;
+                            if (container.scrollLeft >= container.scrollWidth - container.clientWidth - 2) {
+                                container.scrollLeft = 0;
+                            }
+                        }
+                    }, 30);
+                }
+
+                document.addEventListener('DOMContentLoaded', function() {
+                    setTimeout(window.fetchMedicalNews, 1500);
+                    setInterval(window.fetchMedicalNews, 300000);
+                    
+                    // Hook into the original JS to update our new KPI elements
+                    // Observe DOM changes or proxy the update functions
+                    const origPatients = document.getElementById('stat-patients');
+                    const origConsults = document.getElementById('stat-consults');
+                    const origAppts = document.getElementById('stat-appts');
+                    const origLowStock = document.getElementById('stat-low-stock');
+                    
+                    if (origPatients) {
+                        const observer = new MutationObserver((mutations) => {
+                            const newPatients = document.getElementById('stat-patients-new');
+                            if (newPatients) newPatients.textContent = origPatients.textContent;
+                        });
+                        observer.observe(origPatients, { childList: true, characterData: true, subtree: true });
+                    }
+                    if (origConsults) {
+                        const observer = new MutationObserver((mutations) => {
+                            const newConsults = document.getElementById('stat-consults-new');
+                            if (newConsults) newConsults.textContent = origConsults.textContent;
+                        });
+                        observer.observe(origConsults, { childList: true, characterData: true, subtree: true });
+                    }
+                    if (origAppts) {
+                        const observer = new MutationObserver((mutations) => {
+                            const newAppts = document.getElementById('stat-appts-new');
+                            if (newAppts) newAppts.textContent = origAppts.textContent;
+                        });
+                        observer.observe(origAppts, { childList: true, characterData: true, subtree: true });
+                    }
+                    if (origLowStock) {
+                        const observer = new MutationObserver((mutations) => {
+                            const newLowStock = document.getElementById('stat-low-stock-new');
+                            if (newLowStock) newLowStock.textContent = origLowStock.textContent;
+                        });
+                        observer.observe(origLowStock, { childList: true, characterData: true, subtree: true });
+                    }
+                    
+                    // Setup current date
+                    const dateSubtitle = document.getElementById('welcome-date-subtitle');
+                    if (dateSubtitle) {
+                        const today = new Date();
+                        const options = { weekday: 'long', month: 'long', day: 'numeric' };
+                        dateSubtitle.textContent = "Today is " + today.toLocaleDateString('en-US', options) + ".";
+                    }
+                });
+            </script>
+          </div>
+        </div>
 
             <!-- Patient Directory View -->
             <div id="view-patients" class="view">
@@ -305,14 +573,11 @@
         </div>
             </div>
 
-        </div>
-    </div>
-
     <!-- Modals -->
 
     <!-- Add/Edit Patient Modal -->
     <div id="modal-patient" class="modal-overlay">
-        <div class="modal">
+        <div class="modal" style="max-width: 1000px;">
             <div class="modal-header">
                 <h3 id="patient-modal-title">Add Patient Record</h3>
                 <button class="close-btn" onclick="closeModal('modal-patient')"><i class="fas fa-times"></i></button>
@@ -322,7 +587,7 @@
                     <input type="hidden" id="pat-id">
                     
                     <h4 class="form-section-title">Personal Details</h4>
-                    <div class="form-grid">
+                    <div class="form-grid" style="grid-template-columns: repeat(4, 1fr); gap: 12px;">
                         <div class="form-group">
                             <label>Name *</label>
                             <input type="text" id="pat-name" required>
@@ -341,36 +606,40 @@
                         </div>
                     </div>
 
-                    <h4 class="form-section-title">Corporate Info</h4>
-                    <div class="form-grid">
-                        <div class="form-group">
+                    <h4 class="form-section-title" style="margin-top: 16px;">Corporate Info</h4>
+                    <div class="form-grid" style="grid-template-columns: repeat(4, 1fr); gap: 12px;">
+                        <div class="form-group" style="grid-column: span 2;">
                             <label>IBU</label>
                             <input type="text" id="pat-ibu">
                         </div>
-                        <div class="form-group">
+                        <div class="form-group" style="grid-column: span 2;">
                             <label>Division</label>
                             <input type="text" id="pat-division">
                         </div>
                     </div>
 
-                    <h4 class="form-section-title">Address & Next of Kin</h4>
-                    <div class="form-grid">
+                    <h4 class="form-section-title" style="margin-top: 16px;">Address & Next of Kin</h4>
+                    <div class="form-grid" style="grid-template-columns: repeat(4, 1fr); gap: 12px;">
                         <div class="form-group" style="grid-column: span 2;">
-                            <label>Residential Address & Co-habitants</label>
-                            <textarea id="pat-address" rows="2"></textarea>
+                            <label>Residential Address</label>
+                            <textarea id="pat-address" rows="1"></textarea>
                         </div>
-                        <div class="form-group">
+                        <div class="form-group" style="grid-column: span 2;">
+                            <label>Co-habitants</label>
+                            <textarea id="pat-cohabitants" rows="1"></textarea>
+                        </div>
+                        <div class="form-group" style="grid-column: span 2;">
                             <label>Next of Kin Contact</label>
                             <input type="text" id="pat-nok-contact">
                         </div>
-                        <div class="form-group">
+                        <div class="form-group" style="grid-column: span 2;">
                             <label>Next of Kin Address</label>
-                            <textarea id="pat-nok-address" rows="2"></textarea>
+                            <textarea id="pat-nok-address" rows="1"></textarea>
                         </div>
                     </div>
 
-                    <h4 class="form-section-title">Medical History</h4>
-                    <div class="form-grid">
+                    <h4 class="form-section-title" style="margin-top: 16px;">Medical History</h4>
+                    <div class="form-grid" style="grid-template-columns: repeat(4, 1fr); gap: 12px;">
                         <div class="form-group">
                             <label>Blood Type</label>
                             <select id="pat-blood">
@@ -385,25 +654,25 @@
                                 <option value="AB-">AB-</option>
                             </select>
                         </div>
-                        <div class="form-group">
+                        <div class="form-group" style="grid-column: span 3;">
                             <label>Allergies</label>
                             <input type="text" id="pat-allergies">
                         </div>
                         <div class="form-group" style="grid-column: span 2;">
                             <label>Background / General Health</label>
-                            <textarea id="pat-background" rows="2"></textarea>
+                            <textarea id="pat-background" rows="1"></textarea>
                         </div>
                         <div class="form-group" style="grid-column: span 2;">
                             <label>Chronic Illnesses</label>
-                            <textarea id="pat-chronic" rows="2"></textarea>
+                            <textarea id="pat-chronic" rows="1"></textarea>
                         </div>
                         <div class="form-group" style="grid-column: span 2;">
                             <label>Family History</label>
-                            <textarea id="pat-family" rows="2"></textarea>
+                            <textarea id="pat-family" rows="1"></textarea>
                         </div>
                         <div class="form-group" style="grid-column: span 2;">
                             <label>Current Medications</label>
-                            <textarea id="pat-meds" rows="2"></textarea>
+                            <textarea id="pat-meds" rows="1"></textarea>
                         </div>
                     </div>
                 </form>
