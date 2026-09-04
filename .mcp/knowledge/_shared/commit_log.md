@@ -501,3 +501,5 @@
   Files: .mcp/knowledge/_shared/commit_log.md,systems/medicals/styles.css,
 - `5d84495` 2026-09-04 [supabase-migration] Restore point: UI styling to match Fleetrack and separate Cohabitants field
   Files: .mcp/knowledge/_shared/commit_log.md,supabase/migrations/20260904000000_add_cohabitants.sql,systems/medicals/index.html,systems/medicals/medicals_logic.js,systems/medicals/styles.css,
+- `47be4f1` 2026-09-04 [supabase-migration] [checkpoint] UI: Update Medicals profile and KPI layout to match Salestrack
+  Files: .mcp/knowledge/_shared/commit_log.md,systems/medicals/index.html,

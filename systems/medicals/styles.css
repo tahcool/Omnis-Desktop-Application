@@ -534,3 +534,13 @@ body {
 .top-nav-item .icon {
     font-size: 14px;
 }
+
+.form-row { display: flex; gap: 15px; align-items: flex-start; }
+.form-row .form-group { flex: 1; }
+.form-actions { display: flex; justify-content: center; gap: 15px; margin-top: 30px; }
+
+/* Salestrack Order Grid Styles */
+.ai-patients-grid { display: grid; grid-template-columns: 2fr 2fr 1fr 1fr 1.5fr 1fr 1.5fr 100px; }
+.ai-order-header { gap: 12px; padding: 16px 20px; background: linear-gradient(135deg, #4c110d 0%, #8b2219 55%, #6b1a14 100%); border-radius: 16px; box-shadow: 0 4px 12px rgba(139, 34, 25, 0.15); font-weight: 700; font-size: 11px; color: #ffffff; text-transform: uppercase; letter-spacing: 0.08em; border: 1px solid #641a13; position: sticky; top: 0; z-index: 10; }
+.ai-order-row { display: grid; gap: 12px; padding: 12px 20px; background: #fff; border-radius: 16px; border: 1px solid #e2e8f0; align-items: center; transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1); cursor: pointer; box-shadow: 0 4px 15px -3px rgba(0,0,0,0.02); }
+.ai-order-row:hover { transform: translateY(-2px); box-shadow: 0 8px 25px -5px rgba(0,0,0,0.05); border-color: #cbd5e1; }

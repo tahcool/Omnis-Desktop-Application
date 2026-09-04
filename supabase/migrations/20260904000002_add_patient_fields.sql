@@ -1,0 +1,5 @@
+ALTER TABLE omnis_patients
+ADD COLUMN dob DATE,
+ADD COLUMN gender VARCHAR(20),
+ADD COLUMN job_title VARCHAR(100),
+ADD COLUMN national_id VARCHAR(50);
