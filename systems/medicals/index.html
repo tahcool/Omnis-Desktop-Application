@@ -48,6 +48,9 @@
         <div class="nav-item top-nav-item" data-target="view-inventory">
           <span class="icon"><i class="fas fa-pills"></i></span> <span>Pharmacy Inventory</span>
         </div>
+        <div class="nav-item top-nav-item" data-target="view-she">
+          <span class="icon"><i class="fas fa-hard-hat"></i></span> <span>SHE Operations</span>
+        </div>
       </div>
 
       <!-- Right Side (User Profile & Switches) -->
@@ -729,6 +732,49 @@
                 </div>
             </div>
 
+            <!-- SHE Operations View -->
+            <div id="view-she" class="view">
+                <div class="view-header" style="display:flex; justify-content:space-between; align-items:center;">
+                    <h2 style="margin:0; font-size: 20px; font-weight: 700; color: #0f172a;">SHE Operations</h2>
+                    
+                    <div style="display:flex; gap: 12px; align-items:center;">
+                        <input type="month" id="she-report-month" class="search-input" style="width:auto;">
+                        <button class="btn btn-primary" onclick="generateSHEReport()">
+                            <i class="fas fa-file-pdf"></i> Generate Monthly Report
+                        </button>
+                    </div>
+                </div>
+                
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; padding: 20px 40px;">
+                    <!-- Breathalyzer Card -->
+                    <div style="background: #fff; border-radius: 12px; padding: 20px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); border: 1px solid #e2e8f0;">
+                        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 16px;">
+                            <h3 style="margin:0; font-size: 16px;">Breathalyzer Fails / Warnings</h3>
+                            <button class="btn btn-outline" style="padding: 4px 10px; font-size: 12px;" onclick="showAddBreathalyzerModal()"><i class="fas fa-plus"></i> Add</button>
+                        </div>
+                        <div id="she-breathalyzer-list" style="display:flex; flex-direction:column; gap:8px;"></div>
+                    </div>
+                    
+                    <!-- First Aiders Card -->
+                    <div style="background: #fff; border-radius: 12px; padding: 20px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); border: 1px solid #e2e8f0;">
+                        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 16px;">
+                            <h3 style="margin:0; font-size: 16px;">First Aiders Registry</h3>
+                            <button class="btn btn-outline" style="padding: 4px 10px; font-size: 12px;" onclick="showAddFirstAiderModal()"><i class="fas fa-plus"></i> Add</button>
+                        </div>
+                        <div id="she-first-aiders-list" style="display:flex; flex-direction:column; gap:8px;"></div>
+                    </div>
+                    
+                    <!-- Monthly Stats Card -->
+                    <div style="background: #fff; border-radius: 12px; padding: 20px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); border: 1px solid #e2e8f0; grid-column: span 2;">
+                        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 16px;">
+                            <h3 style="margin:0; font-size: 16px;">Monthly Division Stats (Manpower & Manhours)</h3>
+                            <button class="btn btn-outline" style="padding: 4px 10px; font-size: 12px;" onclick="showAddSheStatsModal()"><i class="fas fa-plus"></i> Record Stats</button>
+                        </div>
+                        <div id="she-stats-list" style="display:flex; flex-direction:column; gap:8px;"></div>
+                    </div>
+                </div>
+            </div>
+
         </div>
             </div>
 
@@ -1091,6 +1137,236 @@
             </div>
             <div class="modal-footer" style="margin-top: 20px;">
                 <button class="btn btn-primary" style="width: 100%; justify-content: center;" onclick="executePrint()">Proceed to Print</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- SHE Modals -->
+    <!-- Breathalyzer Modal -->
+    <div id="modal-she-breathalyzer" class="modal-overlay">
+        <div class="modal" style="max-width: 500px;">
+            <div class="modal-header">
+                <h3>Record Breathalyzer Test</h3>
+                <button class="close-btn" onclick="closeModal('modal-she-breathalyzer')"><i class="fas fa-times"></i></button>
+            </div>
+            <div class="modal-body">
+                <form id="she-breathalyzer-form">
+                    <div class="form-group custom-dropdown-container">
+                        <label>Patient/Employee *</label>
+                        <input type="text" id="she-breathalyzer-patient-search" placeholder="Search..." autocomplete="off" class="search-input" required>
+                        <div id="she-breathalyzer-patient-list" class="custom-dropdown-list"></div>
+                        <input type="hidden" id="she-breathalyzer-patient" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Date *</label>
+                        <input type="date" id="she-breathalyzer-date" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Status *</label>
+                        <select id="she-breathalyzer-status" required>
+                            <option value="">Select Status</option>
+                            <option value="Failed">Failed</option>
+                            <option value="Warning">Warning</option>
+                        </select>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-outline" onclick="closeModal('modal-she-breathalyzer')">Cancel</button>
+                <button class="btn btn-primary" onclick="saveSheBreathalyzer()">Save Test</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- First Aider Modal -->
+    <div id="modal-she-first-aider" class="modal-overlay">
+        <div class="modal" style="max-width: 500px;">
+            <div class="modal-header">
+                <h3>First Aider Record</h3>
+                <button class="close-btn" onclick="closeModal('modal-she-first-aider')"><i class="fas fa-times"></i></button>
+            </div>
+            <div class="modal-body">
+                <form id="she-first-aider-form">
+                    <input type="hidden" id="she-fa-id">
+                    <div class="form-group">
+                        <label>Name *</label>
+                        <input type="text" id="she-fa-name" required>
+                    </div>
+                    <div class="form-group">
+                        <label>Division *</label>
+                        <select id="she-fa-division" required>
+                            <option value="">Select Division</option>
+                            <option value="CSD">CSD</option>
+                            <option value="ENG">ENG</option>
+                            <option value="SRD">SRD</option>
+                            <option value="SPZ">SPZ</option>
+                            <option value="SPE">SPE</option>
+                            <option value="TMG">TMG</option>
+                            <option value="LMX">LMX</option>
+                            <option value="ACC">ACC</option>
+                        </select>
+                    </div>
+                    <div class="form-group" style="display:flex; align-items:center; gap: 8px;">
+                        <input type="checkbox" id="she-fa-completed" style="width:16px; height:16px; margin:0;">
+                        <label for="she-fa-completed" style="margin:0; cursor:pointer;">Completed Training</label>
+                    </div>
+                    <div class="form-group">
+                        <label>Notes</label>
+                        <input type="text" id="she-fa-notes" placeholder="e.g. Confirmed by: Chipo">
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-outline" onclick="closeModal('modal-she-first-aider')">Cancel</button>
+                <button class="btn btn-primary" onclick="saveSheFirstAider()">Save Record</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Monthly Stats Modal -->
+    <div id="modal-she-stats" class="modal-overlay">
+        <div class="modal" style="max-width: 500px;">
+            <div class="modal-header">
+                <h3>Record Monthly Stats</h3>
+                <button class="close-btn" onclick="closeModal('modal-she-stats')"><i class="fas fa-times"></i></button>
+            </div>
+            <div class="modal-body">
+                <form id="she-stats-form">
+                    <div class="form-grid" style="grid-template-columns: 1fr 1fr; gap: 12px;">
+                        <div class="form-group">
+                            <label>Month *</label>
+                            <select id="she-stats-month" required>
+                                <option value="1">January</option>
+                                <option value="2">February</option>
+                                <option value="3">March</option>
+                                <option value="4">April</option>
+                                <option value="5">May</option>
+                                <option value="6">June</option>
+                                <option value="7">July</option>
+                                <option value="8">August</option>
+                                <option value="9">September</option>
+                                <option value="10">October</option>
+                                <option value="11">November</option>
+                                <option value="12">December</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Year *</label>
+                            <input type="number" id="she-stats-year" value="2026" required>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label>Division *</label>
+                        <select id="she-stats-division" required>
+                            <option value="">Select Division</option>
+                            <option value="CSD">CSD</option>
+                            <option value="ENG">ENG</option>
+                            <option value="SRD">SRD</option>
+                            <option value="SPZ">SPZ</option>
+                            <option value="SPE">SPE</option>
+                            <option value="TMG">TMG</option>
+                            <option value="SPW">SPW</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Manpower Level *</label>
+                        <input type="number" id="she-stats-manpower" required min="0">
+                    </div>
+                    <div class="form-group">
+                        <label>Manhours Worked *</label>
+                        <input type="number" id="she-stats-manhours" required min="0">
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-outline" onclick="closeModal('modal-she-stats')">Cancel</button>
+                <button class="btn btn-primary" onclick="saveSheStats()">Save Stats</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Hidden SHE Print Template -->
+    <div id="she-print-template" style="display:none;">
+        <div class="she-print-wrapper" style="font-family: Arial, sans-serif; padding: 40px; background: #fff; color: #000;">
+            <div style="display:flex; justify-content:space-between; align-items:flex-end; border-bottom: 2px solid #000; padding-bottom: 20px; margin-bottom: 30px;">
+                <div>
+                    <h1 style="font-size: 32px; font-weight: 800; margin: 0; color: #1e293b; letter-spacing: 2px;">IEG</h1>
+                    <span style="font-size: 10px; color: #64748b; text-transform: uppercase;">Industrial<br>Exchange<br>Group</span>
+                </div>
+                <h2 style="font-size: 20px; margin: 0; text-transform: uppercase;">SHE MONTHLY REPORT</h2>
+                <div style="font-size: 11px; text-align: left; display: grid; grid-template-columns: auto auto; gap: 10px 40px;">
+                    <div>Document Owner:<br><strong id="print-she-owner">Chipo Mudyiwa</strong></div>
+                    <div>Approved By:<br><strong>Managing Director</strong></div>
+                    <div>Approved Date:<br><strong id="print-she-date"></strong></div>
+                    <div>Page(s):<br><strong>Two (2)</strong></div>
+                </div>
+            </div>
+
+            <h3 style="font-size: 16px; margin: 0 0 5px 0;">MONTHLY REPORT</h3>
+            <div style="font-weight: bold; font-size: 14px; margin-bottom: 20px;" id="print-she-month-year"></div>
+
+            <style>
+                .she-table { width: 100%; border-collapse: collapse; margin-bottom: 30px; font-size: 12px; }
+                .she-table th, .she-table td { border: 1px solid #000; padding: 6px; text-align: center; }
+                .she-table th { background: #f1f5f9; font-weight: bold; }
+                .she-table td.left { text-align: left; }
+                .she-table tr.group-total { background: #e2e8f0; font-weight: bold; }
+            </style>
+
+            <table class="she-table" id="print-she-lti-table">
+                <thead>
+                    <tr>
+                        <th>#</th><th>DIV.</th><th>NAME</th><th>INJURY</th><th>LTI</th><th>TREATMENT</th>
+                    </tr>
+                </thead>
+                <tbody></tbody>
+            </table>
+
+            <h3 style="font-size: 14px; margin: 0 0 10px 0;">BREATHALYZER TEST</h3>
+            <table class="she-table" id="print-she-breath-table">
+                <thead>
+                    <tr>
+                        <th>#</th><th>DIV.</th><th>NAME</th><th>BREATHALYZER FAILED</th><th>WARNING</th>
+                    </tr>
+                </thead>
+                <tbody></tbody>
+            </table>
+
+            <div style="page-break-before: always; padding-top: 40px;"></div>
+
+            <h3 style="font-size: 14px; margin: 0 0 10px 0;">SHE REPORT</h3>
+            <table class="she-table" id="print-she-stats-table">
+                <thead>
+                    <tr>
+                        <th>SUMMARY</th><th>SRD</th><th>CSD</th><th>ENG</th><th>SPW</th><th>SPE</th><th>TMG</th><th>GROUP TOTAL</th>
+                    </tr>
+                </thead>
+                <tbody></tbody>
+            </table>
+
+            <h3 style="font-size: 14px; margin: 0 0 10px 0;">SUMMARY</h3>
+            <table class="she-table">
+                <tbody>
+                    <tr><td width="30">1</td><td class="left">1 LTI year to date</td></tr>
+                    <tr><td width="30">2</td><td class="left" id="print-she-summary-lti"></td></tr>
+                </tbody>
+            </table>
+
+            <h3 style="font-size: 14px; margin: 0 0 10px 0;">FIRST AIDERS</h3>
+            <table class="she-table" id="print-she-first-aider-table">
+                <thead>
+                    <tr>
+                        <th>#</th><th>DIV.</th><th>NAME</th><th>COMPLETED Y|N</th><th>NOTES</th>
+                    </tr>
+                </thead>
+                <tbody></tbody>
+            </table>
+
+            <div style="display:flex; justify-content:space-between; margin-top: 60px; font-size: 12px; font-weight: bold; text-align: center;">
+                <div style="border-top: 1px solid #000; width: 200px; padding-top: 5px;">IEG Registered Nurse</div>
+                <div style="border-top: 1px solid #000; width: 200px; padding-top: 5px;">Head of Marketing & PR</div>
+                <div style="border-top: 1px solid #000; width: 200px; padding-top: 5px;">Group Sales & Marketing</div>
+                <div style="border-top: 1px solid #000; width: 200px; padding-top: 5px;">Managing Director</div>
             </div>
         </div>
     </div>

@@ -505,3 +505,5 @@
   Files: .mcp/knowledge/_shared/commit_log.md,systems/medicals/index.html,
 - `f484b8c` 2026-09-04 [supabase-migration] Restore point: Live search logic and layout fixes for Medicals module
   Files: .mcp/knowledge/_shared/commit_log.md,supabase/migrations/20260904000001_add_injury_to_sick_notes.sql,supabase/migrations/20260904000002_add_patient_fields.sql,systems/medicals/index.html,systems/medicals/medicals_logic.js,systems/medicals/styles.css,
+- `270631f` 2026-09-04 [supabase-migration] [checkpoint] Implemented medication dispensing system with auto-deduction database triggers, Consultations UI updates, and a low stock alerts dashboard widget.
+  Files: .mcp/knowledge/_shared/commit_log.md,supabase/migrations/20260904000003_add_dispensary.sql,systems/medicals/index.html,systems/medicals/medicals_logic.js,systems/medicals/styles.css,

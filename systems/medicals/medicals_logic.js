@@ -1340,3 +1340,380 @@ if (allergiesContainer) {
         }
     });
 }
+
+// ==========================================
+// SHE OPERATIONS (Monthly Reports)
+// ==========================================
+
+let sheBreathalyzerList = [];
+let sheFirstAidersList = [];
+let sheStatsList = [];
+
+async function loadSheData() {
+    if (!window.electron) return;
+    try {
+        const bRes = await window.electron.invoke('supabase:query', {
+            table: 'omnis_breathalyzer_logs', method: 'select',
+            params: { columns: '*, omnis_patients(name, surname, division)', order: { column: 'test_date', options: { ascending: false } } }
+        });
+        const fRes = await window.electron.invoke('supabase:query', {
+            table: 'omnis_first_aiders', method: 'select',
+            params: { columns: '*', order: { column: 'name', options: { ascending: true } } }
+        });
+        const sRes = await window.electron.invoke('supabase:query', {
+            table: 'omnis_she_stats', method: 'select',
+            params: { columns: '*', order: { column: 'report_year', options: { ascending: false } } }
+        });
+
+        if (bRes.data) sheBreathalyzerList = bRes.data;
+        if (fRes.data) sheFirstAidersList = fRes.data;
+        if (sRes.data) sheStatsList = sRes.data;
+
+        renderSheUI();
+    } catch (e) {
+        console.error("Error loading SHE Data:", e);
+    }
+}
+
+function renderSheUI() {
+    // 1. Render Breathalyzer
+    const bList = document.getElementById('she-breathalyzer-list');
+    if (bList) {
+        bList.innerHTML = sheBreathalyzerList.length === 0 ? '<div style="color:#64748b; font-size:12px; font-style:italic;">No records found.</div>' : sheBreathalyzerList.slice(0, 10).map(b => `
+            <div style="padding:10px; border-left:3px solid ${b.status === 'Failed' ? '#ef4444' : '#f59e0b'}; background:#f8fafc; border-radius:4px; font-size:12px; display:flex; justify-content:space-between;">
+                <div>
+                    <strong>${escapeHtml(b.omnis_patients?.name)} ${escapeHtml(b.omnis_patients?.surname)}</strong> (${escapeHtml(b.omnis_patients?.division)})<br>
+                    <span style="color:#64748b;">${b.test_date}</span>
+                </div>
+                <div style="color:${b.status === 'Failed' ? '#ef4444' : '#f59e0b'}; font-weight:700;">${escapeHtml(b.status)}</div>
+            </div>
+        `).join('');
+    }
+
+    // 2. Render First Aiders
+    const fList = document.getElementById('she-first-aiders-list');
+    if (fList) {
+        fList.innerHTML = sheFirstAidersList.length === 0 ? '<div style="color:#64748b; font-size:12px; font-style:italic;">No records found.</div>' : sheFirstAidersList.map(f => `
+            <div style="padding:10px; background:#f8fafc; border:1px solid #e2e8f0; border-radius:4px; font-size:12px; display:flex; justify-content:space-between; align-items:center;">
+                <div>
+                    <strong>${escapeHtml(f.name)}</strong> - <span style="color:#3b82f6; font-weight:700;">${escapeHtml(f.division)}</span><br>
+                    <span style="color:#64748b; font-size:11px;">${f.completed_training ? '<i class="fas fa-check-circle" style="color:#10b981;"></i> Trained' : '<i class="fas fa-times-circle" style="color:#ef4444;"></i> Pending'} | ${escapeHtml(f.notes || '')}</span>
+                </div>
+                <button class="btn btn-outline" style="padding:4px 8px; font-size:11px;" onclick="editSheFirstAider('${f.id}')">Edit</button>
+            </div>
+        `).join('');
+    }
+
+    // 3. Render Monthly Stats
+    const sList = document.getElementById('she-stats-list');
+    if (sList) {
+        sList.innerHTML = sheStatsList.length === 0 ? '<div style="color:#64748b; font-size:12px; font-style:italic;">No records found.</div>' : sheStatsList.slice(0, 10).map(s => `
+            <div style="padding:10px; background:#f8fafc; border:1px solid #e2e8f0; border-radius:4px; font-size:12px; display:flex; justify-content:space-between; align-items:center;">
+                <div>
+                    <strong>${s.report_month}/${s.report_year} - ${escapeHtml(s.division)}</strong><br>
+                    <span style="color:#64748b;">Manpower: ${s.manpower_level} | Manhours: ${s.manhours_worked}</span>
+                </div>
+            </div>
+        `).join('');
+    }
+}
+
+// Ensure loadSheData is called on init
+document.addEventListener('DOMContentLoaded', () => {
+    document.querySelectorAll('.nav-item').forEach(el => {
+        el.addEventListener('click', () => {
+            const target = el.getAttribute('data-target');
+            if (target === 'view-she') loadSheData();
+        });
+    });
+    // Init the live search for Breathalyzer patient
+    initPatientLiveSearch('she-breathalyzer-patient-search', 'she-breathalyzer-patient-list', 'she-breathalyzer-patient');
+    
+    // Default report month to current
+    const rMonth = document.getElementById('she-report-month');
+    if(rMonth) {
+        const now = new Date();
+        rMonth.value = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2, '0')}`;
+    }
+});
+
+// Modal Toggles
+function showAddBreathalyzerModal() {
+    document.getElementById('she-breathalyzer-form').reset();
+    document.getElementById('she-breathalyzer-date').value = new Date().toISOString().split('T')[0];
+    document.getElementById('modal-she-breathalyzer').classList.add('active');
+}
+
+function showAddFirstAiderModal() {
+    document.getElementById('she-first-aider-form').reset();
+    document.getElementById('she-fa-id').value = '';
+    document.getElementById('modal-she-first-aider').classList.add('active');
+}
+
+function editSheFirstAider(id) {
+    const f = sheFirstAidersList.find(x => x.id === id);
+    if(!f) return;
+    document.getElementById('she-fa-id').value = f.id;
+    document.getElementById('she-fa-name').value = f.name;
+    document.getElementById('she-fa-division').value = f.division;
+    document.getElementById('she-fa-completed').checked = f.completed_training;
+    document.getElementById('she-fa-notes').value = f.notes || '';
+    document.getElementById('modal-she-first-aider').classList.add('active');
+}
+
+function showAddSheStatsModal() {
+    document.getElementById('she-stats-form').reset();
+    const now = new Date();
+    document.getElementById('she-stats-month').value = now.getMonth() + 1; // 1-12
+    document.getElementById('she-stats-year').value = now.getFullYear();
+    document.getElementById('modal-she-stats').classList.add('active');
+}
+
+// Saves
+async function saveSheBreathalyzer() {
+    const payload = {
+        patient_id: document.getElementById('she-breathalyzer-patient').value,
+        test_date: document.getElementById('she-breathalyzer-date').value,
+        status: document.getElementById('she-breathalyzer-status').value
+    };
+    if(!payload.patient_id || !payload.test_date || !payload.status) return alert('All fields required.');
+    
+    try {
+        const res = await window.electron.invoke('supabase:query', { table: 'omnis_breathalyzer_logs', method: 'insert', params: { data: payload } });
+        if(res.error) throw res.error;
+        closeModal('modal-she-breathalyzer');
+        loadSheData();
+    } catch(e) {
+        alert("Save Error: " + e.message);
+    }
+}
+
+async function saveSheFirstAider() {
+    const id = document.getElementById('she-fa-id').value;
+    const payload = {
+        name: document.getElementById('she-fa-name').value,
+        division: document.getElementById('she-fa-division').value,
+        completed_training: document.getElementById('she-fa-completed').checked,
+        notes: document.getElementById('she-fa-notes').value
+    };
+    if(!payload.name || !payload.division) return alert('Name and Division required.');
+    
+    try {
+        let res;
+        if(id) {
+            res = await window.electron.invoke('supabase:query', { table: 'omnis_first_aiders', method: 'update', params: { data: payload, match: {id} } });
+        } else {
+            res = await window.electron.invoke('supabase:query', { table: 'omnis_first_aiders', method: 'insert', params: { data: payload } });
+        }
+        if(res.error) throw res.error;
+        closeModal('modal-she-first-aider');
+        loadSheData();
+    } catch(e) {
+        alert("Save Error: " + e.message);
+    }
+}
+
+async function saveSheStats() {
+    const payload = {
+        report_month: parseInt(document.getElementById('she-stats-month').value),
+        report_year: parseInt(document.getElementById('she-stats-year').value),
+        division: document.getElementById('she-stats-division').value,
+        manpower_level: parseInt(document.getElementById('she-stats-manpower').value) || 0,
+        manhours_worked: parseInt(document.getElementById('she-stats-manhours').value) || 0
+    };
+    if(!payload.report_month || !payload.report_year || !payload.division) return alert('Month, Year, and Division required.');
+    
+    try {
+        const res = await window.electron.invoke('supabase:query', { table: 'omnis_she_stats', method: 'insert', params: { data: payload } });
+        if(res.error) throw res.error;
+        closeModal('modal-she-stats');
+        loadSheData();
+    } catch(e) {
+        alert("Save Error: " + e.message);
+    }
+}
+
+// Report Generator
+async function generateSHEReport() {
+    const monthVal = document.getElementById('she-report-month').value; // YYYY-MM
+    if(!monthVal) return alert('Please select a month and year for the report.');
+    
+    const year = parseInt(monthVal.split('-')[0]);
+    const month = parseInt(monthVal.split('-')[1]);
+    const monthName = new Date(year, month - 1, 1).toLocaleString('default', { month: 'long' }).toUpperCase();
+    
+    try {
+        // Fetch all required data for the month
+        // 1. LTIs: We check omnis_sick_notes (is_injury=true OR days_off > 3)
+        // Need joined patient data for Division
+        const notesRes = await window.electron.invoke('supabase:query', {
+            table: 'omnis_sick_notes', method: 'select',
+            params: { columns: '*, omnis_patients(name, surname, division)' }
+        });
+        // 2. Breathalyzer
+        const breathRes = await window.electron.invoke('supabase:query', {
+            table: 'omnis_breathalyzer_logs', method: 'select',
+            params: { columns: '*, omnis_patients(name, surname, division)' }
+        });
+        // 3. Stats
+        const statsRes = await window.electron.invoke('supabase:query', {
+            table: 'omnis_she_stats', method: 'select',
+            params: { columns: '*' }
+        });
+        // 4. First Aiders
+        const fAiders = sheFirstAidersList; // Already loaded
+
+        const allNotes = notesRes.data || [];
+        const allBreath = breathRes.data || [];
+        const allStats = statsRes.data || [];
+
+        // Filter by month/year
+        const mNotes = allNotes.filter(n => {
+            const d = new Date(n.created_at);
+            return d.getFullYear() === year && d.getMonth() + 1 === month;
+        });
+        const mBreath = allBreath.filter(b => {
+            const d = new Date(b.test_date);
+            return d.getFullYear() === year && d.getMonth() + 1 === month;
+        });
+        const yStats = allStats.filter(s => s.report_year === year);
+        const mStats = yStats.filter(s => s.report_month === month);
+
+        const divisions = ['CSD', 'ENG', 'SRD', 'SPZ', 'SPE', 'TMG', 'SPW'];
+
+        // --- Build LTI Table ---
+        const ltiTbody = document.querySelector('#print-she-lti-table tbody');
+        ltiTbody.innerHTML = '';
+        let totalMonthLTIs = 0;
+        let ltiCounter = 1;
+
+        divisions.forEach(div => {
+            const divLTIs = mNotes.filter(n => n.omnis_patients?.division === div && (n.is_injury === true || n.days_off > 3));
+            if(divLTIs.length === 0) {
+                ltiTbody.innerHTML += `<tr><td>${ltiCounter++}</td><td><strong>${div}</strong></td><td>N/A</td><td>None recorded</td><td>0</td><td>N/A</td></tr>`;
+            } else {
+                divLTIs.forEach((lti, idx) => {
+                    const ltiVal = lti.days_off > 0 ? 1 : 0;
+                    totalMonthLTIs += ltiVal;
+                    ltiTbody.innerHTML += `<tr><td>${idx===0?ltiCounter++:''}</td><td><strong>${idx===0?div:''}</strong></td><td>${lti.omnis_patients?.name} ${lti.omnis_patients?.surname}</td><td>${lti.injury_type || 'General'}</td><td>${ltiVal}</td><td>Recorded via Sick Note</td></tr>`;
+                });
+            }
+        });
+        ltiTbody.innerHTML += `<tr class="group-total"><td colspan="4" style="text-align:right;">GROUP TOTAL</td><td>${totalMonthLTIs}</td><td></td></tr>`;
+
+        // --- Build Breathalyzer Table ---
+        const breathTbody = document.querySelector('#print-she-breath-table tbody');
+        breathTbody.innerHTML = '';
+        let breathCounter = 1;
+        let totalWarnings = 0;
+
+        divisions.forEach(div => {
+            const divFails = mBreath.filter(b => b.omnis_patients?.division === div && b.status === 'Failed');
+            const divWarns = mBreath.filter(b => b.omnis_patients?.division === div && b.status === 'Warning');
+            totalWarnings += divWarns.length;
+
+            if(divFails.length === 0 && divWarns.length === 0) {
+                breathTbody.innerHTML += `<tr><td>${breathCounter++}</td><td><strong>${div}</strong></td><td>N/A</td><td>-</td><td>N/A</td></tr>`;
+            } else {
+                const combined = [...divFails, ...divWarns];
+                combined.forEach((b, idx) => {
+                    breathTbody.innerHTML += `<tr><td>${idx===0?breathCounter++:''}</td><td><strong>${idx===0?div:''}</strong></td><td>${b.omnis_patients?.name} ${b.omnis_patients?.surname}</td><td>${b.status==='Failed'?'1':'-'}</td><td>${b.status==='Warning'?'1':'N/A'}</td></tr>`;
+                });
+            }
+        });
+        breathTbody.innerHTML += `<tr class="group-total"><td colspan="3" style="text-align:right;">GROUP TOTAL</td><td>0</td><td>${totalWarnings}</td></tr>`; // The original PDF had 0 for fail total but kept warning. Usually you'd sum them.
+
+        // --- Build SHE Stats Table ---
+        const statsTbody = document.querySelector('#print-she-stats-table tbody');
+        statsTbody.innerHTML = '';
+        
+        let sumManpower = 0;
+        let sumMonthHours = 0;
+        let sumYearHours = 0;
+        let sumYearLTIs = 0;
+
+        const manpowers = [], monthHours = [], yearHours = [];
+        
+        // Compute Yearly LTIs
+        const yNotes = allNotes.filter(n => {
+            const d = new Date(n.created_at);
+            return d.getFullYear() === year;
+        });
+
+        const yDivLTIs = {};
+        const lastLTIDates = {};
+        divisions.forEach(div => {
+            yDivLTIs[div] = yNotes.filter(n => n.omnis_patients?.division === div && (n.is_injury === true || n.days_off > 3)).length;
+            sumYearLTIs += yDivLTIs[div];
+
+            // Find last LTI Date for this division (across all time)
+            const divAllLTIs = allNotes.filter(n => n.omnis_patients?.division === div && (n.is_injury === true || n.days_off > 3)).sort((a,b) => new Date(b.created_at) - new Date(a.created_at));
+            lastLTIDates[div] = divAllLTIs.length > 0 ? new Date(divAllLTIs[0].created_at).toLocaleDateString('en-GB') : '0';
+        });
+
+        divisions.forEach(div => {
+            const mStat = mStats.find(s => s.division === div) || { manpower_level: 0, manhours_worked: 0 };
+            const yStatSum = yStats.filter(s => s.division === div).reduce((acc, curr) => acc + curr.manhours_worked, 0);
+            
+            manpowers.push(mStat.manpower_level);
+            monthHours.push(mStat.manhours_worked);
+            yearHours.push(yStatSum);
+
+            sumManpower += mStat.manpower_level;
+            sumMonthHours += mStat.manhours_worked;
+            sumYearHours += yStatSum;
+        });
+
+        // Insert Rows
+        statsTbody.innerHTML += `<tr><td colspan="8" style="font-weight:bold; background:#e2e8f0;">MONTHLY STATS</td></tr>`;
+        statsTbody.innerHTML += `<tr><td class="left">Manpower Level</td>${manpowers.map(m => `<td>${m}</td>`).join('')}<td>${sumManpower}</td></tr>`;
+        statsTbody.innerHTML += `<tr><td class="left">Manhours Worked</td>${monthHours.map(m => `<td>${m}</td>`).join('')}<td>${sumMonthHours}</td></tr>`;
+        statsTbody.innerHTML += `<tr><td class="left">LTIs Incurred</td>${divisions.map(d => `<td>${yDivLTIs[d]}</td>`).join('')}<td>${sumYearLTIs}</td></tr>`;
+        statsTbody.innerHTML += `<tr><td class="left">Date of Last LTI</td>${divisions.map(d => `<td>${lastLTIDates[d]}</td>`).join('')}<td></td></tr>`;
+        
+        statsTbody.innerHTML += `<tr><td colspan="8" style="font-weight:bold; background:#e2e8f0;">YEARLY STATS</td></tr>`;
+        statsTbody.innerHTML += `<tr><td class="left">Manhours Worked</td>${yearHours.map(h => `<td>${h}</td>`).join('')}<td>${sumYearHours}</td></tr>`;
+        statsTbody.innerHTML += `<tr><td class="left">LTIs Incurred</td>${divisions.map(d => `<td>${yDivLTIs[d]}</td>`).join('')}<td>${sumYearLTIs}</td></tr>`;
+
+        // Update Summary Text
+        document.getElementById('print-she-summary-lti').innerText = `${totalMonthLTIs} LTI in the month of ${monthName}`;
+
+        // --- Build First Aiders Table ---
+        const faTbody = document.querySelector('#print-she-first-aider-table tbody');
+        faTbody.innerHTML = '';
+        let faCounter = 1;
+
+        const relevantFADivs = ['ACC', 'SRD', 'CSD', 'SPZ', 'ENG', 'SPE', 'LMX']; // As per PDF
+        relevantFADivs.forEach(div => {
+            const divFAs = fAiders.filter(f => f.division === div);
+            if(divFAs.length === 0) {
+                // Skip if empty or put N/A
+            } else {
+                divFAs.forEach((fa, idx) => {
+                    faTbody.innerHTML += `<tr><td>${idx===0?faCounter++:''}</td><td><strong>${idx===0?div:''}</strong></td><td>${fa.name}</td><td style="background:${fa.completed_training?'#dcfce3':'#fee2e2'};">${fa.completed_training?'Yes':'No'}</td><td>${fa.notes||''}</td></tr>`;
+                });
+            }
+        });
+
+        // Set Headers
+        document.getElementById('print-she-month-year').innerText = `${monthName} ${year} LTI REPORT`;
+        const dateStr = new Date().toISOString().split('T')[0];
+        document.getElementById('print-she-date').innerText = dateStr;
+
+        // --- PRINT ---
+        const originalContent = document.body.innerHTML;
+        const printContent = document.getElementById('she-print-template').innerHTML;
+        
+        document.body.innerHTML = printContent;
+        window.print();
+        document.body.innerHTML = originalContent;
+        
+        // Re-bind events since body replacement strips them
+        location.reload(); // Simplest way to ensure all JS bindings come back properly in an SPA structure when overwriting body
+
+    } catch(e) {
+        console.error(e);
+        alert("Failed to generate report: " + e.message);
+    }
+}
+

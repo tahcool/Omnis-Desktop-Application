@@ -15144,8 +15144,8 @@
 
         // Wire up suggestions only once (defer to runtime so helpers are loaded)
         if (!groupSalesInited) {
-          if (window.setupSuggestions) {
-            window.setupSuggestions(document.getElementById('gs-customer'), document.getElementById('gs-customer-suggest'), "search_customer_for_omnis");
+          if (window.setupSupabaseSuggestions) {
+            window.setupSupabaseSuggestions(document.getElementById('gs-customer'), document.getElementById('gs-customer-suggest'), "customers", "customer_name");
           }
           if (window.setupSupabaseSuggestions) {
             window.setupSupabaseSuggestions(document.getElementById('gs-oem'), document.getElementById('gs-oem-suggest'), "brands", "name");
@@ -16099,7 +16099,7 @@
                 list.innerHTML = '';
                 if (results && results.length > 0) {
                     list.innerHTML = results.map(item => {
-                        const title = item.item_name || item.name || item.item_code;
+                        const title = item.item_name || item.name || item.item_code || item.customer_name;
                         const sub = item.item_code || item.brand_name || item.parent_group || "";
                         const details = item.brand_name ? `Brand: ${item.brand_name}` : (item.item_group_name ? `Group: ${item.item_group_name}` : "");
                         
@@ -16122,8 +16122,9 @@
                             
                             // Map to expected format
                             const mappedItem = {
-                                value: item.frappe_id || item.item_code || item.name,
-                                description: item.item_name || item.name || item.item_code,
+                                value: item.frappe_id || item.item_code || item.name || item.customer_name,
+                                description: item.item_name || item.name || item.item_code || item.customer_name,
+                                customer_name: item.customer_name || "",
                                 brand: item.brand_name || "",
                                 details: item.item_code || "",
                                 rate: item.rate || 0
