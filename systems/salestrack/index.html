@@ -17400,23 +17400,34 @@ thead th { padding:11px 12px; font-size:10px; font-weight:800; color:#fff; text-
         };
 
         let conflictCol = 'id';
+        let method = 'upsert';
+        let matchParams = {};
+
         if (!isNew && rawId) {
             if (rawId.length === 36 && rawId.includes('-')) {
-                upsertPayload.id = rawId;
-                conflictCol = 'id';
+                // Existing record with UUID -> use update to avoid upsert's INSERT-time NOT NULL constraints
+                method = 'update';
+                matchParams = { id: rawId };
             } else {
                 upsertPayload.frappe_id = rawId;
                 conflictCol = 'frappe_id';
             }
+        } else {
+            // New record -> generate a dummy frappe_id to bypass the legacy NOT NULL constraint
+            upsertPayload.frappe_id = 'omnis-' + Date.now().toString(36) + '-' + Math.random().toString(36).substring(2, 6);
+            conflictCol = 'frappe_id';
         }
 
         if (window.electron && window.electron.invoke) {
             console.log("[Stock] Saving directly to Supabase via Electron IPC...");
-            const upRes = await window.electron.invoke('supabase:query', {
-                table: 'stock_inventory', method: 'upsert',
+            const reqPayload = {
+                table: 'stock_inventory', 
+                method: method,
                 data: upsertPayload,
-                params: { options: { onConflict: conflictCol } }
-            });
+                params: method === 'upsert' ? { options: { onConflict: conflictCol } } : { match: matchParams }
+            };
+            
+            const upRes = await window.electron.invoke('supabase:query', reqPayload);
 
             if (upRes && upRes.ok && upRes.data && upRes.data.length > 0) {
                 stockId = upRes.data[0].id;
@@ -17438,7 +17449,13 @@ thead th { padding:11px 12px; font-size:10px; font-weight:800; color:#fff; text-
             console.log("[Stock] Saving directly to Supabase via direct client...");
             const sp = window.salestrack.supabase;
             
-            const { data, error } = await sp.from('stock_inventory').upsert(upsertPayload, { onConflict: conflictCol }).select();
+            let resObj;
+            if (method === 'update') {
+                resObj = await sp.from('stock_inventory').update(upsertPayload).match(matchParams).select();
+            } else {
+                resObj = await sp.from('stock_inventory').upsert(upsertPayload, { onConflict: conflictCol }).select();
+            }
+            const { data, error } = resObj;
             if (!error && data && data.length > 0) {
                 stockId = data[0].id;
                 

@@ -532,3 +532,5 @@
   Files: .mcp/knowledge/_shared/commit_log.md,systems/salestrack/index.html,
 - `25833fa` 2026-09-07 [supabase-migration] fix: correct syntax error from unmatched bracket in saveStockPipelineRecord
   Files: .mcp/knowledge/_shared/commit_log.md,systems/salestrack/index.html,
+- `4383be0` 2026-09-07 [supabase-migration] fix: correctly handle legacy frappe_id string during stock pipeline upsert
+  Files: .mcp/knowledge/_shared/commit_log.md,systems/salestrack/index.html,
