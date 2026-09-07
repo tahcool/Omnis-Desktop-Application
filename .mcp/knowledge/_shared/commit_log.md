@@ -538,3 +538,9 @@
   Files: .mcp/knowledge/_shared/commit_log.md,main.js,systems/salestrack/index.html,
 - `36bc876` 2026-09-07 [supabase-migration] [checkpoint] Restore point after fixing Stock Pipeline upsert to update logic
   Files: .mcp/knowledge/_shared/commit_log.md,
+- `581bb40` 2026-09-07 [supabase-migration] Automate SHE Manpower and Manhours calculations, fix syntax error, and add formula disclaimer to UI
+  Files: .mcp/knowledge/_shared/commit_log.md,check_columns.js,check_rls.js,scratch.js,supabase/migrations/20260907000001_add_preowned_stock.sql,systems/medicals/fix_syntax.py,systems/medicals/index.html,systems/medicals/medicals_logic.js,systems/medicals/update.js,systems/medicals/update.py,systems/medicals/update_html.py,systems/medicals/update_html_ui.py,systems/medicals/update_logic.py,systems/medicals/update_logic_auto.py,systems/medicals/update_stats_card.py,systems/salestrack/index.html,test_insert_patient.js,test_insert_patient2.js,
+- `76302f4` 2026-09-07 [supabase-migration] checkpoint: redesign and fix UI layout for Breathalyzers and First Aiders
+  Files: systems/medicals/index.html,systems/medicals/medicals_logic.js,
+- `eff637f` 2026-09-07 [supabase-migration] checkpoint: replace top right nav buttons with settings and logout
+  Files: systems/medicals/index.html,systems/medicals/medicals_logic.js,

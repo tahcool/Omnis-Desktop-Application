@@ -1,6 +1,6 @@
 {
   "name": "omnis-desktop",
-  "version": "4.3.7",
+  "version": "4.3.8",
   "description": "Omnis Desktop Application",
   "main": "main.js",
   "scripts": {
@@ -81,3 +81,4 @@
   "keywords": [],
   "codeName": "Forge"
 }
+
