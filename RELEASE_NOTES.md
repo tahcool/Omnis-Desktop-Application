@@ -1,21 +1,9 @@
-# Omnis v4.3.6
+Omnis v4.3.7 Release
 
-## Enhancements & Fixes
-- **Sales Tracking**:
-  - Fixed customer live search in the New Sale modal to query the live Supabase customer database.
-  - Added new error handling popup for Supabase insertion failures.
-- **SHE Operations**:
-  - Introduced SHE Operations tab and logic in Medicals section.
-  - Added ability to generate LTI September style reports directly from the system.
-- **Dispensary**:
-  - Implemented auto-deduction logic to update stock inventory when medication is dispensed.
+Improvements:
+- Fixed a bug where Supabase errors (such as duplicates or missing fields) during Sales Entry were incorrectly masked as "undefined". Now, the specific error returned by Supabase is displayed clearly to the user.
+- Added comprehensive error logging and diagnostics to the Stock Pipeline data fetching sequence to surface any silent connectivity or mapping failures.
+- Patched unhandled promise rejections on the diagnostic schema fetch on startup.
 
-# Omnis v4.3.5
-
-## Enhancements & Fixes
-- **Order Tracking**:
-  - Fixed lead time data mapping from historical group sales records.
-  - Cleared default date filters so the view loads unconditionally.
-- **Machine Selection**:
-  - Fixed live search for the "Machine / Item" input in the Edit Order Details modal. It now properly queries the live Supabase product database.
-  - Resolved a z-index layering bug that was hiding the autocomplete dropdown behind the modal window.
+Data Updates:
+- Manually injected 9 missing machinery orders into the `group_sales` table as requested by the user.

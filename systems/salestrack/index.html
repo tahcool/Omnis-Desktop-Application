@@ -16942,7 +16942,7 @@ thead th { padding:11px 12px; font-size:10px; font-weight:800; color:#fff; text-
                 data: supabasePayload,
                 params: { match: { frappe_id: window._editingGroupSaleName } }
             });
-            if (error) throw new Error("Supabase update failed: " + error.message);
+            if (error) throw new Error("Supabase update failed: " + (error.message || error));
             recordId = window._editingGroupSaleName;
         } else {
             const tempId = `GS-${Date.now()}`;
@@ -16952,7 +16952,7 @@ thead th { padding:11px 12px; font-size:10px; font-weight:800; color:#fff; text-
                 method: 'insert',
                 data: supabasePayload
             });
-            if (error) throw new Error("Supabase insert failed: " + error.message);
+            if (error) throw new Error("Supabase insert failed: " + (error.message || error));
             recordId = tempId;
         }
 
