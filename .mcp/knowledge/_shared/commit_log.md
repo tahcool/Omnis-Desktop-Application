@@ -526,3 +526,5 @@
   Files: .mcp/knowledge/_shared/commit_log.md,systems/salestrack/index.html,
 - `61e2345` 2026-09-07 [supabase-migration] fix: hardcode supabase key to bypass local env conflicts
   Files: .mcp/knowledge/_shared/commit_log.md,main.js,
+- `cd37c6f` 2026-09-07 [supabase-migration] fix: use supabaseAdmin for stock_inventory to bypass RLS session issues
+  Files: .mcp/knowledge/_shared/commit_log.md,main.js,
