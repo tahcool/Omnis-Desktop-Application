@@ -51,6 +51,19 @@
         <div class="nav-item top-nav-item" data-target="view-she">
           <span class="icon"><i class="fas fa-hard-hat"></i></span> <span>SHE Operations</span>
         </div>
+        
+        <div class="top-nav-item module-switcher-dropdown" style="position: relative; cursor: pointer; padding: 6px 12px;" onmouseenter="clearTimeout(this.hideTimeout); this.querySelector('.dropdown-content').style.display='block'" onmouseleave="this.hideTimeout = setTimeout(() => { this.querySelector('.dropdown-content').style.display='none' }, 250)">
+            <span class="icon"><i class="fas fa-clipboard-list"></i></span>
+            <span>Safety Registries</span>
+            <div class="dropdown-content" style="display:none; position:absolute; top:100%; left:0; margin-top:10px; background:#ffffff; border:1px solid #e2e8f0; border-radius:6px; box-shadow:0 10px 25px rgba(0,0,0,0.1); min-width:180px; z-index:9999; padding:8px;">
+                <div class="nav-item" data-target="view-breathalyzers" style="display:flex; align-items:center; gap:8px; padding:10px 12px; color:#0f172a; text-decoration:none; font-size:13px; border-radius:4px; transition:background 0.2s;" onmouseover="this.style.background='#f8fafc'" onmouseout="this.style.background='transparent'">
+                    <i class="fas fa-wind" style="color:#e11c2a; width:16px; text-align:center;"></i> Breathalyzers
+                </div>
+                <div class="nav-item" data-target="view-first-aiders" style="display:flex; align-items:center; gap:8px; padding:10px 12px; color:#0f172a; text-decoration:none; font-size:13px; border-radius:4px; transition:background 0.2s;" onmouseover="this.style.background='#f8fafc'" onmouseout="this.style.background='transparent'">
+                    <i class="fas fa-medkit" style="color:#e11c2a; width:16px; text-align:center;"></i> First Aiders
+                </div>
+            </div>
+        </div>
       </div>
 
       <!-- Right Side (User Profile & Switches) -->
@@ -733,7 +746,79 @@
             </div>
 
             <!-- SHE Operations View -->
-            <div id="view-she" class="view">
+            
+        
+            <!-- NEW VIEWS -->
+
+        <div id="view-breathalyzers" class="view">
+            <div class="view-header" style="display:flex; gap:12px; align-items:center; flex-wrap:wrap;">
+                <input type="text" id="filter-breath-search" placeholder="Search breathalyzer records..." class="search-input">
+                
+                <select id="filter-breath-division" class="search-input" style="width: auto; min-width: 140px;">
+                    <option value="">All Divisions</option>
+                </select>
+
+                <button class="btn btn-primary" onclick="showAddBreathalyzerModal()" style="margin-left:auto;">
+                    <i class="fas fa-plus"></i> Record Event
+                </button>
+            </div>
+            
+            <div class="table-container" style="background: transparent; box-shadow: none; border: none; padding: 0;">
+                <style>
+                    .ai-breathalyzer-grid {
+                        display: grid;
+                        grid-template-columns: 1fr 2fr 1fr 1fr 120px;
+                    }
+                </style>
+                <div class="ai-order-header ai-breathalyzer-grid">
+                    <div>Date</div>
+                    <div>Patient Name</div>
+                    <div>Division</div>
+                    <div>Result Status</div>
+                    <div style="text-align:right;">Actions</div>
+                </div>
+                
+                <div id="she-breathalyzer-list" style="display:flex; flex-direction:column; gap:8px; margin-top:12px;">
+                    <!-- Populated via JS -->
+                </div>
+            </div>
+        </div>
+
+        <div id="view-first-aiders" class="view">
+            <div class="view-header" style="display:flex; gap:12px; align-items:center; flex-wrap:wrap;">
+                <input type="text" id="filter-fa-search" placeholder="Search first aiders..." class="search-input">
+                
+                <select id="filter-fa-division" class="search-input" style="width: auto; min-width: 140px;">
+                    <option value="">All Divisions</option>
+                </select>
+
+                <button class="btn btn-primary" onclick="showAddFirstAiderModal()" style="margin-left:auto;">
+                    <i class="fas fa-plus"></i> Register First Aider
+                </button>
+            </div>
+
+            <div class="table-container" style="background: transparent; box-shadow: none; border: none; padding: 0;">
+                <style>
+                    .ai-fa-grid {
+                        display: grid;
+                        grid-template-columns: 2fr 1fr 1fr 2fr 120px;
+                    }
+                </style>
+                <div class="ai-order-header ai-fa-grid">
+                    <div>Name</div>
+                    <div>Division</div>
+                    <div>Training Status</div>
+                    <div>Notes</div>
+                    <div style="text-align:right;">Actions</div>
+                </div>
+                
+                <div id="she-first-aiders-list" style="display:flex; flex-direction:column; gap:8px; margin-top:12px;">
+                    <!-- Populated via JS -->
+                </div>
+            </div>
+        </div>
+
+<div id="view-she" class="view">
                 <div class="view-header" style="display:flex; justify-content:space-between; align-items:center;">
                     <h2 style="margin:0; font-size: 20px; font-weight: 700; color: #0f172a;">SHE Operations</h2>
                     
@@ -747,23 +832,7 @@
                 </div>
                 
                 <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; padding: 20px 40px;">
-                    <!-- Breathalyzer Card -->
-                    <div style="background: #fff; border-radius: 12px; padding: 20px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); border: 1px solid #e2e8f0;">
-                        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 16px;">
-                            <h3 style="margin:0; font-size: 16px;">Breathalyzer Fails / Warnings</h3>
-                            <button class="btn btn-outline" style="padding: 4px 10px; font-size: 12px;" onclick="showAddBreathalyzerModal()"><i class="fas fa-plus"></i> Add</button>
-                        </div>
-                        <div id="she-breathalyzer-list" style="display:flex; flex-direction:column; gap:8px;"></div>
-                    </div>
                     
-                    <!-- First Aiders Card -->
-                    <div style="background: #fff; border-radius: 12px; padding: 20px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); border: 1px solid #e2e8f0;">
-                        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 16px;">
-                            <h3 style="margin:0; font-size: 16px;">First Aiders Registry</h3>
-                            <button class="btn btn-outline" style="padding: 4px 10px; font-size: 12px;" onclick="showAddFirstAiderModal()"><i class="fas fa-plus"></i> Add</button>
-                        </div>
-                        <div id="she-first-aiders-list" style="display:flex; flex-direction:column; gap:8px;"></div>
-                    </div>
                     
                     <!-- Monthly Stats Card -->
                     <div style="background: #fff; border-radius: 12px; padding: 20px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05); border: 1px solid #e2e8f0; grid-column: span 2;">
@@ -787,9 +856,21 @@
             </div>
 
         </div>
-            </div>
+            
 
-    <!-- Modals -->
+                
+                <div id="she-breathalyzer-list" style="display:flex; flex-direction:column; gap:8px; margin-top:12px;">
+                    <!-- Populated via JS -->
+                </div>
+            </div>
+        </div>
+
+        
+
+
+</div>
+
+        <!-- Modals -->
 
     <!-- Add/Edit Patient Modal -->
     <div id="modal-patient" class="modal-overlay">

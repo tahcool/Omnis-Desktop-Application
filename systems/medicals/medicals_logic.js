@@ -1498,44 +1498,135 @@ async function loadSheData() {
     }
 }
 
-function renderSheUI() {
-    // 1. Render Breathalyzer
+function applyBreathFilters() {
+    const term = (document.getElementById('filter-breath-search')?.value || '').toLowerCase();
+    const filterDiv = document.getElementById('filter-breath-division')?.value || '';
+
+    const filtered = sheBreathalyzerList.filter(b => {
+        const name = (b.omnis_patients?.name || '') + ' ' + (b.omnis_patients?.surname || '');
+        const div = b.omnis_patients?.division || '';
+        const matchSearch = term === '' || name.toLowerCase().includes(term);
+        const matchDiv = filterDiv === '' || div === filterDiv;
+        return matchSearch && matchDiv;
+    });
+
     const bList = document.getElementById('she-breathalyzer-list');
-    if (bList) {
-        bList.innerHTML = sheBreathalyzerList.length === 0 ? '<div style="color:#64748b; font-size:12px; font-style:italic;">No records found.</div>' : sheBreathalyzerList.slice(0, 10).map(b => `
-            <div style="padding:10px; border-left:3px solid ${b.status === 'Failed' ? '#ef4444' : '#f59e0b'}; background:#f8fafc; border-radius:4px; font-size:12px; display:flex; justify-content:space-between;">
-                <div>
-                    <strong>${escapeHtml(b.omnis_patients?.name)} ${escapeHtml(b.omnis_patients?.surname)}</strong> (${escapeHtml(b.omnis_patients?.division)})<br>
-                    <span style="color:#64748b;">${b.test_date}</span>
-                </div>
-                <div style="color:${b.status === 'Failed' ? '#ef4444' : '#f59e0b'}; font-weight:700;">${escapeHtml(b.status)}</div>
-            </div>
-        `).join('');
+    if (!bList) return;
+    
+    bList.innerHTML = '';
+    
+    if (filtered.length === 0) {
+        bList.innerHTML = '<div style="color:#64748b; font-size:13px; font-style:italic; padding:20px; text-align:center;">No breathalyzer records found matching criteria.</div>';
+        return;
     }
 
-    // 2. Render First Aiders
-    const fList = document.getElementById('she-first-aiders-list');
-    if (fList) {
-        fList.innerHTML = sheFirstAidersList.length === 0 ? '<div style="color:#64748b; font-size:12px; font-style:italic;">No records found.</div>' : sheFirstAidersList.map(f => `
-            <div style="padding:10px; background:#f8fafc; border:1px solid #e2e8f0; border-radius:4px; font-size:12px; display:flex; justify-content:space-between; align-items:center;">
-                <div>
-                    <strong>${escapeHtml(f.name)}</strong> - <span style="color:#3b82f6; font-weight:700;">${escapeHtml(f.division)}</span><br>
-                    <span style="color:#64748b; font-size:11px;">${f.completed_training ? '<i class="fas fa-check-circle" style="color:#10b981;"></i> Trained' : '<i class="fas fa-times-circle" style="color:#ef4444;"></i> Pending'} | ${escapeHtml(f.notes || '')}</span>
-                </div>
-                <button class="btn btn-outline" style="padding:4px 8px; font-size:11px;" onclick="editSheFirstAider('${f.id}')">Edit</button>
+    filtered.slice(0, 50).forEach(b => {
+        const row = document.createElement('div');
+        row.className = "ai-order-row ai-breathalyzer-grid";
+        row.style.borderLeft = b.status === 'Failed' ? "4px solid #ef4444" : "4px solid #f59e0b";
+        
+        row.innerHTML = `
+            <div style="color:#64748b; font-size:13px; font-weight:600;">${b.test_date}</div>
+            <div style="color:#1e293b; font-weight:700; font-size:14px;">${escapeHtml(b.omnis_patients?.name)} ${escapeHtml(b.omnis_patients?.surname)}</div>
+            <div style="font-size:13px; color:#334155;">${escapeHtml(b.omnis_patients?.division || '-')}</div>
+            <div style="font-size:13px; font-weight:700; color:${b.status === 'Failed' ? '#ef4444' : '#f59e0b'};">${escapeHtml(b.status)}</div>
+            <div style="text-align:right;">
+                <button class="btn btn-outline" style="padding:4px 8px; font-size:11px; border-color:#ef4444; color:#ef4444;" onclick="deleteSheRecord('breathalyzer', '${b.id}')"><i class="fas fa-trash"></i></button>
             </div>
-        `).join('');
-    }
-
-    // 3. Render Monthly Stats removed
+        `;
+        bList.appendChild(row);
+    });
 }
+
+function applyFaFilters() {
+    const term = (document.getElementById('filter-fa-search')?.value || '').toLowerCase();
+    const filterDiv = document.getElementById('filter-fa-division')?.value || '';
+
+    const filtered = sheFirstAidersList.filter(f => {
+        const matchSearch = term === '' || (f.name || '').toLowerCase().includes(term);
+        const matchDiv = filterDiv === '' || (f.division || '') === filterDiv;
+        return matchSearch && matchDiv;
+    });
+
+    const fList = document.getElementById('she-first-aiders-list');
+    if (!fList) return;
+    
+    fList.innerHTML = '';
+    
+    if (filtered.length === 0) {
+        fList.innerHTML = '<div style="color:#64748b; font-size:13px; font-style:italic; padding:20px; text-align:center;">No first aiders found matching criteria.</div>';
+        return;
+    }
+
+    filtered.forEach(f => {
+        const row = document.createElement('div');
+        row.className = "ai-order-row ai-fa-grid";
+        row.style.borderLeft = f.completed_training ? "4px solid #10b981" : "4px solid #ef4444";
+        
+        row.innerHTML = `
+            <div style="color:#1e293b; font-weight:700; font-size:14px;">${escapeHtml(f.name)}</div>
+            <div style="font-size:13px; color:#334155;">${escapeHtml(f.division)}</div>
+            <div style="font-size:13px; font-weight:600; color:${f.completed_training ? '#10b981' : '#ef4444'};">
+                ${f.completed_training ? '<i class="fas fa-check-circle"></i> Trained' : '<i class="fas fa-times-circle"></i> Pending'}
+            </div>
+            <div style="font-size:12px; color:#64748b;">${escapeHtml(f.notes || '-')}</div>
+            <div style="text-align:right;">
+                <button class="btn btn-outline" style="padding:4px 8px; font-size:11px;" onclick="editSheFirstAider('${f.id}')"><i class="fas fa-pen"></i></button>
+            </div>
+        `;
+        fList.appendChild(row);
+    });
+}
+
+function renderSheUI() {
+    // Populate Division filter for Breathalyzers
+    const bDivSel = document.getElementById('filter-breath-division');
+    if (bDivSel) {
+        const divs = [...new Set(sheBreathalyzerList.map(b => b.omnis_patients?.division).filter(Boolean))].sort();
+        const current = bDivSel.value;
+        bDivSel.innerHTML = `<option value="">All Divisions</option>` + divs.map(d => `<option value="${escapeHtml(d)}">${escapeHtml(d)}</option>`).join('');
+        bDivSel.value = current;
+    }
+
+    // Populate Division filter for First Aiders
+    const fDivSel = document.getElementById('filter-fa-division');
+    if (fDivSel) {
+        const divs = [...new Set(sheFirstAidersList.map(f => f.division).filter(Boolean))].sort();
+        const current = fDivSel.value;
+        fDivSel.innerHTML = `<option value="">All Divisions</option>` + divs.map(d => `<option value="${escapeHtml(d)}">${escapeHtml(d)}</option>`).join('');
+        fDivSel.value = current;
+    }
+
+    applyBreathFilters();
+    applyFaFilters();
+}
+
+// Add the listeners
+document.addEventListener('DOMContentLoaded', () => {
+    ['filter-breath-search', 'filter-breath-division'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.addEventListener('input', applyBreathFilters);
+    });
+
+    ['filter-fa-search', 'filter-fa-division'].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.addEventListener('input', applyFaFilters);
+    });
+});
+
+
+['filter-fa-search', 'filter-fa-division'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.addEventListener('input', applyFaFilters);
+});
+
 
 // Ensure loadSheData is called on init
 document.addEventListener('DOMContentLoaded', () => {
     document.querySelectorAll('.nav-item').forEach(el => {
         el.addEventListener('click', () => {
             const target = el.getAttribute('data-target');
-            if (target === 'view-she') loadSheData();
+            if (target === 'view-she' || target === 'view-breathalyzers' || target === 'view-first-aiders') loadSheData();
         });
     });
     // Init the live search for Breathalyzer patient
