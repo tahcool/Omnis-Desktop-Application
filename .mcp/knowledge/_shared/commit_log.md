@@ -520,3 +520,5 @@
   Files: .mcp/knowledge/_shared/commit_log.md,systems/salestrack/index.html,
 - `b056add` 2026-09-07 [supabase-migration] chore: remove diagnostic frappe call in stock pipeline
   Files: .mcp/knowledge/_shared/commit_log.md,
+- `f206d38` 2026-09-07 [supabase-migration] chore: add auto-logging for stock pipeline diagnostics
+  Files: .mcp/knowledge/_shared/commit_log.md,systems/salestrack/index.html,
