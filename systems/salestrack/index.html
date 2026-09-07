@@ -17399,8 +17399,15 @@ thead th { padding:11px 12px; font-size:10px; font-weight:800; color:#fff; text-
             eta_harare: payload.eta_harare || null
         };
 
+        let conflictCol = 'id';
         if (!isNew && rawId) {
-            upsertPayload.id = rawId;
+            if (rawId.length === 36 && rawId.includes('-')) {
+                upsertPayload.id = rawId;
+                conflictCol = 'id';
+            } else {
+                upsertPayload.frappe_id = rawId;
+                conflictCol = 'frappe_id';
+            }
         }
 
         if (window.electron && window.electron.invoke) {
@@ -17408,7 +17415,7 @@ thead th { padding:11px 12px; font-size:10px; font-weight:800; color:#fff; text-
             const upRes = await window.electron.invoke('supabase:query', {
                 table: 'stock_inventory', method: 'upsert',
                 data: upsertPayload,
-                params: { options: { onConflict: 'id' } }
+                params: { options: { onConflict: conflictCol } }
             });
 
             if (upRes && upRes.ok && upRes.data && upRes.data.length > 0) {
@@ -17431,7 +17438,7 @@ thead th { padding:11px 12px; font-size:10px; font-weight:800; color:#fff; text-
             console.log("[Stock] Saving directly to Supabase via direct client...");
             const sp = window.salestrack.supabase;
             
-            const { data, error } = await sp.from('stock_inventory').upsert(upsertPayload, { onConflict: 'id' }).select();
+            const { data, error } = await sp.from('stock_inventory').upsert(upsertPayload, { onConflict: conflictCol }).select();
             if (!error && data && data.length > 0) {
                 stockId = data[0].id;
                 
