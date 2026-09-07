@@ -516,3 +516,5 @@
 \n## 2026-09-07
 - `4e9cd31` 2026-09-07 [supabase-migration] chore: bump version to 4.3.7, fix sales entry error logging, add stock pipeline diagnostics
   Files: RELEASE_NOTES.md,package.json,systems/salestrack/index.html,
+- `cc88082` 2026-09-07 [supabase-migration] chore: include diagnostic patch for stock pipeline
+  Files: .mcp/knowledge/_shared/commit_log.md,systems/salestrack/index.html,
