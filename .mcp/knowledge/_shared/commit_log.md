@@ -528,3 +528,5 @@
   Files: .mcp/knowledge/_shared/commit_log.md,main.js,
 - `cd37c6f` 2026-09-07 [supabase-migration] fix: use supabaseAdmin for stock_inventory to bypass RLS session issues
   Files: .mcp/knowledge/_shared/commit_log.md,main.js,
+- `39c7ff6` 2026-09-07 [supabase-migration] fix: fully decouple stock pipeline save and delete logic from frappe backend
+  Files: .mcp/knowledge/_shared/commit_log.md,systems/salestrack/index.html,

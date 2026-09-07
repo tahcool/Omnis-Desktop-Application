@@ -17469,11 +17469,8 @@ thead th { padding:11px 12px; font-size:10px; font-weight:800; color:#fff; text-
           } else {
             window.renderStockTab();
           }
-          omnisLog("Stock record " + (window._editingStockId ? "updated" : "saved") + " successfully: " + response.name);
+          omnisLog("Stock record " + (window._editingStockId ? "updated" : "saved") + " successfully: " + stockId);
           // window._editingStockId = null; // Removed to prevent duplicate creation on subsequent saves
-        } else {
-          throw new Error(response.error || "Save failed");
-        }
       } catch (e) {
         console.error("Save Stock Error:", e);
         alert("Error saving record: " + e.message);
