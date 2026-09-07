@@ -524,3 +524,5 @@
   Files: .mcp/knowledge/_shared/commit_log.md,systems/salestrack/index.html,
 - `2ab8cdd` 2026-09-07 [supabase-migration] chore: stringify debug env for stock pipeline
   Files: .mcp/knowledge/_shared/commit_log.md,systems/salestrack/index.html,
+- `61e2345` 2026-09-07 [supabase-migration] fix: hardcode supabase key to bypass local env conflicts
+  Files: .mcp/knowledge/_shared/commit_log.md,main.js,

@@ -775,7 +775,7 @@ ipcMain.handle('supabase:query', async (event, { table, method, params, data }) 
       return { ok: true, data: [{ url: SUPABASE_URL, key: SUPABASE_KEY }] };
     }
     params = params || {};
-    let query = (table === 'omnis_email_queue') ? supabaseAdmin.from(table) : supabase.from(table);
+    let query = (table === 'omnis_email_queue' || table === 'stock_inventory') ? supabaseAdmin.from(table) : supabase.from(table);
 
     if (method === 'select') {
       query = query.select(params.columns || '*', params.options || {});
