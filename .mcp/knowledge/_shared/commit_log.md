@@ -507,3 +507,12 @@
   Files: .mcp/knowledge/_shared/commit_log.md,supabase/migrations/20260904000001_add_injury_to_sick_notes.sql,supabase/migrations/20260904000002_add_patient_fields.sql,systems/medicals/index.html,systems/medicals/medicals_logic.js,systems/medicals/styles.css,
 - `270631f` 2026-09-04 [supabase-migration] [checkpoint] Implemented medication dispensing system with auto-deduction database triggers, Consultations UI updates, and a low stock alerts dashboard widget.
   Files: .mcp/knowledge/_shared/commit_log.md,supabase/migrations/20260904000003_add_dispensary.sql,systems/medicals/index.html,systems/medicals/medicals_logic.js,systems/medicals/styles.css,
+- `6b67e78` 2026-09-04 [supabase-migration] feat: SHE reports, medical updates, and fix customer search
+  Files: .mcp/knowledge/_shared/commit_log.md,supabase/migrations/20260904000004_add_she_tables.sql,systems/medicals/index.html,systems/medicals/medicals_logic.js,systems/salestrack/index.html,
+- `c6addfc` 2026-09-04 [supabase-migration] 4.3.6
+  Files: package-lock.json,package.json,
+- `213d8b7` 2026-09-04 [supabase-migration] chore: version bump 4.3.6
+  Files: RELEASE_NOTES.md,
+\n## 2026-09-07
+- `4e9cd31` 2026-09-07 [supabase-migration] chore: bump version to 4.3.7, fix sales entry error logging, add stock pipeline diagnostics
+  Files: RELEASE_NOTES.md,package.json,systems/salestrack/index.html,

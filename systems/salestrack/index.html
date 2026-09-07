@@ -18224,7 +18224,7 @@ thead th { padding:11px 12px; font-size:10px; font-weight:800; color:#fff; text-
                  method: 'select',
                  params: { columns: '*, stock_potential_customers(customer_name)' }
              });
-             if (res.ok) { sData = res.data; } else { sErr = res.error; }
+             if (res.ok) { sData = res.data; } else { sErr = res.error; console.error("[Stock] Query failed:", sErr); }
           } else if (window.salestrack && window.salestrack.supabase) {
              const sp = window.salestrack.supabase;
              const res = await sp.from('stock_inventory').select('*, stock_potential_customers(customer_name)');
