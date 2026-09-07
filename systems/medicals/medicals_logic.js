@@ -2046,3 +2046,12 @@ async function executeDeleteAppointment() {
     }
 }
 
+
+
+window.logout = function() {
+    localStorage.removeItem("omnisRemember");
+    localStorage.removeItem("omnisUser");
+    localStorage.removeItem("omnisPwd");
+    localStorage.removeItem("omnisSystemKey");
+    window.location.href = "../../index.html";
+};
