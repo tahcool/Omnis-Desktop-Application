@@ -536,3 +536,5 @@
   Files: .mcp/knowledge/_shared/commit_log.md,systems/salestrack/index.html,
 - `0f69ddc` 2026-09-07 [supabase-migration] fix: use update instead of upsert for existing stock pipeline UUIDs to avoid frappe_id NOT NULL constraints
   Files: .mcp/knowledge/_shared/commit_log.md,main.js,systems/salestrack/index.html,
+- `36bc876` 2026-09-07 [supabase-migration] [checkpoint] Restore point after fixing Stock Pipeline upsert to update logic
+  Files: .mcp/knowledge/_shared/commit_log.md,

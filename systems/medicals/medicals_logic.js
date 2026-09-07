@@ -46,6 +46,8 @@ function showAddPatientModal() {
     document.getElementById('patient-form').reset();
     document.getElementById('pat-id').value = '';
     document.getElementById('patient-modal-title').innerText = 'Add Patient Record';
+    const delBtn = document.getElementById('btn-delete-patient');
+    if (delBtn) delBtn.style.display = 'none';
     if (typeof allergiesList !== 'undefined') {
         allergiesList = [];
         if (typeof renderAllergies === 'function') renderAllergies();
@@ -62,9 +64,82 @@ function showGenerateNoteModal() {
 function showNewConsultationModal() {
     document.getElementById('consultation-form').reset();
     document.getElementById('consult-patient').value = '';
+    
+    // Enable inputs if they were disabled by view mode
+    document.querySelectorAll('#consultation-form input, #consultation-form textarea').forEach(el => el.disabled = false);
+    
+    const titleEl = document.getElementById('consultation-modal-title');
+    if(titleEl) titleEl.innerText = 'New Consultation';
+    
+    const btnSave = document.getElementById('btn-save-consultation');
+    if(btnSave) btnSave.style.display = 'inline-block';
+    
+    const btnAddMed = document.getElementById('btn-add-medicine');
+    if(btnAddMed) btnAddMed.style.display = 'inline-block';
+    
+    const btnDel = document.getElementById('btn-delete-consultation');
+    if(btnDel) btnDel.style.display = 'none';
+    
     document.getElementById('dispensary-container').innerHTML = ''; // clear rows
     document.getElementById('modal-consultation').classList.add('active');
 }
+
+function viewConsultation(id) {
+    const c = consultationsList.find(x => x.id === id);
+    if (!c) return;
+
+    document.getElementById('consultation-form').reset();
+    document.getElementById('consult-patient').value = c.patient_id || '';
+    document.getElementById('consult-id').value = c.id || '';
+    
+    const patName = c.omnis_patients ? `${c.omnis_patients.name} ${c.omnis_patients.surname}` : '';
+    document.getElementById('consult-patient-search').value = patName;
+    
+    document.getElementById('consult-bp').value = c.vitals_bp || '';
+    document.getElementById('consult-hr').value = c.vitals_hr || '';
+    document.getElementById('consult-temp').value = c.vitals_temp || '';
+    document.getElementById('consult-weight').value = c.vitals_weight || '';
+    document.getElementById('consult-sugar').value = c.vitals_sugar || '';
+    
+    document.getElementById('consult-symptoms').value = c.symptoms || '';
+    document.getElementById('consult-observations').value = c.clinical_observations || '';
+    document.getElementById('consult-diagnosis').value = c.diagnosis || '';
+    document.getElementById('consult-treatment').value = c.treatment_plan || '';
+    
+    document.getElementById('dispensary-container').innerHTML = '';
+    if (c.omnis_dispensary && c.omnis_dispensary.length > 0) {
+        c.omnis_dispensary.forEach(d => {
+            const itemName = d.omnis_inventory ? d.omnis_inventory.item_name : 'Unknown';
+            const html = `
+                <div style="display:flex; gap:10px; align-items:center; background:#f1f5f9; padding:8px; border-radius:8px;">
+                    <input type="text" value="${escapeHtml(itemName)}" style="flex:2;" disabled>
+                    <input type="number" value="${d.quantity_dispensed}" style="width:80px;" disabled>
+                    <input type="text" value="${escapeHtml(d.instructions || '')}" style="flex:3;" disabled>
+                </div>
+            `;
+            document.getElementById('dispensary-container').insertAdjacentHTML('beforeend', html);
+        });
+    }
+
+    // Disable all inputs to make it read-only
+    document.querySelectorAll('#consultation-form input, #consultation-form textarea').forEach(el => el.disabled = true);
+
+    const titleEl = document.getElementById('consultation-modal-title');
+    if(titleEl) titleEl.innerText = 'View Consultation';
+
+    const btnSave = document.getElementById('btn-save-consultation');
+    if(btnSave) btnSave.style.display = 'none';
+
+    const btnAddMed = document.getElementById('btn-add-medicine');
+    if(btnAddMed) btnAddMed.style.display = 'none';
+    
+    const btnDel = document.getElementById('btn-delete-consultation');
+    if(btnDel) btnDel.style.display = 'inline-block';
+
+    document.getElementById('modal-consultation').classList.add('active');
+}
+
+
 
 function closeModal(id) {
     document.getElementById(id).classList.remove('active');
@@ -195,6 +270,14 @@ async function savePatient() {
     const division = document.getElementById('pat-division').value;
     const jobTitle = document.getElementById('pat-job-title').value;
     const nok = document.getElementById('pat-nok').value;
+    const address = document.getElementById('pat-address').value;
+    const cohabitants = document.getElementById('pat-cohabitants').value;
+    const nokAddress = document.getElementById('pat-nok-address').value;
+    const blood = document.getElementById('pat-blood').value;
+    const background = document.getElementById('pat-background').value;
+    const chronic = document.getElementById('pat-chronic').value;
+    const family = document.getElementById('pat-family').value;
+    const meds = document.getElementById('pat-meds').value;
     
     if (!name || !surname || !dob || !gender || !phone || !ibu || !division || !nok) {
         alert("Please fill out all mandatory fields (marked with *).");
@@ -203,7 +286,10 @@ async function savePatient() {
 
     const payload = {
         name, surname, dob, gender, phone_number: phone, national_id: nationalId,
-        ibu, division, job_title: jobTitle, next_of_kin: nok
+        ibu, division, job_title: jobTitle, nok_contact: nok,
+        address_location: address, cohabitants: cohabitants, nok_address: nokAddress,
+        blood_type: blood, background: background, chronic_illnesses: chronic,
+        family_history: family, current_medications: meds
     };
 
     if (typeof allergiesList !== 'undefined') {
@@ -222,14 +308,38 @@ async function savePatient() {
             });
         }
         
-        if (res.error) throw new Error(res.error.message || "Failed to save patient");
+        if (res.error) throw new Error(res.error || "Failed to save patient");
         
         closeModal('modal-patient');
         loadPatients();
         loadStats();
     } catch (e) {
         console.error("Save Error:", e);
-        alert("Error saving patient: " + e.message);
+        alert("Error saving patient: " + (e.message || e));
+    }
+}
+
+function deletePatient() {
+    const id = document.getElementById('pat-id').value;
+    if (!id) return;
+    document.getElementById('modal-confirm-delete').classList.add('active');
+}
+
+async function executeDeletePatient() {
+    const id = document.getElementById('pat-id').value;
+    if (!id) return;
+    
+    try {
+        const res = await window.electron.invoke('supabase:query', {
+            table: 'omnis_patients', method: 'delete', params: { match: { id } }
+        });
+        if (res.error) throw new Error(res.error.message || "Failed to delete patient");
+        closeModal('modal-confirm-delete');
+        closeModal('modal-patient');
+        loadPatients();
+        loadStats();
+    } catch (e) {
+        alert("Error deleting patient: " + e.message);
     }
 }
 
@@ -238,6 +348,8 @@ function editPatient(id) {
     if (!pat) return;
 
     document.getElementById('patient-modal-title').innerText = 'Edit Patient Record';
+    const delBtn = document.getElementById('btn-delete-patient');
+    if (delBtn) delBtn.style.display = 'inline-block';
     document.getElementById('pat-id').value = pat.id;
     document.getElementById('pat-name').value = pat.name || '';
     document.getElementById('pat-surname').value = pat.surname || '';
@@ -248,7 +360,15 @@ function editPatient(id) {
     document.getElementById('pat-ibu').value = pat.ibu || '';
     document.getElementById('pat-division').value = pat.division || '';
     document.getElementById('pat-job-title').value = pat.job_title || '';
-    document.getElementById('pat-nok').value = pat.next_of_kin || '';
+    document.getElementById('pat-nok').value = pat.nok_contact || '';
+    document.getElementById('pat-address').value = pat.address_location || '';
+    document.getElementById('pat-cohabitants').value = pat.cohabitants || '';
+    document.getElementById('pat-nok-address').value = pat.nok_address || '';
+    document.getElementById('pat-blood').value = pat.blood_type || '';
+    document.getElementById('pat-background').value = pat.background || '';
+    document.getElementById('pat-chronic').value = pat.chronic_illnesses || '';
+    document.getElementById('pat-family').value = pat.family_history || '';
+    document.getElementById('pat-meds').value = pat.current_medications || '';
     
     if (typeof allergiesList !== 'undefined') {
         try {
@@ -911,7 +1031,7 @@ function renderConsultationsTable(data) {
             </div>
             <div>${dispensedHtml}</div>
             <div style="text-align:right;">
-                <button class="btn btn-outline" style="padding: 6px 12px; font-size: 12px; border-radius: 20px; background:#f8fafc; border:1px solid #cbd5e1; color:#0f172a; font-weight:700; cursor:pointer;"><i class="fas fa-eye"></i> View</button>
+                <button class="btn btn-outline" style="padding: 6px 12px; font-size: 12px; border-radius: 20px; background:#f8fafc; border:1px solid #cbd5e1; color:#0f172a; font-weight:700; cursor:pointer;" onclick="viewConsultation('${c.id}')"><i class="fas fa-eye"></i> View</button>
             </div>
         `;
         tbody.appendChild(row);
@@ -1013,6 +1133,9 @@ async function saveConsultation() {
 function showNewAppointmentModal() {
     document.getElementById('appointment-form').reset();
     document.getElementById('appt-patient').value = '';
+    document.getElementById('appt-id').value = '';
+    document.querySelector('#modal-appointment h3').innerText = 'Schedule Appointment';
+    document.querySelector('#modal-appointment .btn-primary').innerText = 'Schedule';
     document.getElementById('modal-appointment').classList.add('active');
 }
 
@@ -1404,18 +1527,7 @@ function renderSheUI() {
         `).join('');
     }
 
-    // 3. Render Monthly Stats
-    const sList = document.getElementById('she-stats-list');
-    if (sList) {
-        sList.innerHTML = sheStatsList.length === 0 ? '<div style="color:#64748b; font-size:12px; font-style:italic;">No records found.</div>' : sheStatsList.slice(0, 10).map(s => `
-            <div style="padding:10px; background:#f8fafc; border:1px solid #e2e8f0; border-radius:4px; font-size:12px; display:flex; justify-content:space-between; align-items:center;">
-                <div>
-                    <strong>${s.report_month}/${s.report_year} - ${escapeHtml(s.division)}</strong><br>
-                    <span style="color:#64748b;">Manpower: ${s.manpower_level} | Manhours: ${s.manhours_worked}</span>
-                </div>
-            </div>
-        `).join('');
-    }
+    // 3. Render Monthly Stats removed
 }
 
 // Ensure loadSheData is called on init
@@ -1533,14 +1645,33 @@ async function saveSheStats() {
     }
 }
 
+
+function getWeekdaysInMonth(year, month) {
+    let count = 0;
+    const daysInMonth = new Date(year, month, 0).getDate();
+    for (let i = 1; i <= daysInMonth; i++) {
+        const d = new Date(year, month - 1, i);
+        if (d.getDay() !== 0 && d.getDay() !== 6) {
+            count++;
+        }
+    }
+    return count;
+}
+
 // Report Generator
 async function generateSHEReport() {
+
     const monthVal = document.getElementById('she-report-month').value; // YYYY-MM
     if(!monthVal) return alert('Please select a month and year for the report.');
     
     const year = parseInt(monthVal.split('-')[0]);
     const month = parseInt(monthVal.split('-')[1]);
     const monthName = new Date(year, month - 1, 1).toLocaleString('default', { month: 'long' }).toUpperCase();
+    
+    const holidaysInput = document.getElementById('she-report-holidays');
+    const publicHolidays = (holidaysInput && holidaysInput.value) ? parseInt(holidaysInput.value) : 0;
+    const weekdaysInMonth = getWeekdaysInMonth(year, month);
+
     
     try {
         // Fetch all required data for the month
@@ -1560,12 +1691,18 @@ async function generateSHEReport() {
             table: 'omnis_she_stats', method: 'select',
             params: { columns: '*' }
         });
+        // 5. Patients (for Manpower)
+        const patientsRes = await window.electron.invoke('supabase:query', {
+            table: 'omnis_patients', method: 'select',
+            params: { columns: 'id, division' }
+        });
         // 4. First Aiders
         const fAiders = sheFirstAidersList; // Already loaded
 
         const allNotes = notesRes.data || [];
         const allBreath = breathRes.data || [];
         const allStats = statsRes.data || [];
+        const allPatients = patientsRes.data || [];
 
         // Filter by month/year
         const mNotes = allNotes.filter(n => {
@@ -1651,27 +1788,52 @@ async function generateSHEReport() {
             lastLTIDates[div] = divAllLTIs.length > 0 ? new Date(divAllLTIs[0].created_at).toLocaleDateString('en-GB') : '0';
         });
 
+        // Dynamically compute manpower and manhours
         divisions.forEach(div => {
-            const mStat = mStats.find(s => s.division === div) || { manpower_level: 0, manhours_worked: 0 };
-            const yStatSum = yStats.filter(s => s.division === div).reduce((acc, curr) => acc + curr.manhours_worked, 0);
+            // Manpower Level (count of active patients in this division)
+            const divManpower = allPatients.filter(p => p.division === div).length;
             
-            manpowers.push(mStat.manpower_level);
-            monthHours.push(mStat.manhours_worked);
-            yearHours.push(yStatSum);
+            // Total Sick Leave Days for this division in this month
+            const divSickDaysThisMonth = mNotes.filter(n => n.omnis_patients?.division === div).reduce((acc, n) => acc + (n.days_off || 0), 0);
+            
+            // Monthly Manhours = Manpower * (Weekdays - Holidays) * 8 - (Sick Leave * 8)
+            const baseManhours = divManpower * (weekdaysInMonth - publicHolidays) * 8;
+            const lostHours = divSickDaysThisMonth * 8;
+            const divManhoursThisMonth = Math.max(0, baseManhours - lostHours);
+            
+            // Yearly Manhours = Sum of calculated monthly manhours for the year
+            // To simplify without running full historical loop, we calculate YTD based on months passed * avg working days
+            // But actually we have allNotes for the year, so we can calculate exact YTD:
+            let divSickDaysThisYear = yNotes.filter(n => n.omnis_patients?.division === div).reduce((acc, n) => acc + (n.days_off || 0), 0);
+            
+            // Get total weekdays from Jan to current month
+            let totalWeekdaysYTD = 0;
+            for(let m = 1; m <= month; m++) {
+                totalWeekdaysYTD += getWeekdaysInMonth(year, m);
+            }
+            // For yearly holidays, we can't easily guess historical without a table. We'll use the month's holidays * months passed as a rough estimate, or just zero since it's just YTD stats
+            // For now, let's just do exact calculation minus exact sick leave
+            const baseYTDManhours = divManpower * totalWeekdaysYTD * 8; // Assuming manpower was constant
+            const lostYTDHours = divSickDaysThisYear * 8;
+            const divManhoursThisYear = Math.max(0, baseYTDManhours - lostYTDHours);
+            
+            manpowers.push(divManpower);
+            monthHours.push(divManhoursThisMonth);
+            yearHours.push(divManhoursThisYear);
 
-            sumManpower += mStat.manpower_level;
-            sumMonthHours += mStat.manhours_worked;
-            sumYearHours += yStatSum;
+            sumManpower += divManpower;
+            sumMonthHours += divManhoursThisMonth;
+            sumYearHours += divManhoursThisYear;
         });
 
         // Insert Rows
-        statsTbody.innerHTML += `<tr><td colspan="8" style="font-weight:bold; background:#e2e8f0;">MONTHLY STATS</td></tr>`;
+        statsTbody.innerHTML += `<tr><td colspan="9" style="font-weight:bold; background:#e2e8f0;">MONTHLY STATS</td></tr>`;
         statsTbody.innerHTML += `<tr><td class="left">Manpower Level</td>${manpowers.map(m => `<td>${m}</td>`).join('')}<td>${sumManpower}</td></tr>`;
         statsTbody.innerHTML += `<tr><td class="left">Manhours Worked</td>${monthHours.map(m => `<td>${m}</td>`).join('')}<td>${sumMonthHours}</td></tr>`;
         statsTbody.innerHTML += `<tr><td class="left">LTIs Incurred</td>${divisions.map(d => `<td>${yDivLTIs[d]}</td>`).join('')}<td>${sumYearLTIs}</td></tr>`;
         statsTbody.innerHTML += `<tr><td class="left">Date of Last LTI</td>${divisions.map(d => `<td>${lastLTIDates[d]}</td>`).join('')}<td></td></tr>`;
         
-        statsTbody.innerHTML += `<tr><td colspan="8" style="font-weight:bold; background:#e2e8f0;">YEARLY STATS</td></tr>`;
+        statsTbody.innerHTML += `<tr><td colspan="9" style="font-weight:bold; background:#e2e8f0;">YEARLY STATS</td></tr>`;
         statsTbody.innerHTML += `<tr><td class="left">Manhours Worked</td>${yearHours.map(h => `<td>${h}</td>`).join('')}<td>${sumYearHours}</td></tr>`;
         statsTbody.innerHTML += `<tr><td class="left">LTIs Incurred</td>${divisions.map(d => `<td>${yDivLTIs[d]}</td>`).join('')}<td>${sumYearLTIs}</td></tr>`;
 
@@ -1701,19 +1863,95 @@ async function generateSHEReport() {
         document.getElementById('print-she-date').innerText = dateStr;
 
         // --- PRINT ---
-        const originalContent = document.body.innerHTML;
+        const printContainer = document.getElementById('print-container');
         const printContent = document.getElementById('she-print-template').innerHTML;
         
-        document.body.innerHTML = printContent;
-        window.print();
-        document.body.innerHTML = originalContent;
+        const originalPrintContainerHTML = printContainer.innerHTML;
+        printContainer.innerHTML = printContent;
         
-        // Re-bind events since body replacement strips them
-        location.reload(); // Simplest way to ensure all JS bindings come back properly in an SPA structure when overwriting body
+        setTimeout(() => {
+            window.print();
+            printContainer.innerHTML = originalPrintContainerHTML;
+        }, 300);
 
     } catch(e) {
         console.error(e);
         alert("Failed to generate report: " + e.message);
+    }
+}
+
+
+
+
+
+
+
+
+
+function deleteConsultation() {
+    const id = document.getElementById('consult-id').value;
+    if (!id) return;
+    document.getElementById('modal-consultation').classList.remove('active');
+    document.getElementById('modal-confirm-delete-consultation').classList.add('active');
+}
+
+async function executeDeleteConsultation() {
+    const id = document.getElementById('consult-id').value;
+    if (!id) return;
+    
+    try {
+        const res = await window.electron.invoke('supabase:query', {
+            table: 'omnis_consultations', method: 'delete', params: { match: { id } }
+        });
+        if (res.error) throw new Error(res.error.message || "Failed to delete consultation");
+        closeModal('modal-confirm-delete-consultation');
+        closeModal('modal-consultation');
+        loadConsultations();
+        loadStats();
+    } catch (e) {
+        alert("Error deleting consultation: " + e.message);
+    }
+}
+
+
+function editAppointment(id) {
+    const a = appointmentsList.find(x => x.id === id);
+    if (!a) return;
+    document.getElementById('appointment-form').reset();
+    document.getElementById('appt-id').value = a.id;
+    document.getElementById('appt-patient').value = a.patient_id || '';
+    
+    const patName = a.omnis_patients ? `${a.omnis_patients.name} ${a.omnis_patients.surname}` : '';
+    document.getElementById('appt-patient-search').value = patName;
+    
+    document.getElementById('appt-date').value = a.appointment_date || '';
+    document.getElementById('appt-time').value = a.appointment_time ? a.appointment_time.substring(0, 5) : '';
+    document.getElementById('appt-reason').value = a.reason || '';
+
+    document.querySelector('#modal-appointment h3').innerText = 'Edit Appointment';
+    document.querySelector('#modal-appointment .btn-primary').innerText = 'Save Changes';
+    document.getElementById('modal-appointment').classList.add('active');
+}
+
+function deleteAppointment(id) {
+    document.getElementById('appt-id').value = id;
+    document.getElementById('modal-confirm-delete-appointment').classList.add('active');
+}
+
+async function executeDeleteAppointment() {
+    const id = document.getElementById('appt-id').value;
+    if (!id) return;
+    
+    try {
+        const res = await window.electron.invoke('supabase:query', {
+            table: 'omnis_appointments', method: 'delete', params: { match: { id } }
+        });
+        if (res.error) throw new Error(res.error.message || "Failed to delete appointment");
+        closeModal('modal-confirm-delete-appointment');
+        loadAppointments();
+        loadStats();
+    } catch (e) {
+        alert("Error deleting appointment: " + e.message);
     }
 }
 

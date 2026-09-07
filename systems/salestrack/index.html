@@ -14562,10 +14562,68 @@
       if (modal) modal.style.display = 'none';
     };
 
+    const zimbabweTowns = [
+      "Harare", "Bulawayo", "Chitungwiza", "Mutare", "Gweru", "Kwekwe", "Kadoma", "Masvingo", "Chinhoyi",
+      "Norton", "Marondera", "Ruwa", "Chegutu", "Zvishavane", "Bindura", "Beitbridge", "Redcliff", "Victoria Falls",
+      "Hwange", "Rusape", "Chiredzi", "Kariba", "Karoi", "Chipinge", "Gokwe", "Shurugwi", "Gwanda", "Mashava",
+      "Plumtree", "Mutoko", "Murehwa", "Banket", "Hwedza", "Mvurwi", "Guruve", "Mhangura", "Mount Darwin",
+      "Manicaland", "Mashonaland Central", "Mashonaland East", "Mashonaland West", "Matabeleland North",
+      "Matabeleland South", "Midlands"
+    ].sort();
+
+    // Setup Territory Live Search
+    function initTerritorySearch() {
+        const terrInput = document.getElementById("customerTerritory");
+        const terrSuggest = document.getElementById("customerTerritory-suggest");
+        if (terrInput && terrSuggest) {
+            const fetchTerr = (val) => {
+                val = (val || "").trim().toLowerCase();
+                if (val.length < 1) {
+                    terrSuggest.classList.add("hidden");
+                    return;
+                }
+                const matches = zimbabweTowns.filter(t => t.toLowerCase().includes(val));
+                terrSuggest.innerHTML = "";
+                if (matches.length > 0) {
+                    terrSuggest.innerHTML = matches.map(t => `<div class="suggest-item" style="padding:10px 14px; border-bottom:1px solid #f1f5f9; cursor:pointer;"><div style="font-weight:700; color:#1e293b; font-size:13.5px;">${t}</div></div>`).join("");
+                } else {
+                    terrSuggest.innerHTML = `<div style="padding:12px; color:#64748b; font-size:12px; text-align:center;">No matching locations found</div>`;
+                }
+                terrSuggest.classList.remove("hidden");
+            };
+            terrInput.addEventListener("input", (e) => fetchTerr(e.target.value));
+            terrInput.addEventListener("focus", () => fetchTerr(terrInput.value));
+            
+            terrSuggest.addEventListener("click", (e) => {
+                const item = e.target.closest(".suggest-item");
+                if (item) {
+                    terrInput.value = item.querySelector("div").innerText;
+                    terrSuggest.classList.add("hidden");
+                }
+            });
+            
+            document.addEventListener("click", (e) => {
+                if (e.target !== terrInput && !terrSuggest.contains(e.target)) {
+                    terrSuggest.classList.add("hidden");
+                }
+            });
+        } else {
+            // Retry if DOM not ready
+            setTimeout(initTerritorySearch, 200);
+        }
+    }
+    initTerritorySearch();
+
     const customerForm = document.getElementById('customerForm');
     if (customerForm) {
       customerForm.onsubmit = async (e) => {
         e.preventDefault();
+        const terrVal = document.getElementById("customerTerritory").value.trim();
+        if (!zimbabweTowns.includes(terrVal)) {
+            if (window.showToast) window.showToast("Please select a valid location from the dropdown.", "error");
+            else alert("Please select a valid location from the dropdown.");
+            return;
+        }
         const data = {
           customer_name: document.getElementById('customerName').value,
           customer_group: document.getElementById('customerGroup').value,
@@ -14584,6 +14642,9 @@
           
           if (window.showToast) window.showToast('Customer saved successfully!', 'success');
           else alert('Customer saved successfully!');
+          
+          const gsCustomer = document.getElementById('gs-customer');
+          if (gsCustomer) gsCustomer.value = data.customer_name;
           
           closeCustomerModal();
           if (typeof loadCustomersList === 'function') loadCustomersList(true);
@@ -15952,7 +16013,10 @@
         <div class="gs-form-section" style="padding-bottom:12px; margin-bottom:12px;">
           <div class="gs-grid" style="grid-template-columns: repeat(4, 1fr); gap:12px;">
             <div class="gs-field">
-              <label class="gs-label" for="gs-customer">Customer <span style="color:#ef4444;">*</span></label>
+              <label class="gs-label" for="gs-customer" style="display:flex; justify-content:space-between; align-items:center;">
+                <span>Customer <span style="color:#ef4444;">*</span></span>
+                <span onclick="window.openCustomerModal()" style="color:#3b82f6; cursor:pointer; font-size:11px; font-weight:700;"><i class="fas fa-plus"></i> Add New</span>
+              </label>
               <input type="text" id="gs-customer" class="gs-input" placeholder="Select Customer...">
               <div id="gs-customer-suggest" class="suggest-list hidden"></div>
             </div>
@@ -16136,9 +16200,18 @@
                         };
                     });
                 } else {
+                    let newCustBtn = "";
+                    if (table === 'customers') {
+                        newCustBtn = `
+                            <button onclick="window.openCustomerModal()" style="margin-top:8px; padding:6px 16px; background:#f59e0b; color:white; border:none; border-radius:6px; font-size:11px; font-weight:700; cursor:pointer; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1); margin-right:4px;">
+                                <i class="fas fa-plus"></i> Add New Customer
+                            </button>
+                        `;
+                    }
                     list.innerHTML = `
                         <div style="padding:12px; color:#64748b; font-size:12px; text-align:center;">
                             No local matches found<br>
+                            ${newCustBtn}
                             <button onclick="window.triggerCatalogSync(this)" style="margin-top:8px; padding:6px 16px; background:#3b82f6; color:white; border:none; border-radius:6px; font-size:11px; font-weight:700; cursor:pointer; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);">
                                 <i class="fas fa-sync-alt"></i> Sync Catalog Now
                             </button>
@@ -17270,6 +17343,7 @@ thead th { padding:11px 12px; font-size:10px; font-weight:800; color:#fff; text-
         document.getElementById('sp-contract').value = data ? (data.contract || data.contract_number || "") : "";
         document.getElementById('sp-proposed-order').value = data ? (data.proposed_order || "0") : "0";
         document.getElementById('sp-quantity').value = data ? (data.quantity || "0") : "0";
+        document.getElementById('sp-is-preowned').checked = data ? (data.is_preowned === true || data.is_preowned === "true" || data.is_preowned === 1) : false;
         document.getElementById('sp-prod-compl').value = data ? (data.production_completion || "") : "";
         document.getElementById('sp-shipping').value = data ? (data.shipping_date || "") : "";
         document.getElementById('sp-eta-durban').value = data ? (data.eta_durban || "") : "";
@@ -17364,7 +17438,8 @@ thead th { padding:11px 12px; font-size:10px; font-weight:800; color:#fff; text-
         eta_durban: document.getElementById('sp-eta-durban').value,
         ted: document.getElementById('sp-ted').value,
         eta_harare: document.getElementById('sp-eta-harare').value,
-        potential_customers: JSON.stringify(window._spPotentialCustomers)
+        potential_customers: JSON.stringify(window._spPotentialCustomers),
+        is_preowned: document.getElementById('sp-is-preowned').checked
       };
 
       if (!payload.oem || !payload.model) {
@@ -17396,7 +17471,8 @@ thead th { padding:11px 12px; font-size:10px; font-weight:800; color:#fff; text-
             ship_date: payload.shipping_date || null,
             eta_durban: payload.eta_durban || null,
             eta_beira: payload.ted || payload.eta_beira || null,
-            eta_harare: payload.eta_harare || null
+            eta_harare: payload.eta_harare || null,
+            is_preowned: payload.is_preowned || false
         };
 
         let conflictCol = 'id';
@@ -17856,16 +17932,20 @@ thead th { padding:11px 12px; font-size:10px; font-weight:800; color:#fff; text-
           data_records.forEach(r => {
             let brand = r.oem || "Other";
             
-            // Reassign "Special Build" items if their name contains the actual brand
-            const checkBrand = brand.toLowerCase().trim();
-            if (checkBrand === "special build" || checkBrand === "special builds" || checkBrand.includes("special")) {
-                const searchString = `${r.item_name || ''} ${r.model || ''} ${r.description || ''} ${r.name || ''}`.toLowerCase();
-                if (searchString.includes('foton')) {
-                    brand = "Foton";
-                } else if (searchString.includes('powerstar')) {
-                    brand = "Powerstar";
-                } else if (searchString.includes('sino')) {
-                    brand = "Sino";
+            if (r.is_preowned) {
+                brand = "Pre-Owned";
+            } else {
+                // Reassign "Special Build" items if their name contains the actual brand
+                const checkBrand = brand.toLowerCase().trim();
+                if (checkBrand === "special build" || checkBrand === "special builds" || checkBrand.includes("special")) {
+                    const searchString = `${r.item_name || ''} ${r.model || ''} ${r.description || ''} ${r.name || ''}`.toLowerCase();
+                    if (searchString.includes('foton')) {
+                        brand = "Foton";
+                    } else if (searchString.includes('powerstar')) {
+                        brand = "Powerstar";
+                    } else if (searchString.includes('sino')) {
+                        brand = "Sino";
+                    }
                 }
             }
 
@@ -18030,7 +18110,7 @@ thead th { padding:11px 12px; font-size:10px; font-weight:800; color:#fff; text-
                       <div class="ai-order-row ai-stock-grid stock-row-item" data-status="${statusText || ''}" style="${rowStyle}">
                         <div class="ai-order-cell">
                           <span class="cell-label">Model</span>
-                          <div style="font-weight:700; font-size:12px; color:#1e293b;">${r.model || '-'}</div>
+                          <div style="font-weight:700; font-size:12px; color:#1e293b;">${r.is_preowned ? (r.oem ? r.oem + ' ' : '') + (r.model || '-') : (r.model || '-')}</div>
                           ${earmarkBadge}
                           ${handBadge}
                         </div>
@@ -20859,8 +20939,11 @@ thead th { padding:11px 12px; font-size:10px; font-weight:800; color:#fff; text-
               </div>
               <div class="gs-field">
                 <label class="gs-label" style="display:block; font-size:11px; font-weight:700; color:#475569; margin-bottom:6px; text-transform:uppercase;">Territory</label>
-                <input type="text" id="customerTerritory" class="gs-input" placeholder="e.g. Harare"
-                  style="width:100%; padding:12px 16px; border:1px solid #e2e8f0; border-radius:12px; font-size:14px; font-weight:600;">
+                  <div style="position:relative;">
+                    <input type="text" id="customerTerritory" class="gs-input" placeholder="Search location..." autocomplete="off" required
+                      style="width:100%; padding:12px 16px; border:1px solid #e2e8f0; border-radius:12px; font-size:14px; font-weight:600;">
+                    <div id="customerTerritory-suggest" class="suggest-list hidden"></div>
+                  </div>
               </div>
               <div class="gs-field">
                 <label class="gs-label" style="display:block; font-size:11px; font-weight:700; color:#475569; margin-bottom:6px; text-transform:uppercase;">Customer Type</label>
@@ -21911,6 +21994,10 @@ thead th { padding:11px 12px; font-size:10px; font-weight:800; color:#fff; text-
             <div class="gs-field">
               <label class="gs-label">Confirmed Quantity</label>
               <input type="number" id="sp-quantity" class="gs-input" value="0">
+            </div>
+            <div class="gs-field" style="display:flex; align-items:center; gap:8px;">
+              <input type="checkbox" id="sp-is-preowned" style="width:16px; height:16px; accent-color:#800000; cursor:pointer;">
+              <label for="sp-is-preowned" style="font-size:12px; font-weight:700; color:#475569; cursor:pointer;">Pre-Owned Machine</label>
             </div>
           </div>
         </div>
@@ -28502,5 +28589,8 @@ Commercial Team`);
 
 
 </html>
+
+
+
 
 
