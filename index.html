@@ -690,7 +690,7 @@
       <div class="login-right-panel">
         <form id="omnis-login" class="login-card">
           <div class="login-title">Sign in</div>
-          <div id="login-version" style="font-size:10px; color:#6b7280; font-weight:700; margin-bottom:10px; text-transform: uppercase;">V2.0.2-STABLE</div>
+          <div id="login-version" style="font-size:10px; color:#6b7280; font-weight:700; margin-bottom:10px; text-transform: uppercase;">V4.3.9-AURA</div>
           <div class="login-sub">
             Enter your normal system credentials. Omnis will check each connected system for you.
           </div>
@@ -946,7 +946,7 @@
     if (window.electron && window.electron.getVersion) {
         window.electron.getVersion().then(v => {
             const vLabel = document.getElementById('login-version');
-            if (vLabel) vLabel.innerText = `V${v}-STABLE`;
+            if (vLabel) vLabel.innerText = `V${v}-AURA`;
         });
     }
 
@@ -1133,11 +1133,18 @@
                   const loginUrl = baseSys.baseUrl + "/api/method/login";
                   let frappeRes = null;
                   
+                  let fallbackUsr = usr;
+                  if (usr === "administrator" || usr === "administrator@omnis.local") {
+                      fallbackUsr = "administrator";
+                  } else if (usr !== "gh05t" && !usr.includes("@")) {
+                      fallbackUsr = `${usr}@omnis.local`;
+                  }
+                  
                   if (window.frappeAPI && window.frappeAPI.request) {
-                      frappeRes = await window.frappeAPI.request({ url: loginUrl, method: 'POST', data: { usr, pwd }, syncCookies: true });
+                      frappeRes = await window.frappeAPI.request({ url: loginUrl, method: 'POST', data: { usr: fallbackUsr, pwd }, syncCookies: true });
                   } else {
                       const params = new URLSearchParams();
-                      params.append('usr', usr);
+                      params.append('usr', fallbackUsr);
                       params.append('pwd', pwd);
                       let fetchUrl = window.location.protocol.startsWith('http') ? 'omnis-proxy.php?url=' + encodeURIComponent(loginUrl) : loginUrl;
                       const req = await fetch(fetchUrl, { method: "POST", headers: { "Content-Type": "application/x-www-form-urlencoded" }, body: params.toString(), credentials: "include" });
@@ -1149,7 +1156,7 @@
                       const migrateRes = await fetch("https://pfqaeewmlwfayxbgmuaq.supabase.co/functions/v1/migrate-frappe-user", {
                           method: 'POST',
                           headers: { 'Content-Type': 'application/json' },
-                          body: JSON.stringify({ email: supabaseEmail, frappe_usr: usr, password: pwd, frappe_url: baseSys.baseUrl })
+                          body: JSON.stringify({ email: supabaseEmail, frappe_usr: fallbackUsr, password: pwd, frappe_url: baseSys.baseUrl })
                       });
                       if (migrateRes.ok) {
                           supabaseRes = await window.electron.invoke('supabase:signIn', { email: supabaseEmail, password: pwd });
@@ -1200,13 +1207,19 @@
         // Setup Legacy Frappe Cookies if required
         if (sys.key !== "fleetrack" && sys.key !== "medicals") {
             try {
+                let frappeUsr = usr;
+                if ((usr === "administrator" || usr === "administrator@omnis.local") && sys.key !== "fleetrack") {
+                    frappeUsr = "administrator";
+                } else if (usr !== "gh05t" && !usr.includes("@")) {
+                    frappeUsr = `${usr}@omnis.local`;
+                }
                 const loginUrl = sys.baseUrl + "/api/method/login";
                 if (window.frappeAPI && window.frappeAPI.request) {
                     const reqHeaders = {};
                     if (sys.key === "spe" || loginUrl.includes('spareparts-exchange')) reqHeaders['Host'] = 'omnis.spareparts-exchange.com';
-                    await window.frappeAPI.request({ url: loginUrl, method: 'POST', data: { usr, pwd }, headers: reqHeaders, syncCookies: true });
+                    await window.frappeAPI.request({ url: loginUrl, method: 'POST', data: { usr: frappeUsr, pwd }, headers: reqHeaders, syncCookies: true });
                 } else {
-                    const params = new URLSearchParams(); params.append('usr', usr); params.append('pwd', pwd);
+                    const params = new URLSearchParams(); params.append('usr', frappeUsr); params.append('pwd', pwd);
                     let fetchUrl = window.location.protocol.startsWith('http') ? 'omnis-proxy.php?url=' + encodeURIComponent(loginUrl) : loginUrl;
                     await fetch(fetchUrl, { method: "POST", headers: { "Content-Type": "application/x-www-form-urlencoded" }, body: params.toString(), credentials: "include" });
                 }

@@ -2820,7 +2820,7 @@
 
     .ai-quotations-grid {
       display: grid;
-      grid-template-columns: 1.5fr 2fr 2fr 100px 1.5fr 100px 120px 80px;
+      grid-template-columns: 2fr 1.5fr 2.5fr 100px 1.2fr 80px 100px 80px;
       gap: 12px;
       align-items: center;
     }
@@ -8994,13 +8994,13 @@
 
         <!-- Grid Header -->
         <div class="ai-order-header ai-quotations-grid" id="qlist-head-grid" style="border-radius: 12px 12px 0 0; margin-bottom: 8px;">
-          <div><span>ID</span> <i class="fas fa-sort sort-icon"></i></div>
-          <div><span>Title</span> <i class="fas fa-sort sort-icon"></i></div>
-          <div><span>Customer</span> <i class="fas fa-sort sort-icon"></i></div>
+          <div style="padding-left: 28px;"><span>Customer / ID</span> <i class="fas fa-sort sort-icon"></i></div>
+          <div><span>Title & Status</span> <i class="fas fa-sort sort-icon"></i></div>
+          <div><span>Quoted Items</span> <i class="fas fa-sort sort-icon"></i></div>
           <div style="text-align:center;"><span>Date</span> <i class="fas fa-sort sort-icon"></i></div>
           <div><span>Sales Person</span> <i class="fas fa-sort sort-icon"></i></div>
-          <div><span>Status</span> <i class="fas fa-sort sort-icon"></i></div>
-          <div style="text-align:center;"><span>Next Follow Up</span> <i class="fas fa-sort sort-icon"></i></div>
+          <div style="text-align:center;"><span>Total Items</span> <i class="fas fa-sort sort-icon"></i></div>
+          <div style="text-align:center;"><span>Follow Up</span> <i class="fas fa-sort sort-icon"></i></div>
           <div style="text-align:right;">Action</div>
         </div>
 
@@ -13477,7 +13477,7 @@
     window.addEventListener("click", () => { closeAllDropdowns(); });
 
     if (menuSettings) menuSettings.addEventListener("click", () => { alert("Settings panel coming soon 😊"); });
-    if (menuAbout) menuAbout.addEventListener("click", () => { alert("Omnis Desktop\nVersion 1.0.0\nBuilt for MXG / SPZ"); });
+    if (menuAbout) menuAbout.addEventListener("click", () => { alert("Omnis Desktop\nVersion 4.3.9-Aura\nBuilt for MXG / SPZ"); });
 
     if (menuLogout) {
       menuLogout.addEventListener("click", async () => {
@@ -13543,28 +13543,46 @@
 
       loadQuotationsKPI();
       if (!CURRENT_SYSTEM) return;
-      const base = CURRENT_SYSTEM.baseUrl.replace(/\/$/, "");
 
       if (qListInfo) qListInfo.textContent = "Refreshing...";
       setSyncState("syncing");
 
       try {
-        const res = await window.callFrappeSequenced(base, "powerstar_salestrack.omnis_dashboard.get_omnis_quotations", {
-          start: qOffset,
-          page_length: qPageLength,
-          search: qSearchText || "",
-          status: qStatusValue || ""
+        let filters = {};
+        if (qStatusValue) filters['status'] = qStatusValue;
+
+        let orCondition = null;
+        if (qSearchText) {
+          const pat = `%${qSearchText}%`;
+          orCondition = `name.ilike.${pat},title.ilike.${pat},customer_name.ilike.${pat}`;
+        }
+
+        const res = await window.electron.invoke('supabase:query', {
+          table: 'omnis_quotations',
+          method: 'select',
+          params: {
+            columns: 'name, title, customer_name, transaction_date, sales_person, status, custom_next_follow_up_date, omnis_quotation_items(item_code, qty)',
+            options: { count: 'exact' },
+            filters: filters,
+            or: orCondition,
+            order: { column: 'transaction_date', ascending: false },
+            range: { from: qOffset, to: qOffset + qPageLength - 1 }
+          }
         });
 
+        if (res.error) throw new Error(res.error.message || res.error);
+
         window.lastLoaded['quotations'] = Date.now();
-        const msg = res.message || res;
-        const data = msg.data || [];
-        qHasMore = msg.has_more || false;
+        const data = res.data || [];
+        qHasMore = (qOffset + data.length) < (res.count || 0);
+
+        // Map sales_person back to custom_sales_person for renderQuotationsTable
+        data.forEach(r => { r.custom_sales_person = r.sales_person; });
 
         renderQuotationsTable(data);
 
         const totalShowing = qOffset + data.length;
-        if (qListInfo) qListInfo.textContent = data.length > 0 ? `Showing ${qOffset + 1} - ${totalShowing}` : "No records";
+        if (qListInfo) qListInfo.textContent = data.length > 0 ? `Showing ${qOffset + 1} - ${totalShowing} of ${res.count || totalShowing}` : "No records";
 
         if (qPrevBtn) qPrevBtn.disabled = qOffset === 0;
         if (qNextBtn) qNextBtn.disabled = !qHasMore;
@@ -13641,8 +13659,16 @@
           const hqSet = new Set(JSON.parse(localStorage.getItem('omnis_hot_quotes') || '[]'));
           isHot = hqSet.has(row.name);
         } catch(e) {}
-        const fireColor = isHot ? "#f97316" : "#cbd5e1";
-        const fireBg = isHot ? "#fff7ed" : "transparent";
+        
+        const qItems = row.omnis_quotation_items || [];
+        const totalItems = qItems.length;
+        
+        let itemsHtml = "—";
+        if (totalItems > 0) {
+            itemsHtml = '<ul style="margin:0; padding-left:16px; text-align:left; font-size:12px; color:#0f172a; font-weight:600;">' + 
+            qItems.map(i => `<li><b>${i.qty}x</b> ${escapeHtml(i.item_code)}</li>`).join('') + 
+            '</ul>';
+        }
 
         const item = document.createElement("div");
         item.className = "ai-order-row ai-quotations-grid";
@@ -13652,35 +13678,51 @@
         item.style.cursor = "pointer";
 
         item.innerHTML = `
-          <div class="ai-order-cell">
-            <span class="cell-label">ID</span>
-            <div style="font-weight:700; color:#1e293b; font-size:13px; word-break:break-all;"><span class="q-id-pill" style="display:inline-block; max-width:100%; overflow:hidden; text-overflow:ellipsis;">${escapeHtml(row.name)}</span></div>
+          <div class="ai-order-cell" style="flex-direction:row; display:flex; gap:10px; align-items:flex-start;">
+            <input type="checkbox" class="order-select-cb" value="${escapeHtml(row.name)}" style="margin-top:4px; transform:scale(1.2); cursor:pointer;" onclick="event.stopPropagation();">
+            <div style="flex:1;">
+              <span class="cell-label">Customer / ID</span>
+              <div style="font-weight:700; font-size:15px; color:#000000; margin-bottom:4px; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden;" title="${escapeHtml(window._cleanCust(row.customer_name) || '-')}">${escapeHtml(window._cleanCust(row.customer_name) || '-')}</div>
+              <div style="display:flex; align-items:center; gap:6px; font-size:11px; font-weight:800; color:#64748b">
+                <i class="fas fa-file-invoice"></i> ${escapeHtml(row.name)}
+              </div>
+            </div>
           </div>
+          
           <div class="ai-order-cell">
-            <span class="cell-label">Title</span>
-            <div style="font-weight:600; color:#0f172a; font-size:13px; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden;">${escapeHtml(row.title || '-')}</div>
+            <span class="cell-label">Title & Status</span>
+            <div style="font-weight:800; font-size:14px; color:#000000; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden;" title="${escapeHtml(row.title || '-')}">${escapeHtml(row.title || '-')}</div>
+            <div style="margin-top:4px;"><span class="status-pill ${getStatusColor(row.status)}" style="padding:2px 8px; font-size:10px;">${escapeHtml(row.status || 'Draft')}</span></div>
           </div>
-          <div class="ai-order-cell">
-            <span class="cell-label">Customer</span>
-            <div style="font-weight:600; color:#475569; font-size:13px;">${escapeHtml(window._cleanCust(row.customer_name) || '-')}</div>
+
+          <div class="ai-order-cell" style="align-items:flex-start;">
+            <span class="cell-label">Quoted Items</span>
+            <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:8px; padding:6px 12px; display:inline-block; width:fit-content; max-width:100%;">
+                ${itemsHtml}
+            </div>
           </div>
+
           <div class="ai-order-cell" style="text-align:center;">
             <span class="cell-label">Date</span>
-            <div style="font-weight:600; font-size:12px; color:#64748b;">${formatDate(row.transaction_date)}</div>
+            <div style="font-weight:800; font-size:14px; color:#000000;">${formatDate(row.transaction_date)}</div>
           </div>
+          
           <div class="ai-order-cell">
             <span class="cell-label">Sales Person</span>
-            <div style="font-weight:600; color:#334155; font-size:12px;">${escapeHtml(row.custom_sales_person || '-')}</div>
+            <div style="font-size:14px; color:#000000; font-weight:500;">${escapeHtml(row.custom_sales_person || '-')}</div>
           </div>
-          <div class="ai-order-cell">
-            <span class="cell-label">Status</span>
-            <div><span class="status-pill ${getStatusColor(row.status)}">${escapeHtml(row.status || 'Draft')}</span></div>
+          
+          <div class="ai-order-cell" style="text-align:center;">
+            <span class="cell-label">Total Items</span>
+            <div style="font-size:20px; font-weight:800; color:#3b82f6;">${totalItems}</div>
           </div>
+
           <div class="ai-order-cell" style="text-align:center;">
             <span class="cell-label">Next Follow Up</span>
-            <div style="font-weight:700; font-size:12px; color:#10b981;">${formatDate(row.custom_next_follow_up_date)}</div>
+            <div style="font-size:14px; color:#10b981; font-weight:700;">${formatDate(row.custom_next_follow_up_date)}</div>
           </div>
-          <div class="ai-order-row-actions" style="text-align:right; display:flex; gap:6px; justify-content:flex-end;">
+
+          <div class="ai-order-cell ai-order-row-actions" style="text-align:right; display:flex; gap:6px; justify-content:flex-end;">
             <button class="btn-icon-only" onclick="event.stopPropagation(); window.showQuotationOptions('${row.name}', false)" title="Print/Share" style="border:1px solid #e2e8f0; background:white; color:#334155; height:28px; width:28px; border-radius:6px; font-size:12px;">
               <i class="fas fa-print"></i>
             </button>
