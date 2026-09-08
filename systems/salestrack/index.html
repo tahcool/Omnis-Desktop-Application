@@ -5481,34 +5481,62 @@
 
     .q-quick-form {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      grid-template-columns: 2fr 2fr 2fr 1fr auto;
       gap: 16px;
       align-items: flex-end;
+    }
+
+    .q-quick-input-group {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      width: 100%;
     }
 
     .q-quick-label {
       font-size: 11px;
       font-weight: 700;
-      color: #475569;
+      color: #64748b;
       text-transform: uppercase;
+      letter-spacing: 0.05em;
     }
 
     .q-quick-input {
+      width: 100%;
+      box-sizing: border-box;
       padding: 10px 14px;
       border: 1px solid #e2e8f0;
       border-radius: 10px;
       font-size: 13px;
+      color: #0f172a;
       background: #f8fafc;
+      transition: all 0.2s;
+      outline: none;
+    }
+    
+    .q-quick-input:focus {
+      background: #ffffff;
+      border-color: #3b82f6;
+      box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
     }
 
     .btn-quick-create {
-      background: var(--accent-gradient);
+      background: #2563eb;
       color: white;
       border: none;
       border-radius: 10px;
-      padding: 11px 20px;
+      padding: 10px 24px;
+      font-size: 13px;
       font-weight: 700;
       cursor: pointer;
+      height: 40px;
+      transition: all 0.2s;
+      box-shadow: 0 4px 12px rgba(37, 99, 235, 0.2);
+    }
+    .btn-quick-create:hover {
+      background: #1d4ed8;
+      box-shadow: 0 6px 16px rgba(37, 99, 235, 0.3);
+      transform: translateY(-1px);
     }
 
     /* SUGGESTION LISTS */
@@ -8910,9 +8938,43 @@
         </div>
 
         <div style="display:flex; align-items:center; gap:12px;">
-          <button onclick="switchToView('view-create-quotation')" class="btn-secondary"
-            style="padding:0 20px; border-radius:10px; font-weight:800; height: 42px; font-size: 12px; text-transform:uppercase; letter-spacing:0.02em; background:#1e293b; color:white;">
-            <i class="fas fa-plus" style="margin-right:8px;"></i> New Quotation
+          <select id="qlist-company" class="form-input"
+            style="min-width: 160px; border:1px solid #e2e8f0; background:#fff; border-radius:10px; padding:0 14px; font-size:12px; font-weight:700; color:#334155; outline:none; height: 42px; box-shadow: 0 1px 2px rgba(0,0,0,0.03);">
+            <option value="">All Companies</option>
+            <option value="Machinery Exchange">Machinery Exchange</option>
+            <option value="Sinopower">Sinopower</option>
+            <option value="Powerstar">Powerstar</option>
+          </select>
+
+          <div
+            style="display:flex; align-items:center; gap:10px; background:#fff; border:1px solid #e2e8f0; border-radius:10px; padding:0 16px; height: 42px; box-shadow: 0 1px 2px rgba(0,0,0,0.03);">
+            <span
+              style="font-size:10px; font-weight:850; color:#94a3b8; text-transform:uppercase; letter-spacing:0.05em;">Period:</span>
+            <input type="date" id="qlist-from-date" class="form-input"
+              style="border:none; background:transparent; font-size:12px; font-weight:700; color:#334155; outline:none; width:115px;">
+            <span style="color:#cbd5e1; font-weight:bold;">—</span>
+            <input type="date" id="qlist-to-date" class="form-input"
+              style="border:none; background:transparent; font-size:12px; font-weight:700; color:#334155; outline:none; width:115px;">
+          </div>
+
+          <button id="qlist-hot-report-btn" class="btn-primary" onclick="alert('Hot Leads Report coming soon!')"
+            style="padding:0 20px; border-radius:10px; font-weight:800; height: 42px; font-size: 12px; text-transform:uppercase; letter-spacing:0.02em; margin-right:8px; background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%); color: #fff; border:none; box-shadow: 0 4px 12px rgba(37,99,235,0.2);">
+            <i class="fas fa-fire" style="margin-right:8px;"></i> Hot Leads Report
+          </button>
+          
+          <button id="qlist-new-quote-btn" class="btn-primary" onclick="switchToView('view-create-quotation')"
+            style="padding:0 20px; border-radius:10px; font-weight:800; height: 42px; font-size: 12px; text-transform:uppercase; letter-spacing:0.02em; margin-right:8px; background:#800000; color:#fff; border:none; box-shadow: 0 4px 12px rgba(128,0,0,0.2);">
+            <i class="fas fa-plus" style="margin-right:8px;"></i> New Quote
+          </button>
+
+          <button id="qlist-print-btn" class="btn-secondary" onclick="window.print()"
+            style="padding:0 20px; border-radius:10px; font-weight:800; height: 42px; font-size: 12px; text-transform:uppercase; letter-spacing:0.02em; margin-right:8px; background:#f8fafc; color:#334155; border:1px solid #cbd5e1;">
+            <i class="fas fa-print" style="margin-right:8px;"></i> Print
+          </button>
+
+          <button id="qlist-refresh-btn" class="btn-secondary" onclick="loadQuotationList()"
+            style="padding:0 20px; border-radius:10px; font-weight:800; height: 42px; font-size: 12px; text-transform:uppercase; letter-spacing:0.02em;">
+            <i class="fas fa-sync-alt" style="margin-right:8px;"></i> Refresh
           </button>
         </div>
       </div>
@@ -9004,33 +9066,26 @@
           </div>
         </div>
 
-        <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:12px;">
-          <div class="qlist-section-title" style="margin-bottom:0;">All Quotations</div>
-          <div style="display:flex; align-items:center; gap:10px;">
-            <input id="qlist-search" class="qlist-search" placeholder="Search quotations..."
-              style="height: 34px; border-radius:8px; border:1px solid #e2e8f0; padding:0 15px; font-size:12px;" />
-            <select id="qlist-status" class="qlist-select"
-              style="height: 34px; border-radius:8px; border:1px solid #e2e8f0; padding:0 10px; font-size:12px; font-weight:700;">
-              <option value="">All status</option>
+        <!-- Sub-Filters -->
+        <div id="qlist-filters"
+          style="display:flex; flex-wrap:wrap; gap:8px; margin-bottom:20px; padding:16px 0; background:transparent; border-radius:0; border-bottom:1px solid rgba(0,0,0,0.05); align-items:center;">
+          <span style="font-size:11px; font-weight:800; color:#64748b; margin-right:4px; text-transform:uppercase;">Filter:</span>
+          <input type="text" id="qlist-search" placeholder="Search Customer or Title..."
+            style="border:1px solid #e2e8f0; background:#f8fafc; border-radius:6px; padding:8px 12px; font-size:12px; width:220px; outline:none;">
+          <select id="qlist-status"
+            style="border:1px solid #e2e8f0; background:#f8fafc; border-radius:6px; padding:8px 12px; font-size:12px; width:140px; outline:none; cursor:pointer;">
+              <option value="">All Statuses</option>
               <option value="Draft">Draft</option>
               <option value="Open">Open</option>
               <option value="Ordered">Ordered</option>
               <option value="Lost">Lost</option>
               <option value="Expired">Expired</option>
-            </select>
-            <select id="qlist-company" class="qlist-select"
-              style="height: 34px; border-radius:8px; border:1px solid #e2e8f0; padding:0 10px; font-size:12px; font-weight:700;">
-              <option value="">All Companies</option>
-              <option value="Machinery Exchange">Machinery Exchange</option>
-              <option value="Sinopower">Sinopower</option>
-              <option value="Powerstar">Powerstar</option>
-            </select>
-          </div>
+          </select>
         </div>
 
         <!-- Grid Header -->
         <div class="ai-order-header ai-quotations-grid" id="qlist-head-grid" style="border-radius: 12px 12px 0 0; margin-bottom: 8px;">
-          <div style="padding-left: 28px;"><span>Title & Status</span> <i class="fas fa-sort sort-icon"></i></div>
+          <div style="padding-left: 56px;"><span>Customer / Status</span> <i class="fas fa-sort sort-icon"></i></div>
           <div><span>Items</span> <i class="fas fa-sort sort-icon"></i></div>
           <div><span>Notes</span> <i class="fas fa-sort sort-icon"></i></div>
           <div style="text-align:center;"><span>Likelihood</span> <i class="fas fa-sort sort-icon"></i></div>
@@ -13716,7 +13771,7 @@
         return;
       }
       const base = CURRENT_SYSTEM ? CURRENT_SYSTEM.baseUrl.replace(/\/$/, "") : "";
-      data.forEach(row => {
+      data.forEach((row, index) => {
         let isHot = false;
         try {
           const hqSet = new Set(JSON.parse(localStorage.getItem('omnis_hot_quotes') || '[]'));
@@ -13789,9 +13844,11 @@
         item.innerHTML = `
           <div class="ai-order-cell" style="flex-direction:row; display:flex; gap:10px; align-items:flex-start;">
             <input type="checkbox" class="order-select-cb" value="${escapeHtml(row.name)}" style="margin-top:4px; transform:scale(1.2); cursor:pointer;" onclick="event.stopPropagation();">
+            <span style="font-size:12px; font-weight:800; color:#94a3b8; margin-top:2px; min-width:24px; display:inline-block;">${(typeof qOffset !== 'undefined' ? qOffset : 0) + index + 1}.</span>
             <div style="flex:1;">
-              <span class="cell-label">Title & Status</span>
-              <div style="font-weight:800; font-size:15px; color:#000000; margin-bottom:4px; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden;" title="${escapeHtml(row.title || '-')}">${escapeHtml(row.title || '-')}</div>
+              <span class="cell-label">Customer / Status</span>
+              <div style="font-weight:800; font-size:15px; color:#000000; margin-bottom:2px; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden;" title="${escapeHtml(row.customer_name || '-')}">${escapeHtml(row.customer_name || '-')}</div>
+              <div style="font-size:11px; font-weight:700; color:#64748b; margin-bottom:6px; display:-webkit-box; -webkit-line-clamp:1; -webkit-box-orient:vertical; overflow:hidden;" title="${escapeHtml(row.title || '-')}">${escapeHtml(row.title || '-')}</div>
               <div style="display:flex; align-items:center; gap:6px;">
                 <span class="status-pill ${getStatusColor(row.status)}" style="padding:2px 8px; font-size:10px;">${escapeHtml(row.status || 'Draft')}</span>
                 ${isHotLead ? '<span class="status-pill" style="background:#ef4444; color:white; border:none; padding:2px 8px; font-size:10px; font-weight:800; box-shadow:0 1px 2px rgba(239,68,68,0.3);">HOT</span>' : ''}

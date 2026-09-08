@@ -565,3 +565,5 @@
   Files: .mcp/knowledge/_shared/commit_log.md,supabase/migrations/20260802000000_ft_service_plan_contact_person.sql,supabase/migrations/20260908000001_add_sale_likelihood.sql,systems/salestrack/index.html,
 - `c11ae1c` 2026-09-08 [supabase-migration] [checkpoint] chore: Quotations UI updates, layout restructuring, offline cache pagination fix
   Files: .mcp/knowledge/_shared/commit_log.md,systems/salestrack/index.html,
+- `4931166` 2026-09-08 [supabase-migration] [checkpoint] Checkpoint: Implemented Follow-Up UI and Salesperson Target System
+  Files: .mcp/knowledge/_shared/commit_log.md,supabase/migrations/20260908000002_add_salesperson_fup.sql,systems/salestrack/index.html,
