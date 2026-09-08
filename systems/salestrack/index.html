@@ -55,6 +55,14 @@
       font-family: 'Inter', system-ui, -apple-system, sans-serif;
     }
 
+    @keyframes skeleton-pulse-anim {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.4; }
+    }
+    .skeleton-pulse {
+      animation: skeleton-pulse-anim 1.5s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+    }
+
     html {
       font-size: 14px;
       line-height: 1.5;
@@ -2820,7 +2828,7 @@
 
     .ai-quotations-grid {
       display: grid;
-      grid-template-columns: 2fr 1.5fr 2.5fr 100px 1.2fr 80px 100px 80px;
+      grid-template-columns: 2fr 2fr 1.5fr 110px 100px 1.2fr 80px 100px 80px;
       gap: 12px;
       align-items: center;
     }
@@ -9022,8 +9030,9 @@
 
         <!-- Grid Header -->
         <div class="ai-order-header ai-quotations-grid" id="qlist-head-grid" style="border-radius: 12px 12px 0 0; margin-bottom: 8px;">
-          <div style="padding-left: 28px;"><span>Customer / ID</span> <i class="fas fa-sort sort-icon"></i></div>
-          <div><span>Title & Status</span> <i class="fas fa-sort sort-icon"></i></div>
+          <div style="padding-left: 28px;"><span>Title & Status</span> <i class="fas fa-sort sort-icon"></i></div>
+          <div><span>Items</span> <i class="fas fa-sort sort-icon"></i></div>
+          <div><span>Notes</span> <i class="fas fa-sort sort-icon"></i></div>
           <div style="text-align:center;"><span>Likelihood</span> <i class="fas fa-sort sort-icon"></i></div>
           <div style="text-align:center;"><span>Date</span> <i class="fas fa-sort sort-icon"></i></div>
           <div><span>Sales Person</span> <i class="fas fa-sort sort-icon"></i></div>
@@ -13557,13 +13566,30 @@
     /* ---------- QUOTATIONS LIST (kept) ---------- */
     /* ---------- QUOTATIONS DASHBOARD LOGIC (Standard Frappe API) ---------- */
     async function loadQuotationList(force = false) {
+      if (qListBody && qListBody.children.length === 0) {
+        let skeletons = "";
+        for(let i=0; i<5; i++) {
+          skeletons += `
+            <div class="ai-order-row skeleton-pulse" style="margin-bottom:8px; opacity:0.6; display:flex; padding:16px; border:1px solid #e2e8f0; border-radius:12px; gap:16px; background:#fff;">
+              <div style="flex:2; height:20px; background:#f1f5f9; border-radius:4px;"></div>
+              <div style="flex:2; height:20px; background:#f1f5f9; border-radius:4px;"></div>
+              <div style="flex:1; height:20px; background:#f1f5f9; border-radius:4px;"></div>
+              <div style="flex:1; height:20px; background:#f1f5f9; border-radius:4px;"></div>
+              <div style="flex:2; height:20px; background:#f1f5f9; border-radius:4px;"></div>
+            </div>`;
+        }
+        qListBody.innerHTML = skeletons;
+      }
+
       // 1. OFFLINE-FIRST: Try to load from local SQLite cache first
       try {
         if (window.frappeAPI) {
           const cached = await window.frappeAPI.getCached('quotations');
           if (cached && cached.ok && cached.data && cached.data.length > 0) {
             console.log(`[OfflineFix] Loaded ${cached.data.length} quotations from SQLite cache.`);
-            renderQuotationsTable(cached.data);
+            // Only render the current page to prevent UI blocking
+            const paginatedData = cached.data.slice(qOffset, qOffset + qPageLength);
+            renderQuotationsTable(paginatedData);
             if (qListInfo) qListInfo.textContent = "Showing offline results...";
           }
         }
@@ -13598,7 +13624,7 @@
           table: 'omnis_quotations',
           method: 'select',
           params: {
-            columns: 'id, name, title, customer_name, transaction_date, sales_person, status, custom_next_follow_up_date, likelihood_percent, omnis_quotation_items(item_code, qty)',
+            columns: 'id, name, title, customer_name, transaction_date, sales_person, status, notes, custom_next_follow_up_date, likelihood_percent, omnis_quotation_items(item_code, qty)',
             options: { count: 'exact' },
             filters: filters,
             or: orCondition,
@@ -13726,21 +13752,25 @@
           <div class="ai-order-cell" style="flex-direction:row; display:flex; gap:10px; align-items:flex-start;">
             <input type="checkbox" class="order-select-cb" value="${escapeHtml(row.name)}" style="margin-top:4px; transform:scale(1.2); cursor:pointer;" onclick="event.stopPropagation();">
             <div style="flex:1;">
-              <span class="cell-label">Customer / ID</span>
-              <div style="font-weight:700; font-size:15px; color:#000000; margin-bottom:4px; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden;" title="${escapeHtml(window._cleanCust(row.customer_name) || '-')}">${escapeHtml(window._cleanCust(row.customer_name) || '-')}</div>
-              <div style="display:flex; align-items:center; gap:6px; font-size:11px; font-weight:800; color:${isHotLead ? '#ef4444' : '#64748b'}">
-                <i class="fas fa-file-invoice"></i> ${escapeHtml(row.name)}
+              <span class="cell-label">Title & Status</span>
+              <div style="font-weight:800; font-size:15px; color:#000000; margin-bottom:4px; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden;" title="${escapeHtml(row.title || '-')}">${escapeHtml(row.title || '-')}</div>
+              <div style="display:flex; align-items:center; gap:6px;">
+                <span class="status-pill ${getStatusColor(row.status)}" style="padding:2px 8px; font-size:10px;">${escapeHtml(row.status || 'Draft')}</span>
+                ${isHotLead ? '<span class="status-pill" style="background:#ef4444; color:white; border:none; padding:2px 8px; font-size:10px; font-weight:800; box-shadow:0 1px 2px rgba(239,68,68,0.3);">HOT</span>' : ''}
               </div>
             </div>
           </div>
           
           <div class="ai-order-cell">
-            <span class="cell-label">Title & Status</span>
-            <div style="font-weight:800; font-size:14px; color:#000000; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden;" title="${escapeHtml(row.title || '-')}">${escapeHtml(row.title || '-')}</div>
-            <div style="margin-top:4px; display:flex; align-items:center; gap:6px;">
-              <span class="status-pill ${getStatusColor(row.status)}" style="padding:2px 8px; font-size:10px;">${escapeHtml(row.status || 'Draft')}</span>
-              ${isHotLead ? '<span class="status-pill" style="background:#ef4444; color:white; border:none; padding:2px 8px; font-size:10px; font-weight:800; box-shadow:0 1px 2px rgba(239,68,68,0.3);">HOT</span>' : ''}
+            <span class="cell-label">Items</span>
+            <div style="padding-right:4px;">
+              ${itemsHtml}
             </div>
+          </div>
+
+          <div class="ai-order-cell">
+            <span class="cell-label">Notes</span>
+            <div style="font-size:12px; color:#475569; display:-webkit-box; -webkit-line-clamp:3; -webkit-box-orient:vertical; overflow:hidden;" title="${escapeHtml(row.notes || '')}">${escapeHtml(row.notes || '-')}</div>
           </div>
 
           <div class="ai-order-cell" style="text-align:center;">

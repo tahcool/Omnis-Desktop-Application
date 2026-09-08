@@ -561,3 +561,5 @@
   Files: .mcp/knowledge/_shared/commit_log.md,migrate_all_items.js,migrate_all_quotes.js,systems/salestrack/index.html,
 - `5d4c394` 2026-09-08 [supabase-migration] [checkpoint] Relocate pagination controls and add company filter for quotations list
   Files: .mcp/knowledge/_shared/commit_log.md,systems/salestrack/index.html,
+- `253660b` 2026-09-08 [supabase-migration] [checkpoint] Fix HOT pill UI update and likelihood API payload in quotation pipeline
+  Files: .mcp/knowledge/_shared/commit_log.md,supabase/migrations/20260802000000_ft_service_plan_contact_person.sql,supabase/migrations/20260908000001_add_sale_likelihood.sql,systems/salestrack/index.html,
