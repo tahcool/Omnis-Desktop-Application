@@ -8902,17 +8902,6 @@
         </div>
 
         <div style="display:flex; align-items:center; gap:12px;">
-          <input id="qlist-search" class="qlist-search" placeholder="Search quotations..."
-            style="height: 42px; border-radius:10px; border:1px solid #e2e8f0; padding:0 15px; font-size:12px;" />
-          <select id="qlist-status" class="qlist-select"
-            style="height: 42px; border-radius:10px; border:1px solid #e2e8f0; padding:0 10px; font-size:12px; font-weight:700;">
-            <option value="">All status</option>
-            <option value="Draft">Draft</option>
-            <option value="Open">Open</option>
-            <option value="Ordered">Ordered</option>
-            <option value="Lost">Lost</option>
-            <option value="Expired">Expired</option>
-          </select>
           <button onclick="switchToView('view-create-quotation')" class="btn-secondary"
             style="padding:0 20px; border-radius:10px; font-weight:800; height: 42px; font-size: 12px; text-transform:uppercase; letter-spacing:0.02em; background:#1e293b; color:white;">
             <i class="fas fa-plus" style="margin-right:8px;"></i> New Quotation
@@ -8984,10 +8973,23 @@
         <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:12px;">
           <div class="qlist-section-title" style="margin-bottom:0;">All Quotations</div>
           <div style="display:flex; align-items:center; gap:10px;">
-            <select id="qlist-page-length" style="height:34px; border-radius:8px; border:1px solid #e2e8f0; padding:0 10px; font-size:12px; font-weight:600; color:#374151;">
-              <option value="20">20 per page</option>
-              <option value="50">50 per page</option>
-              <option value="100">100 per page</option>
+            <input id="qlist-search" class="qlist-search" placeholder="Search quotations..."
+              style="height: 34px; border-radius:8px; border:1px solid #e2e8f0; padding:0 15px; font-size:12px;" />
+            <select id="qlist-status" class="qlist-select"
+              style="height: 34px; border-radius:8px; border:1px solid #e2e8f0; padding:0 10px; font-size:12px; font-weight:700;">
+              <option value="">All status</option>
+              <option value="Draft">Draft</option>
+              <option value="Open">Open</option>
+              <option value="Ordered">Ordered</option>
+              <option value="Lost">Lost</option>
+              <option value="Expired">Expired</option>
+            </select>
+            <select id="qlist-company" class="qlist-select"
+              style="height: 34px; border-radius:8px; border:1px solid #e2e8f0; padding:0 10px; font-size:12px; font-weight:700;">
+              <option value="">All Companies</option>
+              <option value="Machinery Exchange">Machinery Exchange</option>
+              <option value="Sinopower">Sinopower</option>
+              <option value="Powerstar">Powerstar</option>
             </select>
           </div>
         </div>
@@ -9009,7 +9011,14 @@
 
         <!-- Pagination Bar -->
         <div style="display:flex; align-items:center; justify-content:space-between; padding:20px 0 80px 0; border-top:1px solid #f1f5f9; margin-top:16px;">
-          <span id="qlist-info" style="font-size:12px; color:#64748b; font-weight:600;">Loading...</span>
+          <div style="display:flex; gap:12px; align-items:center;">
+            <span id="qlist-info" style="font-size:12px; color:#64748b; font-weight:600;">Loading...</span>
+            <select id="qlist-page-length" style="padding:4px 8px; border:1px solid #e2e8f0; border-radius:6px; font-size:11px; font-weight:600; color:#475569; background:white; outline:none; cursor:pointer;">
+              <option value="20" selected>20 per page</option>
+              <option value="50">50 per page</option>
+              <option value="100">100 per page</option>
+            </select>
+          </div>
           <div style="display:flex; gap:8px;">
             <button id="qlist-prev" disabled style="padding:7px 18px; border-radius:8px; border:1px solid #e2e8f0; background:white; color:#374151; font-size:12px; font-weight:700; cursor:pointer; transition:all 0.15s;">&larr; Previous</button>
             <button id="qlist-next" disabled style="padding:7px 18px; border-radius:8px; border:1px solid #e2e8f0; background:#1e293b; color:white; font-size:12px; font-weight:700; cursor:pointer; transition:all 0.15s;">Next &rarr;</button>
@@ -12279,6 +12288,7 @@
     let qHasMore = false;
     let qSearchText = "";
     let qStatusValue = "";
+    let qCompanyValue = "";
 
     function setStatus(text, cls) {
       if (!statusEl) return;
@@ -13535,7 +13545,7 @@
 
       // 5-minute TTL check (bypass if user has active search/filter)
       const now = Date.now();
-      const hasActiveFilter = qSearchText || qStatusValue;
+      const hasActiveFilter = qSearchText || qStatusValue || qCompanyValue;
       if (!force && !hasActiveFilter && window.lastLoaded['quotations'] && (now - window.lastLoaded['quotations'] < 300000)) {
         console.log("Quotations fresh (under 5m), skipping fresh fetch.");
         return;
@@ -13550,6 +13560,7 @@
       try {
         let filters = {};
         if (qStatusValue) filters['status'] = qStatusValue;
+        if (qCompanyValue) filters['company'] = qCompanyValue;
 
         let orCondition = null;
         if (qSearchText) {
@@ -13909,6 +13920,9 @@
     document.addEventListener("change", function(e) {
       if (e.target && e.target.id === "qlist-status") {
         qStatusValue = e.target.value || ""; qOffset = 0; forceReloadQuotations();
+      }
+      if (e.target && e.target.id === "qlist-company") {
+        qCompanyValue = e.target.value || ""; qOffset = 0; forceReloadQuotations();
       }
       if (e.target && e.target.id === "qlist-page-length") {
         qPageLength = Number(e.target.value || "20"); qOffset = 0; forceReloadQuotations();
