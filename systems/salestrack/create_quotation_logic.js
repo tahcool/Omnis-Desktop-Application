@@ -175,8 +175,41 @@
             if (!data.customer) throw new Error("Customer is required");
             if (data.items.length === 0) throw new Error("At least one item is required");
 
-            const res = await window.callFrappeSequenced(CURRENT_SYSTEM.baseUrl, "powerstar_salestrack.omnis_dashboard.save_omnis_quotation", data);
-            const payload = res.message || res;
+            if (!window.supabase) throw new Error("Supabase client not found");
+            const qtnId = "SAL-QTN-" + new Date().getFullYear().toString().slice(-2) + "-" + Math.floor(1000 + Math.random() * 9000);
+            
+            // Insert parent
+            const qtnRes = await window.supabase.from("omnis_quotations").insert([{
+                name: qtnId,
+                customer_name: data.customer,
+                contact_person: data.contact_person,
+                transaction_date: data.transaction_date || new Date().toISOString().split('T')[0],
+                company: data.company,
+                currency: data.currency,
+                sales_person: data.sales_person,
+                bank_account: data.bank_account,
+                pfi_checked: data.pfi_checked,
+                delivery: data.delivery,
+                notes: data.notes
+            }]).select();
+            
+            if (qtnRes.error) throw qtnRes.error;
+            
+            const dbQtnId = qtnRes.data[0].id;
+            
+            // Insert children
+            const itemPayloads = data.items.map(i => ({
+                quotation_id: dbQtnId,
+                item_code: i.item_code,
+                qty: i.qty,
+                rate: i.rate,
+                amount: i.qty * i.rate
+            }));
+            
+            const itemRes = await window.supabase.from("omnis_quotation_items").insert(itemPayloads);
+            if (itemRes.error) throw itemRes.error;
+            
+            const payload = { ok: true, name: qtnId };
 
             if (payload.ok) {
                 resetQtnForm();
@@ -217,8 +250,41 @@
                 items: [{ item_code: itemCode, qty: 1 }]
             };
 
-            const res = await window.callFrappeSequenced(CURRENT_SYSTEM.baseUrl, "powerstar_salestrack.omnis_dashboard.save_omnis_quotation", data);
-            const payload = res.message || res;
+            if (!window.supabase) throw new Error("Supabase client not found");
+            const qtnId = "SAL-QTN-" + new Date().getFullYear().toString().slice(-2) + "-" + Math.floor(1000 + Math.random() * 9000);
+            
+            // Insert parent
+            const qtnRes = await window.supabase.from("omnis_quotations").insert([{
+                name: qtnId,
+                customer_name: data.customer,
+                contact_person: data.contact_person,
+                transaction_date: data.transaction_date || new Date().toISOString().split('T')[0],
+                company: data.company,
+                currency: data.currency,
+                sales_person: data.sales_person,
+                bank_account: data.bank_account,
+                pfi_checked: data.pfi_checked,
+                delivery: data.delivery,
+                notes: data.notes
+            }]).select();
+            
+            if (qtnRes.error) throw qtnRes.error;
+            
+            const dbQtnId = qtnRes.data[0].id;
+            
+            // Insert children
+            const itemPayloads = data.items.map(i => ({
+                quotation_id: dbQtnId,
+                item_code: i.item_code,
+                qty: i.qty,
+                rate: i.rate,
+                amount: i.qty * i.rate
+            }));
+            
+            const itemRes = await window.supabase.from("omnis_quotation_items").insert(itemPayloads);
+            if (itemRes.error) throw itemRes.error;
+            
+            const payload = { ok: true, name: qtnId };
 
             if (payload.ok) {
                 document.getElementById("qq-customer").value = "";
@@ -243,61 +309,34 @@
     function setupSuggestions(input, list, methodName, onSelect = null) {
         if (!input || !list) return;
 
-        const debounce = (func, wait) => {
-            let timeout;
-            return (...args) => {
-                clearTimeout(timeout);
-                timeout = setTimeout(() => func(...args), wait);
-            };
-        };
-
-        const fetchSuggestions = async (val) => {
-            if (!val || val.length < 1) {
-                list.classList.add('hidden');
+        if (window.setupSupabaseSuggestions) {
+            let table = "", searchFields = "";
+            if (methodName === "search_sales_person_for_omnis") {
+                table = "omnis_sales_persons";
+                searchFields = "name";
+            } else if (methodName === "search_customer_for_omnis") {
+                table = "customers";
+                searchFields = "customer_name";
+            } else if (methodName === "search_item_for_omnis") {
+                table = "stock_inventory";
+                searchFields = "model,brand";
+            }
+            
+            if (table) {
+                // Adapt the onSelect to match the old expected signature (val, item)
+                const adaptedOnSelect = onSelect ? (mappedItem) => {
+                    // setupSupabaseSuggestions returns a mappedItem with value, description, etc.
+                    // We pass it to the original onSelect
+                    onSelect(mappedItem.value, mappedItem);
+                } : null;
+                
+                window.setupSupabaseSuggestions(input, list, table, searchFields, adaptedOnSelect);
                 return;
             }
+        }
 
-            try {
-                const res = await window.callFrappeSequenced(CURRENT_SYSTEM.baseUrl, "powerstar_salestrack.omnis_dashboard." + methodName, { txt: val });
-                const data = res.message || res || [];
-
-                if (data.length > 0) {
-                    list.innerHTML = data.map(item => `
-                        <div class="suggest-item" data-val="${item.value}">
-                            <div style="font-weight:600; color:#334155;">${item.description}</div>
-                            ${item.details ? `<div style="font-size:10px; color:#64748b;">${item.details}</div>` : ''}
-                        </div>
-                    `).join('');
-                    list.classList.remove('hidden');
-
-                    list.querySelectorAll('.suggest-item').forEach(el => {
-                        el.onclick = (e) => {
-                            e.stopPropagation();
-                            const val = el.getAttribute('data-val');
-                            const item = data.find(i => i.value === val);
-                            if (onSelect) {
-                                onSelect(val, item);
-                            } else {
-                                input.value = val;
-                            }
-                            list.classList.add('hidden');
-                        };
-                    });
-                } else {
-                    list.innerHTML = '<div style="padding:8px; color:#94a3b8; font-size:11px; text-align:center;">No results</div>';
-                    list.classList.remove('hidden');
-                }
-            } catch (e) { console.error("Suggest error", e); }
-        };
-
-        input.addEventListener('input', debounce((e) => fetchSuggestions(e.target.value), 500));
-
-        // Hide on click outside
-        document.addEventListener('click', (e) => {
-            if (e.target !== input && !list.contains(e.target)) {
-                list.classList.add('hidden');
-            }
-        });
+        // Fallback (should not be reached if table mapped)
+        console.warn("setupSupabaseSuggestions not available or table not mapped for:", methodName);
     }
 
     // --- PDF & OPTIONS MODAL ---
@@ -329,8 +368,26 @@
 
         try {
             // 1. Fetch Full Data
-            const resData = await window.callFrappeSequenced(CURRENT_SYSTEM.baseUrl, "powerstar_salestrack.omnis_dashboard.get_quotation_full_details", { qtn_name: qtnId });
-            const data = resData.message || resData;
+            if (!window.supabase) throw new Error("Supabase client not found");
+            const qtnRes = await window.supabase.from("omnis_quotations").select("*").eq("name", qtnId).single();
+            if (qtnRes.error) throw qtnRes.error;
+            
+            const itemsRes = await window.supabase.from("omnis_quotation_items").select("*").eq("quotation_id", qtnRes.data.id);
+            if (itemsRes.error) throw itemsRes.error;
+            
+            // Map to expected Frappe output shape
+            const data = {
+                ok: true,
+                quotation: qtnRes.data,
+                customer: { custom_primary_contact_name: qtnRes.data.contact_person },
+                items: itemsRes.data.map(i => ({
+                    item_code: i.item_code,
+                    item_name: i.item_code,
+                    qty: i.qty,
+                    rate: i.rate,
+                    amount: i.amount
+                }))
+            };
             if (!data.ok) throw new Error(data.error || "Failed to fetch quotation details");
 
             const templateSelect = document.getElementById("qtn-opts-template");

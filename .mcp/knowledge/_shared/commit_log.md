@@ -544,3 +544,8 @@
   Files: systems/medicals/index.html,systems/medicals/medicals_logic.js,
 - `eff637f` 2026-09-07 [supabase-migration] checkpoint: replace top right nav buttons with settings and logout
   Files: systems/medicals/index.html,systems/medicals/medicals_logic.js,
+- `bfbed9f` 2026-09-07 [supabase-migration] chore(release): bump version to 4.3.8
+  Files: .mcp/knowledge/_shared/commit_log.md,RELEASE_NOTES.md,package.json,systems/medicals/add_timeline_js.py,systems/medicals/append_greeting.py,systems/medicals/fix_divs.py,systems/medicals/fix_syntax.py,systems/medicals/fix_timeline.py,systems/medicals/group_nav.py,systems/medicals/index.html,systems/medicals/insert_news.py,systems/medicals/medicals_logic.js,systems/medicals/remove_labels.py,systems/medicals/remove_news.py,systems/medicals/replace_news.py,systems/medicals/restore_news.py,systems/medicals/restore_quotes.py,systems/medicals/update_html.py,systems/medicals/update_html_ui.py,systems/medicals/update_logic.py,
+\n## 2026-09-08
+- `d20ecd2` 2026-09-08 [supabase-migration] Fix: Salesperson and Item live search now queries Supabase on Quotation forms
+  Files: systems/salestrack/index.html,
