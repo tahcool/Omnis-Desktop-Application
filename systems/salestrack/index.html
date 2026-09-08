@@ -8914,21 +8914,47 @@
         <div id="qlist-error" style="color:red; font-weight:600; margin: 10px 0; display:none;"></div>
 
         <!-- KPI ROW -->
-        <div class="q-dash-kpis">
-          <div class="q-dash-card">
-            <div class="q-dash-label">Total Quotes</div>
-            <div class="q-dash-val" id="q-kpi-total">--</div>
-            <div class="q-dash-sub">Lifetime count</div>
+        <div id="qlist-stats-row"
+          style="display:grid; grid-template-columns: repeat(5, 1fr); gap:16px; margin-bottom:28px;">
+          <div class="mxg-kpi-card">
+            <div style="position: absolute; right: -5px; bottom: -15px; opacity: 0.12; font-size: 85px; color: rgba(139, 34, 25, 1); transform: rotate(-10deg); pointer-events: none;">
+              <i class="fas fa-file-invoice"></i>
+            </div>
+            <div class="mxg-kpi-label" style="position: relative; z-index: 1;">TOTAL QUOTES</div>
+            <div class="mxg-kpi-value" id="qlist-stat-total" style="position: relative; z-index: 1;">--</div>
+            <div class="mxg-kpi-sub" style="position: relative; z-index: 1;">Lifetime count</div>
           </div>
-          <div class="q-dash-card">
-            <div class="q-dash-label">Pending / Open</div>
-            <div class="q-dash-val" id="q-kpi-pending">--</div>
-            <div class="q-dash-sub">Requiring attention</div>
+          <div class="mxg-kpi-card">
+            <div style="position: absolute; right: -5px; bottom: -15px; opacity: 0.12; font-size: 85px; color: rgba(139, 34, 25, 1); transform: rotate(-10deg); pointer-events: none;">
+              <i class="fas fa-folder-open"></i>
+            </div>
+            <div class="mxg-kpi-label" style="position: relative; z-index: 1;">OPEN QUOTES</div>
+            <div class="mxg-kpi-value" id="qlist-stat-open" style="position: relative; z-index: 1;">--</div>
+            <div class="mxg-kpi-sub" style="position: relative; z-index: 1;">Requiring attention</div>
           </div>
-          <div class="q-dash-card">
-            <div class="q-dash-label">Machines Quoted (Open)</div>
-            <div class="q-dash-val" id="q-kpi-mtd">--</div>
-            <div class="q-dash-sub" id="q-kpi-mtd-label">Units in pipeline</div>
+          <div class="mxg-kpi-card">
+            <div style="position: absolute; right: -5px; bottom: -15px; opacity: 0.12; font-size: 85px; color: rgba(139, 34, 25, 1); transform: rotate(-10deg); pointer-events: none;">
+              <i class="fas fa-money-bill-wave"></i>
+            </div>
+            <div class="mxg-kpi-label" style="position: relative; z-index: 1;">PIPELINE VALUE</div>
+            <div class="mxg-kpi-value" id="qlist-stat-value" style="position: relative; z-index: 1;">--</div>
+            <div class="mxg-kpi-sub" style="position: relative; z-index: 1;">Open quotes (USD)</div>
+          </div>
+          <div class="mxg-kpi-card">
+            <div style="position: absolute; right: -5px; bottom: -15px; opacity: 0.12; font-size: 85px; color: rgba(139, 34, 25, 1); transform: rotate(-10deg); pointer-events: none;">
+              <i class="fas fa-fire"></i>
+            </div>
+            <div class="mxg-kpi-label" style="position: relative; z-index: 1;">HOT PROSPECTS</div>
+            <div class="mxg-kpi-value" id="qlist-stat-hot" style="position: relative; z-index: 1;">--</div>
+            <div class="mxg-kpi-sub" style="position: relative; z-index: 1;">Likelihood &ge; 75%</div>
+          </div>
+          <div class="mxg-kpi-card" style="border-left: 4px solid #10b981;">
+            <div style="position: absolute; right: -5px; bottom: -15px; opacity: 0.12; font-size: 85px; color: rgba(139, 34, 25, 1); transform: rotate(-10deg); pointer-events: none;">
+              <i class="fas fa-chart-pie"></i>
+            </div>
+            <div class="mxg-kpi-label" style="position: relative; z-index: 1;">WIN RATE</div>
+            <div class="mxg-kpi-value" id="qlist-stat-winrate" style="position: relative; z-index: 1;">--</div>
+            <div class="mxg-kpi-sub" style="position: relative; z-index: 1;">Converted quotes</div>
           </div>
         </div>
 
@@ -8998,7 +9024,7 @@
         <div class="ai-order-header ai-quotations-grid" id="qlist-head-grid" style="border-radius: 12px 12px 0 0; margin-bottom: 8px;">
           <div style="padding-left: 28px;"><span>Customer / ID</span> <i class="fas fa-sort sort-icon"></i></div>
           <div><span>Title & Status</span> <i class="fas fa-sort sort-icon"></i></div>
-          <div><span>Quoted Items</span> <i class="fas fa-sort sort-icon"></i></div>
+          <div style="text-align:center;"><span>Likelihood</span> <i class="fas fa-sort sort-icon"></i></div>
           <div style="text-align:center;"><span>Date</span> <i class="fas fa-sort sort-icon"></i></div>
           <div><span>Sales Person</span> <i class="fas fa-sort sort-icon"></i></div>
           <div style="text-align:center;"><span>Total Items</span> <i class="fas fa-sort sort-icon"></i></div>
@@ -13572,7 +13598,7 @@
           table: 'omnis_quotations',
           method: 'select',
           params: {
-            columns: 'name, title, customer_name, transaction_date, sales_person, status, custom_next_follow_up_date, omnis_quotation_items(item_code, qty)',
+            columns: 'id, name, title, customer_name, transaction_date, sales_person, status, custom_next_follow_up_date, likelihood_percent, omnis_quotation_items(item_code, qty)',
             options: { count: 'exact' },
             filters: filters,
             or: orCondition,
@@ -13681,10 +13707,18 @@
             '</ul>';
         }
 
+        const likelihood = row.likelihood_percent || 0;
+        const isHotLead = likelihood >= 75;
+
         const item = document.createElement("div");
         item.className = "ai-order-row ai-quotations-grid";
         item.style.borderRadius = "12px";
-        item.style.borderLeft = "4px solid var(--accent-maroon)";
+        if (isHotLead) {
+            item.style.borderLeft = "4px solid #ef4444";
+            item.style.background = "#fff1f2";
+        } else {
+            item.style.borderLeft = "4px solid var(--accent-maroon)";
+        }
         item.onclick = () => window.open(`${base}/app/quotation/${row.name}`, "_blank");
         item.style.cursor = "pointer";
 
@@ -13694,7 +13728,7 @@
             <div style="flex:1;">
               <span class="cell-label">Customer / ID</span>
               <div style="font-weight:700; font-size:15px; color:#000000; margin-bottom:4px; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden;" title="${escapeHtml(window._cleanCust(row.customer_name) || '-')}">${escapeHtml(window._cleanCust(row.customer_name) || '-')}</div>
-              <div style="display:flex; align-items:center; gap:6px; font-size:11px; font-weight:800; color:#64748b">
+              <div style="display:flex; align-items:center; gap:6px; font-size:11px; font-weight:800; color:${isHotLead ? '#ef4444' : '#64748b'}">
                 <i class="fas fa-file-invoice"></i> ${escapeHtml(row.name)}
               </div>
             </div>
@@ -13703,15 +13737,21 @@
           <div class="ai-order-cell">
             <span class="cell-label">Title & Status</span>
             <div style="font-weight:800; font-size:14px; color:#000000; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden;" title="${escapeHtml(row.title || '-')}">${escapeHtml(row.title || '-')}</div>
-            <div style="margin-top:4px;"><span class="status-pill ${getStatusColor(row.status)}" style="padding:2px 8px; font-size:10px;">${escapeHtml(row.status || 'Draft')}</span></div>
-          </div>
-
-          <div class="ai-order-cell" style="align-items:flex-start;">
-            <span class="cell-label">Quoted Items</span>
-            <div style="background:#f8fafc; border:1px solid #e2e8f0; border-radius:8px; padding:6px 12px; display:inline-block; width:fit-content; max-width:100%;">
-                ${itemsHtml}
+            <div style="margin-top:4px; display:flex; align-items:center; gap:6px;">
+              <span class="status-pill ${getStatusColor(row.status)}" style="padding:2px 8px; font-size:10px;">${escapeHtml(row.status || 'Draft')}</span>
+              ${isHotLead ? '<span class="status-pill" style="background:#ef4444; color:white; border:none; padding:2px 8px; font-size:10px; font-weight:800; box-shadow:0 1px 2px rgba(239,68,68,0.3);">HOT</span>' : ''}
             </div>
           </div>
+
+          <div class="ai-order-cell" style="text-align:center;">
+            <span class="cell-label">Likelihood</span>
+            <div style="display:flex; justify-content:center; align-items:center; gap:4px; margin-top:4px;">
+              <input type="number" class="likelihood-input" value="${likelihood}" min="0" max="100" style="width:44px; padding:4px; text-align:center; border:1px solid ${isHotLead ? '#fca5a5' : '#e2e8f0'}; border-radius:6px; font-size:13px; font-weight:700; color:${isHotLead ? '#ef4444' : '#000'}; background:transparent;" onclick="event.stopPropagation();" onchange="window.updateQuotationLikelihood('${row.name}', this.value, event)" />
+              <span style="font-size:12px; font-weight:700; color:${isHotLead ? '#ef4444' : '#64748b'};">%</span>
+            </div>
+          </div>
+
+
 
           <div class="ai-order-cell" style="text-align:center;">
             <span class="cell-label">Date</span>
@@ -13754,22 +13794,61 @@
       return 'gray';
     }
 
-    async function loadQuotationsKPI() {
-      if (!CURRENT_SYSTEM) return;
-      const base = CURRENT_SYSTEM.baseUrl.replace(/\/$/, "");
-
+    window.updateQuotationLikelihood = async function(quoteId, newPercent, event) {
+      if (!window.electron) return;
+      const percent = Math.min(100, Math.max(0, parseInt(newPercent) || 0));
+      if (event) {
+        event.stopPropagation();
+        event.target.value = percent;
+      }
+      
       try {
-        // Use Whitelisted API to bypass permission restrictions
-        const res = await window.callFrappeSequenced(base, "powerstar_salestrack.omnis_dashboard.get_omnis_quotations_kpi");
-        const msg = res.message || res;
-        const data = msg.data || {};
+        const res = await window.electron.invoke('supabase:query', {
+          method: 'update',
+          table: 'omnis_quotations',
+          data: { likelihood_percent: percent },
+          params: { match: { name: quoteId } }
+        });
+        
+        if (res.error) throw res.error;
+        loadQuotationList(true); // Soft reload to reflect styling
+      } catch (e) {
+        console.error("Error updating quote likelihood:", e);
+      }
+    };
 
-        document.getElementById('q-kpi-total').textContent = data.total || 0;
-        document.getElementById('q-kpi-pending').textContent = data.open || 0;
+    async function loadQuotationsKPI() {
+      if (!window.electron) return;
+      
+      try {
+        // Query Supabase for KPIs
+        const totalReq = window.electron.invoke('supabase:query', {
+          method: 'select', table: 'omnis_quotations', select: 'id', count: 'exact', limit: 1
+        });
+        const openReq = window.electron.invoke('supabase:query', {
+          method: 'select', table: 'omnis_quotations', select: 'id', count: 'exact', match: { status: 'Open' }, limit: 1
+        });
+        const hotReq = window.electron.invoke('supabase:query', {
+          method: 'select', table: 'omnis_quotations', select: 'id', count: 'exact', limit: 1, gte: { likelihood_percent: 75 }
+        });
 
-        const machineCount = data.machine_count || 0;
-        document.getElementById('q-kpi-mtd').textContent = machineCount.toLocaleString();
-        document.getElementById('q-kpi-mtd-label').textContent = 'Units in pipeline';
+        const [totalRes, openRes, hotRes] = await Promise.all([totalReq, openReq, hotReq]);
+
+        const totalStat = document.getElementById('qlist-stat-total');
+        if(totalStat) totalStat.textContent = totalRes.count || 0;
+        
+        const openStat = document.getElementById('qlist-stat-open');
+        if(openStat) openStat.textContent = openRes.count || 0;
+        
+        const hotStat = document.getElementById('qlist-stat-hot');
+        if(hotStat) hotStat.textContent = hotRes.count || 0;
+        
+        // Hardcode Pipeline and Winrate as they require complex aggregation for now
+        const valStat = document.getElementById('qlist-stat-value');
+        if(valStat) valStat.textContent = "---";
+        
+        const winStat = document.getElementById('qlist-stat-winrate');
+        if(winStat) winStat.textContent = "---";
       } catch (e) {
         console.warn("KPI Load fail", e);
       }
