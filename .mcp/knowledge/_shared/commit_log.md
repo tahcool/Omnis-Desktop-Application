@@ -549,3 +549,9 @@
 \n## 2026-09-08
 - `d20ecd2` 2026-09-08 [supabase-migration] Fix: Salesperson and Item live search now queries Supabase on Quotation forms
   Files: systems/salestrack/index.html,
+- `e1ce31a` 2026-09-08 [supabase-migration] Restore point: 2026-09-08 08:25 - Pre-session checkpoint
+  Files: .mcp/knowledge/_shared/commit_log.md,package.json,supabase/migrations/20260907000002_create_quotations.sql,systems/salestrack/bust_all_cache.py,systems/salestrack/bust_cache.py,systems/salestrack/check_scripts.js,systems/salestrack/create_quotation_logic.js,systems/salestrack/fix_bracket.py,systems/salestrack/fix_html.py,systems/salestrack/replace_suggest.py,systems/salestrack/update_logs.py,systems/salestrack/update_qtn.py,systems/salestrack/update_suggest.py,systems/salestrack/update_title.py,
+- `e495ac4` 2026-09-08 [supabase-migration] Fix: Item suggestions showing undefined - add model/brand to display mapping for stock_inventory
+  Files: systems/salestrack/index.html,
+- `10f9ed3` 2026-09-08 [supabase-migration] Fix: Item selection now shows machine model name instead of internal frappe_id
+  Files: systems/salestrack/index.html,
