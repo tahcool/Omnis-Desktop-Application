@@ -8969,7 +8969,7 @@
         <!-- QUICK CREATE PANEL -->
         <div class="q-quick-panel">
           <div style="display:flex; justify-content:space-between; align-items:center;">
-            <h3 class="q-quick-title">âš¡ Quick Create Quotation</h3>
+            <h3 class="q-quick-title"><i class="fas fa-bolt" style="color:#eab308; margin-right:4px;"></i> Quick Create Quotation</h3>
             <button class="btn-text-action" onclick="switchToView('view-create-quotation')">Advanced Form
               &rarr;</button>
           </div>
@@ -13624,7 +13624,7 @@
           table: 'omnis_quotations',
           method: 'select',
           params: {
-            columns: 'id, name, title, customer_name, transaction_date, sales_person, status, notes, custom_next_follow_up_date, likelihood_percent, omnis_quotation_items(item_code, qty)',
+            columns: 'id, name, title, customer_name, transaction_date, custom_sales_person:sales_person, status, notes, custom_next_follow_up_date, salesperson_follow_up_date, likelihood_percent, omnis_quotation_items(item_code, qty)',
             options: { count: 'exact' },
             filters: filters,
             or: orCondition,
@@ -13736,15 +13736,53 @@
         const likelihood = row.likelihood_percent || 0;
         const isHotLead = likelihood >= 75;
 
+        // --- Follow Up Calculation Logic ---
+        const tDate = new Date(row.transaction_date);
+        const now = new Date();
+        const msPerDay = 1000 * 60 * 60 * 24;
+        const daysElapsed = Math.floor((now - tDate) / msPerDay);
+        
+        let followUpStage = '';
+        let systemFollowUpDate = new Date(tDate);
+        
+        if (daysElapsed <= 3) {
+            followUpStage = 'Stage 1';
+            systemFollowUpDate.setDate(tDate.getDate() + 3);
+        } else if (daysElapsed <= 7) {
+            followUpStage = 'Stage 2';
+            systemFollowUpDate.setDate(tDate.getDate() + 7);
+        } else {
+            followUpStage = 'Final Stage';
+            systemFollowUpDate.setDate(tDate.getDate() + 21);
+        }
+        
+        const isOverdueFinal = daysElapsed > 21;
+        const hasSalespersonDate = !!row.salesperson_follow_up_date;
+        const isOpenStatus = String(row.status || '').toLowerCase() === 'open';
+        
+        const isRedFlag = isHotLead && isOverdueFinal && !hasSalespersonDate && isOpenStatus;
+
         const item = document.createElement("div");
         item.className = "ai-order-row ai-quotations-grid";
         item.style.borderRadius = "12px";
-        if (isHotLead) {
+        
+        if (isRedFlag) {
+            item.style.border = "3px solid #ef4444";
+            item.style.background = "#fef2f2";
+            item.style.boxShadow = "0 0 10px rgba(239, 68, 68, 0.5)";
+        } else if (isHotLead) {
             item.style.borderLeft = "4px solid #ef4444";
             item.style.background = "#fff1f2";
+            item.style.borderTop = "1px solid transparent";
+            item.style.borderRight = "1px solid transparent";
+            item.style.borderBottom = "1px solid transparent";
         } else {
             item.style.borderLeft = "4px solid var(--accent-maroon)";
+            item.style.borderTop = "1px solid transparent";
+            item.style.borderRight = "1px solid transparent";
+            item.style.borderBottom = "1px solid transparent";
         }
+        
         item.onclick = () => window.open(`${base}/app/quotation/${row.name}`, "_blank");
         item.style.cursor = "pointer";
 
@@ -13769,8 +13807,15 @@
           </div>
 
           <div class="ai-order-cell">
-            <span class="cell-label">Notes</span>
-            <div style="font-size:12px; color:#475569; display:-webkit-box; -webkit-line-clamp:3; -webkit-box-orient:vertical; overflow:hidden;" title="${escapeHtml(row.notes || '')}">${escapeHtml(row.notes || '-')}</div>
+            <span class="cell-label">Notes <i class="fas fa-pencil-alt" style="font-size:8px; opacity:0.5; margin-left:4px;"></i></span>
+            <div 
+              title="${escapeHtml(row.notes || 'Double click to edit')}"
+              style="font-size:12px; color:#475569; display:-webkit-box; -webkit-line-clamp:3; -webkit-box-orient:vertical; overflow:hidden; cursor:pointer; padding:4px; border:1px solid transparent; border-radius:4px; outline:none; transition:all 0.2s;" 
+              onclick="event.stopPropagation();"
+              ondblclick="event.stopPropagation(); this.contentEditable=true; this.focus(); this.style.border='1px solid #3b82f6'; this.style.webkitLineClamp='unset'; this.style.background='white'; if(this.innerText==='-') this.innerText='';"
+              onkeydown="if(event.key === 'Enter' && !event.shiftKey) { event.preventDefault(); this.blur(); }"
+              onblur="this.contentEditable=false; this.style.border='1px solid transparent'; this.style.webkitLineClamp='3'; this.style.background='transparent'; window.updateQuotationNotes('${row.name}', this.innerText, this);"
+            >${escapeHtml(row.notes || '-')}</div>
           </div>
 
           <div class="ai-order-cell" style="text-align:center;">
@@ -13798,9 +13843,24 @@
             <div style="font-size:20px; font-weight:800; color:#3b82f6;">${totalItems}</div>
           </div>
 
-          <div class="ai-order-cell" style="text-align:center;">
-            <span class="cell-label">Next Follow Up</span>
-            <div style="font-size:14px; color:#10b981; font-weight:700;">${formatDate(row.custom_next_follow_up_date)}</div>
+          <div class="ai-order-cell" style="text-align:center; display:flex; flex-direction:column; align-items:center; justify-content:center;">
+            <span class="cell-label" style="color:${isRedFlag ? '#ef4444' : '#94a3b8'}">${isRedFlag ? '<i class="fas fa-exclamation-triangle"></i> OVERDUE' : 'Next Follow Up'}</span>
+            
+            <div style="display:flex; flex-direction:column; align-items:center; gap:3px; margin-bottom:6px;" title="System Target: ${followUpStage}">
+              <div style="font-size:13px; color:${isRedFlag ? '#ef4444' : '#10b981'}; font-weight:800;">
+                ${formatDate(systemFollowUpDate.toISOString().split('T')[0])}
+              </div>
+              <div style="font-size:9px; font-weight:700; padding:2px 6px; border-radius:10px; background:${isRedFlag ? '#fef2f2' : '#ecfdf5'}; color:${isRedFlag ? '#ef4444' : '#059669'}; border:1px solid ${isRedFlag ? '#fca5a5' : '#a7f3d0'}; line-height:1;">
+                ${followUpStage.toUpperCase()}
+              </div>
+            </div>
+
+            <div title="Salesperson Override Date" style="width:100%; display:flex; justify-content:center;">
+              <input type="date" value="${row.salesperson_follow_up_date || ''}" 
+                onclick="event.stopPropagation();" 
+                onchange="window.updateSalespersonFollowUpDate('${row.name}', this.value)"
+                style="width: 100%; max-width: 105px; font-size: 11px; font-family: inherit; font-weight: 600; padding: 4px 6px; border: 1px solid ${isRedFlag ? '#fca5a5' : '#cbd5e1'}; border-radius: 6px; color: ${row.salesperson_follow_up_date ? '#0f172a' : '#94a3b8'}; background: ${isRedFlag ? '#fee2e2' : '#f8fafc'}; box-shadow: inset 0 1px 2px rgba(0,0,0,0.02); cursor: pointer; outline: none; transition: all 0.2s;" />
+            </div>
           </div>
 
           <div class="ai-order-cell ai-order-row-actions" style="text-align:right; display:flex; gap:6px; justify-content:flex-end;">
@@ -13844,6 +13904,47 @@
         loadQuotationList(true); // Soft reload to reflect styling
       } catch (e) {
         console.error("Error updating quote likelihood:", e);
+      }
+    };
+
+    window.updateQuotationNotes = async function(quoteId, newNotes, el) {
+      if (!window.electron) return;
+      let cleanNotes = newNotes.trim();
+      if (cleanNotes === '-') cleanNotes = '';
+      
+      if (el) {
+          el.innerText = cleanNotes || '-';
+      }
+
+      try {
+        const res = await window.electron.invoke('supabase:query', {
+          method: 'update',
+          table: 'omnis_quotations',
+          data: { notes: cleanNotes },
+          params: { match: { name: quoteId } }
+        });
+        
+        if (res.error) throw res.error;
+      } catch (e) {
+        console.error("Error updating quote notes:", e);
+      }
+    };
+
+    window.updateSalespersonFollowUpDate = async function(quoteId, dateStr) {
+      if (!window.electron) return;
+      
+      try {
+        const res = await window.electron.invoke('supabase:query', {
+          method: 'update',
+          table: 'omnis_quotations',
+          data: { salesperson_follow_up_date: dateStr || null },
+          params: { match: { name: quoteId } }
+        });
+        
+        if (res.error) throw res.error;
+        loadQuotationList(true); // Soft reload to remove red flags visually
+      } catch (e) {
+        console.error("Error updating salesperson follow up date:", e);
       }
     };
 

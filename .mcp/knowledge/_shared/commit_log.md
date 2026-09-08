@@ -563,3 +563,5 @@
   Files: .mcp/knowledge/_shared/commit_log.md,systems/salestrack/index.html,
 - `253660b` 2026-09-08 [supabase-migration] [checkpoint] Fix HOT pill UI update and likelihood API payload in quotation pipeline
   Files: .mcp/knowledge/_shared/commit_log.md,supabase/migrations/20260802000000_ft_service_plan_contact_person.sql,supabase/migrations/20260908000001_add_sale_likelihood.sql,systems/salestrack/index.html,
+- `c11ae1c` 2026-09-08 [supabase-migration] [checkpoint] chore: Quotations UI updates, layout restructuring, offline cache pagination fix
+  Files: .mcp/knowledge/_shared/commit_log.md,systems/salestrack/index.html,
