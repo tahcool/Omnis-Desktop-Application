@@ -11404,11 +11404,11 @@
     </div>
 
     <!-- Scripts -->
-    <script src="create_ce_logic.js"></script>
-    <script src="create_quotation_logic.js"></script>
+    <script src="create_ce_logic.js?v=202609072015"></script>
+    <script src="create_quotation_logic.js?v=202609080810"></script>
 
     <!-- Tutorial Logic -->
-    <script src="tutorial_logic.js"></script>
+    <script src="tutorial_logic.js?v=202609072015"></script>
     <div id="pq-overlay" class="pq-overlay"></div>
     <div id="pq-modal" class="presentation-quick-view">
       <div class="pq-header">
@@ -13820,23 +13820,23 @@
     }
 
     // Customer autocomplete - auto-fill title on selection
-    setupQuickAutocomplete('qq-customer', 'qq-customer-suggest', 'Customer', 'customer_name', (val) => {
-      document.getElementById('qq-customer').value = val;
-      const titleEl = document.getElementById('qq-title');
-      if (titleEl && !titleEl.value.trim()) {
-        titleEl.value = `${val} - Quotation`;
-      }
-    });
+    // setupQuickAutocomplete('qq-customer', 'qq-customer-suggest', 'Customer', 'customer_name', (val) => {
+//       document.getElementById('qq-customer').value = val;
+//       const titleEl = document.getElementById('qq-title');
+//       if (titleEl && !titleEl.value.trim()) {
+//         titleEl.value = `${val} - Quotation`;
+//       }
+//     });
 
     // Salesperson autocomplete
-    setupQuickAutocomplete('qq-salesperson', 'qq-salesperson-suggest', 'Sales Person', 'sales_person_name', (val) => {
-      document.getElementById('qq-salesperson').value = val;
-    });
+//     setupQuickAutocomplete('qq-salesperson', 'qq-salesperson-suggest', 'Sales Person', 'sales_person_name', (val) => {
+//       document.getElementById('qq-salesperson').value = val;
+//     });
 
     // Item autocomplete
-    setupQuickAutocomplete('qq-item', 'qq-item-suggest', 'Item', 'item_code', (val) => {
-      document.getElementById('qq-item').value = val;
-    });
+//     setupQuickAutocomplete('qq-item', 'qq-item-suggest', 'Item', 'item_code', (val) => {
+//       document.getElementById('qq-item').value = val;
+//     });
 
     // Debounce Utility
     function debounce(func, wait) {
@@ -16124,6 +16124,9 @@
     // --- SUPABASE POWERED AUTOFILL ---
     window.setupSupabaseSuggestions = function (input, list, table, searchFields, onSelect = null) {
         if (!input || !list) return;
+        // Prevent duplicate wiring
+        if (input.hasAttribute('data-sb-suggest')) return;
+        input.setAttribute('data-sb-suggest', table);
 
         let lastVal = "";
         const debounce = (func, wait) => {
@@ -16141,7 +16144,7 @@
             lastVal = val;
 
             const now = new Date().toLocaleTimeString();
-            const sp = window.salestrack ? window.salestrack.supabase : null;
+            const sp = (window.salestrack && window.salestrack.supabase) || window.supabase || window.__supabaseClient || null;
             
             list.innerHTML = `<div style="padding:8px; color:#64748b; font-size:11px; font-style:italic; text-align:center;"><i class="fa fa-bolt" style="color:#fbbf24;"></i> Turbo Search (${now})...</div>`;
             list.classList.remove('hidden');
@@ -16182,7 +16185,8 @@
                         el.onclick = (e) => {
                             e.stopPropagation();
                             const id = el.getAttribute('data-id');
-                            const item = results.find(i => (i.id === id || i.name === id));
+                            const item = results.find(i => (String(i.id) === id || i.name === id || i.customer_name === id));
+                            if (!item) return;
                             
                             // Map to expected format
                             const mappedItem = {
@@ -16240,6 +16244,37 @@
             }
         }, { capture: true });
     };
+
+    // --- DIRECT WIRING: Quick Create Salesperson & Item Live Search ---
+    // Wire these directly here (where setupSupabaseSuggestions is defined)
+    // to guarantee they connect to the Supabase-powered search.
+    (function wireQuickCreateSuggestions() {
+        const qqSalesperson = document.getElementById('qq-salesperson');
+        const qqSalespersonSuggest = document.getElementById('qq-salesperson-suggest');
+        if (qqSalesperson && qqSalespersonSuggest) {
+            window.setupSupabaseSuggestions(qqSalesperson, qqSalespersonSuggest, 'omnis_sales_persons', 'name');
+        }
+
+        const qqItem = document.getElementById('qq-item');
+        const qqItemSuggest = document.getElementById('qq-item-suggest');
+        if (qqItem && qqItemSuggest) {
+            window.setupSupabaseSuggestions(qqItem, qqItemSuggest, 'stock_inventory', 'model,brand');
+        }
+
+        // Also wire Advanced Form salesperson (view-create-quotation)
+        const qtnSalesPerson = document.getElementById('qtn-sales-person');
+        const qtnSalespersonSuggest = document.getElementById('qtn-salesperson-suggest');
+        if (qtnSalesPerson && qtnSalespersonSuggest) {
+            window.setupSupabaseSuggestions(qtnSalesPerson, qtnSalespersonSuggest, 'omnis_sales_persons', 'name');
+        }
+
+        // Also wire CE (Opportunity) salesperson
+        const ceSalesperson = document.getElementById('ce-salesperson');
+        const ceSalespersonSuggest = document.getElementById('ce-salesperson-suggest');
+        if (ceSalesperson && ceSalespersonSuggest) {
+            window.setupSupabaseSuggestions(ceSalesperson, ceSalespersonSuggest, 'omnis_sales_persons', 'name');
+        }
+    })();
 
     window.triggerCatalogSync = async function (btn) {
         if (!btn) return;
@@ -16460,7 +16495,7 @@
   \x3C/script>
   
   
-  \x3Cscript src="user_management_logic.js">\x3C/script>
+  \x3Cscript src="user_management_logic.js?v=202609072015">\x3C/script>
 </body>
 </html>`);
       win.document.close();
@@ -20161,14 +20196,14 @@ thead th { padding:11px 12px; font-size:10px; font-weight:800; color:#fff; text-
   </div>
 
   <!-- External Logic Modules -->
-  <script src="dashboard_logic.js?v=29"></script>
-  <script src="orders_logic.js?v=23"></script>
-    <script src="training_logic.js"></script>
-  <script src="training_library.js?v=11"></script>
+  <script src="dashboard_logic.js?v=202609072015"></script>
+  <script src="orders_logic.js?v=202609072015"></script>
+    <script src="training_logic.js?v=202609072015"></script>
+  <script src="training_library.js?v=202609072015"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
-  <script src="certificates_logic.js?v=12"></script>
-  <script src="cyber_fx.js"></script>
-  <script src="tender_hub.js?v=2"></script>
+  <script src="certificates_logic.js?v=202609072015"></script>
+  <script src="cyber_fx.js?v=202609072015"></script>
+  <script src="tender_hub.js?v=202609072015"></script>
 
 
   <script>
@@ -28084,6 +28119,7 @@ Commercial Team`);
       } catch (err) {
         console.error("[WhatsApp Automation] Error running dispatch:", err);
       }
+    } // <-- Added missing closing bracket
     function startWhatsAppAutomatedDispatcher() {
         // Obsolete function, logic removed.
     }
