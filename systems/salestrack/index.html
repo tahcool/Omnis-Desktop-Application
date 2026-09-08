@@ -16190,7 +16190,7 @@
                             
                             // Map to expected format
                             const mappedItem = {
-                                value: item.frappe_id || item.model || item.item_code || item.name || item.customer_name,
+                                value: item.model || item.item_code || item.name || item.customer_name || item.frappe_id,
                                 description: item.item_name || item.model || item.name || item.item_code || item.customer_name,
                                 customer_name: item.customer_name || "",
                                 brand: item.brand || item.brand_name || "",
