@@ -16166,9 +16166,9 @@
                 list.innerHTML = '';
                 if (results && results.length > 0) {
                     list.innerHTML = results.map(item => {
-                        const title = item.item_name || item.name || item.item_code || item.customer_name;
-                        const sub = item.item_code || item.brand_name || item.parent_group || "";
-                        const details = item.brand_name ? `Brand: ${item.brand_name}` : (item.item_group_name ? `Group: ${item.item_group_name}` : "");
+                        const title = item.item_name || item.model || item.name || item.item_code || item.customer_name;
+                        const sub = item.item_code || item.brand || item.brand_name || item.company || item.parent_group || "";
+                        const details = item.brand ? `Brand: ${item.brand}` : (item.brand_name ? `Brand: ${item.brand_name}` : (item.item_group_name ? `Group: ${item.item_group_name}` : ""));
                         
                         return `
                             <div class="suggest-item" data-id="${item.id || item.name}" style="padding:10px 14px; border-bottom:1px solid #f1f5f9; cursor:pointer;">
@@ -16190,11 +16190,11 @@
                             
                             // Map to expected format
                             const mappedItem = {
-                                value: item.frappe_id || item.item_code || item.name || item.customer_name,
-                                description: item.item_name || item.name || item.item_code || item.customer_name,
+                                value: item.frappe_id || item.model || item.item_code || item.name || item.customer_name,
+                                description: item.item_name || item.model || item.name || item.item_code || item.customer_name,
                                 customer_name: item.customer_name || "",
-                                brand: item.brand_name || "",
-                                details: item.item_code || "",
+                                brand: item.brand || item.brand_name || "",
+                                details: item.item_code || item.company || "",
                                 rate: item.rate || 0
                             };
 
