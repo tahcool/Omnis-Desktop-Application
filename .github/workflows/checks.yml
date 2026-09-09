@@ -1,0 +1,109 @@
+# CI Checks — Secret Scanning & Authorization Verification
+# Blocks PRs and pushes that contain hardcoded credentials.
+name: Security Checks
+
+on:
+  push:
+    branches: [main, develop, 'feature/**', 'security/**']
+  pull_request:
+    branches: [main, develop]
+
+jobs:
+  secret-scan:
+    name: Secret Scanner
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Run Omnis Secret Scanner
+        run: node scripts/secret-scanner.js --ci
+
+  client-key-audit:
+    name: Client Key Audit
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Verify no service role keys in client code
+        run: |
+          echo "=== Scanning client-facing files for service role keys ==="
+          
+          # Files that are distributed to end users (desktop + tablet)
+          CLIENT_FILES=(
+            "main.js"
+            "preload.js"
+            "lib/email-manager.js"
+            "lib/sync-manager.js"
+            "lib/whatsapp-client.js"
+            "omnis-tablet/src/"
+            "systems/"
+          )
+          
+          FOUND=0
+          for pattern in "${CLIENT_FILES[@]}"; do
+            if [ -e "$pattern" ] || ls $pattern 1>/dev/null 2>&1; then
+              # Search for service role key patterns
+              if grep -rnI 'sb_secret_\|SUPABASE_SERVICE_ROLE_KEY\|service_role' $pattern 2>/dev/null | grep -v '\.example\|\.md\|// .*never\|// .*NEVER\|# .*never\|\.gitignore' | grep -v 'test\|spec\|mock'; then
+                echo "❌ Service role key reference found in client code!"
+                FOUND=1
+              fi
+              
+              # Search for supabase.auth.admin calls (requires service role)
+              if grep -rnI 'auth\.admin\.' $pattern 2>/dev/null | grep -v '\.md\|\.example\|test\|spec\|mock'; then
+                echo "❌ auth.admin API call found in client code!"
+                FOUND=1
+              fi
+            fi
+          done
+          
+          if [ $FOUND -eq 1 ]; then
+            echo ""
+            echo "❌ BLOCKED: Client code must not contain service role keys or auth.admin calls."
+            echo "Route admin operations through Edge Functions instead."
+            exit 1
+          fi
+          
+          echo "✅ No service role keys or auth.admin calls found in client code."
+
+  edge-function-lint:
+    name: Edge Function Lint
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Verify Edge Functions have auth validation
+        run: |
+          echo "=== Checking Edge Functions for auth validation ==="
+          
+          FOUND=0
+          for fn_dir in supabase/functions/*/; do
+            fn_file="$fn_dir/index.ts"
+            if [ -f "$fn_file" ]; then
+              fn_name=$(basename "$fn_dir")
+              
+              # Skip shared/ directory (not a function)
+              if [ "$fn_name" = "_shared" ] || [ "$fn_name" = "shared" ]; then
+                continue
+              fi
+              
+              # Check for auth validation (getUser or Authorization header check)
+              if ! grep -q 'auth.getUser\|Authorization\|getSession' "$fn_file"; then
+                echo "⚠️  $fn_name: No auth validation found"
+              else
+                echo "✅ $fn_name: Auth validation present"
+              fi
+              
+              # Check for CORS headers
+              if ! grep -q 'Access-Control-Allow-Origin' "$fn_file"; then
+                echo "⚠️  $fn_name: No CORS headers"
+              fi
+            fi
+          done
+          
+          echo ""
+          echo "Edge Function lint complete."

@@ -2,8 +2,14 @@ import { createClient } from '@supabase/supabase-js';
 import * as SecureStore from 'expo-secure-store';
 
 const SUPABASE_URL = 'https://pfqaeewmlwfayxbgmuaq.supabase.co';
-// This is the anon/public key used across the app
-const SUPABASE_ANON_KEY = 'sb_secret_JZwRYG9k0mZ9x86o92O5sA__fuofVcU';
+// Publishable anon/public key — safe to include in client builds.
+// The service role key must NEVER be included here.
+// Set EXPO_PUBLIC_SUPABASE_ANON_KEY in your .env or app.config.js
+const SUPABASE_ANON_KEY = process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY || '';
+if (!SUPABASE_ANON_KEY) {
+  console.error('[FATAL] EXPO_PUBLIC_SUPABASE_ANON_KEY is not set. Set it in .env or app.config.js');
+  console.error('Get the anon/public key from: Supabase Dashboard → Settings → API → Project API keys');
+}
 
 // Custom SecureStore adapter so Supabase sessions persist across app restarts
 const ExpoSecureStoreAdapter = {

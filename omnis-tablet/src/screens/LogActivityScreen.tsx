@@ -546,7 +546,7 @@ const generateVisitEmailHtml = (params: {
     setSubmitting(true);
     try {
       const supabaseUrl = Constants.expoConfig?.extra?.supabaseUrl || 'https://pfqaeewmlwfayxbgmuaq.supabase.co';
-      const anonKey = Constants.expoConfig?.extra?.supabaseAnonKey || 'sb_secret_JZwRYG9k0mZ9x86o92O5sA__fuofVcU';
+      const anonKey = Constants.expoConfig?.extra?.supabaseAnonKey || '';
       const { data: { user } } = await supabase.auth.getUser();
 
       const metaName = user?.user_metadata?.full_name || user?.user_metadata?.name || user?.user_metadata?.display_name;
@@ -856,7 +856,7 @@ const generateEnquiryEmailHtml = (params: {
     setSubmitting(true);
     try {
       const supabaseUrl = Constants.expoConfig?.extra?.supabaseUrl || 'https://pfqaeewmlwfayxbgmuaq.supabase.co';
-      const anonKey = Constants.expoConfig?.extra?.supabaseAnonKey || 'sb_secret_JZwRYG9k0mZ9x86o92O5sA__fuofVcU';
+      const anonKey = Constants.expoConfig?.extra?.supabaseAnonKey || '';
       const { data: { user } } = await supabase.auth.getUser();
 
       const metaName = user?.user_metadata?.full_name || user?.user_metadata?.name || user?.user_metadata?.display_name;

@@ -56,7 +56,7 @@ export default function VisitHistoryScreen() {
       const fallbackEmail = user?.email || 'Mobile User';
 
       const supabaseUrl = Constants.expoConfig?.extra?.supabaseUrl || 'https://pfqaeewmlwfayxbgmuaq.supabase.co';
-      const anonKey = Constants.expoConfig?.extra?.supabaseAnonKey || 'sb_secret_JZwRYG9k0mZ9x86o92O5sA__fuofVcU';
+      const anonKey = Constants.expoConfig?.extra?.supabaseAnonKey || '';
 
       const headers = {
         'apikey': anonKey,
@@ -149,7 +149,7 @@ export default function VisitHistoryScreen() {
     setSaving(true);
     try {
       const supabaseUrl = Constants.expoConfig?.extra?.supabaseUrl || 'https://pfqaeewmlwfayxbgmuaq.supabase.co';
-      const anonKey = Constants.expoConfig?.extra?.supabaseAnonKey || 'sb_secret_JZwRYG9k0mZ9x86o92O5sA__fuofVcU';
+      const anonKey = Constants.expoConfig?.extra?.supabaseAnonKey || '';
 
       const payload: any = {
         action_required: actionRequired,
@@ -203,7 +203,7 @@ export default function VisitHistoryScreen() {
   const deleteVisit = async (visit: any) => {
     try {
       const supabaseUrl = Constants.expoConfig?.extra?.supabaseUrl || 'https://pfqaeewmlwfayxbgmuaq.supabase.co';
-      const anonKey = Constants.expoConfig?.extra?.supabaseAnonKey || 'sb_secret_JZwRYG9k0mZ9x86o92O5sA__fuofVcU';
+      const anonKey = Constants.expoConfig?.extra?.supabaseAnonKey || '';
 
       const table = visit.type === 'PSV' ? 'psv_logs' : 'cdv_logs';
       const res = await fetch(`${supabaseUrl}/rest/v1/${table}?id=eq.${visit.id}`, {

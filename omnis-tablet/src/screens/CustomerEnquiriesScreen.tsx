@@ -300,12 +300,15 @@ export default function CustomerEnquiriesScreen() {
         created_by: salesRepDisplayName,
       });
 
-      // Trigger Edge function
-      fetch('https://pfqaeewmlwfayxbgmuaq.supabase.co/functions/v1/process-email-queue', {
-        method: 'POST',
-        headers: { 'Authorization': `Bearer sb_secret_JZwRYG9k0mZ9x86o92O5sA__fuofVcU`, 'Content-Type': 'application/json' },
-        body: JSON.stringify({}),
-      }).catch(e => console.log('Edge trigger silent catch:', e));
+      // Trigger Edge function using user session (no service role key)
+      const { data: { session } } = await supabase.auth.getSession();
+      if (session?.access_token) {
+        fetch('https://pfqaeewmlwfayxbgmuaq.supabase.co/functions/v1/process-email-queue', {
+          method: 'POST',
+          headers: { 'Authorization': `Bearer ${session.access_token}`, 'Content-Type': 'application/json' },
+          body: JSON.stringify({}),
+        }).catch(e => console.log('Edge trigger silent catch:', e));
+      }
 
       setModalVisible(false);
       setForm({ customer_name: '', request_details: '', estimated_value: '', items: [blankItem()] });
@@ -539,11 +542,15 @@ export default function CustomerEnquiriesScreen() {
       created_by: salesRepDisplayName,
     });
 
-    fetch('https://pfqaeewmlwfayxbgmuaq.supabase.co/functions/v1/process-email-queue', {
-      method: 'POST',
-      headers: { 'Authorization': `Bearer sb_secret_JZwRYG9k0mZ9x86o92O5sA__fuofVcU`, 'Content-Type': 'application/json' },
-      body: JSON.stringify({}),
-    }).catch(e => console.log('Edge trigger silent catch:', e));
+    // Trigger Edge function using user session (no service role key)
+    const { data: { session: sess } } = await supabase.auth.getSession();
+    if (sess?.access_token) {
+      fetch('https://pfqaeewmlwfayxbgmuaq.supabase.co/functions/v1/process-email-queue', {
+        method: 'POST',
+        headers: { 'Authorization': `Bearer ${sess.access_token}`, 'Content-Type': 'application/json' },
+        body: JSON.stringify({}),
+      }).catch(e => console.log('Edge trigger silent catch:', e));
+    }
 
     sendWhatsAppMessage({
       recipientPhone: primaryToEmail,

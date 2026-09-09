@@ -7,16 +7,18 @@ const dns = require("dns");
 
 require('dotenv').config();
 
-// Supabase Integration
+// Supabase Integration — client uses publishable anon key only
+// Service role key is NEVER loaded in the Electron process.
 const { createClient } = require('@supabase/supabase-js');
-const SUPABASE_URL = "https://pfqaeewmlwfayxbgmuaq.supabase.co";
-const p1 = "sb_secret_JZwRYG9k0mZ";
-const p2 = "9x86o92O5sA__fuofVcU";
-const SUPABASE_KEY = p1 + p2;
-const supabase = createClient(SUPABASE_URL, SUPABASE_KEY);
-const supabaseAdmin = createClient(SUPABASE_URL, SUPABASE_KEY, {
-  auth: { persistSession: false, autoRefreshToken: false, detectSessionInUrl: false }
-});
+const SUPABASE_URL = process.env.SUPABASE_URL || "https://pfqaeewmlwfayxbgmuaq.supabase.co";
+const SUPABASE_ANON_KEY = process.env.SUPABASE_ANON_KEY;
+if (!SUPABASE_ANON_KEY) {
+  console.error('[FATAL] SUPABASE_ANON_KEY environment variable is not set.');
+  console.error('Set it in your .env file: SUPABASE_ANON_KEY=eyJ...');
+  console.error('Get the anon/public key from: Supabase Dashboard → Settings → API → Project API keys');
+  // Allow app to start but Supabase operations will fail gracefully
+}
+const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY || 'missing-anon-key');
 
 // Offline Caching - Sync Manager
 const syncManager = require('./lib/sync-manager');
@@ -25,8 +27,9 @@ syncManager.setSupabase(supabase); // Inject supabase client
 // WhatsApp Built-in Integration
 const whatsappManager = require('./lib/whatsapp-client');
 
-// Email System (Supabase-first)
+// Email System (Edge Function-first — no service key in Electron)
 const emailManager = require('./lib/email-manager');
+emailManager.setSupabase(supabase); // Inject supabase client (anon key + user session)
 
 // --- SOFTWARE-DEFINED DNS FOR OMNIS ECOSYSTEM ---
 const SPE_IP = '102.218.13.123';
@@ -771,11 +774,14 @@ ipcMain.handle('supabase:edgeFunction', async (event, { name, data }) => {
 
 ipcMain.handle('supabase:query', async (event, { table, method, params, data }) =>{
   try {
+    // DEBUG_ENV removed — was leaking service key to renderer
     if (table === 'DEBUG_ENV') {
-      return { ok: true, data: [{ url: SUPABASE_URL, key: SUPABASE_KEY }] };
+      return { ok: false, error: 'DEBUG_ENV has been removed for security.' };
     }
     params = params || {};
-    let query = (table === 'omnis_email_queue' || table === 'stock_inventory') ? supabaseAdmin.from(table) : supabase.from(table);
+    // All tables use the same client — no admin bypass.
+    // omnis_email_queue and stock_inventory need proper RLS policies.
+    let query = supabase.from(table);
 
     if (method === 'select') {
       query = query.select(params.columns || '*', params.options || {});
@@ -855,265 +861,47 @@ ipcMain.handle('supabase:query', async (event, { table, method, params, data }) 
   }
 });
 
-// ✅ Supabase Auth Admin — generate password reset / invite links
+// ✅ Supabase Auth Admin — routed through backend Edge Function
+// All admin operations are validated server-side. The desktop client
+// passes its user JWT and the Edge Function checks authorization.
 ipcMain.handle('supabase:auth', async (event, { action, email, userId, password, reason }) => {
   try {
-    if (action === 'resetPassword') {
-      // Try recovery link first (works if user already exists in auth.users)
-      const { data, error } = await supabase.auth.admin.generateLink({
-        type: 'recovery',
-        email,
-        options: { redirectTo: '' } // not needed — link works standalone
-      });
-      if (error) {
-        // Fallback: user might not exist yet — send an invite instead
-        const inv = await supabase.auth.admin.generateLink({ type: 'invite', email });
-        if (inv.error) return { ok: false, error: inv.error.message };
-        return { ok: true, link: inv.data?.properties?.action_link, type: 'invite' };
-      }
-      return { ok: true, link: data?.properties?.action_link, type: 'recovery' };
+    // Get current user session to pass JWT to Edge Function
+    const { data: sessionData } = await supabase.auth.getSession();
+    const accessToken = sessionData?.session?.access_token;
+    if (!accessToken) {
+      return { ok: false, error: 'Not authenticated. Please sign in first.' };
     }
 
-    if (action === 'inviteUser') {
-      const { data, error } = await supabase.auth.admin.generateLink({ type: 'invite', email });
-      if (error) return { ok: false, error: error.message };
-      return { ok: true, link: data?.properties?.action_link, type: 'invite' };
+    // Route through admin-operations Edge Function
+    const { data: result, error } = await supabase.functions.invoke('admin-operations', {
+      body: { action, email, userId, password, reason },
+    });
+
+    if (error) {
+      // Edge Function errors come as FunctionsHttpError with context
+      const errBody = typeof error === 'object' && error.context ? error.context : error;
+      const message = errBody?.error || errBody?.message || error.message || 'Admin operation failed';
+      return { ok: false, error: message };
     }
 
-    if (action === 'setPassword') {
-      if (!userId) return { ok: false, error: 'userId required for setPassword' };
-      const { data, error } = await supabase.auth.admin.updateUserById(userId, { password });
-      if (error) return { ok: false, error: error.message };
-      return { ok: true, data };
-    }
-
-    if (action === 'setPasswordByEmail') {
-      // Look up the auth user by email, then set their password directly
-      if (!email) return { ok: false, error: 'email required' };
-      if (!password) return { ok: false, error: 'password required' };
-      const { data: { users }, error: listErr } = await supabase.auth.admin.listUsers();
-      if (listErr) return { ok: false, error: listErr.message };
-      const authUser = (users || []).find(u => u.email === email);
-      if (!authUser) return { ok: false, error: `No auth account found for ${email}. Use Reset Password to invite them first.` };
-      const { error: updErr } = await supabase.auth.admin.updateUserById(authUser.id, { password });
-      if (updErr) return { ok: false, error: updErr.message };
-      return { ok: true };
-    }
-
-    if (action === 'impersonate') {
-      // Step 1: generate a magic link
-      const { data, error } = await supabase.auth.admin.generateLink({
-        type: 'magiclink',
-        email
-      });
-      if (error) return { ok: false, error: error.message };
-
-      const action_link = data?.properties?.action_link;
-      if (!action_link) return { ok: false, error: 'No action_link from Supabase' };
-
-      // Step 2: exchange server-side (no browser needed) — Supabase returns a 303
-      // redirect to <redirect_to>#access_token=...&refresh_token=...
-      let access_token, refresh_token, expires_in;
-      try {
-        const resp = await fetch(action_link, { redirect: 'manual' });
-        const loc  = resp.headers.get('location') || '';
-        // Hash fragment comes after '#', parse as query string
-        const hash = loc.includes('#') ? loc.split('#')[1] : loc.split('?')[1] || '';
-        const p    = new URLSearchParams(hash);
-        access_token  = p.get('access_token');
-        refresh_token = p.get('refresh_token');
-        expires_in    = parseInt(p.get('expires_in') || '3600', 10);
-        if (!access_token) throw new Error('No access_token in redirect: ' + loc.substring(0, 80));
-      } catch(e) {
-        return { ok: false, error: 'Token exchange failed: ' + e.message };
-      }
-
-      // Step 3: Audit log (best-effort)
-      try {
-        await supabase.from('ft_portal_impersonation_log').insert({
-          admin_name:     'Omnis Admin',
-          customer_email: email,
-          reason,
-          created_at:     new Date().toISOString()
-        });
-      } catch(logErr) {
-        console.warn('[Impersonate] Audit log failed:', logErr.message);
-      }
-
-      // Decode user from the access_token JWT (standard base64 payload, no verification needed here)
-      let user = null;
-      try {
-        const payload = JSON.parse(Buffer.from(access_token.split('.')[1], 'base64url').toString('utf8'));
-        user = {
-          id:                payload.sub,
-          aud:               payload.aud  || 'authenticated',
-          role:              payload.role || 'authenticated',
-          email:             payload.email || email,
-          email_confirmed_at: payload.email_confirmed_at,
-          phone:             payload.phone || '',
-          confirmed_at:      payload.confirmed_at,
-          last_sign_in_at:   payload.last_sign_in_at,
-          app_metadata:      payload.app_metadata  || {},
-          user_metadata:     payload.user_metadata  || {},
-          identities:        payload.identities     || [],
-          created_at:        payload.created_at,
-          updated_at:        payload.updated_at,
-        };
-      } catch(decodeErr) {
-        console.warn('[Impersonate] Could not decode JWT user payload:', decodeErr.message);
-      }
-
-      return { ok: true, access_token, refresh_token, expires_in, user };
-    }
-
-    const SUPER_ADMIN_EMAILS = ['takunda@industrial-exchange.group', 'zaranyika.rt@gmail.com'];
-
-    // Helper: resolve user email from userId (to enforce super-admin protection server-side)
-    async function getUserEmail(uid) {
-      try {
-        const { data, error } = await supabase.auth.admin.getUserById(uid);
-        return data?.user?.email?.toLowerCase() || null;
-      } catch { return null; }
-    }
-
-    if (action === 'listUsers') {
-      const { data, error } = await supabase.auth.admin.listUsers({ perPage: 1000 });
-      if (error) return { ok: false, error: error.message };
-      return { ok: true, users: data.users || [] };
-    }
-
-    if (action === 'suspendUser') {
-      if (!userId) return { ok: false, error: 'userId required' };
-      const email = await getUserEmail(userId);
-      if (SUPER_ADMIN_EMAILS.includes(email)) return { ok: false, error: 'Cannot suspend the super-admin account.' };
-      const { error } = await supabase.auth.admin.updateUserById(userId, { ban_duration: '876000h' });
-      if (error) return { ok: false, error: error.message };
-      return { ok: true };
-    }
-
-    if (action === 'unsuspendUser') {
-      if (!userId) return { ok: false, error: 'userId required' };
-      const { error } = await supabase.auth.admin.updateUserById(userId, { ban_duration: 'none' });
-      if (error) return { ok: false, error: error.message };
-      return { ok: true };
-    }
-
-    if (action === 'deleteUser') {
-      if (!userId) return { ok: false, error: 'userId required' };
-      const email = await getUserEmail(userId);
-      if (SUPER_ADMIN_EMAILS.includes(email)) return { ok: false, error: 'Cannot delete the super-admin account.' };
-      const { error } = await supabase.auth.admin.deleteUser(userId);
-      if (error) return { ok: false, error: error.message };
-      return { ok: true };
-    }
-
-    if (action === 'setPasswordDirect') {
-      if (!userId) return { ok: false, error: 'userId required' };
-      if (!password) return { ok: false, error: 'password required' };
-      const { error } = await supabase.auth.admin.updateUserById(userId, { password });
-      if (error) return { ok: false, error: error.message };
-      return { ok: true };
-    }
-
-    if (action === 'makeAdmin') {
-      if (!userId) return { ok: false, error: 'userId required' };
-      const email = await getUserEmail(userId);
-      if (SUPER_ADMIN_EMAILS.includes(email)) return { ok: false, error: 'Super-admin role is built-in and cannot be re-assigned.' };
-      const { error } = await supabase.auth.admin.updateUserById(userId, { app_metadata: { role: 'admin' } });
-      if (error) return { ok: false, error: error.message };
-      return { ok: true };
-    }
-
-    if (action === 'removeAdmin') {
-      if (!userId) return { ok: false, error: 'userId required' };
-      const email = await getUserEmail(userId);
-      if (SUPER_ADMIN_EMAILS.includes(email)) return { ok: false, error: 'Cannot demote the super-admin account.' };
-      const { error } = await supabase.auth.admin.updateUserById(userId, { app_metadata: { role: 'user' } });
-      if (error) return { ok: false, error: error.message };
-      return { ok: true };
-    }
-
-    return { ok: false, error: `Unknown auth action: ${action}` };
+    return result || { ok: true };
   } catch (err) {
     console.error('[Supabase Auth Error]', action, err.message);
     return { ok: false, error: err.message };
   }
 });
 
-// ✅ Open customer portal as an impersonated user
-//   - Tokens were already exchanged server-side in main process
-//   - We inject the session into localStorage before Supabase client init
-//   - Portal reloads and picks up the pre-stored session naturally
-ipcMain.handle('portal:impersonate', async (event, { access_token, refresh_token, expires_in, user, email }) => {
-  try {
-    const PROJ_REF  = 'pfqaeewmlwfayxbgmuaq';
-    const LS_KEY    = `sb-${PROJ_REF}-auth-token`;
-    const portalPath = path.join(__dirname, 'systems', 'fleetrack', 'customer-portal.html');
-
-    // Build a COMPLETE session object — user must NOT be null or Supabase will
-    // try to refresh the token (network call → fails with invalid anon key)
-    const sessionPayload = {
-      access_token,
-      refresh_token,
-      expires_at: Math.floor(Date.now() / 1000) + (expires_in || 3600),
-      expires_in: expires_in || 3600,
-      token_type: 'bearer',
-      user: user || { id: '', email, role: 'authenticated', aud: 'authenticated',
-                      app_metadata: {}, user_metadata: {}, created_at: '' }
-    };
-    const sessionStr = JSON.stringify(sessionPayload);
-
-    const win = new BrowserWindow({
-      width: 1280, height: 820,
-      show: false,
-      title: `👤 ${email} — Customer Portal (Impersonation)`,
-      webPreferences: {
-        nodeIntegration: false,
-        contextIsolation: true,
-        webSecurity: false
-      }
-    });
-
-    // First load: inject session into localStorage BEFORE Supabase client init
-    await win.loadFile(portalPath);
-
-    await win.webContents.executeJavaScript(`
-      localStorage.setItem(${JSON.stringify(LS_KEY)}, ${JSON.stringify(sessionStr)});
-      console.log('[ImpersonatePortal] Complete session stored, reloading...');
-    `);
-
-    // Second load: Supabase finds the complete session → no network call needed
-    await win.loadFile(portalPath);
-
-    // Wait a moment for the auto-restore IIFE to complete
-    await new Promise(r => setTimeout(r, 800));
-
-    // Verify the session was picked up
-    await win.webContents.executeJavaScript(`
-      (async () => {
-        const { data: { session } } = await sb.auth.getSession();
-        if (session) {
-          console.log('[ImpersonatePortal] Session active for:', session.user.email);
-          window.CURRENT_USER = session.user;
-          // If showApp hasn\'t already been called by the IIFE, call it now
-          if (document.getElementById('auth-screen').style.display !== 'none') {
-            await loadPortalAccount();
-            showApp();
-          }
-        } else {
-          console.warn('[ImpersonatePortal] No session after reload — check anon key');
-        }
-      })();
-    `);
-
-    win.setTitle(`👤 ${email} — Customer Portal (Impersonation)`);
-    win.show();
-    return { ok: true };
-
-  } catch(err) {
-    console.error('[portal:impersonate]', err.message);
-    return { ok: false, error: err.message };
-  }
+// 🚫 DEFERRED: Customer portal impersonation
+// Impersonation requires additional safeguards and has been deferred.
+// See: backlog — elevated account operations
+ipcMain.handle('portal:impersonate', async (event, params) => {
+  return {
+    ok: false,
+    error: 'Impersonation has been deferred. This capability requires additional safeguards ' +
+           'and is not available in this version. Use the standard customer portal login instead.',
+    deferred: true
+  };
 });
 
 
@@ -1163,57 +951,74 @@ ipcMain.handle('supabase:signIn', async (event, { email, password }) => {
   }
 });
 
-// 🔐 Admin: Get all users with their access levels
+// 🔐 Admin: Get all users — routed through Edge Function
 ipcMain.handle('supabase:getUsers', async () => {
   try {
-    // Requires service_role key to list auth users
-    const { data: authData, error: authError } = await supabase.auth.admin.listUsers();
-    if (authError) return { ok: false, error: authError.message };
-    
-    const { data: accessData, error: accessError } = await supabase.from('user_system_access').select('*');
-    if (accessError) return { ok: false, error: accessError.message };
+    const { data: sessionData } = await supabase.auth.getSession();
+    if (!sessionData?.session?.access_token) {
+      return { ok: false, error: 'Not authenticated' };
+    }
 
-    const users = authData.users.map(u => {
-      const access = accessData.find(a => a.user_id === u.id) || { is_admin: false, systems: [] };
-      return { id: u.id, email: u.email, is_admin: access.is_admin, systems: access.systems };
+    const { data: result, error } = await supabase.functions.invoke('admin-operations', {
+      body: { action: 'getUsers' },
     });
-    return { ok: true, users };
+
+    if (error) {
+      const message = error?.context?.error || error?.message || 'Failed to fetch users';
+      return { ok: false, error: message };
+    }
+
+    return result || { ok: false, error: 'No response from server' };
   } catch (e) {
     return { ok: false, error: e.message };
   }
 });
 
-// 🔐 Admin: Create a new user
+// 🔐 Admin: Create a new user — routed through Edge Function
 ipcMain.handle('supabase:createUser', async (event, { email, password, is_admin, systems }) => {
   try {
-    const { data: authData, error: authError } = await supabase.auth.admin.createUser({
-      email,
-      password,
-      email_confirm: true
+    const { data: sessionData } = await supabase.auth.getSession();
+    if (!sessionData?.session?.access_token) {
+      return { ok: false, error: 'Not authenticated' };
+    }
+
+    // Note: is_admin is NOT passed to the backend — new users are never admins.
+    // Use makeAdmin separately to grant admin privileges (requires super-admin).
+    const { data: result, error } = await supabase.functions.invoke('admin-operations', {
+      body: { action: 'createUser', email, password, systems },
     });
-    if (authError) return { ok: false, error: authError.message };
-    
-    // The trigger might have created a row, so we UPDATE it, or insert if not exists
-    const { error: upsertError } = await supabase
-      .from('user_system_access')
-      .upsert({ user_id: authData.user.id, is_admin, systems }, { onConflict: 'user_id' });
-    
-    if (upsertError) return { ok: false, error: upsertError.message };
-    
-    return { ok: true, user: authData.user };
+
+    if (error) {
+      const message = error?.context?.error || error?.message || 'Failed to create user';
+      return { ok: false, error: message };
+    }
+
+    return result || { ok: false, error: 'No response from server' };
   } catch(e) {
     return { ok: false, error: e.message };
   }
 });
 
-// 🔐 Admin: Update user access
+// 🔐 Admin: Update user access — routed through Edge Function
+// The Edge Function enforces that is_admin changes require super-admin authority
+// and that system grants cannot exceed the caller's own scope.
 ipcMain.handle('supabase:updateUserAccess', async (event, { user_id, is_admin, systems }) => {
   try {
-    const { error } = await supabase
-      .from('user_system_access')
-      .upsert({ user_id, is_admin, systems }, { onConflict: 'user_id' });
-    if (error) return { ok: false, error: error.message };
-    return { ok: true };
+    const { data: sessionData } = await supabase.auth.getSession();
+    if (!sessionData?.session?.access_token) {
+      return { ok: false, error: 'Not authenticated' };
+    }
+
+    const { data: result, error } = await supabase.functions.invoke('admin-operations', {
+      body: { action: 'updateUserAccess', userId: user_id, is_admin, systems },
+    });
+
+    if (error) {
+      const message = error?.context?.error || error?.message || 'Failed to update access';
+      return { ok: false, error: message };
+    }
+
+    return result || { ok: false, error: 'No response from server' };
   } catch(e) {
     return { ok: false, error: e.message };
   }
