@@ -9,7 +9,7 @@ serve(async (req: Request) => {
   }
 
   try {
-    const { title, body, data } = await req.json();
+    const { title, body, data, targetEmail } = await req.json();
 
     if (!title || !body) {
       return new Response(JSON.stringify({ error: 'title and body are required' }), {
@@ -23,9 +23,13 @@ serve(async (req: Request) => {
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!
     );
 
-    const { data: tokens, error } = await supabase
-      .from('user_push_tokens')
-      .select('expo_push_token');
+    let query = supabase.from('user_push_tokens').select('expo_push_token');
+    
+    if (targetEmail) {
+      query = query.eq('user_id', targetEmail);
+    }
+
+    const { data: tokens, error } = await query;
 
     if (error) {
       return new Response(JSON.stringify({ error: 'Failed to fetch tokens' }), {

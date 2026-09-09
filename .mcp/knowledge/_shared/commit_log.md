@@ -572,3 +572,5 @@
 \n## 2026-09-09
 - `0b14272` 2026-09-09 [supabase-migration] [checkpoint] Checkpoint: User requested restore point (PDF quotation generation logic)
   Files: .mcp/knowledge/_shared/commit_log.md,
+- `34f7ae5` 2026-09-09 [supabase-migration] [checkpoint] Added Price and Lead Time inputs to Quick Create form and restyled table
+  Files: .mcp/knowledge/_shared/commit_log.md,systems/salestrack/create_quotation_logic.js,systems/salestrack/dashboard_logic.js,systems/salestrack/index.html,systems/salestrack/orders_logic.js,

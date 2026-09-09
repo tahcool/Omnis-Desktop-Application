@@ -3049,6 +3049,14 @@
       box-shadow: 0 0 15px rgba(16, 185, 129, 0.1);
     }
 
+    .q-quick-title {
+      font-size: 14px;
+      font-weight: 800;
+      color: var(--accent-maroon);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+
     .efficiency-label {
       font-size: 10px;
       font-weight: 700;
@@ -3605,10 +3613,97 @@
     .create-card {
       background: var(--surface);
       border-radius: var(--radius);
-      padding: 18px 20px 20px;
+      padding: 30px;
       box-shadow: var(--shadow-sm);
       border: 1px solid var(--border);
-      max-width: 820px;
+      max-width: 1000px;
+      margin: 0 auto;
+      width: 100%;
+    }
+
+    .create-title {
+      font-size: 20px;
+      font-weight: 800;
+      color: var(--accent-maroon, #800000);
+      letter-spacing: -0.01em;
+    }
+
+    .create-row-half {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+    }
+
+    .grid-4-col {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 16px;
+    }
+
+    .grid-3-col {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 16px;
+    }
+
+    .grid-2-col {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 16px;
+    }
+
+    .form-row {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      margin-bottom: 16px;
+    }
+
+    .form-input, .form-textarea {
+      width: 100%;
+      padding: 10px 14px;
+      font-size: 13px;
+      line-height: 1.5;
+      color: #1f2937;
+      background-color: #f9fafb;
+      border: 1px solid #d1d5db;
+      border-radius: 8px;
+      box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.02);
+      transition: all 0.2s ease-in-out;
+      font-family: inherit;
+    }
+
+    .form-input:focus, .form-textarea:focus {
+      outline: none;
+      border-color: var(--accent-maroon, #800000);
+      background-color: #ffffff;
+      box-shadow: 0 0 0 3px rgba(128, 0, 0, 0.1);
+    }
+
+    .form-input:read-only, .form-textarea:read-only, 
+    .form-input:disabled, .form-textarea:disabled {
+      background-color: #e5e7eb;
+      color: #6b7280;
+      cursor: not-allowed;
+      border-color: #d1d5db;
+    }
+
+    .form-label {
+      font-size: 13px;
+      font-weight: 700;
+      color: #374151;
+      margin-bottom: 2px;
+    }
+
+    .section-label {
+      font-weight: 800;
+      color: var(--text-dark);
+      margin-bottom: 12px;
+      border-bottom: 2px solid #f3f4f6;
+      padding-bottom: 8px;
+      font-size: 15px;
+      text-transform: uppercase;
+      letter-spacing: 0.03em;
     }
 
     .btn-secondary {
@@ -5469,14 +5564,15 @@
     }
 
     .q-quick-panel {
-      background: #ffffff;
-      border: 1px solid #e2e8f0;
+      background: linear-gradient(135deg, #fff1f2, #ffe4e6);
+      border: 1px solid #fecdd3;
       border-radius: 20px;
       padding: 24px;
       margin-bottom: 24px;
       display: flex;
       flex-direction: column;
       gap: 16px;
+      box-shadow: 0 4px 15px rgba(225, 29, 72, 0.08);
     }
 
     .q-quick-form {
@@ -9012,7 +9108,7 @@
 
         <!-- KPI ROW -->
         <div id="qlist-stats-row"
-          style="display:grid; grid-template-columns: repeat(5, 1fr); gap:16px; margin-bottom:28px;">
+          style="display:grid; grid-template-columns: repeat(4, 1fr); gap:16px; margin-bottom:28px;">
           <div class="mxg-kpi-card">
             <div style="position: absolute; right: -5px; bottom: -15px; opacity: 0.12; font-size: 85px; color: rgba(139, 34, 25, 1); transform: rotate(-10deg); pointer-events: none;">
               <i class="fas fa-file-invoice"></i>
@@ -11387,22 +11483,21 @@
 
     <!-- CREATE QUOTATION VIEW -->
     <div id="view-create-quotation" class="view-page hidden">
-      <div class="create-card">
+      <div class="create-card" style="max-width: 100%;">
         <div class="create-header-row"
           style="display:flex;justify-content:space-between;align-items:center;margin-bottom:15px;">
           <div>
             <div class="create-title">New Quotation</div>
           </div>
           <div style="display:flex;gap:10px;">
-            <button id="btn-submit-quotation" type="button" class="primary-pill-btn">
-              <span class="icon">💾</span>
-              <span>Save</span>
+            <button id="btn-submit-quotation" type="button" class="btn-primary" style="padding:0 20px; border-radius:10px; font-weight:800; height: 42px; font-size: 12px; text-transform:uppercase; letter-spacing:0.02em; background:#800000; color:#fff; border:none; box-shadow: 0 4px 12px rgba(128,0,0,0.2);">
+              <i class="fas fa-save" style="margin-right:8px;"></i> Save
             </button>
             <button id="btn-cancel-quotation" type="button" class="btn-secondary">Close</button>
           </div>
         </div>
 
-        <div class="form-row" style="margin-bottom: 20px;">
+        <div class="form-row" style="margin-bottom: 30px;">
           <label class="form-label">Quotation Title</label>
           <input type="text" id="qtn-title-display" class="form-input" readonly style="background:#f3f4f6;"
             placeholder="Title will be auto-generated...">
@@ -11410,115 +11505,109 @@
 
         <form id="qtn-form" onsubmit="event.preventDefault();">
 
-          <!-- Customer Section -->
-          <div class="form-row">
-            <label class="form-label"
-              style="font-weight:700; color:var(--text-dark); margin-bottom:10px; border-bottom:1px solid var(--border); padding-bottom:5px;">Customer
-              Details</label>
-          </div>
+          <div class="grid-3-col" style="gap: 40px; margin-bottom: 30px; align-items: start;">
+            
+            <!-- Column 1: Customer Details -->
+            <div class="qtn-section-col">
+              <div class="section-label" style="margin-top:0;">Customer Details</div>
+              
+              <div class="form-row">
+                <label class="form-label">Quotation To <span class="asterisk">*</span></label>
+                <input type="text" value="Customer" class="form-input" readonly>
+              </div>
+              
+              <div class="grid-2-col">
+                <div class="form-row">
+                  <label class="form-label">Customer <span class="asterisk">*</span></label>
+                  <div class="suggest-container">
+                    <input type="text" id="qtn-customer" class="form-input" placeholder="Search Customer...">
+                    <div id="qtn-customer-suggest" class="suggest-list hidden"></div>
+                  </div>
+                </div>
+                <div class="form-row">
+                  <label class="form-label">Customer Name</label>
+                  <input type="text" id="qtn-customer-name" class="form-input" readonly>
+                </div>
+              </div>
 
-          <div class="create-row-half">
-            <div class="form-row">
-              <label class="form-label">Quotation To <span class="asterisk">*</span></label>
-              <input type="text" value="Customer" class="form-input" readonly style="background:#f3f4f6;">
-            </div>
-            <div class="form-row">
-              <label class="form-label">Customer <span class="asterisk">*</span></label>
-              <div class="suggest-container">
-                <input type="text" id="qtn-customer" class="form-input" placeholder="Search Customer...">
-                <div id="qtn-customer-suggest" class="suggest-list hidden"></div>
+              <div class="form-row">
+                <label class="form-label">Company <span class="asterisk">*</span></label>
+                <select id="qtn-company" class="form-input">
+                  <option value="Sinopower">Sinopower</option>
+                  <option value="Machinery Exchange">Machinery Exchange</option>
+                </select>
+              </div>
+
+              <div class="form-row">
+                <label class="form-label">Delivery Terms</label>
+                <input type="text" id="qtn-delivery" class="form-input" placeholder="Delivery terms...">
               </div>
             </div>
-          </div>
 
-          <div class="create-row-half">
-            <div class="form-row">
-              <label class="form-label">Customer Name</label>
-              <input type="text" id="qtn-customer-name" class="form-input" readonly style="background:#f3f4f6;">
-            </div>
-            <div class="form-row">
-              <label class="form-label">Company <span class="asterisk">*</span></label>
-              <select id="qtn-company" class="form-input">
-                <option value="Sinopower">Sinopower</option>
-                <option value="Machinery Exchange">Machinery Exchange</option>
-              </select>
-            </div>
-          </div>
+            <!-- Column 2: Transaction Details -->
+            <div class="qtn-section-col">
+              <div class="section-label" style="margin-top:0;">Transaction Details</div>
 
-          <div class="form-row">
-            <label class="form-label">Delivery</label>
-            <textarea id="qtn-delivery" class="form-input" style="height:60px;"
-              placeholder="Delivery terms..."></textarea>
-          </div>
+              <div class="grid-2-col">
+                <div class="form-row">
+                  <label class="form-label">Date <span class="asterisk">*</span></label>
+                  <input type="date" id="qtn-date" class="form-input">
+                </div>
+                <div class="form-row">
+                  <label class="form-label">Valid Till</label>
+                  <input type="date" id="qtn-valid-till" class="form-input">
+                </div>
+              </div>
 
+              <div class="form-row">
+                <label class="form-label">Sales Person</label>
+                <div class="suggest-container">
+                  <input type="text" id="qtn-sales-person" class="form-input" placeholder="Search Sales Person...">
+                  <div id="qtn-salesperson-suggest" class="suggest-list hidden"></div>
+                </div>
+              </div>
 
-          <!-- Transaction Section -->
-          <div class="form-row" style="margin-top:20px;">
-            <label class="form-label"
-              style="font-weight:700; color:var(--text-dark); margin-bottom:10px; border-bottom:1px solid var(--border); padding-bottom:5px;">Transaction
-              Details</label>
-          </div>
+              <div class="form-row">
+                <label class="form-label">Bank Account</label>
+                <input type="text" id="qtn-bank" class="form-input" placeholder="Bank Account Link...">
+              </div>
 
-          <div class="create-row-half">
-            <div class="form-row">
-              <label class="form-label">Date <span class="asterisk">*</span></label>
-              <input type="date" id="qtn-date" class="form-input">
-            </div>
-            <div class="form-row">
-              <label class="form-label">Valid Till</label>
-              <input type="date" id="qtn-valid-till" class="form-input">
-            </div>
-          </div>
-
-          <div class="create-row-half">
-            <div class="form-row">
-              <label class="form-label">Sales Person</label>
-              <div class="suggest-container">
-                <input type="text" id="qtn-sales-person" class="form-input" placeholder="Search Sales Person...">
-                <div id="qtn-salesperson-suggest" class="suggest-list hidden"></div>
+              <div class="form-row" style="margin-top:10px;">
+                <div style="display:flex; align-items:center;">
+                  <input type="checkbox" id="qtn-pfi" style="width:16px; height:16px; margin-right:8px; accent-color:var(--omnis-red);">
+                  <label for="qtn-pfi" style="font-size:13px; font-weight:600; color:var(--text-dark);">PFI Checked</label>
+                </div>
               </div>
             </div>
-            <div class="form-row">
-              <label class="form-label">Bank Account</label>
-              <input type="text" id="qtn-bank" class="form-input" placeholder="Bank Account Link...">
-            </div>
-          </div>
 
-          <div class="form-row" style="margin-top:10px;">
-            <div style="display:flex; align-items:center;">
-              <input type="checkbox" id="qtn-pfi"
-                style="width:16px; height:16px; margin-right:8px; accent-color:var(--omnis-red);">
-              <label for="qtn-pfi" style="font-size:13px; font-weight:600; color:var(--text-dark);">PFI
-                Checked</label>
+            <!-- Column 3: Additional Notes -->
+            <div class="qtn-section-col">
+              <div class="section-label" style="margin-top:0;">Additional Notes</div>
+              <div class="form-row">
+                <textarea id="qtn-notes" class="form-textarea" style="height:250px; resize:vertical;" placeholder="Enter notes here..."></textarea>
+              </div>
             </div>
-          </div>
 
-          <div class="form-row" style="margin-top:10px;">
-            <label class="form-label">Additional Notes</label>
-            <textarea id="qtn-notes" class="form-input" style="height:80px;"
-              placeholder="Enter notes here..."></textarea>
           </div>
 
           <!-- Items Table -->
-          <div class="form-row" style="margin-top:20px;">
-            <label class="form-label"
-              style="font-weight:700; color:var(--text-dark); margin-bottom:10px; border-bottom:1px solid var(--border); padding-bottom:5px;">Items</label>
-          </div>
+          <div class="section-label" style="margin-top:20px;">Items</div>
 
           <div
-            style="background:#f9fafb; border:1px solid var(--border); border-radius:8px; padding:10px; margin-bottom:20px;">
-            <div style="display:flex; justify-content:flex-end; margin-bottom:10px;">
+            style="background:#ffffff; border:1px solid var(--border); border-radius:8px; padding:15px; margin-bottom:20px; box-shadow: inset 0 1px 2px rgba(0,0,0,0.02);">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
+              <div style="font-size:12px; color:var(--text-muted); font-weight:600;">Add quotation items below</div>
               <button type="button" id="qtn-add-row-btn" class="btn-secondary"
                 style="font-size:12px; padding:4px 10px;">+ Add Item</button>
             </div>
             <table id="qtn-items-table" style="width:100%; font-size:13px; border-collapse:collapse;">
               <thead>
-                <tr style="text-align:left; color:#6b7280; font-weight:600; border-bottom:1px solid var(--border);">
-                  <th style="padding:6px;">Code</th>
-                  <th style="padding:6px;">Qty</th>
-                  <th style="padding:6px;">Rate</th>
-                  <th style="padding:6px;">Amount</th>
-                  <th style="padding:6px;"></th>
+                <tr style="text-align:left; color:#4b5563; font-weight:700; border-bottom:2px solid #e5e7eb; text-transform:uppercase; font-size:11px;">
+                  <th style="padding:10px 8px;">Code</th>
+                  <th style="padding:10px 8px;">Qty</th>
+                  <th style="padding:10px 8px;">Rate</th>
+                  <th style="padding:10px 8px;">Amount</th>
+                  <th style="padding:10px 8px; width:40px;"></th>
                 </tr>
               </thead>
               <tbody id="qtn-items-body"></tbody>
@@ -12547,7 +12636,7 @@
         // they are never hidden by an ancestor's display:none.
         const VIEWS_TO_ESCAPE = [
           'view-group-sales-list', 'view-customers-list', 'view-products-list',
-          'view-create-ce', 'view-ce-list'
+          'view-create-ce', 'view-ce-list', 'view-create-quotation'
         ];
         if (VIEWS_TO_ESCAPE.includes(view.id) && !view.dataset.reparented) {
           let ancestor = view.parentElement;
@@ -13425,7 +13514,7 @@
         showOnly(targetView);
         // Robust enforcement of visibility - scrollable views need block not flex
         targetView.classList.remove("hidden");
-        const scrollableViewIds = ['view-credit-terms', 'view-dashboard', 'view-tenders', 'view-orders-list', 'view-stock', 'view-group-sales-list', 'view-quotations-list', 'view-ce-list', 'view-command-center', 'view-customers-list', 'view-products-list', 'view-salestrack-reports', 'view-debug', 'view-settings', 'view-user-management', 'view-psv', 'view-cdv', 'view-marketing', 'view-training', 'view-training-library'];
+        const scrollableViewIds = ['view-credit-terms', 'view-dashboard', 'view-tenders', 'view-orders-list', 'view-stock', 'view-group-sales-list', 'view-quotations-list', 'view-ce-list', 'view-command-center', 'view-customers-list', 'view-products-list', 'view-salestrack-reports', 'view-debug', 'view-settings', 'view-user-management', 'view-psv', 'view-cdv', 'view-marketing', 'view-training', 'view-training-library', 'view-create-quotation', 'view-create-ce'];
         if (scrollableViewIds.includes(viewId)) {
           targetView.style.setProperty("display", "block", "important");
           targetView.style.setProperty("overflow-y", "auto", "important");
@@ -13674,6 +13763,36 @@
     // showOnly is defined inside initSalestrack. We are inside initSalestrack.
     // We need to make sure `viewCreateCe` is included in the hiding loop.
 
+    window.pingRep = async function(quoteName, salespersonEmail) {
+        if (!salespersonEmail || salespersonEmail === '-') {
+            if (window.salestrack && window.salestrack.showToast) window.salestrack.showToast("No salesperson assigned to this quote.", "error");
+            return;
+        }
+        try {
+            if (window.salestrack && window.salestrack.showToast) window.salestrack.showToast("Pinging " + salespersonEmail + "...", "info");
+            
+            const response = await window.electron.invoke('supabase:edgeFunction', {
+                name: 'send-push-notification',
+                data: {
+                    title: "Follow-up Required",
+                    body: "Please follow up on quote " + quoteName,
+                    targetEmail: salespersonEmail,
+                    data: { quoteName: quoteName }
+                }
+            });
+            
+            if (!response || !response.error) {
+                if (window.salestrack && window.salestrack.showToast) window.salestrack.showToast("Notification sent!", "success");
+            } else {
+                console.error("Ping failed:", response.error);
+                if (window.salestrack && window.salestrack.showToast) window.salestrack.showToast("Failed to send notification.", "error");
+            }
+        } catch (e) {
+            console.error(e);
+            if (window.salestrack && window.salestrack.showToast) window.salestrack.showToast("Error pinging rep.", "error");
+        }
+    };
+
     /* ---------- QUOTATIONS LIST (kept) ---------- */
     function buildFollowUpOrCondition(preset, fromVal, toVal) {
         let d = new Date();
@@ -13793,9 +13912,6 @@
         window.lastLoaded['quotations'] = Date.now();
         const data = res.data || [];
         qHasMore = (qOffset + data.length) < (res.count || 0);
-
-        // Map sales_person back to custom_sales_person for renderQuotationsTable
-        data.forEach(r => { r.custom_sales_person = r.sales_person; });
 
         renderQuotationsTable(data);
 
@@ -14037,6 +14153,9 @@
           </div>
 
           <div class="ai-order-cell ai-order-row-actions" style="text-align:right; display:flex; gap:6px; justify-content:flex-end;">
+            <button class="btn-icon-only" onclick="event.stopPropagation(); window.pingRep('${row.name}', '${escapeHtml(row.custom_sales_person || '')}')" title="Ping Rep on Tablet" style="border:1px solid #fed7aa; background:#fff7ed; color:#ea580c; height:28px; width:28px; border-radius:6px; font-size:12px;">
+              <i class="fas fa-bell"></i>
+            </button>
             <button class="btn-icon-only" onclick="event.stopPropagation(); window.showQuotationOptions('${row.name}', false)" title="Print/Share" style="border:1px solid #e2e8f0; background:white; color:#334155; height:28px; width:28px; border-radius:6px; font-size:12px;">
               <i class="fas fa-print"></i>
             </button>
