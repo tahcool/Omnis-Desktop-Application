@@ -5564,7 +5564,7 @@
     }
 
     .q-quick-panel {
-      background: linear-gradient(135deg, #fff1f2, #ffe4e6);
+      background: #ffffff;
       border: 1px solid #fecdd3;
       border-radius: 20px;
       padding: 24px;
@@ -5593,7 +5593,7 @@
     .q-quick-label {
       font-size: 11px;
       font-weight: 700;
-      color: #64748b;
+      color: #94a3b8;
       text-transform: uppercase;
       letter-spacing: 0.05em;
     }
@@ -7202,50 +7202,71 @@
           </script>
 
           
-          <!-- OEM & MARKET INTELLIGENCE BRIEF -->
-          <div style="padding: 24px 20px 80px; width: 100%;">
-            <div style="background: #fff; border: 1px solid #e2e8f0; border-radius: 20px; padding: 24px 20px; box-shadow: 0 10px 30px -5px rgba(0,0,0,0.06), 0 4px 6px -4px rgba(0,0,0,0.02); display: flex; flex-direction: column; gap: 20px;">
-                
-                <div style="display: flex; align-items: center; justify-content: space-between;">
-                    <div style="display: flex; align-items: center; gap: 10px;">
-                        <div>
-                            <div style="font-size: 18px; font-weight: 900; color: #0f172a; letter-spacing: -0.02em; text-transform: uppercase;">OEM & Market Intelligence Brief</div>
-                            <div style="font-size: 11px; color: #64748b; font-weight: 500;">Latest updates impacting your supply chain and pricing</div>
-                        </div>
-                    </div>
-                    <button onclick="window.refreshOEMNews(this)" style="display:flex; align-items:center; gap:6px; font-size: 12px; font-weight: 700; color: #334155; background: #fff; padding: 6px 14px; border-radius: 8px; cursor:pointer; border:1px solid #e2e8f0; transition:all 0.2s; box-shadow:0 1px 2px rgba(0,0,0,0.05);" onmouseover="this.style.background='#f8fafc'" onmouseout="this.style.background='#fff'"><i class="fas fa-sync-alt" id="oem-news-refresh-icon"></i> <span>Refresh</span></button>
+          <!-- QUICK CREATE QUOTATION (Moved from Quotations view) -->
+          <div style="padding: 24px 40px 20px; width: 100%;">
+            <div class="q-quick-panel">
+              <div style="display:flex; justify-content:space-between; align-items:flex-start;">
+                <div>
+                  <h3 class="q-quick-title" style="color: #0f172a;">Quick Create Quotation</h3>
+                  <div style="font-size: 13px; color: #64748b; font-weight: 500; margin-top: 4px;">Quickly draft and log new quotes for your clients directly from the dashboard.</div>
                 </div>
+                <button class="btn-text-action" style="color: var(--accent-maroon); background: #fff1f2; padding: 6px 12px; border-radius: 6px; border: 1px solid #fecdd3;" onclick="switchToView('view-create-quotation')" onmouseover="this.style.background='#ffe4e6'" onmouseout="this.style.background='#fff1f2'">Advanced Form &rarr;</button>
+              </div>
 
-                
-                <div id="oem-news-marquee-wrapper" style="overflow-x: auto; white-space: nowrap; position: relative; width: 100%; margin: 0; padding: 20px 4px; scrollbar-width: none;" onmouseenter="window.pauseOemMarquee=true" onmouseleave="window.pauseOemMarquee=false">
-                    <style>
-                        #oem-news-marquee-wrapper::-webkit-scrollbar { display: none; }
-                    </style>
-                    <div id="oem-news-marquee-content" style="display: inline-flex; gap: 16px; padding-right: 24px;">
-                        <div id="oem-news-loading" style="padding: 20px; font-size: 14px; color: #64748b; display: flex; align-items: center; gap: 10px;">
-                            <i class="fas fa-spinner fa-spin"></i> Loading latest intelligence and tenders...
-                        </div>
-                    </div>
+              <!-- MAGIC FILL -->
+              <div style="margin-top: 4px; margin-bottom: 8px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; padding: 12px 16px; display: flex; align-items: center; gap: 12px;">
+                  <i class="fas fa-magic" style="color: var(--accent-maroon); font-size: 16px;"></i>
+                  <input type="text" id="qq-magic-fill" placeholder="E.g. Quote 3 Hitachis for Takunda at $120k, 2 weeks lead time..." style="flex: 1; background: transparent; border: none; color: #0f172a; font-size: 14px; outline: none; font-weight: 500;">
+                  <button id="btn-qq-magic" onclick="window.performMagicFill()" style="background: var(--accent-maroon); color: #ffffff; padding: 6px 16px; border-radius: 8px; font-weight: 800; font-size: 12px; border: none; cursor: pointer; display: flex; align-items: center; gap: 6px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); transition: all 0.2s;" onmouseover="this.style.opacity='0.9'" onmouseout="this.style.opacity='1'">
+                      <i class="fas fa-bolt"></i> Auto-Fill
+                  </button>
+              </div>
+
+              <!-- AI INSIGHTS BAR -->
+              <div id="qq-intelligence-bar" style="display: none; background: #fff1f2; border-left: 4px solid var(--accent-maroon); border-radius: 8px; padding: 12px 16px; font-size: 13px; color: #475569; line-height: 1.4;">
+                  <div style="display: flex; gap: 12px; align-items: flex-start;">
+                      <i class="fas fa-robot" style="color: var(--accent-maroon); margin-top: 2px; font-size: 14px;"></i>
+                      <div id="qq-intelligence-content" style="flex: 1;"></div>
+                  </div>
+              </div>
+
+              <div class="q-quick-form">
+                <div class="q-quick-input-group">
+                  <label class="q-quick-label">Customer</label>
+                  <div class="suggest-container">
+                    <input type="text" id="qq-customer" class="q-quick-input" placeholder="Search or type customer..." />
+                    <div id="qq-customer-suggest" class="suggest-list hidden"></div>
+                  </div>
                 </div>
-            </div>
-            <script>
-                    if (!window.oemMarqueeInit) {
-                        window.oemMarqueeInit = true;
-                        setInterval(() => {
-                            if (window.pauseOemMarquee) return;
-                            const container = document.getElementById('oem-news-marquee-wrapper');
-                            if (container) {
-                                container.scrollLeft += 1;
-                                // Simple loop: if scrolled to end, jump to start (or near start)
-                                // In a perfect marquee we'd clone elements, but this is a simple auto-scroll.
-                                if (container.scrollLeft >= container.scrollWidth - container.clientWidth - 2) {
-                                    container.scrollLeft = 0;
-                                }
-                            }
-                        }, 30);
-                    }
-                </script></div>
-
+                <div class="q-quick-input-group">
+                  <label class="q-quick-label">Salesperson</label>
+                  <div class="suggest-container">
+                    <input type="text" id="qq-salesperson" class="q-quick-input" placeholder="Assign salesperson..." />
+                    <div id="qq-salesperson-suggest" class="suggest-list hidden"></div>
+                  </div>
+                </div>
+                <div class="q-quick-input-group">
+                  <label class="q-quick-label">Quotation Title</label>
+                  <input type="text" id="qq-title" class="q-quick-input"
+                    placeholder="e.g. Hitachi ZX130 - Customer Name" />
+                </div>
+                <div class="q-quick-input-group">
+                  <label class="q-quick-label">Initial Item (Optional)</label>
+                  <div class="suggest-container">
+                    <input type="text" id="qq-item" class="q-quick-input" placeholder="Item Code" />
+                    <div id="qq-item-suggest" class="suggest-list hidden"></div>
+                  </div>
+                </div>
+                <div class="q-quick-input-group">
+                  <label class="q-quick-label">Price (Optional)</label>
+                  <input type="number" id="qq-price" class="q-quick-input" placeholder="0.00" min="0" step="0.01" />
+                </div>
+                <div class="q-quick-input-group">
+                  <label class="q-quick-label">Lead Time</label>
+                  <input type="text" id="qq-lead-time" class="q-quick-input" placeholder="e.g. 2 Weeks" value="TBD" />
+                </div>
+                <button id="btn-qq-submit" class="btn-quick-create">Create Quote</button>
+              </div>
             </div>
           </div>
 
@@ -9080,13 +9101,13 @@
               style="border:none; background:transparent; font-size:12px; font-weight:700; color:#334155; outline:none; width:115px;">
           </div>
 
-          <button id="qlist-hot-report-btn" class="btn-primary" onclick="alert('Hot Leads Report coming soon!')"
-            style="padding:0 20px; border-radius:10px; font-weight:800; height: 42px; font-size: 12px; text-transform:uppercase; letter-spacing:0.02em; margin-right:8px; background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%); color: #fff; border:none; box-shadow: 0 4px 12px rgba(37,99,235,0.2);">
+          <button id="qlist-hot-report-btn" class="btn-primary" onclick="window.salestrack.openHotLeadsReportModalV5()"
+            style="padding:0 20px; border-radius:10px; font-weight:800; height: 42px; font-size: 12px; text-transform:uppercase; letter-spacing:0.02em; margin-right:8px; background: #0f172a; color: #fff; border:none; box-shadow: 0 4px 12px rgba(0,0,0,0.2); white-space: nowrap; flex-shrink: 0;">
             <i class="fas fa-fire" style="margin-right:8px;"></i> Hot Leads Report
           </button>
           
           <button id="qlist-new-quote-btn" class="btn-primary" onclick="switchToView('view-create-quotation')"
-            style="padding:0 20px; border-radius:10px; font-weight:800; height: 42px; font-size: 12px; text-transform:uppercase; letter-spacing:0.02em; margin-right:8px; background:#800000; color:#fff; border:none; box-shadow: 0 4px 12px rgba(128,0,0,0.2);">
+            style="padding:0 20px; border-radius:10px; font-weight:800; height: 42px; font-size: 12px; text-transform:uppercase; letter-spacing:0.02em; margin-right:8px; background:#800000; color:#fff; border:none; box-shadow: 0 4px 12px rgba(128,0,0,0.2); white-space: nowrap; flex-shrink: 0;">
             <i class="fas fa-plus" style="margin-right:8px;"></i> New Quote
           </button>
 
@@ -9144,52 +9165,7 @@
           </div>
         </div>
 
-        <!-- QUICK CREATE PANEL -->
-        <div class="q-quick-panel">
-          <div style="display:flex; justify-content:space-between; align-items:center;">
-            <h3 class="q-quick-title">Quick Create Quotation</h3>
-            <button class="btn-text-action" onclick="switchToView('view-create-quotation')">Advanced Form
-              &rarr;</button>
-          </div>
-          <div class="q-quick-form">
-            <div class="q-quick-input-group">
-              <label class="q-quick-label">Customer</label>
-              <div class="suggest-container">
-                <input type="text" id="qq-customer" class="q-quick-input" placeholder="Search or type customer..." />
-                <div id="qq-customer-suggest" class="suggest-list hidden"></div>
-              </div>
-            </div>
-            <div class="q-quick-input-group">
-              <label class="q-quick-label">Salesperson</label>
-              <div class="suggest-container">
-                <input type="text" id="qq-salesperson" class="q-quick-input" placeholder="Assign salesperson..." />
-                <div id="qq-salesperson-suggest" class="suggest-list hidden"></div>
-              </div>
-            </div>
-            <div class="q-quick-input-group">
-              <label class="q-quick-label">Quotation Title</label>
-              <input type="text" id="qq-title" class="q-quick-input"
-                placeholder="e.g. Hitachi ZX130 - Customer Name" />
-            </div>
-            <div class="q-quick-input-group">
-              <label class="q-quick-label">Initial Item (Optional)</label>
-              <div class="suggest-container">
-                <input type="text" id="qq-item" class="q-quick-input" placeholder="Item Code" />
-                <div id="qq-item-suggest" class="suggest-list hidden"></div>
-              </div>
-            </div>
-            <div class="q-quick-input-group">
-              <label class="q-quick-label">Price (Optional)</label>
-              <input type="number" id="qq-price" class="q-quick-input" placeholder="0.00" min="0" step="0.01" />
-            </div>
-            <div class="q-quick-input-group">
-              <label class="q-quick-label">Lead Time</label>
-              <input type="text" id="qq-lead-time" class="q-quick-input" placeholder="e.g. 2 Weeks" value="TBD" />
-            </div>
-            <button id="btn-qq-submit" class="btn-quick-create">Create Quote</button>
-          </div>
-        </div>
-
+        <!-- QUICK CREATE PANEL MOVED TO DASHBOARD -->
         <!-- Sub-Filters -->
         <div id="qlist-filters"
           style="display:flex; flex-wrap:wrap; gap:8px; margin-bottom:20px; padding:16px 0; background:transparent; border-radius:0; border-bottom:1px solid rgba(0,0,0,0.05); align-items:center;">
@@ -14064,10 +14040,7 @@
             item.style.borderRight = "1px solid transparent";
             item.style.borderBottom = "1px solid transparent";
         } else {
-            item.style.borderLeft = "4px solid var(--accent-maroon)";
-            item.style.borderTop = "1px solid transparent";
-            item.style.borderRight = "1px solid transparent";
-            item.style.borderBottom = "1px solid transparent";
+            // Normal quotations have no highlight and use the standard ai-order-row borders
         }
         
         item.onclick = () => window.open(`${base}/app/quotation/${row.name}`, "_blank");
@@ -14079,11 +14052,11 @@
             <span style="font-size:12px; font-weight:800; color:#94a3b8; margin-top:2px; min-width:24px; display:inline-block;">${(typeof qOffset !== 'undefined' ? qOffset : 0) + index + 1}.</span>
             <div style="flex:1;">
               <span class="cell-label">Customer / Status</span>
-              <div style="font-weight:800; font-size:15px; color:#000000; margin-bottom:2px; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden;" title="${escapeHtml(row.customer_name || '-')}">${escapeHtml(row.customer_name || '-')}</div>
-              <div style="font-size:11px; font-weight:700; color:#64748b; margin-bottom:6px; display:-webkit-box; -webkit-line-clamp:1; -webkit-box-orient:vertical; overflow:hidden;" title="${escapeHtml(row.title || '-')}">${escapeHtml(row.title || '-')}</div>
+              <div style="font-weight:800; font-size:15px; color:#0f172a; margin-bottom:2px; line-height:1.2; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden;" title="${escapeHtml(row.customer_name || '-')}">${escapeHtml(row.customer_name || '-')}</div>
+              ${(row.title && row.title !== row.customer_name) ? `<div style="font-size:12px; font-weight:600; color:#64748b; margin-bottom:6px; display:-webkit-box; -webkit-line-clamp:1; -webkit-box-orient:vertical; overflow:hidden;" title="${escapeHtml(row.title)}">${escapeHtml(row.title)}</div>` : '<div style="margin-bottom:6px;"></div>'}
               <div style="display:flex; align-items:center; gap:6px;">
-                <span class="status-pill ${getStatusColor(row.status)}" style="padding:2px 8px; font-size:10px;">${escapeHtml(row.status || 'Draft')}</span>
-                ${isHotLead ? '<span class="status-pill" style="background:#ef4444; color:white; border:none; padding:2px 8px; font-size:10px; font-weight:800; box-shadow:0 1px 2px rgba(239,68,68,0.3);">HOT</span>' : ''}
+                <span class="status-pill ${getStatusColor(row.status)}" style="padding:3px 8px; font-size:10px; letter-spacing:0.02em;">${escapeHtml(row.status || 'Draft')}</span>
+                ${isHotLead ? '<span class="status-pill" style="background:#ef4444; color:white; border:none; padding:3px 8px; font-size:10px; font-weight:800; letter-spacing:0.02em; box-shadow:0 2px 4px rgba(239,68,68,0.25);">HOT</span>' : ''}
               </div>
             </div>
           </div>
@@ -14096,59 +14069,61 @@
           </div>
 
           <div class="ai-order-cell">
-            <span class="cell-label">Notes <i class="fas fa-pencil-alt" style="font-size:8px; opacity:0.5; margin-left:4px;"></i></span>
+            <span class="cell-label">Notes <i class="fas fa-pencil-alt" style="font-size:10px; color:#94a3b8; margin-left:4px;"></i></span>
             <div 
               title="${escapeHtml(row.notes || 'Double click to edit')}"
-              style="font-size:12px; color:#475569; display:-webkit-box; -webkit-line-clamp:3; -webkit-box-orient:vertical; overflow:hidden; cursor:pointer; padding:4px; border:1px solid transparent; border-radius:4px; outline:none; transition:all 0.2s;" 
+              style="font-size:13px; color:#475569; display:-webkit-box; -webkit-line-clamp:3; -webkit-box-orient:vertical; overflow:hidden; cursor:pointer; padding:6px; border:1px dashed transparent; border-radius:6px; outline:none; transition:all 0.2s;" 
+              onmouseover="this.style.borderColor='#cbd5e1'; this.style.background='#f8fafc';"
+              onmouseout="if(this.contentEditable!=='true') { this.style.borderColor='transparent'; this.style.background='transparent'; }"
               onclick="event.stopPropagation();"
-              ondblclick="event.stopPropagation(); this.contentEditable=true; this.focus(); this.style.border='1px solid #3b82f6'; this.style.webkitLineClamp='unset'; this.style.background='white'; if(this.innerText==='-') this.innerText='';"
+              ondblclick="event.stopPropagation(); this.contentEditable=true; this.focus(); this.style.border='1px solid #3b82f6'; this.style.background='white'; this.style.webkitLineClamp='unset'; if(this.innerText==='-') this.innerText='';"
               onkeydown="if(event.key === 'Enter' && !event.shiftKey) { event.preventDefault(); this.blur(); }"
-              onblur="this.contentEditable=false; this.style.border='1px solid transparent'; this.style.webkitLineClamp='3'; this.style.background='transparent'; window.updateQuotationNotes('${row.name}', this.innerText, this);"
+              onblur="this.contentEditable=false; this.style.border='1px dashed transparent'; this.style.background='transparent'; this.style.webkitLineClamp='3'; window.updateQuotationNotes('${row.name}', this.innerText, this);"
             >${escapeHtml(row.notes || '-')}</div>
           </div>
 
           <div class="ai-order-cell" style="text-align:center;">
             <span class="cell-label">Likelihood</span>
-            <div style="display:flex; justify-content:center; align-items:center; gap:4px; margin-top:4px;">
-              <input type="number" class="likelihood-input" value="${likelihood}" min="0" max="100" style="width:44px; padding:4px; text-align:center; border:1px solid ${isHotLead ? '#fca5a5' : '#e2e8f0'}; border-radius:6px; font-size:13px; font-weight:700; color:${isHotLead ? '#ef4444' : '#000'}; background:transparent;" onclick="event.stopPropagation();" onchange="window.updateQuotationLikelihood('${row.name}', this.value, event)" />
+            <div style="display:inline-flex; align-items:center; margin-top:4px; padding:2px 8px; background:${isHotLead ? '#fee2e2' : '#f1f5f9'}; border-radius:8px; border:1px solid ${isHotLead ? '#fca5a5' : 'transparent'};">
+              <input type="number" class="likelihood-input" value="${likelihood}" min="0" max="100" style="width:36px; text-align:center; border:none; font-size:14px; font-weight:800; color:${isHotLead ? '#ef4444' : '#334155'}; background:transparent; outline:none;" onclick="event.stopPropagation();" onchange="window.updateQuotationLikelihood('${row.name}', this.value, event)" />
               <span style="font-size:12px; font-weight:700; color:${isHotLead ? '#ef4444' : '#64748b'};">%</span>
             </div>
           </div>
 
-
-
           <div class="ai-order-cell" style="text-align:center;">
             <span class="cell-label">Date</span>
-            <div style="font-weight:800; font-size:14px; color:#000000;">${formatDate(row.transaction_date)}</div>
+            <div style="font-weight:700; font-size:14px; color:#334155;">${formatDate(row.transaction_date)}</div>
           </div>
           
           <div class="ai-order-cell">
             <span class="cell-label">Sales Person</span>
-            <div style="font-size:14px; color:#000000; font-weight:500;">${escapeHtml(row.custom_sales_person || '-')}</div>
+            <div style="font-size:13px; color:#1e293b; font-weight:600;">${escapeHtml(row.custom_sales_person || '-')}</div>
           </div>
           
           <div class="ai-order-cell" style="text-align:center;">
             <span class="cell-label">Total Items</span>
-            <div style="font-size:20px; font-weight:800; color:#3b82f6;">${totalItems}</div>
+            <div style="font-size:18px; font-weight:800; color:#3b82f6;">${totalItems}</div>
           </div>
 
-          <div class="ai-order-cell" style="text-align:center; display:flex; flex-direction:column; align-items:center; justify-content:center;">
-            <span class="cell-label" style="color:${isRedFlag ? '#ef4444' : '#94a3b8'}">${isRedFlag ? '<i class="fas fa-exclamation-triangle"></i> OVERDUE' : 'Next Follow Up'}</span>
+          <div class="ai-order-cell" style="text-align:center; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:6px;">
+            <span class="cell-label" style="color:${isRedFlag ? '#ef4444' : '#64748b'}; margin-bottom:0;">
+              ${isRedFlag ? '<i class="fas fa-exclamation-triangle"></i> OVERDUE' : 'Follow Up Target'}
+            </span>
             
-            <div style="display:flex; flex-direction:column; align-items:center; gap:3px; margin-bottom:6px;" title="System Target: ${followUpStage}">
-              <div style="font-size:13px; color:${isRedFlag ? '#ef4444' : '#10b981'}; font-weight:800;">
+            <div style="display:flex; align-items:center; gap:6px;" title="System Target: ${followUpStage}">
+              <div style="font-size:13px; color:${isRedFlag ? '#ef4444' : '#059669'}; font-weight:700;">
                 ${formatDate(systemFollowUpDate.toISOString().split('T')[0])}
               </div>
-              <div style="font-size:9px; font-weight:700; padding:2px 6px; border-radius:10px; background:${isRedFlag ? '#fef2f2' : '#ecfdf5'}; color:${isRedFlag ? '#ef4444' : '#059669'}; border:1px solid ${isRedFlag ? '#fca5a5' : '#a7f3d0'}; line-height:1;">
+              <div style="font-size:10px; font-weight:800; padding:2px 6px; border-radius:6px; background:${isRedFlag ? '#fef2f2' : '#ecfdf5'}; color:${isRedFlag ? '#ef4444' : '#10b981'};">
                 ${followUpStage.toUpperCase()}
               </div>
             </div>
 
-            <div title="Salesperson Override Date" style="width:100%; display:flex; justify-content:center;">
+            <div title="Set custom follow up date" style="width:100%; display:flex; justify-content:center; margin-top:2px;">
               <input type="date" value="${row.salesperson_follow_up_date || ''}" 
                 onclick="event.stopPropagation();" 
                 onchange="window.updateSalespersonFollowUpDate('${row.name}', this.value)"
-                style="width: 100%; max-width: 105px; font-size: 11px; font-family: inherit; font-weight: 600; padding: 4px 6px; border: 1px solid ${isRedFlag ? '#fca5a5' : '#cbd5e1'}; border-radius: 6px; color: ${row.salesperson_follow_up_date ? '#0f172a' : '#94a3b8'}; background: ${isRedFlag ? '#fee2e2' : '#f8fafc'}; box-shadow: inset 0 1px 2px rgba(0,0,0,0.02); cursor: pointer; outline: none; transition: all 0.2s;" />
+                style="width:105px; font-size:11px; font-family:inherit; font-weight:600; padding:4px 8px; border:1px solid ${isRedFlag ? '#fca5a5' : '#e2e8f0'}; border-radius:6px; color:${row.salesperson_follow_up_date ? '#0f172a' : '#94a3b8'}; background:${isRedFlag ? '#fee2e2' : '#fff'}; cursor:pointer; outline:none; transition:all 0.2s;" />
             </div>
           </div>
 
@@ -22575,6 +22550,17 @@ thead th { padding:11px 12px; font-size:10px; font-weight:800; color:#fff; text-
       <button class="qtn-opts-btn" id="btn-opts-test-zap" style="border-color:#25d366; color:#128c7e;">
         <span style="font-size:20px;">🔔</span> Test Follow-up Reminder
       </button>
+
+      <!-- AI WhatsApp Draft -->
+      <div id="qtn-opts-ai-draft-container" style="display: none; margin-top: 15px; border-top: 1px solid #e2e8f0; padding-top: 15px; text-align: left;">
+        <div style="font-size: 12px; font-weight: 800; color: #64748b; margin-bottom: 8px; text-transform: uppercase;">
+          <i class="fas fa-magic" style="color: #3b82f6; margin-right: 4px;"></i> AI WhatsApp Draft
+        </div>
+        <textarea id="qtn-opts-ai-draft" style="width: 100%; height: 80px; font-size: 13px; padding: 10px; border: 1px solid #cbd5e1; border-radius: 8px; background: #f8fafc; color: #334155; resize: none; margin-bottom: 10px;" readonly></textarea>
+        <button id="btn-opts-copy-draft" style="width: 100%; padding: 10px; border-radius: 8px; background: #3b82f6; color: white; border: none; font-weight: 700; cursor: pointer;">
+          <i class="far fa-copy"></i> Copy to Clipboard
+        </button>
+      </div>
 
       <button class="btn-text-action" id="btn-opts-close"
         style="margin-top:20px; width:100%; color:#94a3b8;">Close</button>

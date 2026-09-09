@@ -227,147 +227,168 @@
         }
     };
 
-    // 🤖 ITEM INTELLIGENCE
-    window.fetchItemIntelligence = async function(itemCode) {
-        if (!itemCode || !window.supabase) return;
-        itemCode = itemCode.trim();
+    // --- AI HELPERS ---
+    async function getOpenAIKey() {
+        const { data: keyData } = await window.supabase
+            .from("omnis_app_settings")
+            .select("setting_value")
+            .eq("setting_key", "openai_api_key")
+            .single();
+        let apiKey = keyData ? keyData.setting_value : "";
+        if (!apiKey) apiKey = localStorage.getItem("omnis_openai_key") || "";
+        return apiKey.trim();
+    }
+
+    // 1. MAGIC FILL
+    window.performMagicFill = async function() {
+        const btn = document.getElementById("btn-qq-magic");
+        const input = document.getElementById("qq-magic-fill");
+        const text = input ? input.value.trim() : "";
+        if (!text) return;
         
+        const originalText = btn ? btn.innerHTML : "Auto-Fill";
+        if (btn) btn.innerHTML = "<i class='fas fa-spinner fa-spin'></i> AI...";
+        
+        try {
+            const apiKey = await getOpenAIKey();
+            if (!apiKey) throw new Error("OpenAI key not configured in settings.");
+            
+            const prompt = `Extract quotation details from this text: "${text}".
+Return exactly this JSON format:
+{
+  "customer": "customer name or null",
+  "salesperson": "salesperson name or null",
+  "item_code": "equipment or item mentioned or null",
+  "price": number or null,
+  "lead_time": "lead time like '2 Weeks' or null"
+}`;
+            const res = await fetch("https://api.openai.com/v1/chat/completions", {
+                method: "POST",
+                headers: { "Content-Type": "application/json", "Authorization": `Bearer ${apiKey}` },
+                body: JSON.stringify({
+                    model: "gpt-4o-mini",
+                    messages: [{ role: "user", content: prompt }],
+                    response_format: { type: "json_object" }
+                })
+            });
+            if (!res.ok) throw new Error("Failed to contact OpenAI");
+            const json = await res.json();
+            const aiData = JSON.parse(json.choices[0].message.content);
+            
+            if (aiData.customer) document.getElementById("qq-customer").value = aiData.customer;
+            if (aiData.salesperson) document.getElementById("qq-salesperson").value = aiData.salesperson;
+            if (aiData.item_code) document.getElementById("qq-item").value = aiData.item_code;
+            if (aiData.price !== null) document.getElementById("qq-price").value = aiData.price;
+            if (aiData.lead_time) document.getElementById("qq-lead-time").value = aiData.lead_time;
+            
+            input.value = ""; // Clear magic input
+            window.fetchIntelligence();
+            window.generateSmartTitle();
+            
+        } catch (e) {
+            console.error("Magic Fill Error", e);
+            alert("Magic Fill Error: " + e.message);
+        } finally {
+            if (btn) btn.innerHTML = originalText;
+        }
+    };
+
+    // 2. SMART TITLE
+    window.generateSmartTitle = async function() {
+        const customer = document.getElementById("qq-customer")?.value;
+        const item = document.getElementById("qq-item")?.value;
+        const titleInp = document.getElementById("qq-title");
+        if (!customer || !item || !titleInp || titleInp.value.trim() !== "") return;
+        
+        try {
+            const apiKey = await getOpenAIKey();
+            if (!apiKey) return;
+            const prompt = `Generate a short, professional quotation title for selling "${item}" to "${customer}". Max 6 words. Return JSON: {"title": "..."}`;
+            const res = await fetch("https://api.openai.com/v1/chat/completions", {
+                method: "POST",
+                headers: { "Content-Type": "application/json", "Authorization": `Bearer ${apiKey}` },
+                body: JSON.stringify({ model: "gpt-4o-mini", messages: [{ role: "user", content: prompt }], response_format: { type: "json_object" } })
+            });
+            const json = await res.json();
+            const aiData = JSON.parse(json.choices[0].message.content);
+            if (aiData.title) titleInp.value = aiData.title;
+        } catch(e) { console.error("Smart Title Error", e); }
+    };
+
+    // 3 & 5. AI INTELLIGENCE & RISK SCORING
+    window.fetchIntelligence = async function() {
+        if (!window.supabase) return;
+        
+        const customer = document.getElementById("qq-customer")?.value?.trim();
+        const itemCode = document.getElementById("qq-item")?.value?.trim();
         const priceInput = document.getElementById("qq-price");
         const leadTimeInput = document.getElementById("qq-lead-time");
         const intelBar = document.getElementById("qq-intelligence-bar");
         const intelContent = document.getElementById("qq-intelligence-content");
         
+        if (!customer && !itemCode) return;
+        
         if (intelBar && intelContent) {
             intelBar.style.display = "flex";
-            intelContent.innerHTML = "<i>Analyzing historical data...</i>";
+            intelContent.innerHTML = "<i>AI analyzing historical data...</i>";
         }
         
+        let finalHtml = "";
+        
         try {
-            // 1. Fetch most recent price
-            const { data: qData } = await window.supabase
-                .from("omnis_quotation_items")
-                .select("rate, created_at")
-                .eq("item_code", itemCode)
-                .order("created_at", { ascending: false })
-                .limit(1);
-                
-            let priceWarnings = "";
-            if (qData && qData.length > 0) {
-                const latestRate = Number(qData[0].rate) || 0;
-                if (priceInput) priceInput.value = latestRate;
-                
-                const createdDate = new Date(qData[0].created_at);
-                const ninetyDaysAgo = new Date();
-                ninetyDaysAgo.setDate(ninetyDaysAgo.getDate() - 90);
-                
-                if (createdDate < ninetyDaysAgo) {
-                    priceWarnings = `<div style="color:#b91c1c; font-weight:600;"><i class="fas fa-exclamation-triangle"></i> Warning: Price of $${latestRate.toLocaleString(undefined, {minimumFractionDigits:2, maximumFractionDigits:2})} is over 3 months old (${createdDate.toLocaleDateString()}). Please verify with supplier.</div>`;
-                }
-            }
+            const apiKey = await getOpenAIKey();
             
-            // 2. Fetch order tracking trends
-            const { data: oData } = await window.supabase
-                .from("omnis_tracking_orders")
-                .select("committed_lead_time, target_handover, actual_handover, status, notes")
-                .or(`machine.ilike.%${itemCode}%,model.ilike.%${itemCode}%`)
-                .order("created_at", { ascending: false })
-                .limit(5);
-                
-            let leadTimeLogicHtml = "";
-            let suggestedLeadTime = "";
-            
-            if (oData && oData.length > 0) {
-                // Fetch universal OpenAI API Key from Supabase
-                const { data: keyData } = await window.supabase
-                    .from("omnis_app_settings")
-                    .select("setting_value")
-                    .eq("setting_key", "openai_api_key")
-                    .single();
-                    
-                let apiKey = keyData ? keyData.setting_value : "";
-                if (apiKey) apiKey = apiKey.trim();
-                
-                if (apiKey) {
-                    // Call OpenAI to deduce lead time
-                    const prompt = `Analyze these 5 recent orders for item "${itemCode}" and deduce a realistic lead time.
-Orders:
-${JSON.stringify(oData)}
-
-Return your response in this exact JSON format:
-{
-  "suggested_lead_time": "e.g. 4 - 6 Weeks",
-  "reasoning": "A concise 1-sentence explanation based on the provided notes and handover dates."
-}`;
-                    
+            // --- CUSTOMER INSIGHTS (RISK SCORING) ---
+            if (customer) {
+                const { data: cData } = await window.supabase.from("omnis_quotations").select("status").eq("customer_name", customer).order("created_at", { ascending: false }).limit(10);
+                if (cData && cData.length > 0 && apiKey) {
+                    const won = cData.filter(d => d.status === "Won").length;
+                    const lost = cData.filter(d => d.status === "Lost").length;
+                    const prompt = `A customer has ${won} won quotes and ${lost} lost quotes in the last 10 interactions. Give a 1 sentence AI risk/likelihood score. JSON: {"insight": "..."}`;
                     try {
-                        const res = await fetch("https://api.openai.com/v1/chat/completions", {
-                            method: "POST",
-                            headers: {
-                                "Content-Type": "application/json",
-                                "Authorization": `Bearer ${apiKey}`
-                            },
-                            body: JSON.stringify({
-                                model: "gpt-4o-mini",
-                                messages: [{ role: "user", content: prompt }],
-                                response_format: { type: "json_object" }
-                            })
-                        });
-                        
-                        if (res.ok) {
-                            const json = await res.json();
-                            try {
-                                const aiResponse = JSON.parse(json.choices[0].message.content);
-                                suggestedLeadTime = aiResponse.suggested_lead_time || "";
-                                leadTimeLogicHtml = `<div style="margin-top:4px;"><b>AI Lead Time Suggestion:</b> ${aiResponse.reasoning}</div>`;
-                            } catch(e) {
-                                suggestedLeadTime = oData[0].committed_lead_time || "";
-                                leadTimeLogicHtml = `<div style="margin-top:4px;"><i>Note: Failed to parse AI response. Using latest committed lead time as fallback.</i></div>`;
-                            }
-                        } else {
-                            // Fallback if API call fails
-                            let apiErrorMsg = "Check API Key";
-                            try {
-                                const errJson = await res.json();
-                                apiErrorMsg = errJson.error ? errJson.error.message : res.statusText;
-                                console.error("OpenAI API Error:", errJson);
-                            } catch(e) {
-                                apiErrorMsg = res.statusText;
-                            }
-                            suggestedLeadTime = oData[0].committed_lead_time || "";
-                            leadTimeLogicHtml = `<div style="margin-top:4px;"><i>Note: AI analysis failed (${apiErrorMsg}). Using latest committed lead time as fallback.</i></div>`;
-                        }
-                    } catch (fetchErr) {
-                        // This catches CORS errors or network failures
-                        console.error("Fetch to OpenAI failed:", fetchErr);
-                        suggestedLeadTime = oData[0].committed_lead_time || "";
-                        leadTimeLogicHtml = `<div style="margin-top:4px;"><i>Note: AI analysis request blocked (CORS/Network error). Using latest committed lead time as fallback.</i></div>`;
-                    }
-                } else {
-                    // Fallback if no API key
-                    suggestedLeadTime = oData[0].committed_lead_time || "";
-                    leadTimeLogicHtml = `<div style="margin-top:4px;"><i>Note: Configure OpenAI API key in settings for AI trend analysis. Using latest committed lead time as fallback.</i></div>`;
+                        const res = await fetch("https://api.openai.com/v1/chat/completions", { method: "POST", headers: { "Content-Type": "application/json", "Authorization": `Bearer ${apiKey}` }, body: JSON.stringify({ model: "gpt-4o-mini", messages: [{ role: "user", content: prompt }], response_format: { type: "json_object" } }) });
+                        const json = await res.json();
+                        const aiData = JSON.parse(json.choices[0].message.content);
+                        finalHtml += `<div><b>Customer AI Insight:</b> ${aiData.insight}</div>`;
+                    } catch(e) {}
                 }
-            } else {
-                leadTimeLogicHtml = `<div style="margin-top:4px;">No recent order tracking data found for lead time deduction.</div>`;
             }
             
-            if (suggestedLeadTime && leadTimeInput) {
-                leadTimeInput.value = suggestedLeadTime;
+            // --- ITEM INTELLIGENCE ---
+            if (itemCode) {
+                // Fetch most recent price
+                const { data: qData } = await window.supabase.from("omnis_quotation_items").select("rate, created_at").eq("item_code", itemCode).order("created_at", { ascending: false }).limit(1);
+                if (qData && qData.length > 0) {
+                    const latestRate = Number(qData[0].rate) || 0;
+                    if (priceInput && !priceInput.value) priceInput.value = latestRate;
+                    const createdDate = new Date(qData[0].created_at);
+                    const ninetyDaysAgo = new Date(); ninetyDaysAgo.setDate(ninetyDaysAgo.getDate() - 90);
+                    if (createdDate < ninetyDaysAgo) {
+                        finalHtml += `<div style="color:#fca5a5; font-weight:600; margin-top:4px;"><i class="fas fa-exclamation-triangle"></i> Warning: AI detected price of $${latestRate.toLocaleString()} is over 3 months old.</div>`;
+                    }
+                }
+                
+                // Deduce Lead Time
+                const { data: oData } = await window.supabase.from("omnis_tracking_orders").select("committed_lead_time, target_handover, actual_handover, status, notes").or(`machine.ilike.%${itemCode}%,model.ilike.%${itemCode}%`).order("created_at", { ascending: false }).limit(5);
+                if (oData && oData.length > 0 && apiKey) {
+                    const prompt = `Analyze these 5 recent orders for item "${itemCode}" and deduce a realistic lead time. Orders: ${JSON.stringify(oData)}. Return JSON: {"suggested_lead_time": "...", "reasoning": "..."}`;
+                    try {
+                        const res = await fetch("https://api.openai.com/v1/chat/completions", { method: "POST", headers: { "Content-Type": "application/json", "Authorization": `Bearer ${apiKey}` }, body: JSON.stringify({ model: "gpt-4o-mini", messages: [{ role: "user", content: prompt }], response_format: { type: "json_object" } }) });
+                        const json = await res.json();
+                        const aiData = JSON.parse(json.choices[0].message.content);
+                        if (leadTimeInput && (leadTimeInput.value === "TBD" || !leadTimeInput.value)) leadTimeInput.value = aiData.suggested_lead_time;
+                        finalHtml += `<div style="margin-top:4px;"><b>AI Lead Time:</b> ${aiData.reasoning}</div>`;
+                    } catch(e) {}
+                }
             }
             
             if (intelContent) {
-                intelContent.innerHTML = priceWarnings + leadTimeLogicHtml;
-                // Only hide if we have absolutely nothing to show
-                if (!priceWarnings && !leadTimeLogicHtml && intelBar) {
-                    intelBar.style.display = "none";
-                } else if (intelBar) {
-                    intelBar.style.display = "flex";
-                }
+                intelContent.innerHTML = finalHtml || "<i>No significant AI insights found for this combination.</i>";
             }
             
         } catch (e) {
-            console.error("Item Intelligence Error:", e);
-            if (intelContent) intelContent.innerHTML = "<span style='color:red;'>Failed to load historical intelligence.</span>";
+            console.error("Intelligence Error:", e);
+            if (intelContent) intelContent.innerHTML = "<i>AI Analysis failed.</i>";
         }
     };
 
@@ -434,6 +455,25 @@ Return your response in this exact JSON format:
             const payload = { ok: true, name: qtnId };
 
             if (payload.ok) {
+                // 4. Draft WhatsApp message using OpenAI
+                const draftContainer = document.getElementById("qtn-opts-ai-draft-container");
+                const draftArea = document.getElementById("qtn-opts-ai-draft");
+                if (draftContainer && draftArea) {
+                    draftContainer.style.display = "block";
+                    draftArea.value = "AI is drafting a personalized WhatsApp message...";
+                    getOpenAIKey().then(apiKey => {
+                        if(apiKey) {
+                            const prompt = `Draft a friendly, professional WhatsApp message for a B2B sales rep to send to customer "${data.customer}". The rep is sending them a quotation for "${itemCode}" at $${price}. Keep it short and use emojis natively.`;
+                            fetch("https://api.openai.com/v1/chat/completions", {
+                                method: "POST", headers: { "Content-Type": "application/json", "Authorization": `Bearer ${apiKey}` },
+                                body: JSON.stringify({ model: "gpt-4o-mini", messages: [{ role: "user", content: prompt }] })
+                            }).then(r => r.json()).then(j => {
+                                draftArea.value = j.choices[0].message.content;
+                            }).catch(err => draftArea.value = "Could not draft message automatically.");
+                        } else { draftArea.value = "OpenAI Key not configured."; }
+                    });
+                }
+
                 document.getElementById("qq-customer").value = "";
                 document.getElementById("qq-title").value = "";
                 document.getElementById("qq-item").value = "";
@@ -516,17 +556,19 @@ Return your response in this exact JSON format:
         try {
             // 1. Fetch Full Data
             if (!window.supabase) throw new Error("Supabase client not found");
-            const qtnRes = await window.supabase.from("omnis_quotations").select("*").eq("name", qtnId).single();
+            const qtnRes = await window.supabase.from("omnis_quotations").select("*").eq("name", qtnId).limit(1);
             if (qtnRes.error) throw qtnRes.error;
+            if (!qtnRes.data || qtnRes.data.length === 0) throw new Error("Quotation not found");
+            const qtnData = qtnRes.data[0];
             
-            const itemsRes = await window.supabase.from("omnis_quotation_items").select("*").eq("quotation_id", qtnRes.data.id);
+            const itemsRes = await window.supabase.from("omnis_quotation_items").select("*").eq("quotation_id", qtnData.id);
             if (itemsRes.error) throw itemsRes.error;
             
             // Map to expected Frappe output shape
             const data = {
                 ok: true,
-                quotation: qtnRes.data,
-                customer: { custom_primary_contact_name: qtnRes.data.contact_person },
+                quotation: qtnData,
+                customer: { custom_primary_contact_name: qtnData.contact_person },
                 items: itemsRes.data.map(i => ({
                     item_code: i.item_code,
                     item_name: i.item_code,
@@ -543,40 +585,32 @@ Return your response in this exact JSON format:
             // 2. Render HTML Locally
             const html = renderQuotationHTML(data, template);
 
-            // 3. Send HTML to backend for PDF conversion
-            const base = CURRENT_SYSTEM.baseUrl.replace(/\/$/, "");
-            const url = `${base}/api/method/powerstar_salestrack.omnis_dashboard.download_quotation_pdf`;
+            // 3. Generate PDF on the client (Print to PDF)
+            console.log("Generating PDF locally...");
+            
+            const iframe = document.createElement('iframe');
+            iframe.style.position = 'fixed';
+            iframe.style.right = '-10000px';
+            iframe.style.bottom = '-10000px';
+            document.body.appendChild(iframe);
+            
+            iframe.contentWindow.document.open();
+            iframe.contentWindow.document.write(html);
+            iframe.contentWindow.document.close();
+            
+            // Wait a moment for styles to apply before printing
+            setTimeout(() => {
+                iframe.contentWindow.focus();
+                iframe.contentWindow.print();
+                // Clean up after print dialog closes
+                setTimeout(() => {
+                    if (document.body.contains(iframe)) {
+                        document.body.removeChild(iframe);
+                    }
+                }, 2000);
+            }, 500);
 
-            console.log("POSTing HTML (JSON) to backend via Sequencer...");
-
-            const response = await window.frappeSequencer.add(() => fetch(url, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'Accept': 'application/pdf'
-                },
-                body: JSON.stringify({
-                    qtn_name: qtnId,
-                    html: html
-                })
-            }));
-
-            if (!response.ok) {
-                const errText = await response.text();
-                console.error("Server Error Response:", errText);
-                throw new Error("PDF generation failed on server (500). Please check Error Logs.");
-            }
-
-            const blob = await response.blob();
-            const downloadUrl = window.URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.style.display = 'none';
-            a.href = downloadUrl;
-            a.download = `Quotation_${qtnId}.pdf`;
-            document.body.appendChild(a);
-            a.click();
-            window.URL.revokeObjectURL(downloadUrl);
-            console.log("PDF download triggered successfully.");
+            console.log("Local PDF print dialog triggered.");
 
         } catch (err) {
             console.error("PDF Download Error:", err);
@@ -596,28 +630,30 @@ Return your response in this exact JSON format:
             return d.toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' });
         };
 
+        const isZAR = qtn.currency === 'ZAR' || (items[0] && items[0].rate > 100000); // Hack to detect ZAR
+        const currSym = isZAR ? 'R' : '$';
+        const currName = isZAR ? 'ZAR' : 'USD';
+
         let itemsHtml = "";
         items.forEach(row => {
             const itemName = row.item_name || row.item_code;
             itemsHtml += `
-            <tr style="page-break-inside: avoid;">
-                <td style="border: 1px solid #000; padding: 10px; text-align: center;">${Math.floor(row.qty)}</td>
+            <tr style="page-break-inside: avoid; text-align: center;">
                 <td style="border: 1px solid #000; padding: 10px;">Equipment</td>
                 <td style="border: 1px solid #000; padding: 10px;">${itemName}</td>
                 <td style="border: 1px solid #000; padding: 10px;">
-                    <strong>${itemName}</strong><br>
-                    <div style="font-size: 9px; margin-top: 5px;">
-                        ${row.description || 'Standard industrial specifications and performance features.'}
-                    </div>
+                    ${row.description || 'Standard industrial specifications and performance features.'}
+                    <div style="color: red; font-weight: bold; margin-top: 15px; font-size: 14px;">Download Spec Sheet</div>
                 </td>
-                <td style="border: 1px solid #000; padding: 10px; text-align: center;">TBA</td>
-                <td style="border: 1px solid #000; padding: 10px; text-align: right;">$ ${formatCurr(row.rate)}</td>
-                <td style="border: 1px solid #000; padding: 10px; text-align: right;">$ ${formatCurr(row.amount)}</td>
+                <td style="border: 1px solid #000; padding: 10px;">${qtn.delivery || '2 - 3 Weeks'}</td>
+                <td style="border: 1px solid #000; padding: 10px;">${currSym} ${formatCurr(row.rate)}</td>
+                <td style="border: 1px solid #000; padding: 10px; font-weight: bold;">${currSym} ${formatCurr(row.amount)}</td>
             </tr>`;
         });
 
         let headerHtml = "";
-        let footerHtml = "";
+        let supportHtml = "";
+        let signatureHtml = "";
 
         if (template === 'sinopower') {
             headerHtml = `
@@ -634,9 +670,16 @@ Return your response in this exact JSON format:
                 </div>
                 <div class="clear"></div>
             </div>`;
-            footerHtml = `
+            supportHtml = `
+            <div style="text-decoration: underline; margin-bottom: 5px;">Product Support</div>
+            <ul style="margin-top: 0; padding-left: 20px;">
+                <li>Sinopower is the authorised distributor for premium pump and generator equipment in Zimbabwe.</li>
+                <li>All warranty, servicing, engineering and general support is provided by Sinopower.</li>
+                <li>All spares supply to be provided by Sinopower</li>
+            </ul>`;
+            signatureHtml = `
             <div style="margin-top: 30px;">
-                <p>Yours truly,<br>For and on behalf of Sinopower (Pvt) Ltd</p>
+                <p>Yours truly<br>For and on behalf of Sinopower (Pvt) Ltd</p>
                 <p style="margin-top: 40px;"><strong>${qtn.sales_person || 'Sales Department'}</strong><br>Sinopower</p>
             </div>
             <div class="footer-logos">
@@ -646,7 +689,7 @@ Return your response in this exact JSON format:
             headerHtml = `
             <div class="header">
                 <div class="logo-section">
-                    <div style="font-size: 28px; font-weight: 900; color: #cc0000; line-height: 0.9;">MACHINERY<br>EXCHANGE</div>
+                    <div style="font-size: 28px; font-weight: 900; color: #cc0000; line-height: 0.9; font-style: italic;">MACHINERY<br>EXCHANGE</div>
                     <div style="font-size: 10px; font-weight: bold; color: #000; margin-top: 5px;">Earthmoving Equipment Specialists</div>
                     <div style="height: 4px; background: linear-gradient(to right, #ffcc00, #cc0000); margin-top: 5px; width: 100%;"></div>
                 </div>
@@ -659,12 +702,20 @@ Return your response in this exact JSON format:
                 </div>
                 <div class="clear"></div>
             </div>`;
-            footerHtml = `
+            supportHtml = `
+            <div style="text-decoration: underline; margin-bottom: 5px;">Product Support</div>
+            <ul style="margin-top: 0; padding-left: 20px;">
+                <li>Machinery Exchange is the authorised distributor for Shantui, Hitachi, Wirtgen, Bobcat, Rokbak, Cummins, Baoli, Terex, Royal, Hangcha, Hamm, XCMG, John Deere, Weichai, Schwing Steter, Yanmar and Sleipner in Zimbabwe.</li>
+                <li>All warranty, servicing, engineering and general support is provided by Machinery Exchange.</li>
+                <li>All spares supply to be provided by Machinery Exchange</li>
+            </ul>`;
+            signatureHtml = `
             <div style="margin-top: 30px;">
-                <p>Yours truly,<br>For and on behalf of Machinery Exchange (Pvt) Ltd</p>
-                <p style="margin-top: 40px;"><strong>${qtn.sales_person || 'Sales Department'}</strong><br>Machinery Exchange</p>
+                <p>Yours truly<br>For and on behalf of Machinery Exchange (Pvt) Ltd</p>
+                <p style="margin-top: 40px;"><strong>${qtn.sales_person || 'Antony Dube'}</strong><br>National Equipment Sales Manager<br>Mobile: +263 772 294 246<br>Email: antony.dube@machinery-exchange.com</p>
             </div>
             <div class="footer-logos">
+                <div style="font-size: 9px; font-weight: bold; text-align: left; margin-bottom: 5px;">PROUD DISTRIBUTORS OF:</div>
                 <div class="footer-logos-text">SHANTUI | Bobcat | HITACHI | WIRTGEN | ROKBAK</div>
             </div>`;
         }
@@ -674,52 +725,49 @@ Return your response in this exact JSON format:
         <head>
             <meta charset="UTF-8">
             <style>
-                body { font-family: 'Helvetica', 'Arial', sans-serif; font-size: 11px; margin: 40px; padding: 0; color: #333; line-height: 1.4; }
-                .header { margin-bottom: 20px; }
+                body { font-family: 'Calibri', 'Arial', sans-serif; font-size: 13px; margin: 30px; padding: 0; color: #000; line-height: 1.4; }
+                .header { margin-bottom: 30px; }
                 .logo-section { float: left; width: 45%; }
-                .company-details { float: right; text-align: right; width: 50%; font-size: 9px; color: #444; }
+                .company-details { float: right; text-align: right; width: 50%; font-size: 10px; color: #000; }
                 .clear { clear: both; }
-                .title { text-align: center; font-size: 24px; font-weight: bold; margin: 40px 0 20px 0; letter-spacing: 2px; }
-                .info-table { width: 100%; border-collapse: collapse; margin-bottom: 20px; }
-                .info-table td { border: 1px solid #000; padding: 6px; }
+                .title { text-align: center; font-size: 26px; font-weight: bold; margin: 30px 0; }
+                .info-table { width: 40%; border-collapse: collapse; margin-bottom: 20px; font-size: 13px; }
+                .info-table td { border: 1px solid #000; padding: 4px 8px; }
                 .main-table { width: 100%; border-collapse: collapse; margin-top: 20px; table-layout: fixed; }
-                .main-table th { background: #eeeeee; border: 1px solid #000; padding: 8px; text-align: center; font-weight: bold; }
-                .section-title { font-weight: bold; margin-top: 20px; text-decoration: underline; font-size: 12px; }
-                .footer-logos { margin-top: 50px; border-top: 1px solid #000; padding-top: 15px; text-align: center; opacity: 0.8; }
-                .footer-logos-text { font-weight: bold; letter-spacing: 3px; font-size: 14px; color: #555; }
-                ul { padding-left: 20px; }
-                li { margin-bottom: 5px; }
+                .main-table th { border: 1px solid #000; padding: 8px; text-align: center; font-weight: bold; vertical-align: middle; }
+                .footer-logos { margin-top: 50px; border-top: 1px solid #ccc; padding-top: 10px; text-align: center; }
+                .footer-logos-text { font-weight: 900; font-size: 20px; color: #000; word-spacing: 20px; }
             </style>
         </head>
         <body>
             ${headerHtml}
 
-            <div class="title">QUOTATION</div>
+            <div class="title">SHANTUI QUOTATION</div>
 
             <table class="info-table">
                 <tr>
-                    <td width="25%"><strong>Date:</strong></td>
-                    <td width="75%">${formatDate(qtn.transaction_date)}</td>
+                    <td width="40%">Date:</td>
+                    <td width="60%">${formatDate(qtn.transaction_date)}</td>
                 </tr>
                 <tr>
-                    <td><strong>Quotation Ref No:</strong></td>
+                    <td>Quotation Ref No:</td>
                     <td>${qtn.name}</td>
                 </tr>
                 <tr>
-                    <td><strong>Customer:</strong></td>
+                    <td>Customer:</td>
                     <td>${qtn.customer_name}</td>
                 </tr>
                 <tr>
-                    <td><strong>Contact Person:</strong></td>
-                    <td>${customer.custom_primary_contact_name || qtn.contact_display || ''}</td>
+                    <td>Contact Person:</td>
+                    <td>${customer.custom_primary_contact_name || qtn.contact_display || '-'}</td>
                 </tr>
                 <tr>
-                    <td><strong>Contact:</strong></td>
-                    <td>${customer.mobile_no || ''}</td>
+                    <td>Contact:</td>
+                    <td>${customer.mobile_no || '-'}</td>
                 </tr>
                 <tr>
-                    <td><strong>Email:</strong></td>
-                    <td>${customer.email_id || ''}</td>
+                    <td>Email:</td>
+                    <td>${customer.email_id || '-'}</td>
                 </tr>
             </table>
 
@@ -729,41 +777,47 @@ Return your response in this exact JSON format:
             <table class="main-table">
                 <thead>
                     <tr>
-                        <th width="8%">Qty</th>
                         <th width="12%">Equipment</th>
-                        <th width="15%">Make/Model</th>
-                        <th width="35%">Specification</th>
-                        <th width="10%">Lead Time</th>
-                        <th width="10%">Unit Price</th>
-                        <th width="10%">Total USD</th>
+                        <th width="15%"><u>Make/</u><br><u>Model</u></th>
+                        <th width="35%"><u>Specification</u></th>
+                        <th width="13%"><u>Lead</u><br><u>Time/</u><br><u>Pricing</u><br><u>Notes</u></th>
+                        <th width="12%"><u>Unit Price</u></th>
+                        <th width="13%"><u>Total Unit Price</u><br><u>(Excl. VAT) ${currName}</u></th>
                     </tr>
                 </thead>
                 <tbody>
                     ${itemsHtml}
+                    <tr>
+                        <td colspan="3" style="border: 1px solid #000; padding: 6px 10px; text-align: left;"><u>Warranty</u> — 3000 hours or 1 year parts warranty</td>
+                        <td colspan="3" style="border: 1px solid #000; padding: 6px 10px; text-align: left;"><u>Delivery</u> — HARARE</td>
+                    </tr>
                 </tbody>
             </table>
 
-            <div style="margin-top: 20px;">
-                <p><strong>Warranty:</strong> 12 months or 1500 hours whichever occurs first (Standard Terms Apply).</p>
-                <p><strong>Delivery:</strong> ${qtn.delivery || 'Harare'}</p>
-            </div>
+            <div style="margin-top: 20px; text-decoration: underline; margin-bottom: 5px;">Price qualification</div>
+            <ul style="margin-top: 0; padding-left: 20px;">
+                <li>Prices are subject to change as a result of deviations in the exchange rate, statutory regulations or for errors or ommissions on behalf of Machinery Exchange (Pvt), it's employees and suppliers. Furthermore, the price of the equipment is subject to change if delivery is delayed by the customer beyond the delivery period. The price ruling at the date of delivery to the customer will then apply.</li>
+            </ul>
 
-            <div class="section-title">Price qualification</div>
-            <div style="font-size: 10px;">
-                <ul>
-                    <li>Prices are subject to change as a result of deviations in the exchange rate, statutory regulations or for errors or omissions on behalf of Machinery Exchange (Pvt), it's employees and suppliers. Furthermore, the price of the equipment is subject to change if delivery is delayed by the customer beyond the delivery period. The price ruling at the date of delivery to the customer will then apply.</li>
-                </ul>
-            </div>
+            <div style="text-decoration: underline; margin-bottom: 5px;">Payment terms</div>
+            <ul style="margin-top: 0; padding-left: 20px;">
+                <li>Upon acceptance of this quotation, we will issue a proforma invoice. Payment terms to be discussed.</li>
+                <li>Finance terms are available subject to customers meeting due diligence requirements. These are available upon request.</li>
+            </ul>
 
-            <div class="section-title">Payment terms</div>
-            <div style="font-size: 10px;">
-                <ul>
-                    <li>Upon acceptance of this quotation, we will issue a proforma invoice. Payment terms to be discussed.</li>
-                    <li>Finance terms are available subject to customers meeting due diligence requirements. These are available upon request.</li>
-                </ul>
-            </div>
+            <div style="text-decoration: underline; margin-bottom: 5px;">Validity</div>
+            <ul style="margin-top: 0; padding-left: 20px;">
+                <li>The offer is valid for your acceptance for 30 days after the date of this quotation and thereafter subject to confirmation from us in writing.</li>
+            </ul>
+            
+            <div style="page-break-before: always;"></div>
+            ${headerHtml}
 
-            ${footerHtml}
+            ${supportHtml}
+
+            <p style="margin-top: 25px;">We trust this meets with your requirements.</p>
+
+            ${signatureHtml}
         </body>
         </html>`;
     }
@@ -783,12 +837,24 @@ Return your response in this exact JSON format:
             "search_sales_person_for_omnis"
         );
 
-        setupSuggestions(document.getElementById("qq-customer"), document.getElementById("qq-customer-suggest"), "search_customer_for_omnis");
-        setupSuggestions(document.getElementById("qq-item"), document.getElementById("qq-item-suggest"), "search_item_for_omnis");
+        setupSuggestions(document.getElementById("qq-customer"), document.getElementById("qq-customer-suggest"), "search_customer_for_omnis", (val, item) => {
+            document.getElementById("qq-customer").value = item.value;
+            window.fetchIntelligence();
+            window.generateSmartTitle();
+        });
+        
+        setupSuggestions(document.getElementById("qq-item"), document.getElementById("qq-item-suggest"), "search_item_for_omnis", (val, item) => {
+            document.getElementById("qq-item").value = item.value;
+            window.fetchIntelligence();
+            window.generateSmartTitle();
+        });
 
         // --- Bind Modal Buttons (After DOM is definitely ready) ---
         document.getElementById("btn-opts-close")?.addEventListener("click", () => {
             document.getElementById("qtn-opts-overlay").classList.add("hidden");
+            // Hide the AI Draft container for the next quote
+            const draftContainer = document.getElementById("qtn-opts-ai-draft-container");
+            if (draftContainer) draftContainer.style.display = "none";
         });
 
         document.getElementById("btn-opts-print")?.addEventListener("click", () => {
@@ -798,6 +864,17 @@ Return your response in this exact JSON format:
 
         document.getElementById("btn-opts-whatsapp")?.addEventListener("click", () => {
             alert("WhatsApp sharing will be implemented in a future update.");
+        });
+
+        document.getElementById("btn-opts-copy-draft")?.addEventListener("click", () => {
+            const draft = document.getElementById("qtn-opts-ai-draft")?.value;
+            if (draft) {
+                navigator.clipboard.writeText(draft).then(() => {
+                    const btn = document.getElementById("btn-opts-copy-draft");
+                    btn.innerHTML = "<i class='fas fa-check'></i> Copied!";
+                    setTimeout(() => btn.innerHTML = "<i class='far fa-copy'></i> Copy to Clipboard", 2000);
+                });
+            }
         });
     });
 

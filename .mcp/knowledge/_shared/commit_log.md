@@ -574,3 +574,5 @@
   Files: .mcp/knowledge/_shared/commit_log.md,
 - `34f7ae5` 2026-09-09 [supabase-migration] [checkpoint] Added Price and Lead Time inputs to Quick Create form and restyled table
   Files: .mcp/knowledge/_shared/commit_log.md,systems/salestrack/create_quotation_logic.js,systems/salestrack/dashboard_logic.js,systems/salestrack/index.html,systems/salestrack/orders_logic.js,
+- `70de3aa` 2026-09-09 [supabase-migration] [checkpoint] Quotation Form Layout Updates (Compact 3-column layout)
+  Files: .mcp/knowledge/_shared/commit_log.md,omnis-tablet/src/screens/InboxScreen.tsx,supabase/functions/send-push-notification/index.ts,systems/salestrack/index.html,

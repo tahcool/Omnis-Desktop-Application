@@ -1702,6 +1702,236 @@ window.OmnisDashboardV6 = class OmnisDashboardV6 {
         }
     }
 
+
+    openHotLeadsReportModalV5(targetPeriod, targetSalesperson) {
+        if (!this._hotFilters) {
+            this._hotFilters = { period: "This Month", salesperson: "All" };
+        }
+        if (targetPeriod) this._hotFilters.period = targetPeriod;
+        if (targetSalesperson) this._hotFilters.salesperson = targetSalesperson;
+
+        const periodText = this._hotFilters.period;
+        const spText = this._hotFilters.salesperson;
+        const allLeads = this.data.hot_leads || [];
+        const reps = [...new Set(allLeads.map(l => l.sales_person_name || 'No Rep'))].sort();
+
+        let repOptionsHtml = `<option value="All" ${spText === 'All' ? 'selected' : ''}>All Sales Reps</option>`;
+        reps.forEach(rep => { repOptionsHtml += `<option value="${rep}" ${spText === rep ? 'selected' : ''}>${rep}</option>`; });
+
+        const headerTitle = `
+            <div id="hot-report-header" style="display:flex; align-items:center; gap:15px; width:100%; justify-content:space-between; background: #f0f7ff; padding: 10px; border-radius: 8px;">
+                <span style="font-size:18px; font-weight:800; color:#0f172a;">Hot Leads Report</span>
+                <div style="display:flex; align-items:center; gap:10px;">
+                    <select id="hot-sp-select-v5" onchange="window.salestrack.openHotLeadsReportModalV5(null, this.value)" style="padding:6px 12px; border-radius:4px; border:1px solid #cbd5e1; font-size:13px; font-weight:600; color:#334155; outline:none; cursor:pointer;">
+                        ${repOptionsHtml}
+                    </select>
+                    <select id="hot-period-select-v5" onchange="window.salestrack.openHotLeadsReportModalV5(this.value, null)" style="padding:6px 12px; border-radius:4px; border:1px solid #cbd5e1; font-size:13px; font-weight:600; color:#334155; outline:none; cursor:pointer;">
+                        <option value="This Month" ${periodText === 'This Month' ? 'selected' : ''}>This Month</option>
+                        <option value="Last Month" ${periodText === 'Last Month' ? 'selected' : ''}>Last Month</option>
+                        <option value="This Year" ${periodText === 'This Year' ? 'selected' : ''}>This Year</option>
+                        <option value="All Time" ${periodText === 'All Time' ? 'selected' : ''}>All Time</option>
+                    </select>
+                    <button onclick="window.print()" class="no-print" style="padding:6px 12px; background:#475569; color:white; border:none; border-radius:4px; cursor:pointer; font-size:13px; font-weight:600; display:flex; align-items:center; gap:6px;">
+                        Print PDF
+                    </button>
+                </div>
+            </div>
+        `;
+
+        const loaderHtml = `
+            <div style="display:flex; flex-direction:column; align-items:center; justify-content:center; height:100%; min-height:400px; color:#64748b;">
+                <div style="width:50px; height:50px; border:4px solid #f3f4f6; border-top:4px solid #2563eb; border-radius:50%; animation:spin 1s linear infinite; margin-bottom:20px;"></div>
+                <div style="font-size:16px; font-weight:600;">Analyzing Hot Leads...</div>
+                <style>@keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }</style>
+            </div>
+        `;
+
+        const existingHeader = document.getElementById('hot-report-header');
+        const modalBody = document.getElementById('dash-generic-body');
+
+        if (!existingHeader) {
+            this.openListModal(headerTitle, loaderHtml, "1500px");
+            const inner = document.getElementById('dash-modal-inner');
+            if (inner) inner.style.maxHeight = '95vh';
+        } else {
+            if (modalBody) modalBody.innerHTML = loaderHtml;
+            const sSp = existingHeader.querySelector('#hot-sp-select-v5');
+            const sPeri = existingHeader.querySelector('#hot-period-select-v5');
+            if (sSp) sSp.value = spText;
+            if (sPeri) sPeri.value = periodText;
+        }
+
+        setTimeout(() => {
+            try {
+                let filteredRows = [];
+                const now = new Date();
+                const currentMonth = now.getMonth();
+                const currentYear = now.getFullYear();
+
+                allLeads.forEach(t => {
+                    if (spText !== 'All' && (t.sales_person_name || 'No Rep') !== spText) return;
+                    const actualDate = new Date(t.date || t.creation);
+                    if (isNaN(actualDate)) return;
+
+                    let include = false;
+                    if (periodText === 'All Time') {
+                        include = true;
+                    } else if (periodText === 'This Year') {
+                        if (actualDate.getFullYear() === currentYear) include = true;
+                    } else if (periodText === 'This Month') {
+                        if (actualDate.getFullYear() === currentYear && actualDate.getMonth() === currentMonth) include = true;
+                    } else if (periodText === 'Last Month') {
+                        let lastM = currentMonth - 1;
+                        let lastY = currentYear;
+                        if (lastM < 0) { lastM = 11; lastY--; }
+                        if (actualDate.getFullYear() === lastY && actualDate.getMonth() === lastM) include = true;
+                    }
+                    if (include) filteredRows.push(t);
+                });
+
+                let totalLeads = filteredRows.length;
+                let openLeads = 0;
+                let closedLeads = 0;
+
+                filteredRows.forEach(r => {
+                    const status = (r.status || '').toLowerCase();
+                    if (status.includes('close') || status.includes('won') || status.includes('convert')) {
+                        closedLeads++;
+                    } else {
+                        openLeads++;
+                    }
+                });
+
+                let convRate = totalLeads > 0 ? ((closedLeads / totalLeads) * 100).toFixed(1) : "0.0";
+                const convColor = convRate >= 40 ? '#22c55e' : (convRate >= 20 ? '#f59e0b' : '#ef4444');
+
+                let html = `
+                    <div class="eff-report-container" style="padding:32px; font-family:'Inter', sans-serif;">
+                        <style>
+                            @media print {
+                                @page { margin: 10mm; size: auto; }
+                                body > *:not(#dash-generic-modal), #main-view-container, #view-orders-list, .view-page, .ai-order-row { display: none !important; }
+                                #dash-generic-modal { display: block !important; position: absolute !important; top: 0 !important; left: 0 !important; width: 100% !important; background: white !important; backdrop-filter: none !important; height: auto !important; }
+                                #dash-modal-inner { width: 100% !important; max-width: none !important; max-height: none !important; border-radius: 0 !important; box-shadow: none !important; margin: 0 !important; border: none !important; }
+                                #dash-modal-inner > div:first-child { display: none !important; }
+                                #dash-generic-body { padding: 0 !important; overflow: visible !important; }
+                                .eff-report-container { padding: 0 !important; border: none !important; background: white !important; }
+                                .eff-report-container table { border-collapse: collapse !important; border: 2px solid black !important; width: 100% !important; margin-top: 20px !important; page-break-inside: auto; }
+                                .eff-report-container tr { page-break-inside: avoid; page-break-after: auto; }
+                                .eff-report-container th, .eff-report-container td { border: 1px solid black !important; font-size: 10px !important; padding: 6px 8px !important; }
+                                .eff-summary-grid { display: grid !important; grid-template-columns: repeat(4, 1fr) !important; gap: 0 !important; border: 2px solid black !important; background: white !important; margin-bottom: 20px !important; }
+                                .eff-summary-grid > div { border: 1px solid black !important; padding: 10px !important; }
+                                .eff-report-container div, .eff-report-container table { box-shadow: none !important; border-radius: 0 !important; }
+                                .no-print { display: none !important; }
+                            }
+                        </style>
+                        
+                        <div style="display:flex; justify-content:space-between; align-items:flex-end; margin-bottom:40px; border-bottom:1px solid #e2e8f0; padding-bottom:20px;">
+                            <img src="file:///C:/Users/Administrator/omnis/assets/images/omnis-logo.png" style="height:45px;" alt="Omnis Logo" onerror="this.src='../../assets/images/omnis-logo.png'">
+                            <div style="text-align:right;">
+                                <div style="font-size:24px; font-weight:900; color:#0f172a; letter-spacing:-0.03em;">${spText === 'All' ? 'Team' : spText} Hot Leads Report</div>
+                                <div style="font-size:18px; color:#64748b; font-weight:500; margin-top:5px;">${periodText}</div>
+                            </div>
+                        </div>
+
+                        <!-- Summary Cards -->
+                        <div class="eff-summary-grid" style="display:grid; grid-template-columns: repeat(4, 1fr); gap:1px; background:#e2e8f0; border:1px solid #e2e8f0; border-radius:12px; overflow:hidden; margin-bottom:40px; box-shadow:0 4px 12px rgba(0,0,0,0.05);">
+                            <div style="background:white; padding:24px; text-align:center;">
+                                <div style="font-size:12px; font-weight:800; color:white; background:#1e40af; padding:6px 12px; display:inline-block; border-radius:4px; margin-bottom:12px; text-transform:uppercase; letter-spacing:0.05em;">Total Hot Leads</div>
+                                <div style="font-size:32px; font-weight:900; color:#1e40af;">${totalLeads}</div>
+                            </div>
+                            <div style="background:white; padding:24px; text-align:center;">
+                                <div style="font-size:12px; font-weight:800; color:white; background:#f59e0b; padding:6px 12px; display:inline-block; border-radius:4px; margin-bottom:12px; text-transform:uppercase; letter-spacing:0.05em;">Open Leads</div>
+                                <div style="font-size:32px; font-weight:900; color:#f59e0b;">${openLeads}</div>
+                            </div>
+                            <div style="background:white; padding:24px; text-align:center;">
+                                <div style="font-size:12px; font-weight:800; color:white; background:#166534; padding:6px 12px; display:inline-block; border-radius:4px; margin-bottom:12px; text-transform:uppercase; letter-spacing:0.05em;">Closed Leads</div>
+                                <div style="font-size:32px; font-weight:900; color:#166534;">${closedLeads}</div>
+                            </div>
+                            <div style="background:white; padding:24px; text-align:center;">
+                                <div style="font-size:12px; font-weight:800; color:white; background:${convColor}; padding:6px 12px; display:inline-block; border-radius:4px; margin-bottom:12px; text-transform:uppercase; letter-spacing:0.05em;">Conversion Rate %</div>
+                                <div style="font-size:32px; font-weight:900; color:${convColor};">${convRate}%</div>
+                            </div>
+                        </div>
+
+                        <!-- Explanation -->
+                        <div class="no-print" style="background:#f8fafc; border:1px solid #e2e8f0; border-left:4px solid #3b82f6; border-radius:4px; padding:16px 20px; margin-bottom:40px; display:flex; gap:16px; align-items:flex-start;">
+                            <i class="fa fa-info-circle" style="color:#3b82f6; font-size:20px; margin-top:2px;"></i>
+                            <div style="font-size:13px; color:#475569; line-height:1.6;">
+                                <h4 style="margin:0 0 8px 0; color:#0f172a; font-size:14px; font-weight:700;">Hot Leads Analysis</h4>
+                                <p style="margin:0 0 8px 0;">This report shows the performance of highly engaged opportunities:</p>
+                                <ul style="margin:0; padding-left:20px;">
+                                    <li style="margin-bottom:4px;"><strong>Open Leads:</strong> Active opportunities that have not yet resulted in a won or lost deal.</li>
+                                    <li><strong>Conversion Rate %:</strong> The percentage of total hot leads that successfully converted to closed deals.</li>
+                                </ul>
+                            </div>
+                        </div>
+
+                        <!-- Detailed Table -->
+                        <div style="background:white; border:1px solid #e2e8f0; border-radius:12px; overflow:hidden; box-shadow:0 4px 20px rgba(0,0,0,0.03);">
+                            <table class="eff-table" style="width:100%; border-collapse:separate; border-spacing:0; font-size:13px; text-align:left;">
+                                <thead>
+                                    <tr style="background:#f8fafc; border-bottom:2px solid #e2e8f0;">
+                                        <th style="padding:16px 20px; font-weight:800; color:#475569; text-transform:uppercase; letter-spacing:0.05em;">Customer</th>
+                                        <th style="padding:16px 20px; font-weight:800; color:#475569; text-transform:uppercase; letter-spacing:0.05em;">Sales Person</th>
+                                        <th style="padding:16px 20px; font-weight:800; color:#475569; text-transform:uppercase; letter-spacing:0.05em;">Equipment</th>
+                                        <th style="padding:16px 20px; font-weight:800; color:#475569; text-transform:uppercase; letter-spacing:0.05em;">Date</th>
+                                        <th style="padding:16px 20px; font-weight:800; color:#475569; text-transform:uppercase; letter-spacing:0.05em;">Status</th>
+                                        <th style="padding:16px 20px; font-weight:800; color:#475569; text-transform:uppercase; letter-spacing:0.05em;">Ref ID</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    ${filteredRows.length > 0 ? filteredRows.map(r => {
+                                        const rDate = new Date(r.date || r.creation);
+                                        const dateFmt = isNaN(rDate) ? 'N/A' : rDate.toLocaleDateString();
+                                        const statusLabel = r.status || 'Open';
+                                        const stColor = statusLabel.toLowerCase().includes('close') || statusLabel.toLowerCase().includes('won') ? '#16a34a' : '#2563eb';
+                                        return `
+                                            <tr>
+                                                <td style="padding:16px 20px; border-bottom:1px solid #e2e8f0; font-weight:600; color:#0f172a;">${r.customer_name || 'Unknown'}</td>
+                                                <td style="padding:16px 20px; border-bottom:1px solid #e2e8f0; color:#475569;">${r.sales_person_name || 'No Rep'}</td>
+                                                <td style="padding:16px 20px; border-bottom:1px solid #e2e8f0; color:#475569;">${r.equipment || 'N/A'}</td>
+                                                <td style="padding:16px 20px; border-bottom:1px solid #e2e8f0; color:#475569;">${dateFmt}</td>
+                                                <td style="padding:16px 20px; border-bottom:1px solid #e2e8f0;">
+                                                    <span style="background:${stColor}15; color:${stColor}; padding:4px 8px; border-radius:4px; font-size:11px; font-weight:700; text-transform:uppercase;">
+                                                        ${statusLabel}
+                                                    </span>
+                                                </td>
+                                                <td style="padding:16px 20px; border-bottom:1px solid #e2e8f0; color:#64748b; font-family:monospace;">${r.name || 'N/A'}</td>
+                                            </tr>
+                                        `;
+                                    }).join('') : `<tr><td colspan="6" style="padding:30px; text-align:center; color:#94a3b8; font-style:italic;">No hot leads found for this period.</td></tr>`}
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <div style="margin-top:24px; font-size:11px; color:#94a3b8; text-align:center;">
+                            Generated via OAI &middot; Omnis SalesTrack &middot; ${new Date().toLocaleString()}
+                        </div>
+                    </div>
+                `;
+
+                if (document.getElementById('dash-generic-body')) {
+                    document.getElementById('dash-generic-body').innerHTML = html;
+                }
+
+            } catch (e) {
+                console.error("Hot Leads Report Error:", e);
+                if (document.getElementById('dash-generic-body')) {
+                    document.getElementById('dash-generic-body').innerHTML = `
+                        <div style="padding:60px; text-align:center; color:#ef4444;">
+                            <div style="font-size:40px; margin-bottom:16px;">&#x2705;</div>
+                            <div style="font-size:18px; font-weight:800; margin-bottom:8px;">Report Generation Failed</div>
+                            <div style="color:#64748b; font-size:14px; line-height:1.6;">
+                                ${e.message || "An unexpected network error occurred."}
+                            </div>
+                        </div>
+                    `;
+                }
+            }
+        }, 100);
+    }
+
     renderHotLeads() {
         const container = document.getElementById('hot-leads-list');
         const filterEl = document.getElementById('hot-leads-filter');
