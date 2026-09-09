@@ -227,6 +227,150 @@
         }
     };
 
+    // 🤖 ITEM INTELLIGENCE
+    window.fetchItemIntelligence = async function(itemCode) {
+        if (!itemCode || !window.supabase) return;
+        itemCode = itemCode.trim();
+        
+        const priceInput = document.getElementById("qq-price");
+        const leadTimeInput = document.getElementById("qq-lead-time");
+        const intelBar = document.getElementById("qq-intelligence-bar");
+        const intelContent = document.getElementById("qq-intelligence-content");
+        
+        if (intelBar && intelContent) {
+            intelBar.style.display = "flex";
+            intelContent.innerHTML = "<i>Analyzing historical data...</i>";
+        }
+        
+        try {
+            // 1. Fetch most recent price
+            const { data: qData } = await window.supabase
+                .from("omnis_quotation_items")
+                .select("rate, created_at")
+                .eq("item_code", itemCode)
+                .order("created_at", { ascending: false })
+                .limit(1);
+                
+            let priceWarnings = "";
+            if (qData && qData.length > 0) {
+                const latestRate = Number(qData[0].rate) || 0;
+                if (priceInput) priceInput.value = latestRate;
+                
+                const createdDate = new Date(qData[0].created_at);
+                const ninetyDaysAgo = new Date();
+                ninetyDaysAgo.setDate(ninetyDaysAgo.getDate() - 90);
+                
+                if (createdDate < ninetyDaysAgo) {
+                    priceWarnings = `<div style="color:#b91c1c; font-weight:600;"><i class="fas fa-exclamation-triangle"></i> Warning: Price of $${latestRate.toLocaleString(undefined, {minimumFractionDigits:2, maximumFractionDigits:2})} is over 3 months old (${createdDate.toLocaleDateString()}). Please verify with supplier.</div>`;
+                }
+            }
+            
+            // 2. Fetch order tracking trends
+            const { data: oData } = await window.supabase
+                .from("omnis_tracking_orders")
+                .select("committed_lead_time, target_handover, actual_handover, status, notes")
+                .or(`machine.ilike.%${itemCode}%,model.ilike.%${itemCode}%`)
+                .order("created_at", { ascending: false })
+                .limit(5);
+                
+            let leadTimeLogicHtml = "";
+            let suggestedLeadTime = "";
+            
+            if (oData && oData.length > 0) {
+                // Fetch universal OpenAI API Key from Supabase
+                const { data: keyData } = await window.supabase
+                    .from("omnis_app_settings")
+                    .select("setting_value")
+                    .eq("setting_key", "openai_api_key")
+                    .single();
+                    
+                let apiKey = keyData ? keyData.setting_value : "";
+                if (apiKey) apiKey = apiKey.trim();
+                
+                if (apiKey) {
+                    // Call OpenAI to deduce lead time
+                    const prompt = `Analyze these 5 recent orders for item "${itemCode}" and deduce a realistic lead time.
+Orders:
+${JSON.stringify(oData)}
+
+Return your response in this exact JSON format:
+{
+  "suggested_lead_time": "e.g. 4 - 6 Weeks",
+  "reasoning": "A concise 1-sentence explanation based on the provided notes and handover dates."
+}`;
+                    
+                    try {
+                        const res = await fetch("https://api.openai.com/v1/chat/completions", {
+                            method: "POST",
+                            headers: {
+                                "Content-Type": "application/json",
+                                "Authorization": `Bearer ${apiKey}`
+                            },
+                            body: JSON.stringify({
+                                model: "gpt-4o-mini",
+                                messages: [{ role: "user", content: prompt }],
+                                response_format: { type: "json_object" }
+                            })
+                        });
+                        
+                        if (res.ok) {
+                            const json = await res.json();
+                            try {
+                                const aiResponse = JSON.parse(json.choices[0].message.content);
+                                suggestedLeadTime = aiResponse.suggested_lead_time || "";
+                                leadTimeLogicHtml = `<div style="margin-top:4px;"><b>AI Lead Time Suggestion:</b> ${aiResponse.reasoning}</div>`;
+                            } catch(e) {
+                                suggestedLeadTime = oData[0].committed_lead_time || "";
+                                leadTimeLogicHtml = `<div style="margin-top:4px;"><i>Note: Failed to parse AI response. Using latest committed lead time as fallback.</i></div>`;
+                            }
+                        } else {
+                            // Fallback if API call fails
+                            let apiErrorMsg = "Check API Key";
+                            try {
+                                const errJson = await res.json();
+                                apiErrorMsg = errJson.error ? errJson.error.message : res.statusText;
+                                console.error("OpenAI API Error:", errJson);
+                            } catch(e) {
+                                apiErrorMsg = res.statusText;
+                            }
+                            suggestedLeadTime = oData[0].committed_lead_time || "";
+                            leadTimeLogicHtml = `<div style="margin-top:4px;"><i>Note: AI analysis failed (${apiErrorMsg}). Using latest committed lead time as fallback.</i></div>`;
+                        }
+                    } catch (fetchErr) {
+                        // This catches CORS errors or network failures
+                        console.error("Fetch to OpenAI failed:", fetchErr);
+                        suggestedLeadTime = oData[0].committed_lead_time || "";
+                        leadTimeLogicHtml = `<div style="margin-top:4px;"><i>Note: AI analysis request blocked (CORS/Network error). Using latest committed lead time as fallback.</i></div>`;
+                    }
+                } else {
+                    // Fallback if no API key
+                    suggestedLeadTime = oData[0].committed_lead_time || "";
+                    leadTimeLogicHtml = `<div style="margin-top:4px;"><i>Note: Configure OpenAI API key in settings for AI trend analysis. Using latest committed lead time as fallback.</i></div>`;
+                }
+            } else {
+                leadTimeLogicHtml = `<div style="margin-top:4px;">No recent order tracking data found for lead time deduction.</div>`;
+            }
+            
+            if (suggestedLeadTime && leadTimeInput) {
+                leadTimeInput.value = suggestedLeadTime;
+            }
+            
+            if (intelContent) {
+                intelContent.innerHTML = priceWarnings + leadTimeLogicHtml;
+                // Only hide if we have absolutely nothing to show
+                if (!priceWarnings && !leadTimeLogicHtml && intelBar) {
+                    intelBar.style.display = "none";
+                } else if (intelBar) {
+                    intelBar.style.display = "flex";
+                }
+            }
+            
+        } catch (e) {
+            console.error("Item Intelligence Error:", e);
+            if (intelContent) intelContent.innerHTML = "<span style='color:red;'>Failed to load historical intelligence.</span>";
+        }
+    };
+
     // ⚡ QUICK CREATE LOGIC
     async function submitQuickQuote() {
         const btn = document.getElementById("btn-qq-submit");
@@ -234,6 +378,8 @@
         const title = document.getElementById("qq-title")?.value;
         const itemCode = document.getElementById("qq-item")?.value;
         const salesPerson = document.getElementById("qq-salesperson")?.value;
+        const price = document.getElementById("qq-price")?.value;
+        const leadTime = document.getElementById("qq-lead-time")?.value;
 
         if (!customer) { alert("Please select a customer"); return; }
         if (!itemCode) { alert("Please select an item"); return; }
@@ -247,7 +393,8 @@
                 company: "Machinery Exchange", // Default for quick create
                 sales_person: salesPerson,
                 notes: title,
-                items: [{ item_code: itemCode, qty: 1 }]
+                delivery: leadTime,
+                items: [{ item_code: itemCode, qty: 1, rate: parseFloat(price || 0) }]
             };
 
             if (!window.supabase) throw new Error("Supabase client not found");

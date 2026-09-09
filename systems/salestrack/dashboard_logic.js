@@ -7803,19 +7803,40 @@ window.OmnisDashboardV6 = class OmnisDashboardV6 {
         }
     }
 
-    loadSettings() {
-        try { this.loadEmailRecipients(); } catch(e) {}
-        const key = localStorage.getItem('omnis_openai_key');
+    async saveOpenAIKey() {
         const input = document.getElementById('settings-openai-key');
-        if (input && key) {
-            input.value = key;
+        if (!input || !window.supabase) return;
+        const key = input.value.trim();
+        try {
+            const { error } = await window.supabase.from("omnis_app_settings").upsert({ setting_key: "openai_api_key", setting_value: key }, { onConflict: "setting_key" });
+            if (error) throw error;
+            if (window.omnisAlert) window.omnisAlert('OpenAI API Key saved securely to the system settings.', 'Success');
+            else alert('API Key saved successfully.');
+        } catch (e) {
+            console.error(e);
+            if (window.omnisAlert) window.omnisAlert('Failed to save API key: ' + e.message, 'Error');
+            else alert('Failed to save API key.');
         }
+    }
+
+    async loadSettings() {
+        try { this.loadEmailRecipients(); } catch(e) {}
 
         // --- ADMIN ONLY SECTION VISIBILITY ---
         const adminLogs = document.getElementById('settings-admin-logs-card');
-        if (adminLogs) {
-            const user = (typeof frappe !== "undefined" && frappe.session && frappe.session.user) ? frappe.session.user : "Guest";
-            adminLogs.style.display = (user === "Administrator") ? "block" : "none";
+        const openaiCard = document.getElementById('settings-openai-card');
+        const user = (typeof frappe !== "undefined" && frappe.session && frappe.session.user) ? frappe.session.user : "Guest";
+        const isAdmin = (user === "Administrator");
+        
+        if (adminLogs) adminLogs.style.display = isAdmin ? "block" : "none";
+        if (openaiCard) openaiCard.style.display = isAdmin ? "block" : "none";
+
+        if (isAdmin && window.supabase) {
+            try {
+                const { data } = await window.supabase.from("omnis_app_settings").select("setting_value").eq("setting_key", "openai_api_key").single();
+                const input = document.getElementById('settings-openai-key');
+                if (input && data) input.value = data.setting_value || "";
+            } catch(e) { console.error("Failed to load OpenAI key", e); }
         }
 
         // --- API HEALTH UI ---

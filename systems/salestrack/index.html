@@ -5481,7 +5481,8 @@
 
     .q-quick-form {
       display: grid;
-      grid-template-columns: 2fr 2fr 2fr 1fr auto;
+      grid-template-columns: 1fr 1fr 1fr auto;
+      grid-template-rows: auto auto;
       gap: 16px;
       align-items: flex-end;
     }
@@ -5521,22 +5522,48 @@
     }
 
     .btn-quick-create {
-      background: #2563eb;
+      background: linear-gradient(135deg, #a42c20 0%, #701912 100%);
       color: white;
-      border: none;
-      border-radius: 10px;
-      padding: 10px 24px;
-      font-size: 13px;
-      font-weight: 700;
+      border: 1px solid #c73627;
+      border-radius: 12px;
+      padding: 10px 32px;
+      font-size: 15px;
+      font-weight: 800;
+      letter-spacing: 0.5px;
+      text-transform: uppercase;
       cursor: pointer;
-      height: 40px;
-      transition: all 0.2s;
-      box-shadow: 0 4px 12px rgba(37, 99, 235, 0.2);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+      box-shadow: 0 4px 15px rgba(139, 34, 25, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.2);
+      text-shadow: 0 1px 2px rgba(0,0,0,0.3);
+      grid-column: 4;
+      grid-row: 1 / span 2;
+      height: 100%;
+      position: relative;
+      overflow: hidden;
+    }
+    .btn-quick-create::before {
+      content: '';
+      position: absolute;
+      top: 0; left: -100%; width: 50%; height: 100%;
+      background: linear-gradient(to right, rgba(255,255,255,0) 0%, rgba(255,255,255,0.25) 50%, rgba(255,255,255,0) 100%);
+      transform: skewX(-25deg);
+      transition: all 0.7s ease;
+    }
+    .btn-quick-create:hover::before {
+      left: 200%;
     }
     .btn-quick-create:hover {
-      background: #1d4ed8;
-      box-shadow: 0 6px 16px rgba(37, 99, 235, 0.3);
-      transform: translateY(-1px);
+      background: linear-gradient(135deg, #b83325 0%, #8b2219 100%);
+      box-shadow: 0 8px 25px rgba(139, 34, 25, 0.6), inset 0 1px 0 rgba(255, 255, 255, 0.3);
+      transform: translateY(-3px) scale(1.02);
+      border-color: #d84535;
+    }
+    .btn-quick-create:active {
+      transform: translateY(1px) scale(0.98);
+      box-shadow: 0 2px 8px rgba(139, 34, 25, 0.4), inset 0 2px 4px rgba(0, 0, 0, 0.2);
     }
 
     /* SUGGESTION LISTS */
@@ -9002,14 +9029,7 @@
             <div class="mxg-kpi-value" id="qlist-stat-open" style="position: relative; z-index: 1;">--</div>
             <div class="mxg-kpi-sub" style="position: relative; z-index: 1;">Requiring attention</div>
           </div>
-          <div class="mxg-kpi-card">
-            <div style="position: absolute; right: -5px; bottom: -15px; opacity: 0.12; font-size: 85px; color: rgba(139, 34, 25, 1); transform: rotate(-10deg); pointer-events: none;">
-              <i class="fas fa-money-bill-wave"></i>
-            </div>
-            <div class="mxg-kpi-label" style="position: relative; z-index: 1;">PIPELINE VALUE</div>
-            <div class="mxg-kpi-value" id="qlist-stat-value" style="position: relative; z-index: 1;">--</div>
-            <div class="mxg-kpi-sub" style="position: relative; z-index: 1;">Open quotes (USD)</div>
-          </div>
+
           <div class="mxg-kpi-card">
             <div style="position: absolute; right: -5px; bottom: -15px; opacity: 0.12; font-size: 85px; color: rgba(139, 34, 25, 1); transform: rotate(-10deg); pointer-events: none;">
               <i class="fas fa-fire"></i>
@@ -9031,7 +9051,7 @@
         <!-- QUICK CREATE PANEL -->
         <div class="q-quick-panel">
           <div style="display:flex; justify-content:space-between; align-items:center;">
-            <h3 class="q-quick-title"><i class="fas fa-bolt" style="color:#eab308; margin-right:4px;"></i> Quick Create Quotation</h3>
+            <h3 class="q-quick-title">Quick Create Quotation</h3>
             <button class="btn-text-action" onclick="switchToView('view-create-quotation')">Advanced Form
               &rarr;</button>
           </div>
@@ -9062,6 +9082,14 @@
                 <div id="qq-item-suggest" class="suggest-list hidden"></div>
               </div>
             </div>
+            <div class="q-quick-input-group">
+              <label class="q-quick-label">Price (Optional)</label>
+              <input type="number" id="qq-price" class="q-quick-input" placeholder="0.00" min="0" step="0.01" />
+            </div>
+            <div class="q-quick-input-group">
+              <label class="q-quick-label">Lead Time</label>
+              <input type="text" id="qq-lead-time" class="q-quick-input" placeholder="e.g. 2 Weeks" value="TBD" />
+            </div>
             <button id="btn-qq-submit" class="btn-quick-create">Create Quote</button>
           </div>
         </div>
@@ -9081,6 +9109,28 @@
               <option value="Lost">Lost</option>
               <option value="Expired">Expired</option>
           </select>
+
+          <select id="qlist-hot" style="border:1px solid #e2e8f0; background:#f8fafc; border-radius:6px; padding:8px 12px; font-size:12px; outline:none; cursor:pointer;">
+              <option value="">All Leads</option>
+              <option value="hot">Hot Leads (≥75%)</option>
+          </select>
+
+          <input type="text" id="qlist-salesperson" placeholder="Salesperson..." style="border:1px solid #e2e8f0; background:#f8fafc; border-radius:6px; padding:8px 12px; font-size:12px; width:160px; outline:none;">
+          
+          <select id="qlist-fu-preset" style="border:1px solid #e2e8f0; background:#f8fafc; border-radius:6px; padding:8px 12px; font-size:12px; outline:none; cursor:pointer;">
+            <option value="">Any Follow-up Date</option>
+            <option value="today">Due Today</option>
+            <option value="this_week">Due This Week</option>
+            <option value="overdue">Overdue</option>
+            <option value="custom">Custom Range...</option>
+          </select>
+          <div id="qlist-fu-custom-range" style="display:none; align-items:center; border:1px solid #e2e8f0; background:#f8fafc; border-radius:6px; padding:0 8px; height: 33px;">
+            <input type="date" id="qlist-fu-from" style="border:none; background:transparent; font-size:12px; outline:none; cursor:pointer; width:110px;">
+            <span style="color:#cbd5e1; margin:0 4px;">-</span>
+            <input type="date" id="qlist-fu-to" style="border:none; background:transparent; font-size:12px; outline:none; cursor:pointer; width:110px;">
+          </div>
+
+          <input type="text" id="qlist-oem" placeholder="OEM / Brand..." style="border:1px solid #e2e8f0; background:#f8fafc; border-radius:6px; padding:8px 12px; font-size:12px; width:160px; outline:none;">
         </div>
 
         <!-- Grid Header -->
@@ -12379,6 +12429,12 @@
     let qSearchText = "";
     let qStatusValue = "";
     let qCompanyValue = "";
+    let qHotValue = "";
+    let qSalespersonValue = "";
+    let qFuPresetValue = "";
+    let qFuFromValue = "";
+    let qFuToValue = "";
+    let qOemValue = "";
 
     function setStatus(text, cls) {
       if (!statusEl) return;
@@ -13619,7 +13675,51 @@
     // We need to make sure `viewCreateCe` is included in the hiding loop.
 
     /* ---------- QUOTATIONS LIST (kept) ---------- */
-    /* ---------- QUOTATIONS DASHBOARD LOGIC (Standard Frappe API) ---------- */
+    function buildFollowUpOrCondition(preset, fromVal, toVal) {
+        let d = new Date();
+        // Remove time portion for accurate day calculations
+        d = new Date(d.getFullYear(), d.getMonth(), d.getDate()); 
+        
+        let fd, td;
+        if (preset === 'today') {
+            fd = td = new Date(d);
+        } else if (preset === 'this_week') {
+            let day = d.getDay() || 7;
+            fd = new Date(d); fd.setDate(fd.getDate() - (day - 1));
+            td = new Date(fd); td.setDate(td.getDate() + 6);
+        } else if (preset === 'custom') {
+            if (!fromVal || !toVal) return null;
+            // Parse local date from yyyy-mm-dd
+            let [fy, fm, fday] = fromVal.split('-');
+            fd = new Date(fy, fm - 1, fday);
+            let [ty, tm, tday] = toVal.split('-');
+            td = new Date(ty, tm - 1, tday);
+        } else if (preset === 'overdue') {
+            let t21 = new Date(d); t21.setDate(t21.getDate() - 21);
+            let t21Str = `${t21.getFullYear()}-${String(t21.getMonth()+1).padStart(2,'0')}-${String(t21.getDate()).padStart(2,'0')}`;
+            let todayStr = `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+            return `transaction_date.lt.${t21Str},salesperson_follow_up_date.lt.${todayStr}`;
+        } else {
+            return null;
+        }
+
+        let s1 = new Date(fd); s1.setDate(s1.getDate() - 3);
+        let e1 = new Date(td); e1.setDate(e1.getDate() - 3);
+        let s2 = new Date(fd); s2.setDate(s2.getDate() - 7);
+        let e2 = new Date(td); e2.setDate(e2.getDate() - 7);
+        let s3 = new Date(fd); s3.setDate(s3.getDate() - 21);
+        let e3 = new Date(td); e3.setDate(e3.getDate() - 21);
+
+        const fmt = (dt) => `${dt.getFullYear()}-${String(dt.getMonth()+1).padStart(2,'0')}-${String(dt.getDate()).padStart(2,'0')}`;
+        const fdStr = fmt(fd);
+        const tdStr = fmt(td);
+
+        return `and(transaction_date.gte.${fmt(s1)},transaction_date.lte.${fmt(e1)}),` +
+               `and(transaction_date.gte.${fmt(s2)},transaction_date.lte.${fmt(e2)}),` +
+               `and(transaction_date.gte.${fmt(s3)},transaction_date.lte.${fmt(e3)}),` +
+               `and(salesperson_follow_up_date.gte.${fdStr},salesperson_follow_up_date.lte.${tdStr})`;
+    }
+
     async function loadQuotationList(force = false) {
       if (qListBody && qListBody.children.length === 0) {
         let skeletons = "";
@@ -13783,9 +13883,25 @@
         
         let itemsHtml = "—";
         if (totalItems > 0) {
-            itemsHtml = '<ul style="margin:0; padding-left:16px; text-align:left; font-size:12px; color:#0f172a; font-weight:600;">' + 
-            qItems.map(i => `<li><b>${i.qty}x</b> ${escapeHtml(i.item_code)}</li>`).join('') + 
-            '</ul>';
+            itemsHtml = '<div style="background:rgba(255,255,255,0.7); border:1px solid rgba(153,27,27,0.15); border-radius:6px; overflow:hidden; box-shadow:0 2px 4px rgba(153,27,27,0.02);">' + 
+            '<table style="width:100%; border-collapse:collapse; font-size:11px; text-align:left;">' +
+            '<thead style="background:rgba(153,27,27,0.04); color:#7f1d1d; border-bottom:1px solid rgba(153,27,27,0.1);">' +
+            '<tr>' +
+            '<th style="padding:6px 8px; font-weight:800; width:40px; letter-spacing:0.5px;">QTY</th>' +
+            '<th style="padding:6px 8px; font-weight:800; letter-spacing:0.5px;">ITEM</th>' +
+            '<th style="padding:6px 8px; font-weight:800; text-align:right; letter-spacing:0.5px;">PRICE</th>' +
+            '<th style="padding:6px 8px; font-weight:800; text-align:right; letter-spacing:0.5px;">LEAD TIME</th>' +
+            '</tr></thead><tbody>' +
+            qItems.map(i => {
+                const formattedPrice = i.rate ? new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', minimumFractionDigits: 0, maximumFractionDigits: 0 }).format(i.rate) : '-';
+                return `<tr style="border-bottom:1px solid rgba(153,27,27,0.05); transition:background 0.2s;" onmouseover="this.style.background=\\'rgba(153,27,27,0.02)\\'" onmouseout="this.style.background=\\'transparent\\'">
+                    <td style="padding:6px 8px; font-weight:800; color:#991b1b;">${i.qty}</td>
+                    <td style="padding:6px 8px; font-weight:700; color:#450a0a; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:120px;" title="${escapeHtml(i.item_code)}">${escapeHtml(i.item_code)}</td>
+                    <td style="padding:6px 8px; font-weight:700; color:#065f46; text-align:right;">${formattedPrice}</td>
+                    <td style="padding:6px 8px; font-weight:600; color:#991b1b; opacity:0.6; text-align:right;">TBD</td>
+                </tr>`;
+            }).join('') + 
+            '</tbody></table></div>';
         }
 
         const likelihood = row.likelihood_percent || 0;
@@ -14009,34 +14125,75 @@
       if (!window.electron) return;
       
       try {
-        // Query Supabase for KPIs
-        const totalReq = window.electron.invoke('supabase:query', {
-          method: 'select', table: 'omnis_quotations', select: 'id', count: 'exact', limit: 1
-        });
-        const openReq = window.electron.invoke('supabase:query', {
-          method: 'select', table: 'omnis_quotations', select: 'id', count: 'exact', match: { status: 'Open' }, limit: 1
-        });
-        const hotReq = window.electron.invoke('supabase:query', {
-          method: 'select', table: 'omnis_quotations', select: 'id', count: 'exact', limit: 1, gte: { likelihood_percent: 75 }
-        });
-
-        const [totalRes, openRes, hotRes] = await Promise.all([totalReq, openReq, hotReq]);
-
+        const fromInput = document.getElementById('qlist-from-date');
+        const toInput = document.getElementById('qlist-to-date');
+        const fromDate = fromInput ? fromInput.value : "";
+        const toDate = toInput ? toInput.value : "";
+        
+        let filters = {};
+        if (qCompanyValue) filters['company'] = qCompanyValue;
+        
+        let allData = [];
+        let offset = 0;
+        let pageSize = 1000;
+        
+        while (true) {
+            let params = {
+              columns: 'id, status, likelihood_percent',
+              filters: filters,
+              range: { from: offset, to: offset + pageSize - 1 }
+            };
+            if (fromDate) params.gte = [ { col: 'transaction_date', val: fromDate } ];
+            if (toDate) params.lte = [ { col: 'transaction_date', val: toDate } ];
+            
+            const res = await window.electron.invoke('supabase:query', {
+              table: 'omnis_quotations',
+              method: 'select',
+              params: params
+            });
+            
+            const chunk = res.data || [];
+            allData = allData.concat(chunk);
+            
+            if (chunk.length < pageSize) {
+                break;
+            }
+            offset += pageSize;
+        }
+        
+        const data = allData;
+        
+        let totalCount = data.length;
+        let openCount = 0;
+        let hotCount = 0;
+        let wonCount = 0;
+        
+        for (const q of data) {
+            const s = (q.status || "").toLowerCase();
+            if (s === 'open') {
+                openCount++;
+            }
+            if (s === 'converted' || s === 'ordered' || s === 'won') {
+                wonCount++;
+            }
+            if (Number(q.likelihood_percent) >= 75) {
+                hotCount++;
+            }
+        }
+        
+        let winRate = totalCount > 0 ? Math.round((wonCount / totalCount) * 100) : 0;
+        
         const totalStat = document.getElementById('qlist-stat-total');
-        if(totalStat) totalStat.textContent = totalRes.count || 0;
+        if(totalStat) totalStat.textContent = totalCount;
         
         const openStat = document.getElementById('qlist-stat-open');
-        if(openStat) openStat.textContent = openRes.count || 0;
+        if(openStat) openStat.textContent = openCount;
         
         const hotStat = document.getElementById('qlist-stat-hot');
-        if(hotStat) hotStat.textContent = hotRes.count || 0;
-        
-        // Hardcode Pipeline and Winrate as they require complex aggregation for now
-        const valStat = document.getElementById('qlist-stat-value');
-        if(valStat) valStat.textContent = "---";
+        if(hotStat) hotStat.textContent = hotCount;
         
         const winStat = document.getElementById('qlist-stat-winrate');
-        if(winStat) winStat.textContent = "---";
+        if(winStat) winStat.textContent = winRate + "%";
       } catch (e) {
         console.warn("KPI Load fail", e);
       }
@@ -14047,11 +14204,18 @@
     if (btnQqSubmit) {
       btnQqSubmit.onclick = async () => {
         const custInput = document.getElementById('qq-customer');
+        const spInput = document.getElementById('qq-salesperson');
         const titleInput = document.getElementById('qq-title');
         const itemInput = document.getElementById('qq-item');
+        const priceInput = document.getElementById('qq-price');
+        const leadTimeInput = document.getElementById('qq-lead-time');
+
         const cust = custInput?.value.trim();
+        const salesperson = spInput?.value.trim();
         const title = titleInput?.value.trim() || (cust ? `${cust} - Quotation` : '');
         const item = itemInput?.value.trim();
+        const price = priceInput ? parseFloat(priceInput.value) : 0;
+        const leadTime = leadTimeInput?.value.trim();
 
         if (!cust) { alert("Please enter a Customer name"); return; }
 
@@ -14060,7 +14224,14 @@
 
         try {
           const base = CURRENT_SYSTEM.baseUrl.replace(/\/$/, "");
-          const items = item ? [{ item_code: item, qty: 1 }] : [];
+          
+          let itemObj = {};
+          if (item) {
+            itemObj = { item_code: item, qty: 1 };
+            if (price && !isNaN(price)) itemObj.rate = price;
+            if (leadTime) itemObj.custom_lead_time = leadTime;
+          }
+          const items = item ? [itemObj] : [];
 
           // Route through IPC (callFrappeSequenced) - same as all other API calls
           const res = await window.callFrappeSequenced(
@@ -14071,6 +14242,7 @@
               company: CURRENT_SYSTEM.company || "",
               title: title,
               transaction_date: nowdate(),
+              custom_salesperson: salesperson || "",
               items: items.length ? JSON.stringify(items) : "[]"
             }
           );
@@ -14078,8 +14250,12 @@
           if (newDoc.name) {
             omnisLog("Quick Quote Created: " + newDoc.name);
             custInput.value = "";
+            if (spInput) spInput.value = "";
             titleInput.value = "";
             if (itemInput) itemInput.value = "";
+            if (priceInput) priceInput.value = "";
+            if (leadTimeInput) leadTimeInput.value = "TBD";
+            
             loadQuotationList(true);
             // Show success toast
             if (window.salestrack && window.salestrack.showToast) {
@@ -14193,6 +14369,9 @@
       }
       if (e.target && e.target.id === "qlist-page-length") {
         qPageLength = Number(e.target.value || "20"); qOffset = 0; forceReloadQuotations();
+      }
+      if (e.target && (e.target.id === "qlist-from-date" || e.target.id === "qlist-to-date")) {
+        qOffset = 0; forceReloadQuotations();
       }
     });
 

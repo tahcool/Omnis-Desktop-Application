@@ -569,3 +569,6 @@
   Files: .mcp/knowledge/_shared/commit_log.md,supabase/migrations/20260908000002_add_salesperson_fup.sql,systems/salestrack/index.html,
 - `4703dde` 2026-09-08 [supabase-migration] [checkpoint] Checkpoint: Unified Quotations and Order Tracking UI layout
   Files: .mcp/knowledge/_shared/commit_log.md,systems/salestrack/index.html,
+\n## 2026-09-09
+- `0b14272` 2026-09-09 [supabase-migration] [checkpoint] Checkpoint: User requested restore point (PDF quotation generation logic)
+  Files: .mcp/knowledge/_shared/commit_log.md,
