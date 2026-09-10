@@ -228,16 +228,8 @@
     };
 
     // --- AI HELPERS ---
-    async function getOpenAIKey() {
-        const { data: keyData } = await window.supabase
-            .from("omnis_app_settings")
-            .select("setting_value")
-            .eq("setting_key", "openai_api_key")
-            .single();
-        let apiKey = keyData ? keyData.setting_value : "";
-        if (!apiKey) apiKey = localStorage.getItem("omnis_openai_key") || "";
-        return apiKey.trim();
-    }
+    // OpenAI key is now stored server-side only.
+    // All AI calls go through the ai-proxy Edge Function via window.callAIProxy().
 
     // 1. MAGIC FILL
     window.performMagicFill = async function() {
@@ -250,30 +242,8 @@
         if (btn) btn.innerHTML = "<i class='fas fa-spinner fa-spin'></i> AI...";
         
         try {
-            const apiKey = await getOpenAIKey();
-            if (!apiKey) throw new Error("OpenAI key not configured in settings.");
-            
-            const prompt = `Extract quotation details from this text: "${text}".
-Return exactly this JSON format:
-{
-  "customer": "customer name or null",
-  "salesperson": "salesperson name or null",
-  "item_code": "equipment or item mentioned or null",
-  "price": number or null,
-  "lead_time": "lead time like '2 Weeks' or null"
-}`;
-            const res = await fetch("https://api.openai.com/v1/chat/completions", {
-                method: "POST",
-                headers: { "Content-Type": "application/json", "Authorization": `Bearer ${apiKey}` },
-                body: JSON.stringify({
-                    model: "gpt-4o-mini",
-                    messages: [{ role: "user", content: prompt }],
-                    response_format: { type: "json_object" }
-                })
-            });
-            if (!res.ok) throw new Error("Failed to contact OpenAI");
-            const json = await res.json();
-            const aiData = JSON.parse(json.choices[0].message.content);
+            const resp = await window.callAIProxy('magic_fill', { text });
+            const aiData = resp.result;
             
             if (aiData.customer) document.getElementById("qq-customer").value = aiData.customer;
             if (aiData.salesperson) document.getElementById("qq-salesperson").value = aiData.salesperson;
@@ -301,17 +271,8 @@ Return exactly this JSON format:
         if (!customer || !item || !titleInp || titleInp.value.trim() !== "") return;
         
         try {
-            const apiKey = await getOpenAIKey();
-            if (!apiKey) return;
-            const prompt = `Generate a short, professional quotation title for selling "${item}" to "${customer}". Max 6 words. Return JSON: {"title": "..."}`;
-            const res = await fetch("https://api.openai.com/v1/chat/completions", {
-                method: "POST",
-                headers: { "Content-Type": "application/json", "Authorization": `Bearer ${apiKey}` },
-                body: JSON.stringify({ model: "gpt-4o-mini", messages: [{ role: "user", content: prompt }], response_format: { type: "json_object" } })
-            });
-            const json = await res.json();
-            const aiData = JSON.parse(json.choices[0].message.content);
-            if (aiData.title) titleInp.value = aiData.title;
+            const resp = await window.callAIProxy('smart_title', { customer, item });
+            if (resp.result?.title) titleInp.value = resp.result.title;
         } catch(e) { console.error("Smart Title Error", e); }
     };
 
@@ -336,27 +297,26 @@ Return exactly this JSON format:
         let finalHtml = "";
         
         try {
-            const apiKey = await getOpenAIKey();
-            
             // --- CUSTOMER INSIGHTS (RISK SCORING) ---
             if (customer) {
                 const { data: cData } = await window.supabase.from("omnis_quotations").select("status").eq("customer_name", customer).order("created_at", { ascending: false }).limit(10);
-                if (cData && cData.length > 0 && apiKey) {
+                if (cData && cData.length > 0) {
                     const won = cData.filter(d => d.status === "Won").length;
                     const lost = cData.filter(d => d.status === "Lost").length;
-                    const prompt = `A customer has ${won} won quotes and ${lost} lost quotes in the last 10 interactions. Give a 1 sentence AI risk/likelihood score. JSON: {"insight": "..."}`;
                     try {
-                        const res = await fetch("https://api.openai.com/v1/chat/completions", { method: "POST", headers: { "Content-Type": "application/json", "Authorization": `Bearer ${apiKey}` }, body: JSON.stringify({ model: "gpt-4o-mini", messages: [{ role: "user", content: prompt }], response_format: { type: "json_object" } }) });
-                        const json = await res.json();
-                        const aiData = JSON.parse(json.choices[0].message.content);
-                        finalHtml += `<div><b>Customer AI Insight:</b> ${aiData.insight}</div>`;
+                        const resp = await window.callAIProxy('quotation_intelligence', {
+                            customer, item: itemCode || 'Unknown',
+                            context: `Customer ${customer} has ${won} won and ${lost} lost quotes recently.`
+                        });
+                        if (resp.result?.insights) {
+                            finalHtml += `<div><b>Customer AI Insight:</b> ${resp.result.insights}</div>`;
+                        }
                     } catch(e) {}
                 }
             }
             
-            // --- ITEM INTELLIGENCE ---
+            // --- ITEM INTELLIGENCE (non-AI: price lookup + staleness check) ---
             if (itemCode) {
-                // Fetch most recent price
                 const { data: qData } = await window.supabase.from("omnis_quotation_items").select("rate, created_at").eq("item_code", itemCode).order("created_at", { ascending: false }).limit(1);
                 if (qData && qData.length > 0) {
                     const latestRate = Number(qData[0].rate) || 0;
@@ -368,16 +328,20 @@ Return exactly this JSON format:
                     }
                 }
                 
-                // Deduce Lead Time
+                // Deduce Lead Time via AI proxy
                 const { data: oData } = await window.supabase.from("omnis_tracking_orders").select("committed_lead_time, target_handover, actual_handover, status, notes").or(`machine.ilike.%${itemCode}%,model.ilike.%${itemCode}%`).order("created_at", { ascending: false }).limit(5);
-                if (oData && oData.length > 0 && apiKey) {
-                    const prompt = `Analyze these 5 recent orders for item "${itemCode}" and deduce a realistic lead time. Orders: ${JSON.stringify(oData)}. Return JSON: {"suggested_lead_time": "...", "reasoning": "..."}`;
+                if (oData && oData.length > 0) {
                     try {
-                        const res = await fetch("https://api.openai.com/v1/chat/completions", { method: "POST", headers: { "Content-Type": "application/json", "Authorization": `Bearer ${apiKey}` }, body: JSON.stringify({ model: "gpt-4o-mini", messages: [{ role: "user", content: prompt }], response_format: { type: "json_object" } }) });
-                        const json = await res.json();
-                        const aiData = JSON.parse(json.choices[0].message.content);
-                        if (leadTimeInput && (leadTimeInput.value === "TBD" || !leadTimeInput.value)) leadTimeInput.value = aiData.suggested_lead_time;
-                        finalHtml += `<div style="margin-top:4px;"><b>AI Lead Time:</b> ${aiData.reasoning}</div>`;
+                        const resp = await window.callAIProxy('quotation_intelligence', {
+                            customer: customer || 'Unknown', item: itemCode,
+                            context: `Recent orders for ${itemCode}: ${JSON.stringify(oData)}. Suggest realistic lead time.`
+                        });
+                        if (resp.result?.suggestedPrice && leadTimeInput && (leadTimeInput.value === "TBD" || !leadTimeInput.value)) {
+                            leadTimeInput.value = resp.result.suggestedPrice;
+                        }
+                        if (resp.result?.insights) {
+                            finalHtml += `<div style="margin-top:4px;"><b>AI Lead Time:</b> ${resp.result.insights}</div>`;
+                        }
                     } catch(e) {}
                 }
             }
@@ -455,23 +419,19 @@ Return exactly this JSON format:
             const payload = { ok: true, name: qtnId };
 
             if (payload.ok) {
-                // 4. Draft WhatsApp message using OpenAI
+                // 4. Draft WhatsApp message using AI proxy
                 const draftContainer = document.getElementById("qtn-opts-ai-draft-container");
                 const draftArea = document.getElementById("qtn-opts-ai-draft");
                 if (draftContainer && draftArea) {
                     draftContainer.style.display = "block";
                     draftArea.value = "AI is drafting a personalized WhatsApp message...";
-                    getOpenAIKey().then(apiKey => {
-                        if(apiKey) {
-                            const prompt = `Draft a friendly, professional WhatsApp message for a B2B sales rep to send to customer "${data.customer}". The rep is sending them a quotation for "${itemCode}" at $${price}. Keep it short and use emojis natively.`;
-                            fetch("https://api.openai.com/v1/chat/completions", {
-                                method: "POST", headers: { "Content-Type": "application/json", "Authorization": `Bearer ${apiKey}` },
-                                body: JSON.stringify({ model: "gpt-4o-mini", messages: [{ role: "user", content: prompt }] })
-                            }).then(r => r.json()).then(j => {
-                                draftArea.value = j.choices[0].message.content;
-                            }).catch(err => draftArea.value = "Could not draft message automatically.");
-                        } else { draftArea.value = "OpenAI Key not configured."; }
-                    });
+                    window.callAIProxy('quotation_intelligence', {
+                        customer: data.customer, item: itemCode,
+                        price: price,
+                        context: `Draft a friendly WhatsApp message for sending a quotation for ${itemCode} at $${price} to ${data.customer}.`
+                    }).then(resp => {
+                        draftArea.value = resp.result?.insights || resp.result?.content || "Could not draft message.";
+                    }).catch(() => { draftArea.value = "Could not draft message automatically."; });
                 }
 
                 document.getElementById("qq-customer").value = "";

@@ -1321,17 +1321,9 @@ async function fetchAIRiskAnalysis() {
         if (!sys) throw new Error("Connection lost. Please refresh.");
         const base = sys.baseUrl.replace(/\/$/, "");
 
-        let apiKey = "";
-        if (window.supabase) {
-            try {
-                const { data: keyData } = await window.supabase.from("omnis_app_settings").select("setting_value").eq("setting_key", "openai_api_key").single();
-                apiKey = keyData ? keyData.setting_value : "";
-            } catch(e) { console.error("Failed to fetch OpenAI key", e); }
-        }
+        // AI key is now stored server-side. No client key needed.
 
-        const res = await window.callFrappeSequenced(base, "powerstar_salestrack.omnis_dashboard.get_ai_trend_and_prediction_insights", {
-            api_key: apiKey
-        });
+        const res = await window.callFrappeSequenced(base, "powerstar_salestrack.omnis_dashboard.get_ai_trend_and_prediction_insights", {});
 
         const data = res.message || res;
 

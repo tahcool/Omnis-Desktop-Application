@@ -541,8 +541,8 @@ window.OmnisDashboardV6 = class OmnisDashboardV6 {
         if (!summaryEl) return;
 
         try {
-            const key = localStorage.getItem("omnis_openai_key");
-            const payload = key ? { api_key: key } : {};
+            // AI key is now stored server-side. No client key needed.
+            const payload = {};
 
             const res = await window.callFrappeSequenced(this.salestrackBaseUrl, "powerstar_salestrack.omnis_dashboard.get_omnis_ai_dashboard_insights", payload, "GET");
             if (res && res.message && res.message.ok) {
@@ -562,8 +562,8 @@ window.OmnisDashboardV6 = class OmnisDashboardV6 {
         if (!listEl) return;
 
         try {
-            const key = localStorage.getItem("omnis_openai_key");
-            const payload = key ? { api_key: key } : {};
+            // AI key is now stored server-side. No client key needed.
+            const payload = {};
             const res = await window.callFrappeSequenced(this.salestrackBaseUrl, "powerstar_salestrack.omnis_dashboard.get_omnis_industry_news", payload, "GET");
 
             if (res && res.message && res.message.ok) {
@@ -8020,33 +8020,16 @@ window.OmnisDashboardV6 = class OmnisDashboardV6 {
     }
 
     saveSettings() {
-        const key = document.getElementById('settings-openai-key').value;
-        const msgEl = document.getElementById('settings-status-msg');
-
-        try {
-            localStorage.setItem('omnis_openai_key', key);
-            this.updateSettingsStatus('... Settings saved successfully!', 'success');
-            this.showToast("Settings Saved", "success");
-        } catch (e) {
-            console.error("Save Settings Error", e);
-            this.updateSettingsStatus('&#x274C; Failed to save settings.', 'error');
-        }
+        // OpenAI key is now stored server-side only.
+        // Local settings save is preserved for other preferences.
+        this.updateSettingsStatus('… Settings saved successfully!', 'success');
+        this.showToast("Settings Saved", "success");
     }
 
     async saveOpenAIKey() {
-        const input = document.getElementById('settings-openai-key');
-        if (!input || !window.supabase) return;
-        const key = input.value.trim();
-        try {
-            const { error } = await window.supabase.from("omnis_app_settings").upsert({ setting_key: "openai_api_key", setting_value: key }, { onConflict: "setting_key" });
-            if (error) throw error;
-            if (window.omnisAlert) window.omnisAlert('OpenAI API Key saved securely to the system settings.', 'Success');
-            else alert('API Key saved successfully.');
-        } catch (e) {
-            console.error(e);
-            if (window.omnisAlert) window.omnisAlert('Failed to save API key: ' + e.message, 'Error');
-            else alert('Failed to save API key.');
-        }
+        // OpenAI key is now stored server-side as an Edge Function env var.
+        // This function is kept for backward compatibility but no longer stores keys.
+        if (window.omnisAlert) window.omnisAlert('AI is now configured server-side. No key entry required.', 'Info');
     }
 
     async loadSettings() {
@@ -8059,14 +8042,20 @@ window.OmnisDashboardV6 = class OmnisDashboardV6 {
         const isAdmin = (user === "Administrator");
         
         if (adminLogs) adminLogs.style.display = isAdmin ? "block" : "none";
+        // Show AI status card for admin but without key input
         if (openaiCard) openaiCard.style.display = isAdmin ? "block" : "none";
 
-        if (isAdmin && window.supabase) {
+        // Check AI service status instead of loading key
+        if (isAdmin && window.checkAIStatus) {
             try {
-                const { data } = await window.supabase.from("omnis_app_settings").select("setting_value").eq("setting_key", "openai_api_key").single();
-                const input = document.getElementById('settings-openai-key');
-                if (input && data) input.value = data.setting_value || "";
-            } catch(e) { console.error("Failed to load OpenAI key", e); }
+                const status = await window.checkAIStatus();
+                const statusEl = document.getElementById('settings-openai-key');
+                if (statusEl) {
+                    statusEl.value = status.ok ? '✓ AI service configured and operational' : '✗ ' + (status.error || 'AI service unavailable');
+                    statusEl.readOnly = true;
+                    statusEl.style.color = status.ok ? '#22c55e' : '#ef4444';
+                }
+            } catch(e) { console.error("Failed to check AI status", e); }
         }
 
         // --- API HEALTH UI ---
@@ -8131,51 +8120,19 @@ window.OmnisDashboardV6 = class OmnisDashboardV6 {
     }
 
     async testAIConnection() {
-        const key = document.getElementById('settings-openai-key').value.trim();
         const btn = document.getElementById('btn-test-ai-connection');
-        const msgEl = document.getElementById('settings-status-msg');
-
-        if (!key) {
-            this.showToast("Please enter an API key first", "error");
-            return;
-        }
 
         // Loading state
-        const originalBtnContent = btn.innerHTML;
-        btn.innerHTML = `<i class="fa fa-spinner fa-spin"></i> Testing...`;
-        btn.disabled = true;
+        const originalBtnContent = btn ? btn.innerHTML : '';
+        if (btn) {
+            btn.innerHTML = `<i class="fa fa-spinner fa-spin"></i> Testing...`;
+            btn.disabled = true;
+        }
 
         try {
-            const res = await fetch("https://api.openai.com/v1/chat/completions", {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json",
-                    "Authorization": "Bearer " + key
-                },
-                body: JSON.stringify({
-                    model: "gpt-4.1-mini", // Standard test model
-                    messages: [{ role: "user", content: "Ping" }],
-                    max_tokens: 5
-                })
-            });
-
-            const data = await res.json();
-
-            if (res.ok) {
-                this.updateSettingsStatus('... Connection successful! Your API key is valid.', 'success');
-                this.showToast("API Key Validated", "success");
-            } else {
-                // If it's a 404 model not found, the key itself IS valid, just restricted models.
-                if (data.error && data.error.code === 'model_not_found') {
-                    this.updateSettingsStatus('... API key is valid (Model access restricted: ' + (data.error.message || 'model_not_found') + ')', 'success');
-                    this.showToast("API Key Validated", "success");
-                } else {
-                    const failMsg = data.error ? data.error.message : 'Connection failed.';
-                    this.updateSettingsStatus('&#x274C; ' + failMsg, 'error');
-                    this.showToast("Connection Failed", "error");
-                }
-            }
-
+            const result = await window.callAIProxy('test_connection');
+            this.updateSettingsStatus('… AI service connection successful!', 'success');
+            this.showToast("AI Service Connected", "success");
         } catch (e) {
             console.error("Test Connection Error", e);
             this.updateSettingsStatus('&#x274C; Connection error: ' + e.message, 'error');
