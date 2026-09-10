@@ -63,12 +63,84 @@ contextBridge.exposeInMainWorld("syncAPI", {
 });
 
 // ✅ Legacy & Built-in Bridge for WhatsApp/Dashboard
+// SECURITY: Channel allowlist — only these IPC channels can be called from renderer.
+// Derived from scanning all electron.invoke() call sites in systems/*.html
+const ALLOWED_INVOKE_CHANNELS = new Set([
+  // App lifecycle
+  'app:getVersion', 'app:checkForUpdates',
+  // Window management
+  'window:minimize', 'window:maximize', 'window:close',
+  'window:openDashboard', 'window:openLogin', 'window:openAuxiliary',
+  'window:restoreLoginSize',
+  // Supabase data (proxied, not direct key access)
+  'supabase:query', 'supabase:edgeFunction',
+  'supabase:getSession', 'supabase:signIn', 'supabase:signOut',
+  'supabase:getUsers', 'supabase:createUser', 'supabase:updateUserAccess',
+  'supabase:resetPwd', 'supabase:updateUser',
+  'supabase:enrollMfa', 'supabase:challengeMfa', 'supabase:verifyMfa',
+  // Supabase auth admin (admin-only operations — validated server-side)
+  'supabase:auth',
+  // Portal
+  'portal:impersonate',
+  // Storage
+  'storage:upload',
+  // Cache & Sync
+  'cache:getAll', 'cache:getOne', 'cache:update', 'cache:search', 'cache:set',
+  'sync:getStatus', 'sync:queue', 'sync:setOnline',
+  'sync:fullSync', 'sync:catalog', 'sync:customers:full',
+  // Frappe (legacy — to be removed in Phase 3)
+  'frappe:request', 'frappe:downloadFile',
+  // Email
+  'email:send', 'email:getHistory', 'email:getConfig', 'email:saveConfig',
+  'email:cancelScheduled', 'email:retryFailed', 'email:test',
+  // WhatsApp
+  'whatsapp:send-msg', 'whatsapp:getStatus', 'whatsapp:getQR',
+  'whatsapp:disconnect', 'whatsapp:connect',
+  // Print & PDF
+  'print:toPDF', 'print:openFile',
+  // AI
+  'generate-ai-image',
+  // Shell
+  'shell:openUrl',
+  // Settings
+  'settings:get', 'settings:set',
+  // Error reporting
+  'renderer:error',
+  // Shantui
+  'shantui:getFaultCodes',
+]);
+const ALLOWED_SEND_CHANNELS = new Set([
+  'renderer:error',
+]);
+const ALLOWED_ON_CHANNELS = new Set([
+  'omnis:log', 'sync:status', 'update:available', 'update:downloaded',
+  'whatsapp:status', 'whatsapp:qr', 'notification:show',
+]);
+
 contextBridge.exposeInMainWorld("electron", {
-  invoke: (channel, data) => ipcRenderer.invoke(channel, data),
-  send: (channel, data) => ipcRenderer.send(channel, data),
+  invoke: (channel, data) => {
+    if (!ALLOWED_INVOKE_CHANNELS.has(channel)) {
+      console.error(`[IPC] Blocked invoke on disallowed channel: ${channel}`);
+      return Promise.reject(new Error(`IPC channel '${channel}' is not allowed`));
+    }
+    return ipcRenderer.invoke(channel, data);
+  },
+  send: (channel, data) => {
+    if (!ALLOWED_SEND_CHANNELS.has(channel)) {
+      console.error(`[IPC] Blocked send on disallowed channel: ${channel}`);
+      return;
+    }
+    ipcRenderer.send(channel, data);
+  },
   getVersion: () => ipcRenderer.invoke("app:getVersion"),
   checkForUpdates: () => ipcRenderer.invoke("app:checkForUpdates"),
-  on: (channel, func) => ipcRenderer.on(channel, (event, ...args) => func(event, ...args)),
+  on: (channel, func) => {
+    if (!ALLOWED_ON_CHANNELS.has(channel)) {
+      console.error(`[IPC] Blocked listener on disallowed channel: ${channel}`);
+      return;
+    }
+    ipcRenderer.on(channel, (event, ...args) => func(event, ...args));
+  },
   removeAllListeners: (channel) => ipcRenderer.removeAllListeners(channel)
 });
 

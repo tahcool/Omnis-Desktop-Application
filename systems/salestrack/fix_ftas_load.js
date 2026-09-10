@@ -8,15 +8,21 @@
  * Or inject via the app's existing script-injection mechanism.
  */
 
-const SUPABASE_URL = 'https://pfqaeewmlwfayxbgmuaq.supabase.co';
-const SUPABASE_KEY = 'sb_secret_QDTpvp_agRT3cuB9nXrfPw_I9fZHEOc';
+const SUPABASE_URL = process.env.SUPABASE_URL || 'https://pfqaeewmlwfayxbgmuaq.supabase.co';
+const SUPABASE_KEY = process.env.SUPABASE_SERVICE_KEY;
+if (!SUPABASE_KEY) {
+  console.error('ERROR: SUPABASE_SERVICE_KEY not set. This script requires server-only credentials.');
+  console.error('Set SUPABASE_SERVICE_KEY in your environment or in scripts/.env.server');
+  process.exit(1);
+}
 
 const patchedLoad = `
 (function() {
   'use strict';
 
+  // NOTE: This patch now queries via the Electron IPC proxy (electron.invoke)
+  // instead of direct Supabase REST calls. The service key is no longer embedded.
   var SUPABASE_URL = '${SUPABASE_URL}';
-  var SUPABASE_KEY = '${SUPABASE_KEY}';
 
   /* ── Patched ftAsLoad: reads from aftersales_handover table directly ── */
   window.ftAsLoad = async function() {

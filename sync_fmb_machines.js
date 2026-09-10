@@ -9,7 +9,7 @@
 const { createClient } = require('@supabase/supabase-js');
 
 const SUPABASE_URL = 'https://pfqaeewmlwfayxbgmuaq.supabase.co';
-const SUPABASE_SERVICE_KEY = 'sb_secret_JZwRYG9k0mZ9x86o92O5sA__fuofVcU';
+const SUPABASE_SERVICE_KEY = (process.env.SUPABASE_SERVICE_KEY || (() => { throw new Error('SUPABASE_SERVICE_KEY not set'); })());
 const FRAPPE_URL = 'https://salestrack.powerstar.co.zw';
 const FRAPPE_METHOD = 'powerstar_salestrack.omnis_dashboard.get_weekly_gsm_report';
 

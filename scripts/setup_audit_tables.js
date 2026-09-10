@@ -1,5 +1,5 @@
 const https = require('https');
-const SERVICE_KEY = 'sb_secret_QDTpvp_agRT3cuB9nXrfPw_I9fZHEOc';
+const SERVICE_KEY = (process.env.SUPABASE_SERVICE_KEY || (() => { throw new Error('SUPABASE_SERVICE_KEY not set. See scripts/.env.server'); })());
 const PROJECT_REF = 'pfqaeewmlwfayxbgmuaq';
 
 const sqlQueries = `

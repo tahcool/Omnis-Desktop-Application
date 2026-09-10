@@ -3,7 +3,7 @@ const fs = require('fs');
 
 const supabase = createClient(
   'https://pfqaeewmlwfayxbgmuaq.supabase.co',
-  'sb_secret_JZwRYG9k0mZ9x86o92O5sA__fuofVcU'
+  (process.env.SUPABASE_SERVICE_KEY || (() => { throw new Error('SUPABASE_SERVICE_KEY not set'); })())
 );
 
 async function upload() {

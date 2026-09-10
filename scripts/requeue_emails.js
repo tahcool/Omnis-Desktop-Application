@@ -1,6 +1,6 @@
 const { createClient } = require('@supabase/supabase-js');
 const SUPABASE_URL = 'https://pfqaeewmlwfayxbgmuaq.supabase.co';
-const SERVICE_KEY  = 'sb_secret_JZwRYG9k0mZ9x86o92O5sA__fuofVcU';
+const SERVICE_KEY  = (process.env.SUPABASE_SERVICE_KEY || (() => { throw new Error('SUPABASE_SERVICE_KEY not set. See scripts/.env.server'); })());
 const supabase = createClient(SUPABASE_URL, SERVICE_KEY);
 
 async function run() {

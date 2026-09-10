@@ -1,7 +1,7 @@
 const { createClient } = require('@supabase/supabase-js');
 
 const SUPABASE_URL = 'https://pfqaeewmlwfayxbgmuaq.supabase.co';
-const SUPABASE_SERVICE_KEY = 'sb_secret_JZwRYG9k0mZ9x86o92O5sA__fuofVcU';
+const SUPABASE_SERVICE_KEY = (process.env.SUPABASE_SERVICE_KEY || (() => { throw new Error('SUPABASE_SERVICE_KEY not set. See scripts/.env.server'); })());
 const FRAPPE_URL = 'https://salestrack.powerstar.co.zw';
 
 const supabase = createClient(SUPABASE_URL, SUPABASE_SERVICE_KEY);

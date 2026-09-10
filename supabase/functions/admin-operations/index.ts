@@ -384,6 +384,39 @@ async function executeAction(
         };
       }
 
+      // Last-admin protection: if target is an admin, check before suspending
+      const { data: targetSuspAccess } = await admin
+        .from("user_system_access")
+        .select("is_admin")
+        .eq("user_id", userId)
+        .single();
+
+      if (targetSuspAccess?.is_admin) {
+        const { data: lastCheck, error: lastErr } = await admin.rpc(
+          "check_last_admin_removal",
+          { target_user_id: userId }
+        );
+        if (lastErr) throw new Error(`Last-admin check failed: ${lastErr.message}`);
+        if (lastCheck === true) {
+          await audit(admin, {
+            actor_id: callerId,
+            actor_email: callerEmail,
+            action,
+            target_id: userId,
+            target_email: targetEmail,
+            result: "denied",
+            detail: "Cannot suspend the last active global administrator",
+          });
+          return {
+            body: {
+              ok: false,
+              error: "Cannot suspend the last active global administrator.",
+            },
+            status: 403,
+          };
+        }
+      }
+
       const { error } = await admin.auth.admin.updateUserById(userId, {
         ban_duration: "876000h",
       });
@@ -494,6 +527,39 @@ async function executeAction(
           },
           status: 403,
         };
+      }
+
+      // Last-admin protection: if target is an admin, check before deleting
+      const { data: targetDelAccess } = await admin
+        .from("user_system_access")
+        .select("is_admin")
+        .eq("user_id", userId)
+        .single();
+
+      if (targetDelAccess?.is_admin) {
+        const { data: lastDelCheck, error: lastDelErr } = await admin.rpc(
+          "check_last_admin_removal",
+          { target_user_id: userId }
+        );
+        if (lastDelErr) throw new Error(`Last-admin check failed: ${lastDelErr.message}`);
+        if (lastDelCheck === true) {
+          await audit(admin, {
+            actor_id: callerId,
+            actor_email: callerEmail,
+            action,
+            target_id: userId,
+            target_email: targetEmail,
+            result: "denied",
+            detail: "Cannot delete the last active global administrator",
+          });
+          return {
+            body: {
+              ok: false,
+              error: "Cannot delete the last active global administrator.",
+            },
+            status: 403,
+          };
+        }
       }
 
       const { error } = await admin.auth.admin.deleteUser(userId);
@@ -626,12 +692,6 @@ async function executeAction(
         };
       }
 
-      // Check last-admin protection
-      const { data: adminCount } = await admin
-        .from("user_system_access")
-        .select("user_id", { count: "exact", head: true })
-        .eq("is_admin", true);
-
       // Only super-admins can demote admins
       if (!SUPER_ADMIN_EMAILS.includes(callerEmail)) {
         await audit(admin, {
@@ -652,15 +712,47 @@ async function executeAction(
         };
       }
 
-      const { error } = await admin.auth.admin.updateUserById(userId, {
+      // Last-admin protection: use transactional RPC to atomically check + demote.
+      // safe_remove_admin locks admin rows with FOR UPDATE to prevent concurrent races.
+      const { data: removeResult, error: removeErr } = await admin.rpc(
+        "safe_remove_admin",
+        { target_user_id: userId }
+      );
+
+      if (removeErr) {
+        throw new Error(`Last-admin check failed: ${removeErr.message}`);
+      }
+
+      if (!removeResult?.ok) {
+        await audit(admin, {
+          actor_id: callerId,
+          actor_email: callerEmail,
+          action,
+          target_id: userId,
+          target_email: targetEmail,
+          result: "denied",
+          detail: removeResult?.reason || "Last-admin protection triggered",
+        });
+        return {
+          body: {
+            ok: false,
+            error: removeResult?.reason || "Cannot remove the last active global administrator.",
+          },
+          status: 403,
+        };
+      }
+
+      // DB update succeeded atomically. Now update Auth metadata.
+      // If this fails, the DB state (is_admin=false) is already committed.
+      // Recovery: admin can re-promote via makeAdmin, or the auth metadata
+      // will be stale but non-dangerous (user won't pass DB authorization check).
+      const { error: authUpdateErr } = await admin.auth.admin.updateUserById(userId, {
         app_metadata: { role: "user" },
       });
-      if (error) throw new Error(error.message);
-
-      await admin
-        .from("user_system_access")
-        .update({ is_admin: false })
-        .eq("user_id", userId);
+      if (authUpdateErr) {
+        console.error(`[removeAdmin] Auth metadata update failed for ${userId}: ${authUpdateErr.message}`);
+        // Non-fatal: DB is authoritative. Log but don't fail the operation.
+      }
 
       await audit(admin, {
         actor_id: callerId,
@@ -882,23 +974,70 @@ async function executeAction(
 
       // Build update payload — only include fields that were provided
       const updatePayload: any = {};
-      if (is_admin !== undefined) updatePayload.is_admin = is_admin;
       if (systems !== undefined) updatePayload.systems = systems;
 
-      const { error } = await admin
-        .from("user_system_access")
-        .upsert(
-          { user_id: userId, ...updatePayload },
-          { onConflict: "user_id" }
-        );
+      // Handle admin demotion through safe_remove_admin for last-admin protection
+      if (is_admin === false) {
+        // Check if currently admin
+        const { data: curAccess } = await admin
+          .from("user_system_access")
+          .select("is_admin")
+          .eq("user_id", userId)
+          .single();
 
-      if (error) throw new Error(error.message);
+        if (curAccess?.is_admin) {
+          // Use transactional RPC to safely demote
+          const { data: safeResult, error: safeErr } = await admin.rpc(
+            "safe_remove_admin",
+            { target_user_id: userId }
+          );
+
+          if (safeErr) throw new Error(`Last-admin check failed: ${safeErr.message}`);
+          if (!safeResult?.ok) {
+            await audit(admin, {
+              actor_id: callerId,
+              actor_email: callerEmail,
+              action,
+              target_id: userId,
+              target_email: targetEmail,
+              result: "denied",
+              detail: safeResult?.reason || "Last-admin protection triggered",
+            });
+            return {
+              body: {
+                ok: false,
+                error: safeResult?.reason || "Cannot remove the last active global administrator.",
+              },
+              status: 403,
+            };
+          }
+          // is_admin already set to false by RPC — don't include in upsert
+        }
+      } else if (is_admin !== undefined) {
+        updatePayload.is_admin = is_admin;
+      }
+
+      // Apply remaining updates (systems, and is_admin=true promotions)
+      if (Object.keys(updatePayload).length > 0) {
+        const { error } = await admin
+          .from("user_system_access")
+          .upsert(
+            { user_id: userId, ...updatePayload },
+            { onConflict: "user_id" }
+          );
+
+        if (error) throw new Error(error.message);
+      }
 
       // If admin status changed, also update app_metadata
       if (is_admin !== undefined) {
-        await admin.auth.admin.updateUserById(userId, {
+        const { error: authErr } = await admin.auth.admin.updateUserById(userId, {
           app_metadata: { role: is_admin ? "admin" : "user" },
         });
+        if (authErr) {
+          console.error(`[updateUserAccess] Auth metadata update failed: ${authErr.message}`);
+          // Non-fatal: DB is authoritative
+        }
       }
 
       await audit(admin, {

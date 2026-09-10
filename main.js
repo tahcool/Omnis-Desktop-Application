@@ -13,12 +13,26 @@ const { createClient } = require('@supabase/supabase-js');
 const SUPABASE_URL = process.env.SUPABASE_URL || "https://pfqaeewmlwfayxbgmuaq.supabase.co";
 const SUPABASE_ANON_KEY = process.env.SUPABASE_ANON_KEY;
 if (!SUPABASE_ANON_KEY) {
-  console.error('[FATAL] SUPABASE_ANON_KEY environment variable is not set.');
-  console.error('Set it in your .env file: SUPABASE_ANON_KEY=eyJ...');
-  console.error('Get the anon/public key from: Supabase Dashboard → Settings → API → Project API keys');
-  // Allow app to start but Supabase operations will fail gracefully
+  // Fatal: cannot create a functional Supabase client without the anon key.
+  // Show a dialog (once the app is ready) then quit.
+  // CRITICAL: We must not call createClient() without a valid key.
+  app.whenReady().then(() => {
+    dialog.showErrorBox(
+      'Omnis — Configuration Error',
+      'SUPABASE_ANON_KEY is not set.\n\n' +
+      'Create a .env file in the application directory with:\n' +
+      'SUPABASE_ANON_KEY=eyJ...your-anon-key-here\n\n' +
+      'Get the anon/public key from:\n' +
+      'Supabase Dashboard → Settings → API → Project API keys\n\n' +
+      'The application will now exit.'
+    );
+    app.exit(1);
+  });
+  // Prevent any further module initialization — this throw is caught by Node
+  // and prevents createClient from executing with a bogus key.
+  throw new Error('[FATAL] SUPABASE_ANON_KEY not set. Cannot start Omnis.');
 }
-const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY || 'missing-anon-key');
+const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
 // Offline Caching - Sync Manager
 const syncManager = require('./lib/sync-manager');

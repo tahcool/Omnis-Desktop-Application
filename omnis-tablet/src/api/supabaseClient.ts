@@ -4,11 +4,18 @@ import * as SecureStore from 'expo-secure-store';
 const SUPABASE_URL = 'https://pfqaeewmlwfayxbgmuaq.supabase.co';
 // Publishable anon/public key — safe to include in client builds.
 // The service role key must NEVER be included here.
-// Set EXPO_PUBLIC_SUPABASE_ANON_KEY in your .env or app.config.js
-const SUPABASE_ANON_KEY = process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY || '';
+//
+// Configuration: Set EXPO_PUBLIC_SUPABASE_ANON_KEY in your .env file.
+// Expo SDK 49+ automatically exposes EXPO_PUBLIC_ prefixed vars to the JS bundle.
+// This works in both `expo start` (dev) and EAS Build (production).
+const SUPABASE_ANON_KEY = process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY;
 if (!SUPABASE_ANON_KEY) {
-  console.error('[FATAL] EXPO_PUBLIC_SUPABASE_ANON_KEY is not set. Set it in .env or app.config.js');
-  console.error('Get the anon/public key from: Supabase Dashboard → Settings → API → Project API keys');
+  throw new Error(
+    '[FATAL] EXPO_PUBLIC_SUPABASE_ANON_KEY is not set.\n' +
+    'Add it to your .env file:\n' +
+    '  EXPO_PUBLIC_SUPABASE_ANON_KEY=eyJ...your-anon-key-here\n' +
+    'Get the anon/public key from: Supabase Dashboard → Settings → API → Project API keys'
+  );
 }
 
 // Custom SecureStore adapter so Supabase sessions persist across app restarts
