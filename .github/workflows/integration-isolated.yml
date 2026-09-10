@@ -13,7 +13,7 @@
 name: Integration Tests (Isolated)
 
 on:
-  workflow_dispatch:      # Manual trigger for now
+  workflow_dispatch:      # Manual trigger
   push:
     branches: ['feature/**', 'security/**']
     paths:
@@ -21,12 +21,19 @@ on:
       - 'tests/**'
       - 'main.js'
       - 'lib/**'
+      - 'systems/**'
 
 jobs:
   isolated-integration:
     name: Isolated Supabase Tests
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 20
+
+    env:
+      # These are ephemeral local-only keys, NOT secrets
+      SUPABASE_URL: http://127.0.0.1:54321
+      SUPABASE_ANON_KEY: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS1kZW1vIiwicm9sZSI6ImFub24iLCJleHAiOjE5ODM4MTI5OTZ9.CRXP1A7WO_o0BopYoAhfVB78Yc2BMF-4kICDXXk-2nQ
+      SUPABASE_SERVICE_KEY: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS1kZW1vIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImV4cCI6MTk4MzgxMjk5Nn0.EGIM96RAZx35lJzdJsyH-qQwv8Hdp7fsn3W0YpN81IU
 
     steps:
       - uses: actions/checkout@v4
@@ -42,62 +49,44 @@ jobs:
           version: latest
 
       - name: Start local Supabase
+        run: supabase start
+
+      - name: Apply test fixtures
         run: |
-          supabase start
-          # Extract local keys (these are ephemeral, not secrets)
-          echo "SUPABASE_URL=$(supabase status -o env | grep API_URL | cut -d= -f2)" >> $GITHUB_ENV
-          echo "SUPABASE_ANON_KEY=$(supabase status -o env | grep ANON_KEY | cut -d= -f2)" >> $GITHUB_ENV
-          echo "SUPABASE_SERVICE_KEY=$(supabase status -o env | grep SERVICE_ROLE_KEY | cut -d= -f2)" >> $GITHUB_ENV
+          # Wait for DB to be healthy
+          for i in $(seq 1 12); do
+            if docker exec supabase_db_omnis pg_isready -U postgres > /dev/null 2>&1; then
+              echo "DB ready"
+              break
+            fi
+            sleep 5
+          done
 
-      - name: Apply migrations
-        run: supabase db push
+          # Apply SQL fixtures (creates test config + schema additions)
+          docker exec -i supabase_db_omnis psql -U postgres < tests/fixtures.sql
 
-      - name: Create test fixtures
+      - name: Start Edge Functions
         run: |
-          # Create test users via service role key (local only)
-          curl -s -X POST "${SUPABASE_URL}/auth/v1/admin/users" \
-            -H "apikey: ${SUPABASE_ANON_KEY}" \
-            -H "Authorization: Bearer ${SUPABASE_SERVICE_KEY}" \
-            -H "Content-Type: application/json" \
-            -d '{"email":"testadmin@test.local","password":"Test1234!","email_confirm":true}'
-
-          curl -s -X POST "${SUPABASE_URL}/auth/v1/admin/users" \
-            -H "apikey: ${SUPABASE_ANON_KEY}" \
-            -H "Authorization: Bearer ${SUPABASE_SERVICE_KEY}" \
-            -H "Content-Type: application/json" \
-            -d '{"email":"testuser@test.local","password":"Test1234!","email_confirm":true}'
-
-          # Seed user_system_access for both users
-          ADMIN_ID=$(curl -s "${SUPABASE_URL}/auth/v1/admin/users" \
-            -H "apikey: ${SUPABASE_ANON_KEY}" \
-            -H "Authorization: Bearer ${SUPABASE_SERVICE_KEY}" | \
-            python3 -c "import sys,json; users=json.load(sys.stdin)['users']; print([u['id'] for u in users if u['email']=='testadmin@test.local'][0])")
-
-          USER_ID=$(curl -s "${SUPABASE_URL}/auth/v1/admin/users" \
-            -H "apikey: ${SUPABASE_ANON_KEY}" \
-            -H "Authorization: Bearer ${SUPABASE_SERVICE_KEY}" | \
-            python3 -c "import sys,json; users=json.load(sys.stdin)['users']; print([u['id'] for u in users if u['email']=='testuser@test.local'][0])")
-
-          # Insert access records
-          curl -s -X POST "${SUPABASE_URL}/rest/v1/user_system_access" \
-            -H "apikey: ${SUPABASE_ANON_KEY}" \
-            -H "Authorization: Bearer ${SUPABASE_SERVICE_KEY}" \
-            -H "Content-Type: application/json" \
-            -H "Prefer: return=minimal" \
-            -d "[{\"user_id\":\"${ADMIN_ID}\",\"is_admin\":true,\"systems\":[\"fleetrack\",\"salestrack\"]},{\"user_id\":\"${USER_ID}\",\"is_admin\":false,\"systems\":[\"fleetrack\"]}]"
-
-          echo "TEST_USER_EMAIL=testuser@test.local" >> $GITHUB_ENV
-          echo "TEST_USER_PASSWORD=Test1234!" >> $GITHUB_ENV
-
-      - name: Deploy Edge Functions (local)
-        run: |
-          supabase functions deploy admin-operations --no-verify-jwt
-          supabase functions deploy email-submit --no-verify-jwt
+          supabase functions serve --no-verify-jwt &
+          sleep 10
+          echo "Edge Functions started"
 
       - name: Install test dependencies
         run: npm ci --ignore-scripts
 
-      - name: Run integration tests (strict)
+      - name: Run Email Tests
+        run: node tests/test_email.js
+
+      - name: Run Company Isolation Tests
+        run: node tests/test_company_isolation.js
+
+      - name: Run Compensation Tests
+        run: node tests/test_compensation.js
+
+      - name: Run AI Proxy Tests
+        run: node tests/test_ai_proxy.js
+
+      - name: Run RLS Tests
         run: node tests/test_rls.js --ci
 
       - name: Stop Supabase
