@@ -9,6 +9,7 @@
 // No request-supplied admin flags are trusted.
 
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { SUPER_ADMIN_EMAILS, isSuperAdmin } from "../_shared/admin-config.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -16,12 +17,8 @@ const corsHeaders = {
     "authorization, x-client-info, apikey, content-type",
 };
 
-// Super-admin emails — these accounts cannot be deleted, suspended, or demoted.
-// This is a server-side enforcement, not a client-side hint.
-const SUPER_ADMIN_EMAILS = [
-  "takunda@industrial-exchange.group",
-  "zaranyika.rt@gmail.com",
-];
+// Super-admin list now imported from ../_shared/admin-config.ts
+// Single source of truth for both admin-operations and email-submit.
 
 // Actions explicitly deferred — return clear error, not silent failure
 const DEFERRED_ACTIONS = new Set([

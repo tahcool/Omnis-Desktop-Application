@@ -168,11 +168,14 @@ async function main() {
       `User B sees ${r.body.data?.length || 0} emails, all own: ${ownOnly}`);
   } catch (e) { record('email_hist_b_own', 'FAIL', e.message); }
 
-  // Company admin A sees company_a emails (admin sees all — document this behavior)
+  // Company admin A sees only company_a emails (system-scoped, not global)
   try {
     const r = await callEF('email-submit', sessAdmA.token, { action: 'getHistory' });
-    record('email_hist_admin_scope', r.body.data ? 'PASS' : 'FAIL',
-      `Admin A sees ${r.body.data?.length || 0} emails (admin has full view per current implementation)`);
+    const onlyCompanyA = r.body.data && r.body.data.every(e => e.system === 'company_a');
+    const noCrossCompany = r.body.data && !r.body.data.some(e => e.system === 'company_b');
+    record('email_hist_admin_scope',
+      onlyCompanyA && noCrossCompany ? 'PASS' : 'FAIL',
+      `Admin A sees ${r.body.data?.length || 0} emails, all company_a: ${onlyCompanyA}, no company_b: ${noCrossCompany}`);
   } catch (e) { record('email_hist_admin_scope', 'FAIL', e.message); }
 
   // ── RLS Direct Database Tests ──
@@ -206,7 +209,7 @@ async function main() {
   try {
     const anonClient = createClient(SUPABASE_URL, ANON_KEY);
     const { data } = await anonClient.from('user_system_access').select('*');
-    record('rls_anon_blocked', data?.length === 0 ? 'PASS' : 'FAIL',
+    record('rls_anon_blocked', !data || data.length === 0 ? 'PASS' : 'FAIL',
       `Anon rows: ${data?.length || 0} (should be 0)`);
   } catch (e) { record('rls_anon_blocked', 'FAIL', e.message); }
 

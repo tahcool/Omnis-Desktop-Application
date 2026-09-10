@@ -7,14 +7,48 @@
 //
 // Actual SMTP delivery is handled by process-email-queue (triggered by pg_cron).
 // This function never exposes SMTP credentials to the client.
+//
+// Authorization model:
+// - Ordinary users: can send within own systems, see/cancel only own emails.
+// - System-scoped admins (is_admin=true): can manage emails within their systems[].
+// - Super-admins (SUPER_ADMIN_EMAILS): unrestricted global access.
 
 import { createClient } from "https://esm.sh/@supabase/supabase-js@2";
+import { isSuperAdmin, hasSystemAccess } from "../_shared/admin-config.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Headers":
     "authorization, x-client-info, apikey, content-type",
 };
+
+/**
+ * Compute a canonical SHA-256 hex hash of delivery-relevant payload fields.
+ * Used for idempotency conflict detection (same key + different payload → 409).
+ *
+ * Included fields: to, cc, subject, html, scheduledFor, relatedDoc,
+ * relatedType, templateId, system, toName.
+ *
+ * Excludes: text (derived from html), status, timestamps, idempotencyKey itself.
+ */
+async function computePayloadHash(params: Record<string, unknown>): Promise<string> {
+  const canonical = JSON.stringify({
+    to: params.to || "",
+    cc: params.cc || "",
+    toName: params.toName || "",
+    subject: params.subject || "",
+    html: params.html || "",
+    system: params.system || "fleetrack",
+    scheduledFor: params.scheduledFor || "",
+    relatedDoc: params.relatedDoc || "",
+    relatedType: params.relatedType || "manual",
+    templateId: params.templateId || "",
+  });
+  const data = new TextEncoder().encode(canonical);
+  const hashBuffer = await crypto.subtle.digest("SHA-256", data);
+  const hashArray = Array.from(new Uint8Array(hashBuffer));
+  return hashArray.map((b) => b.toString(16).padStart(2, "0")).join("");
+}
 
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") {
@@ -88,6 +122,8 @@ Deno.serve(async (req) => {
 
   const callerSystems: string[] = callerAccess?.systems || [];
   const callerIsAdmin = callerAccess?.is_admin || false;
+  const callerEmail = (caller.email || "").toLowerCase();
+  const callerIsSuperAdmin = isSuperAdmin(callerEmail);
 
   // ── 4. Route action ─────────────────────────────────────────────
 
@@ -116,9 +152,10 @@ Deno.serve(async (req) => {
           );
         }
 
-        // Validate system scope — users can only send within their own systems
+        // Validate system scope — all users must have system access
+        // (admins are scoped to their systems, super-admins bypass)
         const effectiveSystem = system || "fleetrack";
-        if (!callerIsAdmin && !callerSystems.includes(effectiveSystem)) {
+        if (!hasSystemAccess(callerSystems, callerEmail, effectiveSystem)) {
           return jsonResponse(
             {
               ok: false,
@@ -128,21 +165,53 @@ Deno.serve(async (req) => {
           );
         }
 
-        // Idempotency: check if this email was already submitted
+        // ── Idempotency handling ───────────────────────────────
         if (idempotencyKey) {
+          const payloadHash = await computePayloadHash(params);
+
+          // Look up existing entry scoped by this user
           const { data: existing } = await adminClient
             .from("omnis_email_queue")
-            .select("id, status")
+            .select("id, status, payload_hash, created_by_id")
             .eq("idempotency_key", idempotencyKey)
+            .eq("created_by_id", caller.id)
             .maybeSingle();
 
           if (existing) {
+            // Same user, same key — check payload
+            if (existing.payload_hash && existing.payload_hash !== payloadHash) {
+              // Different payload with same key → conflict
+              return jsonResponse(
+                {
+                  ok: false,
+                  error:
+                    "Idempotency key already used with different payload. Use a new key for different emails.",
+                  conflict: true,
+                },
+                409
+              );
+            }
+            // Same payload (or legacy row without hash) → return original
             return jsonResponse({
               ok: true,
               id: existing.id,
               status: existing.status,
               duplicate: true,
             });
+          }
+
+          // Also check if another user used this key (should not leak their data)
+          const { data: otherUser } = await adminClient
+            .from("omnis_email_queue")
+            .select("id")
+            .eq("idempotency_key", idempotencyKey)
+            .neq("created_by_id", caller.id)
+            .maybeSingle();
+
+          if (otherUser) {
+            // Key exists for another user — treat as available for this user
+            // (user-scoped uniqueness means this is a new entry)
+            // Fall through to insert below
           }
         }
 
@@ -174,10 +243,12 @@ Deno.serve(async (req) => {
           related_type: relatedType || "manual",
           template_id: templateId || null,
           created_by: caller.email || caller.id,
+          created_by_id: caller.id,
         };
 
         if (idempotencyKey) {
           row.idempotency_key = idempotencyKey;
+          row.payload_hash = await computePayloadHash(params);
         }
 
         const { data: queued, error: qErr } = await adminClient
@@ -187,6 +258,36 @@ Deno.serve(async (req) => {
           .single();
 
         if (qErr) {
+          // Handle unique constraint violation (concurrent duplicate)
+          if (qErr.code === "23505" && idempotencyKey) {
+            // Race condition: another concurrent request inserted first
+            const { data: raceWinner } = await adminClient
+              .from("omnis_email_queue")
+              .select("id, status, payload_hash")
+              .eq("idempotency_key", idempotencyKey)
+              .eq("created_by_id", caller.id)
+              .maybeSingle();
+
+            if (raceWinner) {
+              const currentHash = await computePayloadHash(params);
+              if (raceWinner.payload_hash && raceWinner.payload_hash !== currentHash) {
+                return jsonResponse(
+                  {
+                    ok: false,
+                    error: "Idempotency key already used with different payload.",
+                    conflict: true,
+                  },
+                  409
+                );
+              }
+              return jsonResponse({
+                ok: true,
+                id: raceWinner.id,
+                status: raceWinner.status,
+                duplicate: true,
+              });
+            }
+          }
           return jsonResponse(
             { ok: false, error: `Queue insert failed: ${qErr.message}` },
             500
@@ -213,13 +314,16 @@ Deno.serve(async (req) => {
 
         if (filterStatus) q = q.eq("status", filterStatus);
 
-        // Non-admin users only see emails from their systems
-        if (!callerIsAdmin) {
+        if (callerIsSuperAdmin) {
+          // Super-admins see all emails across all systems
+          // No additional filter
+        } else if (callerIsAdmin) {
+          // System-scoped admins see all emails within their systems
           q = q.in("system", callerSystems.length > 0 ? callerSystems : ["__none__"]);
-        }
-        // Also filter by created_by for non-admin users
-        if (!callerIsAdmin) {
-          q = q.eq("created_by", caller.email || caller.id);
+        } else {
+          // Ordinary users see only their own emails within their systems
+          q = q.in("system", callerSystems.length > 0 ? callerSystems : ["__none__"]);
+          q = q.or(`created_by.eq.${caller.email},created_by.eq.${caller.id}`);
         }
 
         const { data, error } = await q;
@@ -231,7 +335,7 @@ Deno.serve(async (req) => {
       }
 
       case "getConfig": {
-        // Only admins can view SMTP config
+        // Only system-scoped admins and super-admins can view SMTP config
         if (!callerIsAdmin) {
           return jsonResponse(
             { ok: false, error: "Admin privileges required" },
@@ -239,10 +343,20 @@ Deno.serve(async (req) => {
           );
         }
 
+        const configSystem = params.system || "fleetrack";
+
+        // Non-super admins can only view config for their systems
+        if (!callerIsSuperAdmin && !callerSystems.includes(configSystem)) {
+          return jsonResponse(
+            { ok: false, error: `You do not have access to the '${configSystem}' system` },
+            403
+          );
+        }
+
         const { data, error } = await adminClient
           .from("omnis_email_config")
           .select("*")
-          .eq("system", params.system || "fleetrack")
+          .eq("system", configSystem)
           .maybeSingle();
 
         if (error) {
@@ -276,10 +390,20 @@ Deno.serve(async (req) => {
       }
 
       case "saveConfig": {
-        // Only admins can update SMTP config
+        // Only system-scoped admins and super-admins can update SMTP config
         if (!callerIsAdmin) {
           return jsonResponse(
             { ok: false, error: "Admin privileges required" },
+            403
+          );
+        }
+
+        const saveSystem = params.system || "fleetrack";
+
+        // Non-super admins can only save config for their systems
+        if (!callerIsSuperAdmin && !callerSystems.includes(saveSystem)) {
+          return jsonResponse(
+            { ok: false, error: `You do not have access to the '${saveSystem}' system` },
             403
           );
         }
@@ -302,7 +426,7 @@ Deno.serve(async (req) => {
         const { error } = await adminClient
           .from("omnis_email_config")
           .upsert(
-            { system: params.system || "fleetrack", ...payload },
+            { system: saveSystem, ...payload },
             { onConflict: "system" }
           );
 
@@ -321,10 +445,10 @@ Deno.serve(async (req) => {
         if (!id)
           return jsonResponse({ ok: false, error: "id required" }, 400);
 
-        // Verify ownership — only the creator or admin can cancel
+        // Fetch the email to check ownership and scope
         const { data: email } = await adminClient
           .from("omnis_email_queue")
-          .select("created_by, system, status")
+          .select("created_by, created_by_id, system, status")
           .eq("id", id)
           .single();
 
@@ -339,15 +463,33 @@ Deno.serve(async (req) => {
           );
         }
 
-        if (
-          !callerIsAdmin &&
-          email.created_by !== caller.email &&
-          email.created_by !== caller.id
-        ) {
-          return jsonResponse(
-            { ok: false, error: "You can only cancel your own emails" },
-            403
-          );
+        // Authorization check:
+        // - Super-admins can cancel anything
+        // - System-scoped admins can cancel within their systems
+        // - Ordinary users can cancel only their own emails
+        const isOwner =
+          email.created_by === caller.email ||
+          email.created_by === caller.id ||
+          email.created_by_id === caller.id;
+
+        if (!callerIsSuperAdmin) {
+          if (callerIsAdmin) {
+            // Admin must have access to the email's system
+            if (!callerSystems.includes(email.system)) {
+              return jsonResponse(
+                { ok: false, error: "You do not have access to this system's emails" },
+                403
+              );
+            }
+          } else {
+            // Ordinary user must be the owner
+            if (!isOwner) {
+              return jsonResponse(
+                { ok: false, error: "You can only cancel your own emails" },
+                403
+              );
+            }
+          }
         }
 
         const { error } = await adminClient
@@ -376,6 +518,29 @@ Deno.serve(async (req) => {
           );
         }
 
+        // Scope check: fetch email's system
+        const { data: failedEmail } = await adminClient
+          .from("omnis_email_queue")
+          .select("system")
+          .eq("id", id)
+          .eq("status", "failed")
+          .maybeSingle();
+
+        if (!failedEmail) {
+          return jsonResponse(
+            { ok: false, error: "Failed email not found" },
+            404
+          );
+        }
+
+        // Non-super admins can only retry within their systems
+        if (!callerIsSuperAdmin && !callerSystems.includes(failedEmail.system)) {
+          return jsonResponse(
+            { ok: false, error: "You do not have access to this system's emails" },
+            403
+          );
+        }
+
         const { error } = await adminClient
           .from("omnis_email_queue")
           .update({
@@ -399,6 +564,16 @@ Deno.serve(async (req) => {
         if (!callerIsAdmin) {
           return jsonResponse(
             { ok: false, error: "Admin privileges required" },
+            403
+          );
+        }
+
+        const testSystem = params.system || "fleetrack";
+
+        // Non-super admins can only test within their systems
+        if (!callerIsSuperAdmin && !callerSystems.includes(testSystem)) {
+          return jsonResponse(
+            { ok: false, error: `You do not have access to the '${testSystem}' system` },
             403
           );
         }

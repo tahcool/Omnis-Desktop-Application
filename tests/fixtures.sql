@@ -20,10 +20,22 @@ ALTER TABLE omnis_email_queue
   ADD COLUMN IF NOT EXISTS related_type TEXT DEFAULT 'manual',
   ADD COLUMN IF NOT EXISTS template_id TEXT,
   ADD COLUMN IF NOT EXISTS created_by TEXT,
-  ADD COLUMN IF NOT EXISTS idempotency_key TEXT;
+  ADD COLUMN IF NOT EXISTS idempotency_key TEXT,
+  ADD COLUMN IF NOT EXISTS payload_hash TEXT,
+  ADD COLUMN IF NOT EXISTS created_by_id UUID;
 
-CREATE UNIQUE INDEX IF NOT EXISTS omnis_email_queue_idem_key
-  ON omnis_email_queue(idempotency_key) WHERE idempotency_key IS NOT NULL;
+-- Drop old global-only unique index if exists
+DROP INDEX IF EXISTS omnis_email_queue_idem_key;
+
+-- Create user-scoped idempotency unique index
+CREATE UNIQUE INDEX IF NOT EXISTS omnis_email_queue_user_idem_key
+  ON omnis_email_queue(created_by_id, idempotency_key)
+  WHERE created_by_id IS NOT NULL AND idempotency_key IS NOT NULL;
+
+-- Lookup index for idempotency key queries
+CREATE INDEX IF NOT EXISTS omnis_email_queue_idem_lookup
+  ON omnis_email_queue(idempotency_key)
+  WHERE idempotency_key IS NOT NULL;
 
 -- Email config table (matches email-submit + process-email-queue usage)
 CREATE TABLE IF NOT EXISTS omnis_email_config (

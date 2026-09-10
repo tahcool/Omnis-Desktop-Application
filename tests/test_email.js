@@ -316,29 +316,23 @@ async function testEmailIdempotency() {
       `Same ID: ${r.body.id === firstId}, duplicate flag: ${r.body.duplicate}`);
   } catch (e) { record('email_idem_duplicate', 'FAIL', e.message); }
 
-  // Same key, different payload — current behavior returns original (should ideally conflict)
-  // Test documents the actual behavior
+  // Same key, different payload — must now return 409 Conflict
   try {
     const r = await callEmailSubmit(token, 'send', {
       to: 'different@test.com', subject: 'DIFFERENT PAYLOAD', html: '<p>Different</p>',
       system: 'salestrack', idempotencyKey: idemKey,
     });
-    // Document: returns original, does NOT detect payload conflict
-    const returnsOriginal = r.body.id === firstId && r.body.duplicate === true;
-    const conflicts = r.status === 409;
-    record('email_idem_diff_payload',
-      conflicts ? 'PASS' : (returnsOriginal ? 'FAIL' : 'FAIL'),
-      conflicts ? 'Correctly conflicts on different payload' :
-      returnsOriginal ? 'DEFECT: Returns original ID without detecting payload mismatch' :
-      `Unexpected: status=${r.status}, id=${r.body.id}`);
+    record('email_idem_diff_payload', r.status === 409 && r.body.conflict === true ? 'PASS' : 'FAIL',
+      r.status === 409 ? 'Correctly returns 409 for conflicting payload' :
+      `Expected 409, got ${r.status}: ${r.body.error || JSON.stringify(r.body)}`);
   } catch (e) { record('email_idem_diff_payload', 'FAIL', e.message); }
 
-  // Concurrent duplicate submissions
+  // Concurrent identical submissions (same payload) — all should resolve to 1 ID
   try {
     const key2 = `conc-${ts}`;
-    const promises = Array.from({ length: 5 }, (_, i) =>
+    const promises = Array.from({ length: 5 }, () =>
       callEmailSubmit(token, 'send', {
-        to: `conc${i}@test.com`, subject: 'Concurrent', html: '<p>C</p>',
+        to: 'concurrent@test.com', subject: 'Concurrent', html: '<p>C</p>',
         system: 'salestrack', idempotencyKey: key2,
       })
     );
@@ -348,6 +342,56 @@ async function testEmailIdempotency() {
     record('email_idem_concurrent', uniqueIds.size === 1 ? 'PASS' : 'FAIL',
       `${successes.length} successes, ${uniqueIds.size} unique IDs (should be 1)`);
   } catch (e) { record('email_idem_concurrent', 'FAIL', e.message); }
+
+  // Concurrent conflicting submissions (different payloads) — should get 409s
+  try {
+    const key3 = `conc-conflict-${ts}`;
+    // First: submit the original
+    await callEmailSubmit(token, 'send', {
+      to: 'first@test.com', subject: 'First', html: '<p>First</p>',
+      system: 'salestrack', idempotencyKey: key3,
+    });
+    // Then: concurrent different payloads
+    const promises = Array.from({ length: 3 }, (_, i) =>
+      callEmailSubmit(token, 'send', {
+        to: `conflict${i}@test.com`, subject: `Conflict ${i}`, html: `<p>C${i}</p>`,
+        system: 'salestrack', idempotencyKey: key3,
+      })
+    );
+    const results = await Promise.allSettled(promises);
+    const conflicts = results.filter(r =>
+      r.status === 'fulfilled' && r.value.status === 409
+    );
+    record('email_idem_concurrent_conflict',
+      conflicts.length === 3 ? 'PASS' : 'FAIL',
+      `${conflicts.length}/3 got 409 (all should conflict)`);
+  } catch (e) { record('email_idem_concurrent_conflict', 'FAIL', e.message); }
+
+  // Cross-user idempotency isolation — same key, different users
+  try {
+    const user2 = await createTestUser(`idem2-${ts}@test.local`);
+    await setAccess(user2.id, false, ['salestrack']);
+    const { session: sess2 } = await loginUser(`idem2-${ts}@test.local`);
+    const token2 = sess2.access_token;
+    const crossKey = `cross-${ts}`;
+
+    // User 1 submits with key
+    const r1 = await callEmailSubmit(token, 'send', {
+      to: 'cross@test.com', subject: 'Cross User', html: '<p>User1</p>',
+      system: 'salestrack', idempotencyKey: crossKey,
+    });
+    // User 2 submits same key — should get their own entry, not user 1's
+    const r2 = await callEmailSubmit(token2, 'send', {
+      to: 'cross@test.com', subject: 'Cross User', html: '<p>User2</p>',
+      system: 'salestrack', idempotencyKey: crossKey,
+    });
+    const differentIds = r1.body.id !== r2.body.id;
+    const bothOk = r1.body.ok && r2.body.ok;
+    record('email_idem_cross_user',
+      bothOk && differentIds ? 'PASS' : 'FAIL',
+      `User1 id=${r1.body.id}, User2 id=${r2.body.id}, different=${differentIds}`);
+    await deleteTestUser(user2.id);
+  } catch (e) { record('email_idem_cross_user', 'FAIL', e.message); }
 
   await deleteTestUser(user.id);
 }
