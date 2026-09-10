@@ -121,7 +121,8 @@ def _send_whapi_text(to: str, body: str) -> None:
 # -------------------------------------------------------------------
 
 # ✅ Prefer site_config.json: "openai_api_key": "YOUR_KEY"
-OPENAI_API_KEY = "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"
+# No hardcoded key — configure via site_config or frappe.db.set_default("oai_secret", ...)
+OPENAI_API_KEY = getattr(frappe.local, 'conf', {}).get("openai_api_key", "") or frappe.db.get_default("oai_secret") or ""
 OPENAI_MODEL = "gpt-4.1-mini"
 
 

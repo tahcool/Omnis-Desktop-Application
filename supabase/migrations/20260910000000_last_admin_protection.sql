@@ -116,8 +116,12 @@ $$;
 GRANT EXECUTE ON FUNCTION public.check_last_admin_removal(UUID) TO service_role;
 GRANT EXECUTE ON FUNCTION public.safe_remove_admin(UUID) TO service_role;
 
--- CRITICAL: Revoke from anon and authenticated roles to prevent direct RPC bypass.
--- These functions must only be callable via service_role (Edge Functions).
+-- CRITICAL: Revoke from all non-service roles.
+-- PostgreSQL grants EXECUTE on functions to PUBLIC by default.
+-- We revoke from PUBLIC first (covers all roles), then explicitly revoke
+-- from anon and authenticated for clarity and defense in depth.
+REVOKE EXECUTE ON FUNCTION public.check_last_admin_removal(UUID) FROM PUBLIC;
+REVOKE EXECUTE ON FUNCTION public.safe_remove_admin(UUID) FROM PUBLIC;
 REVOKE EXECUTE ON FUNCTION public.check_last_admin_removal(UUID) FROM anon;
 REVOKE EXECUTE ON FUNCTION public.check_last_admin_removal(UUID) FROM authenticated;
 REVOKE EXECUTE ON FUNCTION public.safe_remove_admin(UUID) FROM anon;

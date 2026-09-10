@@ -606,11 +606,14 @@ function testSourceScan() {
     if (fs.existsSync(migrationPath)) {
       const migration = fs.readFileSync(migrationPath, 'utf8');
       if (migration.includes('REVOKE EXECUTE') && migration.includes('FROM anon') &&
-          migration.includes('FROM authenticated')) {
-        record('source_rpc_revoked', 'PASS', 'safe_remove_admin REVOKEd from anon and authenticated');
+          migration.includes('FROM authenticated') && migration.includes('FROM PUBLIC')) {
+        record('source_rpc_revoked', 'PASS', 'Functions REVOKEd from PUBLIC, anon, and authenticated');
+      } else if (migration.includes('REVOKE EXECUTE') && migration.includes('FROM anon')) {
+        record('source_rpc_revoked', 'FAIL',
+          'Missing REVOKE from PUBLIC — default PostgreSQL grant still active');
       } else {
         record('source_rpc_revoked', 'FAIL',
-          'Missing REVOKE from anon/authenticated — direct RPC bypass possible');
+          'Missing REVOKE statements — direct RPC bypass possible');
       }
 
       if (migration.includes('FOR UPDATE')) {
@@ -619,6 +622,92 @@ function testSourceScan() {
         record('source_for_update', 'FAIL', 'Missing FOR UPDATE — concurrent race possible');
       }
     }
+
+    // Verify coordination pattern: suspendUser/deleteUser must use safe_remove_admin
+    // not check_last_admin_removal (pre-flight check releases lock before Auth API)
+    const suspendSection = adminOps.substring(
+      adminOps.indexOf('case "suspendUser"'),
+      adminOps.indexOf('case "unsuspendUser"')
+    );
+    const deleteSection = adminOps.substring(
+      adminOps.indexOf('case "deleteUser"'),
+      adminOps.indexOf('case "makeAdmin"')
+    );
+
+    const suspendUsesAtomic = suspendSection.includes('safe_remove_admin') &&
+      !suspendSection.includes('check_last_admin_removal');
+    const deleteUsesAtomic = deleteSection.includes('safe_remove_admin') &&
+      !deleteSection.includes('check_last_admin_removal');
+
+    if (suspendUsesAtomic && deleteUsesAtomic) {
+      record('source_atomic_coordination', 'PASS',
+        'suspend/delete use safe_remove_admin (atomic) not pre-flight check');
+    } else {
+      record('source_atomic_coordination', 'FAIL',
+        'suspend or delete still uses check_last_admin_removal (race-prone pre-flight)');
+    }
+
+    // Verify Auth failure compensation is state-aware
+    // Must check current is_admin before blindly reverting
+    const hasStateCheck = suspendSection.includes('currentState') &&
+      suspendSection.includes('is_admin === false');
+    if (hasStateCheck) {
+      record('source_auth_compensation', 'PASS',
+        'State-aware compensation: checks is_admin before reverting');
+    } else if (suspendSection.includes('is_admin: true')) {
+      record('source_auth_compensation', 'FAIL',
+        'Blind compensation: restores is_admin=true without checking current state');
+    } else {
+      record('source_auth_compensation', 'FAIL',
+        'No compensation for Auth API failure after DB demotion');
+    }
+  }
+
+  // Verify no OpenAI keys in shipped Python files
+  const systemsDir2 = path.resolve(__dirname, '..', 'systems');
+  let openaiClean = true;
+  function walkForOpenAI(dir) {
+    for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
+      const fullPath = path.join(dir, entry.name);
+      if (entry.isDirectory()) {
+        walkForOpenAI(fullPath);
+      } else if (entry.name.endsWith('.py')) {
+        const content = fs.readFileSync(fullPath, 'utf8');
+        if (/sk-proj-[A-Za-z0-9_-]{20,}/.test(content)) {
+          record(`source_openai_${entry.name}`, 'FAIL',
+            `OpenAI key in Python file (SHIPS IN ASAR unless excluded)`);
+          openaiClean = false;
+        }
+      }
+    }
+  }
+  walkForOpenAI(systemsDir2);
+  if (openaiClean) {
+    record('source_openai_clean', 'PASS', 'No OpenAI keys in systems/*.py');
+  }
+
+  // Also check omnis_dashboard.py (root-level, explicitly included in build.files)
+  const dashboardPyPath = path.resolve(__dirname, '..', 'omnis_dashboard.py');
+  if (fs.existsSync(dashboardPyPath)) {
+    const dashContent = fs.readFileSync(dashboardPyPath, 'utf8');
+    if (/sk-proj-[A-Za-z0-9_-]{20,}/.test(dashContent)) {
+      record('source_dashboard_py', 'FAIL',
+        'omnis_dashboard.py contains OpenAI key (SHIPS IN ASAR)');
+    } else {
+      record('source_dashboard_py', 'PASS',
+        'omnis_dashboard.py clean — no OpenAI keys');
+    }
+  }
+
+  // Verify build.files excludes Python
+  const pkgPath = path.resolve(__dirname, '..', 'package.json');
+  const pkg = JSON.parse(fs.readFileSync(pkgPath, 'utf8'));
+  const buildFiles = pkg.build?.files || [];
+  if (buildFiles.includes('!systems/**/*.py')) {
+    record('source_py_excluded', 'PASS', 'Python files excluded from ASAR build');
+  } else {
+    record('source_py_excluded', 'FAIL',
+      'Python files not excluded from build — credentials may ship in ASAR');
   }
 }
 
@@ -700,6 +789,9 @@ async function main() {
   }
 
   // Exit codes for CI
+  // Both --ci and --strict enforce the same gate:
+  // ANY required test that is SPEC, NOT_RUN, or SKIP blocks the release.
+  // This prevents passing CI when test infrastructure is unavailable.
   if (isCI || isStrict) {
     if (failed > 0) {
       console.log('\n  ❌ CI BLOCKED: Test failures detected.');
@@ -713,17 +805,17 @@ async function main() {
       process.exit(2);
     }
 
-    if (isStrict && (spec > 0 || notRun > 0)) {
-      const unexecuted = spec + notRun;
-      console.log(`\n  ❌ STRICT: ${unexecuted} required tests not executed.`);
-      console.log('  All SPEC and NOT_RUN tests must pass before release.');
+    const unexecuted = spec + notRun;
+    if (unexecuted > 0) {
+      console.log(`\n  ❌ CI BLOCKED: ${unexecuted} required tests not executed.`);
+      console.log('  All tests must PASS — SPEC and NOT_RUN prevent release.');
       RESULTS.filter(r => r.status === 'SPEC' || r.status === 'NOT_RUN').forEach(r => {
         console.log(`    [${r.status}] ${r.test}: ${r.detail}`);
       });
       process.exit(2);
     }
 
-    console.log('\n  ✅ CI PASSED: All executed tests passed.');
+    console.log('\n  ✅ CI PASSED: All tests executed and passed.');
   }
 
   process.exit(failed > 0 ? 1 : 0);

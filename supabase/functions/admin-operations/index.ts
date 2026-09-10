@@ -384,20 +384,29 @@ async function executeAction(
         };
       }
 
-      // Last-admin protection: if target is an admin, check before suspending
+      // Last-admin protection: if target is an admin, atomically demote first.
+      // This uses safe_remove_admin which locks admin rows with FOR UPDATE,
+      // preventing the race where two concurrent suspensions both pass a
+      // pre-flight check and then both ban their targets.
+      //
+      // Sequence: (1) Atomically demote under lock → (2) Ban via Auth API
+      // If (2) fails, revert (1). DB is authoritative for admin checks.
       const { data: targetSuspAccess } = await admin
         .from("user_system_access")
         .select("is_admin")
         .eq("user_id", userId)
         .single();
 
-      if (targetSuspAccess?.is_admin) {
-        const { data: lastCheck, error: lastErr } = await admin.rpc(
-          "check_last_admin_removal",
+      const wasAdmin = targetSuspAccess?.is_admin === true;
+
+      if (wasAdmin) {
+        // Atomically demote under lock — prevents concurrent removal race
+        const { data: safeResult, error: safeErr } = await admin.rpc(
+          "safe_remove_admin",
           { target_user_id: userId }
         );
-        if (lastErr) throw new Error(`Last-admin check failed: ${lastErr.message}`);
-        if (lastCheck === true) {
+        if (safeErr) throw new Error(`Last-admin check failed: ${safeErr.message}`);
+        if (!safeResult?.ok) {
           await audit(admin, {
             actor_id: callerId,
             actor_email: callerEmail,
@@ -405,22 +414,74 @@ async function executeAction(
             target_id: userId,
             target_email: targetEmail,
             result: "denied",
-            detail: "Cannot suspend the last active global administrator",
+            detail: safeResult?.reason || "Last-admin protection triggered",
           });
           return {
             body: {
               ok: false,
-              error: "Cannot suspend the last active global administrator.",
+              error: safeResult?.reason || "Cannot suspend the last active global administrator.",
             },
             status: 403,
           };
         }
+        // Target is now demoted in DB. Proceed to ban via Auth API.
       }
 
       const { error } = await admin.auth.admin.updateUserById(userId, {
         ban_duration: "876000h",
       });
-      if (error) throw new Error(error.message);
+
+      if (error) {
+        // Auth API failed — conditionally revert the demotion.
+        // Only revert if is_admin is still false (our demotion).
+        // If another operation has since re-promoted or re-demoted,
+        // we must NOT overwrite that decision.
+        if (wasAdmin) {
+          const { data: currentState } = await admin
+            .from("user_system_access")
+            .select("is_admin")
+            .eq("user_id", userId)
+            .single();
+
+          if (currentState && currentState.is_admin === false) {
+            await admin
+              .from("user_system_access")
+              .update({ is_admin: true })
+              .eq("user_id", userId);
+            console.error(`[suspendUser] Auth ban failed, reverted demotion for ${userId}: ${error.message}`);
+            await audit(admin, {
+              actor_id: callerId,
+              actor_email: callerEmail,
+              action: "compensate_suspend",
+              target_id: userId,
+              target_email: targetEmail,
+              result: "reverted",
+              detail: `Auth ban failed (${error.message}); admin status restored`,
+            });
+          } else {
+            // State has moved on — another operation changed is_admin.
+            // Do NOT overwrite. Log for manual review.
+            console.error(`[suspendUser] Auth ban failed for ${userId}, but is_admin state has changed (now: ${currentState?.is_admin}). NOT reverting.`);
+            await audit(admin, {
+              actor_id: callerId,
+              actor_email: callerEmail,
+              action: "compensate_suspend",
+              target_id: userId,
+              target_email: targetEmail,
+              result: "skipped",
+              detail: `Auth ban failed, but admin state already changed (is_admin=${currentState?.is_admin}). Manual review required.`,
+            });
+          }
+        }
+        throw new Error(error.message);
+      }
+
+      // Update Auth metadata to reflect demotion
+      if (wasAdmin) {
+        await admin.auth.admin.updateUserById(userId, {
+          app_metadata: { role: "user" },
+        }).catch((e: any) => console.error(`[suspendUser] metadata sync: ${e.message}`));
+      }
 
       await audit(admin, {
         actor_id: callerId,
@@ -429,6 +490,7 @@ async function executeAction(
         target_id: userId,
         target_email: targetEmail,
         result: "success",
+        detail: wasAdmin ? "Admin demoted atomically before suspension" : undefined,
       });
 
       return { body: { ok: true }, status: 200 };
@@ -529,20 +591,23 @@ async function executeAction(
         };
       }
 
-      // Last-admin protection: if target is an admin, check before deleting
+      // Last-admin protection: atomically demote first, then delete.
+      // Same coordination as suspendUser — see comment there.
       const { data: targetDelAccess } = await admin
         .from("user_system_access")
         .select("is_admin")
         .eq("user_id", userId)
         .single();
 
-      if (targetDelAccess?.is_admin) {
-        const { data: lastDelCheck, error: lastDelErr } = await admin.rpc(
-          "check_last_admin_removal",
+      const wasDelAdmin = targetDelAccess?.is_admin === true;
+
+      if (wasDelAdmin) {
+        const { data: safeDelResult, error: safeDelErr } = await admin.rpc(
+          "safe_remove_admin",
           { target_user_id: userId }
         );
-        if (lastDelErr) throw new Error(`Last-admin check failed: ${lastDelErr.message}`);
-        if (lastDelCheck === true) {
+        if (safeDelErr) throw new Error(`Last-admin check failed: ${safeDelErr.message}`);
+        if (!safeDelResult?.ok) {
           await audit(admin, {
             actor_id: callerId,
             actor_email: callerEmail,
@@ -550,12 +615,12 @@ async function executeAction(
             target_id: userId,
             target_email: targetEmail,
             result: "denied",
-            detail: "Cannot delete the last active global administrator",
+            detail: safeDelResult?.reason || "Last-admin protection triggered",
           });
           return {
             body: {
               ok: false,
-              error: "Cannot delete the last active global administrator.",
+              error: safeDelResult?.reason || "Cannot delete the last active global administrator.",
             },
             status: 403,
           };
@@ -563,7 +628,53 @@ async function executeAction(
       }
 
       const { error } = await admin.auth.admin.deleteUser(userId);
-      if (error) throw new Error(error.message);
+
+      if (error) {
+        // Auth delete failed — conditionally revert demotion.
+        // Same state-aware logic as suspendUser.
+        if (wasDelAdmin) {
+          const { data: delCurrentState } = await admin
+            .from("user_system_access")
+            .select("is_admin")
+            .eq("user_id", userId)
+            .single();
+
+          if (delCurrentState && delCurrentState.is_admin === false) {
+            await admin
+              .from("user_system_access")
+              .update({ is_admin: true })
+              .eq("user_id", userId);
+            console.error(`[deleteUser] Auth delete failed, reverted demotion for ${userId}: ${error.message}`);
+            await audit(admin, {
+              actor_id: callerId,
+              actor_email: callerEmail,
+              action: "compensate_delete",
+              target_id: userId,
+              target_email: targetEmail,
+              result: "reverted",
+              detail: `Auth delete failed (${error.message}); admin status restored`,
+            });
+          } else {
+            console.error(`[deleteUser] Auth delete failed for ${userId}, but is_admin state has changed (now: ${delCurrentState?.is_admin}). NOT reverting.`);
+            await audit(admin, {
+              actor_id: callerId,
+              actor_email: callerEmail,
+              action: "compensate_delete",
+              target_id: userId,
+              target_email: targetEmail,
+              result: "skipped",
+              detail: `Auth delete failed, but admin state already changed (is_admin=${delCurrentState?.is_admin}). Manual review required.`,
+            });
+          }
+        }
+        throw new Error(error.message);
+      }
+
+      // Clean up access record for deleted user
+      await admin
+        .from("user_system_access")
+        .delete()
+        .eq("user_id", userId);
 
       await audit(admin, {
         actor_id: callerId,
@@ -572,6 +683,7 @@ async function executeAction(
         target_id: userId,
         target_email: targetEmail,
         result: "success",
+        detail: wasDelAdmin ? "Admin demoted atomically before deletion" : undefined,
       });
 
       return { body: { ok: true }, status: 200 };

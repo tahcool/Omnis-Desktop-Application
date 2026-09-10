@@ -12,7 +12,7 @@ Deno.serve(async (req) => {
 
   try {
     const { task, content, tone } = await req.json();
-    const OPENAI_API_KEY = "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";
+    const OPENAI_API_KEY = Deno.env.get("OPENAI_API_KEY");
 
     if (!OPENAI_API_KEY) {
       throw new Error("Missing OPENAI_API_KEY environment variable in Edge Function");

@@ -1,4 +1,14 @@
 
+[functions.admin-operations]
+enabled = true
+verify_jwt = false
+entrypoint = "./functions/admin-operations/index.ts"
+
+[functions.email-submit]
+enabled = true
+verify_jwt = false
+entrypoint = "./functions/email-submit/index.ts"
+
 [functions.omnis-link]
 enabled = true
 verify_jwt = false

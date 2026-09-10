@@ -82,8 +82,9 @@ def _get_openai_client() -> Optional[OpenAI]:
     if OpenAI is None:
         return None
 
-    # Fetch dynamic OAI key (fallback to previous hardcoded for backwards compatibility if not set)
-    api_key = frappe.db.get_default("oai_secret") or "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"
+    # Fetch dynamic OAI key from site configuration — no hardcoded fallback.
+    # Configure via: frappe.db.set_default("oai_secret", "sk-proj-...")
+    api_key = frappe.db.get_default("oai_secret") or ""
     if not api_key:
         return None
 

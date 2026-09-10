@@ -25,7 +25,9 @@
       "api_error.json",
       "!dist",
       "!node_modules/electron/**",
-      "!node_modules/electron-builder/**"
+      "!node_modules/electron-builder/**",
+      "!systems/**/*.py",
+      "!systems/**/*.pyc"
     ],
     "publish": {
       "provider": "github",

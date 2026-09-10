@@ -122,11 +122,11 @@ def safe_requests(method, url, **kwargs):
         frappe.log_error(f"Request Exception to {url}: {str(e)}", "Network Safeguard")
         raise
 
-# Hard-coded OpenAI API key for Omnis Assist
-# ⚠️ SECURITY NOTE:
-# - Set this on your server only.
-# - Do NOT commit a real key to any public repo.
-OPENAI_API_KEY = "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"
+# OpenAI API key for Omnis Assist — loaded from site configuration.
+# Configure via: frappe.db.set_default("oai_secret", "sk-proj-...")
+# or in site_config.json: "openai_api_key": "sk-proj-..."
+# Do NOT hardcode keys — this file ships in the Electron ASAR.
+OPENAI_API_KEY = ""
 
 __all__ = [
     "get_omnis_home",

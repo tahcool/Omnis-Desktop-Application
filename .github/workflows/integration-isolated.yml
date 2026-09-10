@@ -1,0 +1,105 @@
+# Isolated Integration Tests — Self-Contained Supabase Environment
+# Runs a disposable local Supabase stack with fixtures and credentials.
+# This workflow does NOT touch production.
+#
+# To run locally (requires Docker):
+#   supabase start
+#   node tests/test_rls.js --ci
+#
+# Prerequisites for CI:
+#   - Docker available in runner
+#   - Supabase CLI installed
+#   - No secrets from production project needed
+name: Integration Tests (Isolated)
+
+on:
+  workflow_dispatch:      # Manual trigger for now
+  push:
+    branches: ['feature/**', 'security/**']
+    paths:
+      - 'supabase/**'
+      - 'tests/**'
+      - 'main.js'
+      - 'lib/**'
+
+jobs:
+  isolated-integration:
+    name: Isolated Supabase Tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Setup Supabase CLI
+        uses: supabase/setup-cli@v1
+        with:
+          version: latest
+
+      - name: Start local Supabase
+        run: |
+          supabase start
+          # Extract local keys (these are ephemeral, not secrets)
+          echo "SUPABASE_URL=$(supabase status -o env | grep API_URL | cut -d= -f2)" >> $GITHUB_ENV
+          echo "SUPABASE_ANON_KEY=$(supabase status -o env | grep ANON_KEY | cut -d= -f2)" >> $GITHUB_ENV
+          echo "SUPABASE_SERVICE_KEY=$(supabase status -o env | grep SERVICE_ROLE_KEY | cut -d= -f2)" >> $GITHUB_ENV
+
+      - name: Apply migrations
+        run: supabase db push
+
+      - name: Create test fixtures
+        run: |
+          # Create test users via service role key (local only)
+          curl -s -X POST "${SUPABASE_URL}/auth/v1/admin/users" \
+            -H "apikey: ${SUPABASE_ANON_KEY}" \
+            -H "Authorization: Bearer ${SUPABASE_SERVICE_KEY}" \
+            -H "Content-Type: application/json" \
+            -d '{"email":"testadmin@test.local","password":"Test1234!","email_confirm":true}'
+
+          curl -s -X POST "${SUPABASE_URL}/auth/v1/admin/users" \
+            -H "apikey: ${SUPABASE_ANON_KEY}" \
+            -H "Authorization: Bearer ${SUPABASE_SERVICE_KEY}" \
+            -H "Content-Type: application/json" \
+            -d '{"email":"testuser@test.local","password":"Test1234!","email_confirm":true}'
+
+          # Seed user_system_access for both users
+          ADMIN_ID=$(curl -s "${SUPABASE_URL}/auth/v1/admin/users" \
+            -H "apikey: ${SUPABASE_ANON_KEY}" \
+            -H "Authorization: Bearer ${SUPABASE_SERVICE_KEY}" | \
+            python3 -c "import sys,json; users=json.load(sys.stdin)['users']; print([u['id'] for u in users if u['email']=='testadmin@test.local'][0])")
+
+          USER_ID=$(curl -s "${SUPABASE_URL}/auth/v1/admin/users" \
+            -H "apikey: ${SUPABASE_ANON_KEY}" \
+            -H "Authorization: Bearer ${SUPABASE_SERVICE_KEY}" | \
+            python3 -c "import sys,json; users=json.load(sys.stdin)['users']; print([u['id'] for u in users if u['email']=='testuser@test.local'][0])")
+
+          # Insert access records
+          curl -s -X POST "${SUPABASE_URL}/rest/v1/user_system_access" \
+            -H "apikey: ${SUPABASE_ANON_KEY}" \
+            -H "Authorization: Bearer ${SUPABASE_SERVICE_KEY}" \
+            -H "Content-Type: application/json" \
+            -H "Prefer: return=minimal" \
+            -d "[{\"user_id\":\"${ADMIN_ID}\",\"is_admin\":true,\"systems\":[\"fleetrack\",\"salestrack\"]},{\"user_id\":\"${USER_ID}\",\"is_admin\":false,\"systems\":[\"fleetrack\"]}]"
+
+          echo "TEST_USER_EMAIL=testuser@test.local" >> $GITHUB_ENV
+          echo "TEST_USER_PASSWORD=Test1234!" >> $GITHUB_ENV
+
+      - name: Deploy Edge Functions (local)
+        run: |
+          supabase functions deploy admin-operations --no-verify-jwt
+          supabase functions deploy email-submit --no-verify-jwt
+
+      - name: Install test dependencies
+        run: npm ci --ignore-scripts
+
+      - name: Run integration tests (strict)
+        run: node tests/test_rls.js --ci
+
+      - name: Stop Supabase
+        if: always()
+        run: supabase stop --no-backup
