@@ -128,3 +128,21 @@ CREATE TABLE IF NOT EXISTS omnis_sick_notes (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   created_at TIMESTAMPTZ DEFAULT now()
 );
+
+-- Audit trail (columns match admin-operations Edge Function)
+CREATE TABLE IF NOT EXISTS omnis_audit_trail (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  action_type TEXT,
+  event_type TEXT,
+  entity_type TEXT,
+  entity_name TEXT,
+  user_id UUID,
+  user_email TEXT,
+  target_user_id UUID,
+  details JSONB,
+  created_at TIMESTAMPTZ NOT NULL DEFAULT now()
+);
+
+ALTER TABLE omnis_audit_trail ENABLE ROW LEVEL SECURITY;
+CREATE POLICY "audit_select" ON omnis_audit_trail FOR SELECT USING (true);
+CREATE POLICY "audit_insert" ON omnis_audit_trail FOR INSERT WITH CHECK (true);

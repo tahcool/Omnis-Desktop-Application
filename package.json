@@ -20,14 +20,14 @@
       "lib/**/*",
       "systems/**/*",
       "assets/**/*",
-      "omnis_dashboard.py",
       "*.xml",
       "api_error.json",
       "!dist",
       "!node_modules/electron/**",
       "!node_modules/electron-builder/**",
       "!systems/**/*.py",
-      "!systems/**/*.pyc"
+      "!systems/**/*.pyc",
+      "!*.py"
     ],
     "publish": {
       "provider": "github",
