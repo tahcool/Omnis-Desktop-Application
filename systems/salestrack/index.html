@@ -13874,7 +13874,7 @@
           table: 'omnis_quotations',
           method: 'select',
           params: {
-            columns: 'id, name, title, customer_name, transaction_date, custom_sales_person:sales_person, status, notes, custom_next_follow_up_date, salesperson_follow_up_date, likelihood_percent, omnis_quotation_items(item_code, qty)',
+            columns: 'id, name, title, customer_name, transaction_date, custom_sales_person:sales_person, status, notes, custom_next_follow_up_date, salesperson_follow_up_date, likelihood_percent, delivery, omnis_quotation_items(item_code, qty, rate, amount)',
             options: { count: 'exact' },
             filters: filters,
             or: orCondition,
@@ -13986,11 +13986,12 @@
             '</tr></thead><tbody>' +
             qItems.map(i => {
                 const formattedPrice = i.rate ? new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD', minimumFractionDigits: 0, maximumFractionDigits: 0 }).format(i.rate) : '-';
+                const leadTime = row.delivery ? row.delivery : 'TBD';
                 return `<tr style="border-bottom:1px solid rgba(153,27,27,0.05); transition:background 0.2s;" onmouseover="this.style.background=\\'rgba(153,27,27,0.02)\\'" onmouseout="this.style.background=\\'transparent\\'">
                     <td style="padding:6px 8px; font-weight:800; color:#991b1b;">${i.qty}</td>
                     <td style="padding:6px 8px; font-weight:700; color:#450a0a; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; max-width:120px;" title="${escapeHtml(i.item_code)}">${escapeHtml(i.item_code)}</td>
                     <td style="padding:6px 8px; font-weight:700; color:#065f46; text-align:right;">${formattedPrice}</td>
-                    <td style="padding:6px 8px; font-weight:600; color:#991b1b; opacity:0.6; text-align:right;">TBD</td>
+                    <td style="padding:6px 8px; font-weight:600; color:#991b1b; opacity:0.6; text-align:right;">${escapeHtml(leadTime)}</td>
                 </tr>`;
             }).join('') + 
             '</tbody></table></div>';
@@ -20792,7 +20793,8 @@ thead th { padding:11px 12px; font-size:10px; font-weight:800; color:#fff; text-
   </div>
 
   <!-- External Logic Modules -->
-  <script src="dashboard_logic.js?v=202609072015"></script>
+  <script src="ai-proxy-client.js?v=202609101548"></script>
+  <script src="dashboard_logic.js?v=202609101548"></script>
   <script src="orders_logic.js?v=202609072015"></script>
     <script src="training_logic.js?v=202609072015"></script>
   <script src="training_library.js?v=202609072015"></script>
