@@ -775,37 +775,17 @@ async function executeAction(
           status: 400,
         };
 
-      const { data, error } = await admin.auth.admin.generateLink({
-        type: "recovery",
-        email,
-        options: { redirectTo: "" },
+      // Use resetPasswordForEmail which sends the recovery email directly
+      // via Supabase's built-in email delivery. The recovery token is NEVER
+      // returned to the admin client — this prevents account takeover.
+      const { error } = await admin.auth.resetPasswordForEmail(email, {
+        redirectTo: "",
       });
 
       if (error) {
-        // Fallback: user might not exist yet — send an invite instead
-        const inv = await admin.auth.admin.generateLink({
-          type: "invite",
-          email,
-        });
-        if (inv.error) throw new Error(inv.error.message);
-
-        await audit(admin, {
-          actor_id: callerId,
-          actor_email: callerEmail,
-          action,
-          target_email: email,
-          result: "success",
-          detail: "Generated invite link (user not found for recovery)",
-        });
-
-        return {
-          body: {
-            ok: true,
-            link: inv.data?.properties?.action_link,
-            type: "invite",
-          },
-          status: 200,
-        };
+        // If user doesn't exist, don't reveal that — just succeed silently
+        // to prevent user enumeration via admin password reset
+        console.error(`[resetPassword] Error for ${email}: ${error.message}`);
       }
 
       await audit(admin, {
@@ -814,14 +794,13 @@ async function executeAction(
         action,
         target_email: email,
         result: "success",
-        detail: "Generated recovery link",
+        detail: "Password reset email sent (no token returned to caller)",
       });
 
       return {
         body: {
           ok: true,
-          link: data?.properties?.action_link,
-          type: "recovery",
+          message: "Password reset email has been sent to the user.",
         },
         status: 200,
       };
@@ -836,10 +815,24 @@ async function executeAction(
           status: 400,
         };
 
-      const { data, error } = await admin.auth.admin.generateLink({
-        type: "invite",
-        email,
-      });
+      // Only super-admins can invite new users
+      if (!SUPER_ADMIN_EMAILS.includes(callerEmail)) {
+        await audit(admin, {
+          actor_id: callerId,
+          actor_email: callerEmail,
+          action,
+          target_email: email,
+          result: "denied",
+          detail: "Only super-admins can send invitations",
+        });
+        return {
+          body: { ok: false, error: "Only super-admins can send invitations." },
+          status: 403,
+        };
+      }
+
+      // inviteUserByEmail sends the invite directly — no token returned
+      const { error } = await admin.auth.admin.inviteUserByEmail(email);
       if (error) throw new Error(error.message);
 
       await audit(admin, {
@@ -848,13 +841,13 @@ async function executeAction(
         action,
         target_email: email,
         result: "success",
+        detail: "Invitation email sent (no token returned to caller)",
       });
 
       return {
         body: {
           ok: true,
-          link: data?.properties?.action_link,
-          type: "invite",
+          message: "Invitation email has been sent.",
         },
         status: 200,
       };

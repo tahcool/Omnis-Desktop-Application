@@ -5,7 +5,12 @@ const axios = require("axios");
 const https = require("https");
 const dns = require("dns");
 
-require('dotenv').config();
+// Load .env — in packaged app, look next to the executable;
+// in development, use cwd (project root).
+const dotenvPath = app.isPackaged
+  ? path.join(path.dirname(process.execPath), '.env')
+  : path.resolve(process.cwd(), '.env');
+require('dotenv').config({ path: dotenvPath });
 
 // Supabase Integration — client uses publishable anon key only
 // Service role key is NEVER loaded in the Electron process.

@@ -9,22 +9,31 @@
  *   - Optionally: TEST_USER_EMAIL and TEST_USER_PASSWORD for auth tests
  *
  * MODES:
- *   --ci      Exit non-zero if ANY test fails or if ALL tests are SPEC
- *             (prevents release when tests couldn't actually run)
- *   --strict  Same as --ci plus treats SPEC as failure
- *
- * Run: node tests/test_rls.js [--ci] [--strict]
+ *   --ci      Exit non-zero if ANY test fails.
+ *             Exit code 2 if all tests are unexecuted (prevents
+ *             release when test infrastructure is unavailable).
+ *   --strict  Exit non-zero if ANY required test is SPEC/NOT_RUN.
+ *             Identical gate behavior: missing fixtures, endpoints, or
+ *             prerequisites block release. Use for final release validation.
  *
  * EXIT CODES:
  *   0 — all tests passed (at least one real execution)
  *   1 — test failures detected
- *   2 — all tests were SPEC (nothing actually ran) — blocks CI
+ *   2 — all tests were SPEC/NOT_RUN (nothing actually ran) — blocks CI
  *   3 — setup/runtime error
+ *
+ * CATEGORIES:
+ *   STATIC    — source code checks (no network)
+ *   DATABASE  — Supabase DB operations (RLS, RPC, row access)
+ *   ENDPOINT  — Edge Function HTTP calls
+ *   AUTH      — authentication session lifecycle
+ *
+ * Run: node tests/test_rls.js [--ci] [--strict]
  */
 
 const RESULTS = [];
-function record(name, status, detail = '') {
-  RESULTS.push({ test: name, status, detail });
+function record(name, status, detail = '', category = 'STATIC') {
+  RESULTS.push({ test: name, status, detail, category });
   const marker = { PASS: 'OK', FAIL: 'FAIL', NOT_RUN: 'SKIP', SPEC: 'SPEC' }[status];
   console.log(`  [${marker}] ${name}${detail ? ' -- ' + detail : ''}`);
 }
@@ -54,6 +63,18 @@ async function setup() {
       return false;
     }
 
+    // Environment identity check
+    const payload = JSON.parse(Buffer.from(key.split('.')[1], 'base64').toString());
+    if (payload.ref) {
+      const expectedRef = new URL(url).hostname.split('.')[0];
+      if (payload.ref !== expectedRef) {
+        console.log(`\n  ERROR: Key ref "${payload.ref}" does not match URL ref "${expectedRef}".`);
+        console.log('  The anon key and URL belong to different Supabase projects.\n');
+        return false;
+      }
+    }
+    console.log(`  Project: ${payload.ref || 'unknown'} (role: ${payload.role || 'unknown'})`);
+
     supabase = createClient(url, key);
 
     // Verify connectivity
@@ -75,7 +96,7 @@ async function setup() {
 async function testAnonymousDenied() {
   if (!canConnect) {
     record('anonymous_access_denied', 'SPEC',
-      'Without anon key: Unauthenticated SELECT on protected tables must return 0 rows or error');
+      'Without anon key: Unauthenticated SELECT on protected tables must return 0 rows or error', 'DATABASE');
     return;
   }
 
@@ -85,13 +106,12 @@ async function testAnonymousDenied() {
   for (const table of protectedTables) {
     const { data, error } = await supabase.from(table).select('*').limit(1);
     if (error) {
-      // Table doesn't exist or permission denied — both acceptable
-      record(`anon_denied_${table}`, 'PASS', `Access denied: ${error.message.substring(0, 60)}`);
+      record(`anon_denied_${table}`, 'PASS', `Access denied: ${error.message.substring(0, 60)}`, 'DATABASE');
     } else if (data && data.length > 0) {
       allDenied = false;
-      record(`anon_denied_${table}`, 'FAIL', `Got ${data.length} rows without auth`);
+      record(`anon_denied_${table}`, 'FAIL', `Got ${data.length} rows without auth`, 'DATABASE');
     } else {
-      record(`anon_denied_${table}`, 'PASS', 'No rows returned without auth');
+      record(`anon_denied_${table}`, 'PASS', 'No rows returned without auth', 'DATABASE');
     }
   }
 }
@@ -100,7 +120,7 @@ async function testAnonymousDenied() {
 
 async function testSessionLifecycle() {
   if (!canConnect) {
-    record('session_lifecycle', 'SPEC', 'Test sign-in, session, refresh, sign-out');
+    record('session_signin', 'SPEC', 'Test sign-in, session, refresh, sign-out', 'AUTH');
     return;
   }
 
@@ -108,9 +128,9 @@ async function testSessionLifecycle() {
   const testPassword = process.env.TEST_USER_PASSWORD;
 
   if (!testEmail || !testPassword) {
-    record('session_signin', 'SPEC', 'Set TEST_USER_EMAIL and TEST_USER_PASSWORD to run');
-    record('session_refresh', 'SPEC', 'Requires test credentials');
-    record('session_signout', 'SPEC', 'Requires test credentials');
+    record('session_signin', 'SPEC', 'Set TEST_USER_EMAIL and TEST_USER_PASSWORD to run', 'AUTH');
+    record('session_refresh', 'SPEC', 'Requires test credentials', 'AUTH');
+    record('session_signout', 'SPEC', 'Requires test credentials', 'AUTH');
     return;
   }
 
@@ -120,44 +140,44 @@ async function testSessionLifecycle() {
   });
 
   if (authError) {
-    record('session_signin', 'FAIL', `Auth failed: ${authError.message}`);
+    record('session_signin', 'FAIL', `Auth failed: ${authError.message}`, 'AUTH');
     return;
   }
 
-  record('session_signin', 'PASS', `Signed in as ${testEmail}`);
+  record('session_signin', 'PASS', `Signed in as ${testEmail}`, 'AUTH');
 
   // Get session
   const { data: sessionData } = await supabase.auth.getSession();
   if (sessionData?.session?.access_token) {
-    record('session_exists', 'PASS', 'Session has access_token');
+    record('session_exists', 'PASS', 'Session has access_token', 'AUTH');
   } else {
-    record('session_exists', 'FAIL', 'No session after sign-in');
+    record('session_exists', 'FAIL', 'No session after sign-in', 'AUTH');
   }
 
   // Refresh
   const { data: refreshData, error: refreshError } = await supabase.auth.refreshSession();
   if (refreshError) {
-    record('session_refresh', 'FAIL', `Refresh failed: ${refreshError.message}`);
+    record('session_refresh', 'FAIL', `Refresh failed: ${refreshError.message}`, 'AUTH');
   } else if (refreshData?.session) {
-    record('session_refresh', 'PASS', 'Session refreshed successfully');
+    record('session_refresh', 'PASS', 'Session refreshed successfully', 'AUTH');
   } else {
-    record('session_refresh', 'FAIL', 'No session after refresh');
+    record('session_refresh', 'FAIL', 'No session after refresh', 'AUTH');
   }
 
   // Sign out
   const { error: signOutError } = await supabase.auth.signOut();
   if (signOutError) {
-    record('session_signout', 'FAIL', `Sign-out failed: ${signOutError.message}`);
+    record('session_signout', 'FAIL', `Sign-out failed: ${signOutError.message}`, 'AUTH');
   } else {
-    record('session_signout', 'PASS', 'Signed out successfully');
+    record('session_signout', 'PASS', 'Signed out successfully', 'AUTH');
   }
 
   // Verify session gone
   const { data: postSignOut } = await supabase.auth.getSession();
   if (!postSignOut?.session) {
-    record('session_cleared', 'PASS', 'No session after sign-out');
+    record('session_cleared', 'PASS', 'No session after sign-out', 'AUTH');
   } else {
-    record('session_cleared', 'FAIL', 'Session still exists after sign-out');
+    record('session_cleared', 'FAIL', 'Session still exists after sign-out', 'AUTH');
   }
 }
 
@@ -166,7 +186,7 @@ async function testSessionLifecycle() {
 async function testCompanyIsolation() {
   if (!canConnect) {
     record('company_isolation', 'SPEC',
-      'User A from Company X must not see rows owned by Company Y');
+      'User A from Company X must not see rows owned by Company Y', 'DATABASE');
     return;
   }
 
@@ -174,7 +194,7 @@ async function testCompanyIsolation() {
   const testPassword = process.env.TEST_USER_PASSWORD;
 
   if (!testEmail || !testPassword) {
-    record('company_isolation', 'SPEC', 'Set TEST_USER_EMAIL and TEST_USER_PASSWORD to run');
+    record('company_isolation', 'SPEC', 'Set TEST_USER_EMAIL and TEST_USER_PASSWORD to run', 'DATABASE');
     return;
   }
 
@@ -183,7 +203,7 @@ async function testCompanyIsolation() {
   });
 
   if (authError) {
-    record('company_isolation', 'FAIL', `Auth failed: ${authError.message}`);
+    record('company_isolation', 'FAIL', `Auth failed: ${authError.message}`, 'DATABASE');
     return;
   }
 
@@ -191,9 +211,9 @@ async function testCompanyIsolation() {
   const companies = [...new Set((customers || []).map(c => c.company).filter(Boolean))];
 
   if (companies.length <= 1) {
-    record('company_isolation', 'PASS', `Sees only company: ${companies[0] || 'none'}`);
+    record('company_isolation', 'PASS', `Sees only company: ${companies[0] || 'none'}`, 'DATABASE');
   } else {
-    record('company_isolation', 'FAIL', `Sees multiple companies: ${companies.join(', ')}`);
+    record('company_isolation', 'FAIL', `Sees multiple companies: ${companies.join(', ')}`, 'DATABASE');
   }
 
   await supabase.auth.signOut();
@@ -203,7 +223,7 @@ async function testCompanyIsolation() {
 
 async function testAdminAuthRequired() {
   if (!canConnect) {
-    record('admin_auth_required', 'SPEC', 'Admin ops must reject unauthenticated calls');
+    record('admin_auth_required', 'SPEC', 'Admin ops must reject unauthenticated calls', 'ENDPOINT');
     return;
   }
 
@@ -217,18 +237,17 @@ async function testAdminAuthRequired() {
     });
 
     if (response.status === 401) {
-      record('admin_no_auth_rejected', 'PASS', 'Returned 401 without auth');
+      record('admin_no_auth_rejected', 'PASS', 'Returned 401 without auth', 'ENDPOINT');
     } else if (response.status === 404) {
       record('admin_no_auth_rejected', 'NOT_RUN',
-        'Edge Function not deployed yet (404). Deploy admin-operations before production.');
+        'Edge Function not deployed yet (404). Deploy admin-operations before production.', 'ENDPOINT');
     } else {
       const body = await response.json().catch(() => ({}));
       record('admin_no_auth_rejected', 'FAIL',
-        `Expected 401, got ${response.status}: ${JSON.stringify(body).substring(0, 80)}`);
+        `Expected 401, got ${response.status}: ${JSON.stringify(body).substring(0, 80)}`, 'ENDPOINT');
     }
   } catch (e) {
-    // Network error or function not deployed
-    record('admin_no_auth_rejected', 'NOT_RUN', `Network error: ${e.message}`);
+    record('admin_no_auth_rejected', 'NOT_RUN', `Network error: ${e.message}`, 'ENDPOINT');
   }
 }
 
@@ -236,7 +255,7 @@ async function testAdminAuthRequired() {
 
 async function testNonAdminDenied() {
   if (!canConnect) {
-    record('non_admin_denied', 'SPEC', 'Non-admin must be denied admin operations');
+    record('non_admin_denied', 'SPEC', 'Non-admin must be denied admin operations', 'ENDPOINT');
     return;
   }
 
@@ -244,9 +263,9 @@ async function testNonAdminDenied() {
   const testPassword = process.env.TEST_USER_PASSWORD;
 
   if (!testEmail || !testPassword) {
-    record('non_admin_list_users', 'SPEC', 'Requires test credentials');
-    record('non_admin_create_user', 'SPEC', 'Requires test credentials');
-    record('non_admin_delete_user', 'SPEC', 'Requires test credentials');
+    record('non_admin_list_users', 'SPEC', 'Requires test credentials', 'ENDPOINT');
+    record('non_admin_create_user', 'SPEC', 'Requires test credentials', 'ENDPOINT');
+    record('non_admin_delete_user', 'SPEC', 'Requires test credentials', 'ENDPOINT');
     return;
   }
 
@@ -255,7 +274,7 @@ async function testNonAdminDenied() {
   });
 
   if (authError) {
-    record('non_admin_denied', 'FAIL', `Auth failed: ${authError.message}`);
+    record('non_admin_denied', 'FAIL', `Auth failed: ${authError.message}`, 'ENDPOINT');
     return;
   }
 
@@ -267,9 +286,9 @@ async function testNonAdminDenied() {
     .maybeSingle();
 
   if (access?.is_admin) {
-    record('non_admin_list_users', 'SPEC', 'Test user is an admin — cannot test non-admin denial');
-    record('non_admin_create_user', 'SPEC', 'Test user is an admin');
-    record('non_admin_delete_user', 'SPEC', 'Test user is an admin');
+    record('non_admin_list_users', 'SPEC', 'Test user is an admin — cannot test non-admin denial', 'ENDPOINT');
+    record('non_admin_create_user', 'SPEC', 'Test user is an admin', 'ENDPOINT');
+    record('non_admin_delete_user', 'SPEC', 'Test user is an admin', 'ENDPOINT');
     await supabase.auth.signOut();
     return;
   }
@@ -285,19 +304,19 @@ async function testNonAdminDenied() {
       body: { action, ...params },
     });
 
-    // We expect an error or result.ok === false
-    if (error) {
-      const errBody = typeof error === 'object' && error.context ? error.context : error;
-      const msg = errBody?.error || errBody?.message || error.message || '';
-      if (msg.includes('denied') || msg.includes('admin') || msg.includes('not found')) {
-        record(name, 'PASS', `Denied: ${msg.substring(0, 60)}`);
-      } else {
-        record(name, 'FAIL', `Unexpected error: ${msg.substring(0, 80)}`);
-      }
+    const errBody = error
+      ? (typeof error === 'object' && error.context ? error.context : error)
+      : result;
+    const msg = errBody?.error || errBody?.message || error?.message || '';
+    if (msg.includes('denied') || msg.includes('admin') || msg.includes('not found') ||
+        msg.includes('No access record')) {
+      record(name, 'PASS', `Denied: ${msg.substring(0, 60)}`, 'ENDPOINT');
+    } else if (msg.includes('not found') || msg.includes('404')) {
+      record(name, 'NOT_RUN', `Edge Function not deployed`, 'ENDPOINT');
     } else if (result && result.ok === false) {
-      record(name, 'PASS', `Denied: ${(result.error || '').substring(0, 60)}`);
+      record(name, 'PASS', `Denied: ${(result.error || '').substring(0, 60)}`, 'ENDPOINT');
     } else {
-      record(name, 'FAIL', `Action succeeded for non-admin!`);
+      record(name, 'FAIL', `Action succeeded for non-admin! ${msg.substring(0, 80)}`, 'ENDPOINT');
     }
   }
 
@@ -308,7 +327,8 @@ async function testNonAdminDenied() {
 
 async function testDeferredActions() {
   if (!canConnect) {
-    record('deferred_actions', 'SPEC', 'setPassword, impersonate must be rejected');
+    record('deferred_setPassword', 'SPEC', 'setPassword must be explicitly deferred', 'ENDPOINT');
+    record('deferred_impersonate', 'SPEC', 'impersonate must be explicitly deferred', 'ENDPOINT');
     return;
   }
 
@@ -316,8 +336,8 @@ async function testDeferredActions() {
   const testPassword = process.env.TEST_USER_PASSWORD;
 
   if (!testEmail || !testPassword) {
-    record('deferred_setPassword', 'SPEC', 'Requires test credentials');
-    record('deferred_impersonate', 'SPEC', 'Requires test credentials');
+    record('deferred_setPassword', 'SPEC', 'Requires test credentials', 'ENDPOINT');
+    record('deferred_impersonate', 'SPEC', 'Requires test credentials', 'ENDPOINT');
     return;
   }
 
@@ -335,9 +355,11 @@ async function testDeferredActions() {
     const isDeferred = msg.includes('deferred') || errBody?.deferred === true;
 
     if (isDeferred) {
-      record(`deferred_${action}`, 'PASS', 'Explicitly deferred with clear message');
+      record(`deferred_${action}`, 'PASS', 'Explicitly deferred with clear message', 'ENDPOINT');
+    } else if (msg.includes('404') || msg.includes('not found')) {
+      record(`deferred_${action}`, 'NOT_RUN', 'Edge Function not deployed', 'ENDPOINT');
     } else {
-      record(`deferred_${action}`, 'FAIL', `Not properly deferred: ${msg.substring(0, 80)}`);
+      record(`deferred_${action}`, 'FAIL', `Not properly deferred: ${msg.substring(0, 80)}`, 'ENDPOINT');
     }
   }
 
@@ -348,20 +370,19 @@ async function testDeferredActions() {
 
 async function testAdminApiBlocked() {
   if (!canConnect) {
-    record('admin_api_blocked', 'SPEC', 'auth.admin calls must fail without service_role');
+    record('admin_api_blocked', 'SPEC', 'auth.admin calls must fail without service_role', 'DATABASE');
     return;
   }
 
-  // These should fail — anon key cannot call admin methods
   try {
     const { error } = await supabase.auth.admin.listUsers({ perPage: 1 });
     if (error) {
-      record('admin_listUsers_blocked', 'PASS', `Correctly rejected: ${error.message.substring(0, 60)}`);
+      record('admin_listUsers_blocked', 'PASS', `Correctly rejected: ${error.message.substring(0, 60)}`, 'DATABASE');
     } else {
-      record('admin_listUsers_blocked', 'FAIL', 'admin.listUsers() succeeded with anon key!');
+      record('admin_listUsers_blocked', 'FAIL', 'admin.listUsers() succeeded with anon key!', 'DATABASE');
     }
   } catch (e) {
-    record('admin_listUsers_blocked', 'PASS', `Threw error: ${e.message.substring(0, 60)}`);
+    record('admin_listUsers_blocked', 'PASS', `Threw error: ${e.message.substring(0, 60)}`, 'DATABASE');
   }
 }
 
@@ -369,17 +390,109 @@ async function testAdminApiBlocked() {
 
 async function testIsAdminFunction() {
   if (!canConnect) {
-    record('is_admin_function', 'SPEC', 'is_admin() database function must exist');
+    record('is_admin_function', 'SPEC', 'is_admin() database function must exist', 'DATABASE');
     return;
   }
 
   const { error } = await supabase.rpc('is_admin');
-  // Function may fail without auth — that's OK, we just check it exists
   if (error && error.message.includes('does not exist')) {
-    record('is_admin_function', 'FAIL', 'Function not found');
+    record('is_admin_function', 'FAIL', 'Function not found', 'DATABASE');
   } else {
-    record('is_admin_function', 'PASS', 'Function exists');
+    record('is_admin_function', 'PASS', 'Function exists', 'DATABASE');
   }
+}
+
+// ── Test: RPC access control (safe_remove_admin/check_last_admin_removal) ──
+
+async function testRpcAccessControl() {
+  if (!canConnect) {
+    record('rpc_anon_denied', 'SPEC', 'safe_remove_admin must be inaccessible to anon', 'DATABASE');
+    return;
+  }
+
+  // Try calling safe_remove_admin with anon key (should be denied by REVOKE)
+  const { error: safeErr } = await supabase.rpc('safe_remove_admin', {
+    target_user_id: '00000000-0000-0000-0000-000000000000'
+  });
+
+  if (safeErr) {
+    if (safeErr.message.includes('permission denied') || safeErr.message.includes('does not exist')) {
+      record('rpc_safe_remove_anon', 'PASS', `Denied to anon: ${safeErr.message.substring(0, 60)}`, 'DATABASE');
+    } else {
+      // Function might not be deployed yet
+      record('rpc_safe_remove_anon', 'NOT_RUN', `Error: ${safeErr.message.substring(0, 60)}`, 'DATABASE');
+    }
+  } else {
+    record('rpc_safe_remove_anon', 'FAIL', 'safe_remove_admin callable by anon — missing REVOKE!', 'DATABASE');
+  }
+
+  // Try calling check_last_admin_removal with anon key
+  const { error: checkErr } = await supabase.rpc('check_last_admin_removal', {
+    target_user_id: '00000000-0000-0000-0000-000000000000'
+  });
+
+  if (checkErr) {
+    if (checkErr.message.includes('permission denied') || checkErr.message.includes('does not exist')) {
+      record('rpc_check_last_anon', 'PASS', `Denied to anon: ${checkErr.message.substring(0, 60)}`, 'DATABASE');
+    } else {
+      record('rpc_check_last_anon', 'NOT_RUN', `Error: ${checkErr.message.substring(0, 60)}`, 'DATABASE');
+    }
+  } else {
+    record('rpc_check_last_anon', 'FAIL', 'check_last_admin_removal callable by anon — missing REVOKE!', 'DATABASE');
+  }
+}
+
+// ── Test: User self-admin check denied ────────────────────────────
+
+async function testUserSelfAdminDenied() {
+  if (!canConnect) {
+    record('user_system_access_rls', 'SPEC', 'user_system_access RLS prevents self-modification', 'DATABASE');
+    return;
+  }
+
+  const testEmail = process.env.TEST_USER_EMAIL;
+  const testPassword = process.env.TEST_USER_PASSWORD;
+
+  if (!testEmail || !testPassword) {
+    record('user_self_promote', 'SPEC', 'Requires test credentials', 'DATABASE');
+    return;
+  }
+
+  const { data: authData, error: authError } = await supabase.auth.signInWithPassword({
+    email: testEmail, password: testPassword
+  });
+
+  if (authError) {
+    record('user_self_promote', 'FAIL', `Auth failed: ${authError.message}`, 'DATABASE');
+    return;
+  }
+
+  // Attempt to directly update own is_admin via REST (RLS should block)
+  const { error: updateErr } = await supabase
+    .from('user_system_access')
+    .update({ is_admin: true })
+    .eq('user_id', authData.user.id);
+
+  if (updateErr) {
+    record('user_self_promote', 'PASS', `RLS blocked: ${updateErr.message.substring(0, 60)}`, 'DATABASE');
+  } else {
+    // Check if the update actually happened
+    const { data: check } = await supabase
+      .from('user_system_access')
+      .select('is_admin')
+      .eq('user_id', authData.user.id)
+      .single();
+
+    if (check?.is_admin === true) {
+      record('user_self_promote', 'FAIL', 'User was able to self-promote to admin via direct DB update!', 'DATABASE');
+      // Revert
+      await supabase.from('user_system_access').update({ is_admin: false }).eq('user_id', authData.user.id);
+    } else {
+      record('user_self_promote', 'PASS', 'Update silently ignored by RLS (0 rows affected)', 'DATABASE');
+    }
+  }
+
+  await supabase.auth.signOut();
 }
 
 // ── Test: Source code scanning ─────────────────────────────────────
@@ -411,6 +524,29 @@ function testSourceScan() {
     record('source_lib_clean', 'PASS', 'No service role keys in lib/');
   }
 
+  // Check systems/ directory (ships in ASAR)
+  const systemsDir = path.resolve(__dirname, '..', 'systems');
+  let systemsClean = true;
+  function walkSystems(dir) {
+    for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
+      const fullPath = path.join(dir, entry.name);
+      if (entry.isDirectory()) {
+        walkSystems(fullPath);
+      } else if (entry.name.endsWith('.js') || entry.name.endsWith('.html')) {
+        const content = fs.readFileSync(fullPath, 'utf8');
+        if (/sb_secret_[A-Za-z0-9_]{10,}/.test(content)) {
+          record(`source_systems_${entry.name}`, 'FAIL',
+            `Contains service role key (SHIPS IN ASAR)`);
+          systemsClean = false;
+        }
+      }
+    }
+  }
+  walkSystems(systemsDir);
+  if (systemsClean) {
+    record('source_systems_clean', 'PASS', 'No service role keys in systems/ (shipped code)');
+  }
+
   // Check preload.js
   const preloadPath = path.resolve(__dirname, '..', 'assets', 'js', 'preload.js');
   const preload = fs.readFileSync(preloadPath, 'utf8');
@@ -425,6 +561,64 @@ function testSourceScan() {
     record('source_no_auth_admin', 'FAIL', 'main.js still calls auth.admin directly');
   } else {
     record('source_no_auth_admin', 'PASS', 'No auth.admin calls in main.js');
+  }
+
+  // Verify fix_ftas_load.js is NOT in systems/ (should have been moved to scripts/)
+  const ftasPath = path.resolve(__dirname, '..', 'systems', 'salestrack', 'fix_ftas_load.js');
+  if (fs.existsSync(ftasPath)) {
+    record('source_ftas_not_shipped', 'FAIL',
+      'fix_ftas_load.js still in systems/ (ships in ASAR). Move to scripts/');
+  } else {
+    record('source_ftas_not_shipped', 'PASS', 'fix_ftas_load.js not in systems/ (moved to scripts/)');
+  }
+
+  // Verify dotenv path is resilient for packaged app
+  if (mainJs.includes('app.isPackaged')) {
+    record('source_dotenv_packaged', 'PASS', 'dotenv path handles packaged vs dev');
+  } else if (mainJs.includes("dotenv').config()")) {
+    record('source_dotenv_packaged', 'FAIL',
+      'dotenv.config() uses cwd — will fail in packaged app');
+  } else {
+    record('source_dotenv_packaged', 'PASS', 'dotenv path configured');
+  }
+
+  // Verify no recovery tokens in resetPassword response
+  const adminOpsPath = path.resolve(__dirname, '..', 'supabase', 'functions', 'admin-operations', 'index.ts');
+  if (fs.existsSync(adminOpsPath)) {
+    const adminOps = fs.readFileSync(adminOpsPath, 'utf8');
+
+    // Check resetPassword doesn't return action_link
+    const resetSection = adminOps.substring(
+      adminOps.indexOf('case "resetPassword"'),
+      adminOps.indexOf('case "inviteUser"')
+    );
+    if (resetSection.includes('action_link')) {
+      record('source_no_recovery_token', 'FAIL',
+        'resetPassword returns action_link — enables account takeover');
+    } else {
+      record('source_no_recovery_token', 'PASS',
+        'resetPassword does not expose recovery tokens');
+    }
+
+    // Check REVOKE in migration
+    const migrationPath = path.resolve(__dirname, '..', 'supabase', 'migrations',
+      '20260910000000_last_admin_protection.sql');
+    if (fs.existsSync(migrationPath)) {
+      const migration = fs.readFileSync(migrationPath, 'utf8');
+      if (migration.includes('REVOKE EXECUTE') && migration.includes('FROM anon') &&
+          migration.includes('FROM authenticated')) {
+        record('source_rpc_revoked', 'PASS', 'safe_remove_admin REVOKEd from anon and authenticated');
+      } else {
+        record('source_rpc_revoked', 'FAIL',
+          'Missing REVOKE from anon/authenticated — direct RPC bypass possible');
+      }
+
+      if (migration.includes('FOR UPDATE')) {
+        record('source_for_update', 'PASS', 'Both functions use FOR UPDATE locking');
+      } else {
+        record('source_for_update', 'FAIL', 'Missing FOR UPDATE — concurrent race possible');
+      }
+    }
   }
 }
 
@@ -442,32 +636,38 @@ async function main() {
 
   await setup();
 
-  console.log('-- Source Code Scanning --');
+  console.log('-- Source Code Scanning (STATIC) --');
   testSourceScan();
 
-  console.log('\n-- Anonymous Access --');
+  console.log('\n-- Anonymous Access (DATABASE) --');
   await testAnonymousDenied();
 
-  console.log('\n-- Session Lifecycle --');
+  console.log('\n-- Session Lifecycle (AUTH) --');
   await testSessionLifecycle();
 
-  console.log('\n-- Company Isolation --');
+  console.log('\n-- Company Isolation (DATABASE) --');
   await testCompanyIsolation();
 
-  console.log('\n-- Admin Auth Required --');
+  console.log('\n-- Admin Auth Required (ENDPOINT) --');
   await testAdminAuthRequired();
 
-  console.log('\n-- Non-Admin Denied --');
+  console.log('\n-- Non-Admin Denied (ENDPOINT) --');
   await testNonAdminDenied();
 
-  console.log('\n-- Deferred Actions --');
+  console.log('\n-- Deferred Actions (ENDPOINT) --');
   await testDeferredActions();
 
-  console.log('\n-- Admin API Blocked --');
+  console.log('\n-- Admin API Blocked (DATABASE) --');
   await testAdminApiBlocked();
 
-  console.log('\n-- Database Functions --');
+  console.log('\n-- Database Functions (DATABASE) --');
   await testIsAdminFunction();
+
+  console.log('\n-- RPC Access Control (DATABASE) --');
+  await testRpcAccessControl();
+
+  console.log('\n-- Self-Admin Prevention (DATABASE) --');
+  await testUserSelfAdminDenied();
 
   console.log('\n============================================================');
   console.log('RESULTS SUMMARY');
@@ -479,6 +679,18 @@ async function main() {
   const total = RESULTS.length;
 
   console.log(`  Total: ${total} | Pass: ${passed} | Fail: ${failed} | Spec: ${spec} | Not Run: ${notRun}`);
+
+  // Category breakdown
+  const categories = {};
+  for (const r of RESULTS) {
+    if (!categories[r.category]) categories[r.category] = { pass: 0, fail: 0, spec: 0, notRun: 0 };
+    categories[r.category][r.status === 'PASS' ? 'pass' : r.status === 'FAIL' ? 'fail' :
+      r.status === 'NOT_RUN' ? 'notRun' : 'spec']++;
+  }
+  console.log('\n  By category:');
+  for (const [cat, counts] of Object.entries(categories)) {
+    console.log(`    ${cat}: ${counts.pass}P ${counts.fail}F ${counts.spec}S ${counts.notRun}N`);
+  }
 
   if (failed > 0) {
     console.log('\n  FAILURES:');
@@ -501,8 +713,13 @@ async function main() {
       process.exit(2);
     }
 
-    if (isStrict && spec > 0) {
-      console.log(`\n  ❌ STRICT: ${spec} tests not executed.`);
+    if (isStrict && (spec > 0 || notRun > 0)) {
+      const unexecuted = spec + notRun;
+      console.log(`\n  ❌ STRICT: ${unexecuted} required tests not executed.`);
+      console.log('  All SPEC and NOT_RUN tests must pass before release.');
+      RESULTS.filter(r => r.status === 'SPEC' || r.status === 'NOT_RUN').forEach(r => {
+        console.log(`    [${r.status}] ${r.test}: ${r.detail}`);
+      });
       process.exit(2);
     }
 

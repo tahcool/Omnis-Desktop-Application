@@ -44,8 +44,12 @@ const PATTERNS = [
   },
   {
     name: 'Generic Secret Assignment',
-    regex: /(?:SECRET|PASSWORD|API_SECRET|service_role_key)\s*[:=]\s*['"][^'"]{8,}['"]/gi,
+    // Matches variable/config assignments like: SECRET = "value" or secret_key: "value"
+    // Excludes false positives inside string concatenation (e.g., "password: " + var)
+    regex: /(?:SECRET|API_SECRET|service_role_key)\s*[:=]\s*['"][^'"]{8,}['"]/gi,
     redactId: (_match) => '(assignment redacted)',
+    // Note: PASSWORD removed from pattern — too many false positives in UI strings.
+    // Actual password credentials use specific key patterns (sb_secret_, sk-proj-, etc.)
   },
 ];
 

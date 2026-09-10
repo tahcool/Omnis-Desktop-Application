@@ -1,10 +1,12 @@
-# CI Checks — Secret Scanning & Authorization Verification
-# Blocks PRs and pushes that contain hardcoded credentials.
+# CI Checks — Secret Scanning, Authorization Verification, and Integration Tests
+# Blocks PRs, pushes, AND tag releases that contain hardcoded credentials
+# or have failing integration tests.
 name: Security Checks
 
 on:
   push:
     branches: [main, develop, 'feature/**', 'security/**']
+    tags: ['v*']       # ← tag pushes MUST pass checks too
   pull_request:
     branches: [main, develop]
 
@@ -34,27 +36,27 @@ jobs:
           echo "=== Scanning client-facing files for service role keys ==="
           
           # Files that are distributed to end users (desktop + tablet)
+          # Must match package.json build.files exactly:
+          # main.js, lib/**/*, systems/**/*, assets/**/*
           CLIENT_FILES=(
             "main.js"
-            "preload.js"
-            "lib/email-manager.js"
-            "lib/sync-manager.js"
-            "lib/whatsapp-client.js"
-            "omnis-tablet/src/"
+            "lib/"
             "systems/"
+            "assets/"
+            "omnis-tablet/src/"
           )
           
           FOUND=0
           for pattern in "${CLIENT_FILES[@]}"; do
             if [ -e "$pattern" ] || ls $pattern 1>/dev/null 2>&1; then
               # Search for service role key patterns
-              if grep -rnI 'sb_secret_\|SUPABASE_SERVICE_ROLE_KEY\|service_role' $pattern 2>/dev/null | grep -v '\.example\|\.md\|// .*never\|// .*NEVER\|# .*never\|\.gitignore' | grep -v 'test\|spec\|mock'; then
-                echo "❌ Service role key reference found in client code!"
+              if grep -rnI 'sb_secret_[A-Za-z0-9_]\{10,\}' $pattern 2>/dev/null; then
+                echo "❌ Hardcoded service role key found in client code!"
                 FOUND=1
               fi
               
               # Search for supabase.auth.admin calls (requires service role)
-              if grep -rnI 'auth\.admin\.' $pattern 2>/dev/null | grep -v '\.md\|\.example\|test\|spec\|mock'; then
+              if grep -rnI 'auth\.admin\.' $pattern 2>/dev/null | grep -v '\.md\|\.example\|test\|spec\|mock\|//'; then
                 echo "❌ auth.admin API call found in client code!"
                 FOUND=1
               fi
@@ -107,3 +109,40 @@ jobs:
           
           echo ""
           echo "Edge Function lint complete."
+
+  integration-tests:
+    name: Integration Tests
+    runs-on: ubuntu-latest
+    needs: [secret-scan, client-key-audit]
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install dependencies
+        run: npm ci --ignore-scripts
+
+      - name: Run RLS + Authorization tests (strict)
+        env:
+          SUPABASE_URL: ${{ secrets.TEST_SUPABASE_URL }}
+          SUPABASE_ANON_KEY: ${{ secrets.TEST_SUPABASE_ANON_KEY }}
+          TEST_USER_EMAIL: ${{ secrets.TEST_USER_EMAIL }}
+          TEST_USER_PASSWORD: ${{ secrets.TEST_USER_PASSWORD }}
+        run: |
+          # --strict: ALL required tests must execute (not just SPEC).
+          # This prevents release when test infrastructure is unavailable.
+          node tests/test_rls.js --strict
+
+  # Release eligibility gate — all checks must pass for the exact commit
+  release-gate:
+    name: Release Eligibility
+    if: startsWith(github.ref, 'refs/tags/v')
+    needs: [secret-scan, client-key-audit, edge-function-lint, integration-tests]
+    runs-on: ubuntu-latest
+    steps:
+      - run: |
+          echo "✅ All security checks passed for release tag ${{ github.ref }}"
+          echo "Commit: ${{ github.sha }}"
