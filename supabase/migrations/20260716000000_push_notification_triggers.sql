@@ -59,11 +59,17 @@ BEGIN
 END;
 $fn$;
 
-DROP TRIGGER IF EXISTS trg_new_stock_notify ON fmb_report_machines;
-CREATE TRIGGER trg_new_stock_notify
-  AFTER INSERT ON fmb_report_machines
-  FOR EACH ROW
-  EXECUTE FUNCTION trg_notify_new_stock();
+DO $wrap$
+BEGIN
+  IF EXISTS (SELECT 1 FROM information_schema.tables WHERE table_name = 'fmb_report_machines') THEN
+    DROP TRIGGER IF EXISTS trg_new_stock_notify ON fmb_report_machines;
+    CREATE TRIGGER trg_new_stock_notify
+      AFTER INSERT ON fmb_report_machines
+      FOR EACH ROW
+      EXECUTE FUNCTION trg_notify_new_stock();
+  END IF;
+END;
+$wrap$;
 
 -- ----------------------------------------------------------------
 -- Trigger 2: Machine status or handover date changed
@@ -92,11 +98,17 @@ BEGIN
 END;
 $fn$;
 
-DROP TRIGGER IF EXISTS trg_order_changed_notify ON fmb_report_machines;
-CREATE TRIGGER trg_order_changed_notify
-  AFTER UPDATE ON fmb_report_machines
-  FOR EACH ROW
-  EXECUTE FUNCTION trg_notify_order_changed();
+DO $wrap$
+BEGIN
+  IF EXISTS (SELECT 1 FROM information_schema.tables WHERE table_name = 'fmb_report_machines') THEN
+    DROP TRIGGER IF EXISTS trg_order_changed_notify ON fmb_report_machines;
+    CREATE TRIGGER trg_order_changed_notify
+      AFTER UPDATE ON fmb_report_machines
+      FOR EACH ROW
+      EXECUTE FUNCTION trg_notify_order_changed();
+  END IF;
+END;
+$wrap$;
 
 -- ----------------------------------------------------------------
 -- Trigger 3: Enquiry status changed to 'Quoted'
@@ -118,8 +130,14 @@ BEGIN
 END;
 $fn$;
 
-DROP TRIGGER IF EXISTS trg_quotation_notify ON customer_enquiries;
-CREATE TRIGGER trg_quotation_notify
-  AFTER UPDATE ON customer_enquiries
-  FOR EACH ROW
-  EXECUTE FUNCTION trg_notify_quotation_ready();
+DO $wrap$
+BEGIN
+  IF EXISTS (SELECT 1 FROM information_schema.tables WHERE table_name = 'customer_enquiries') THEN
+    DROP TRIGGER IF EXISTS trg_quotation_notify ON customer_enquiries;
+    CREATE TRIGGER trg_quotation_notify
+      AFTER UPDATE ON customer_enquiries
+      FOR EACH ROW
+      EXECUTE FUNCTION trg_notify_quotation_ready();
+  END IF;
+END;
+$wrap$;
