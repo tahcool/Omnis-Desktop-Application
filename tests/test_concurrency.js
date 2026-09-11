@@ -17,6 +17,7 @@
  */
 
 const { createClient } = require('@supabase/supabase-js');
+const guard = require('./test_env_guard');
 
 const SUPABASE_URL = process.env.SUPABASE_URL;
 const SUPABASE_ANON_KEY = process.env.SUPABASE_ANON_KEY;
@@ -27,8 +28,8 @@ if (!SUPABASE_URL || !SUPABASE_ANON_KEY || !SUPABASE_SERVICE_KEY) {
   process.exit(1);
 }
 
-const serviceClient = createClient(SUPABASE_URL, SUPABASE_SERVICE_KEY);
-const anonClient = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+const serviceClient = createClient(SUPABASE_URL, SUPABASE_SERVICE_KEY, { auth: { persistSession: false } });
+const anonClient = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, { auth: { persistSession: false } });
 
 const RESULTS = [];
 function record(name, status, detail) {
@@ -435,6 +436,10 @@ async function main() {
   console.log('=== Concurrency & RPC Security Tests ===');
   console.log(`URL: ${SUPABASE_URL}`);
   console.log(`Time: ${new Date().toISOString()}\n`);
+
+  // Verify test environment
+  const identity = await guard.verify(serviceClient);
+  console.log(`  Environment: ${identity.hostname} (local=${identity.isLocal}, marker=${identity.markerFound})`);
 
   try {
     // Verify service client can access DB

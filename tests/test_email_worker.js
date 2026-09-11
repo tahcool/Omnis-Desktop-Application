@@ -31,7 +31,8 @@ function record(name, status, detail) {
   console.log(`  ${icon} [${status}] ${name}: ${detail}`);
 }
 
-/** Insert a test email into the queue */
+/** Insert a test email into the queue using the DATABASE clock for scheduled_for.
+ *  This ensures the worker's `lte("scheduled_for", now)` filter sees the same clock. */
 async function insertEmail(overrides = {}) {
   const row = {
     system: 'fleetrack',
@@ -40,13 +41,22 @@ async function insertEmail(overrides = {}) {
     body_html: '<p>Test body</p>',
     body_text: 'Test body',
     status: 'pending',
-    scheduled_for: new Date().toISOString(),
     created_by: 'test@test.local',
     ...overrides,
   };
-  const { data, error } = await sb.from('omnis_email_queue').insert(row).select('id').single();
+  // Use 'now()' as default for scheduled_for — this is the DB clock, not the Node.js clock.
+  // The worker Edge Function creates its own `now` from the Deno runtime, which shares
+  // the Docker clock with Postgres. Using the DB clock eliminates Node-vs-Docker skew.
+  if (!overrides.scheduled_for) {
+    // Insert without scheduled_for — the column default is now()
+    const { data, error } = await sb.from('omnis_email_queue').insert(row).select('id, scheduled_for').single();
+    if (error) throw new Error(`Failed to insert test email: ${error.message}`);
+    return { ...row, id: data.id, scheduled_for: data.scheduled_for };
+  }
+  // Explicit override (e.g., for future-scheduled tests)
+  const { data, error } = await sb.from('omnis_email_queue').insert({ ...row }).select('id, scheduled_for').single();
   if (error) throw new Error(`Failed to insert test email: ${error.message}`);
-  return { ...row, id: data.id };
+  return { ...row, id: data.id, scheduled_for: data.scheduled_for };
 }
 
 /** Call the process-email-queue function */

@@ -261,13 +261,18 @@ async function isBanned(userId) {
   // ── Test 7: Audit trail for compensation (STRICT) ──
   // The admin-operations function writes to omnis_audit_trail with:
   //   action_type = 'admin:<action>', user_id, user_email, target_user_id, details (JSONB)
-  // We perform a unique suspend operation and verify its audit record exists.
+  // We perform a unique suspend operation on a freshly created target and verify
+  // the audit record by matching actor + action + target (not just timestamp).
 
   try {
     // Create a uniquely identifiable target for this audit test
     const auditTargetEmail = `comp_audit_${Date.now()}@test.local`;
     const auditTargetId = await createTestTarget(auditTargetEmail, false);
-    const auditTimestamp = new Date().toISOString();
+
+    // Record the timestamp BEFORE the operation, with a 2-second backward buffer
+    // to handle sub-second clock differences between Node.js host and Docker DB.
+    // The unique target_user_id is the primary correlation key, not the timestamp.
+    const auditTimestamp = new Date(Date.now() - 2000).toISOString();
 
     // Perform a suspend — this MUST produce an audit record
     const auditResult = await callAdminOp(adminToken, { action: 'suspendUser', userId: auditTargetId });
@@ -276,10 +281,10 @@ async function isBanned(userId) {
       record('comp_audit_trail', 'FAIL',
         `Suspend operation failed — cannot verify audit: ${auditResult.data.error}`);
     } else {
-      // Bounded polling: check for audit record (max 3 attempts, 500ms apart)
+      // Bounded polling: check for audit record (max 5 attempts, 500ms apart)
       let auditFound = null;
       let auditErr = null;
-      for (let attempt = 0; attempt < 3; attempt++) {
+      for (let attempt = 0; attempt < 5; attempt++) {
         if (attempt > 0) await new Promise(r => setTimeout(r, 500));
         const { data, error } = await sb.from('omnis_audit_trail')
           .select('action_type, user_id, user_email, target_user_id, details, created_at')
@@ -298,8 +303,14 @@ async function isBanned(userId) {
         record('comp_audit_trail', 'FAIL',
           `Audit query failed: ${auditErr.message} (table may not exist — this is a required component)`);
       } else if (!auditFound) {
+        // Diagnostic: check if ANY audit records exist for this target without timestamp filter
+        const { data: anyRecords } = await sb.from('omnis_audit_trail')
+          .select('action_type, created_at')
+          .eq('target_user_id', auditTargetId)
+          .limit(5);
         record('comp_audit_trail', 'FAIL',
-          `No audit record found for suspendUser on target ${auditTargetId} after ${auditTimestamp}`);
+          `No audit record for suspendUser on target ${auditTargetId} after ${auditTimestamp}. ` +
+          `Records for this target: ${JSON.stringify(anyRecords || [])}`);
       } else {
         // Verify fields
         const details = typeof auditFound.details === 'string'
@@ -312,7 +323,8 @@ async function isBanned(userId) {
         record('comp_audit_trail', allCorrect ? 'PASS' : 'FAIL',
           `actor=${auditFound.user_email} (expect ${adminEmail}), ` +
           `target=${auditFound.target_user_id} (expect ${auditTargetId}), ` +
-          `result=${details?.result} (expect success)`);
+          `result=${details?.result} (expect success), ` +
+          `db_ts=${auditFound.created_at}, filter_ts=${auditTimestamp}`);
       }
     }
 

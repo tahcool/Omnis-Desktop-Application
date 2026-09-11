@@ -13,6 +13,8 @@
  */
 
 const { createClient } = require('@supabase/supabase-js');
+const mock = require('./mock_openai');
+const MOCK_PORT = parseInt(process.env.MOCK_PORT || '9876');
 
 const SUPABASE_URL = process.env.SUPABASE_URL || 'http://127.0.0.1:54321';
 const ANON_KEY = process.env.SUPABASE_ANON_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS1kZW1vIiwicm9sZSI6ImFub24iLCJleHAiOjE5ODM4MTI5OTZ9.CRXP1A7WO_o0BopYoAhfVB78Yc2BMF-4kICDXXk-2nQ';
@@ -145,57 +147,69 @@ async function ensureTestUsers() {
       `Status ${status}: ${data.error}`);
   } catch (e) { record('ai_missing_fields', 'FAIL', e.message); }
 
-  // ── Authorization Tests ──
+  // ── Authorization Tests (before mock — denied requests must not reach provider) ──
 
   console.log('\n-- Authorization Tests --');
 
-  // 6. Admin-only action by non-admin
+  // Start mock to track hits. Unauthorized requests must produce zero hits.
+  let mockServer;
   try {
+    mockServer = await mock.start(MOCK_PORT);
+  } catch (e) {
+    console.error(`  FATAL: Could not start mock server on port ${MOCK_PORT}: ${e.message}`);
+    process.exit(3);
+  }
+
+  // 6. Admin-only action by non-admin — must be rejected, zero mock hits
+  try {
+    mock.resetHitCount();
     const { status, data } = await callProxy(userToken, { action: 'test_connection' });
-    record('ai_admin_action_denied', status === 403 ? 'PASS' : 'FAIL',
-      `Status ${status}: ${data.error}`);
+    const hitsAfter = mock.getHitCount();
+    const authOk = status === 403;
+    const noLeak = hitsAfter === 0;
+    record('ai_admin_action_denied', authOk && noLeak ? 'PASS' : 'FAIL',
+      `Status ${status}: ${data.error}, mock hits: ${hitsAfter} (expect 0)`);
   } catch (e) { record('ai_admin_action_denied', 'FAIL', e.message); }
 
-  // 7. Admin-only action by admin (may fail with 500/502/503 if no OpenAI key or mock unreachable)
+  // ── Success-Path Tests (mock provider running) ──
+
+  console.log('\n-- Success-Path Tests (Mock Provider) --');
+
+  // 7. Admin-only action by admin — assert real 200 with response contract
   try {
+    mock.resetHitCount();
     const { status, data } = await callProxy(adminToken, { action: 'test_connection' });
-    // Accept 200 (key configured), 500 (mock unreachable), 502/503 (key not configured)
-    // Any of these prove authorization passed — the request reached the provider stage.
-    const passed = status === 200 || status === 500 || status === 502 || status === 503;
-    record('ai_admin_action_allowed', passed ? 'PASS' : 'FAIL',
-      `Status ${status}: ${data.error || data.ok || 'authorized'}`);
+    const mockHit = mock.getHitCount() > 0;
+    const ok = status === 200 && data.ok === true && data.result?.ok === true;
+    record('ai_admin_action_allowed', ok && mockHit ? 'PASS' : 'FAIL',
+      `Status ${status}, ok: ${data.ok}, result.ok: ${data.result?.ok}, mockHit: ${mockHit}`);
   } catch (e) { record('ai_admin_action_allowed', 'FAIL', e.message); }
 
-  // ── Provider Error Handling ──
-
-  console.log('\n-- Provider Error Handling --');
-
-  // 8. Non-admin permitted action — will fail with 500/503 (mock unreachable or no key)
-  //    Proves input validation and auth passed — request reached provider stage.
+  // 8. magic_fill — assert successful extraction
   try {
     const { status, data } = await callProxy(userToken, { action: 'magic_fill', text: 'quote for 2 excavators' });
-    const passed = status === 200 || status === 500 || status === 502 || status === 503;
-    record('ai_permitted_action', passed ? 'PASS' : 'FAIL',
-      `Status ${status}: ${data.error || JSON.stringify(data.result)?.substring(0, 80)}`);
+    const ok = status === 200 && data.ok === true && data.result?.customer;
+    record('ai_permitted_action', ok ? 'PASS' : 'FAIL',
+      `Status ${status}, ok: ${data.ok}, customer: ${data.result?.customer}`);
   } catch (e) { record('ai_permitted_action', 'FAIL', e.message); }
 
-  // 9. Smart title action
+  // 9. smart_title — assert title in result
   try {
     const { status, data } = await callProxy(userToken, { action: 'smart_title', customer: 'Acme Corp', item: 'CAT D6 Bulldozer' });
-    const passed = status === 200 || status === 500 || status === 502 || status === 503;
-    record('ai_smart_title', passed ? 'PASS' : 'FAIL',
-      `Status ${status}: ${data.error || JSON.stringify(data.result)?.substring(0, 80)}`);
+    const ok = status === 200 && data.ok === true && data.result?.title;
+    record('ai_smart_title', ok ? 'PASS' : 'FAIL',
+      `Status ${status}, ok: ${data.ok}, title: ${data.result?.title?.substring(0, 60)}`);
   } catch (e) { record('ai_smart_title', 'FAIL', e.message); }
 
-  // 10. Quotation intelligence
+  // 10. quotation_intelligence — assert insights
   try {
     const { status, data } = await callProxy(userToken, {
       action: 'quotation_intelligence',
       customer: 'Test Client', item: 'Excavator', price: 50000, context: 'test',
     });
-    const passed = status === 200 || status === 500 || status === 502 || status === 503;
-    record('ai_quotation_intel', passed ? 'PASS' : 'FAIL',
-      `Status ${status}: ${data.error || 'ok'}`);
+    const ok = status === 200 && data.ok === true && data.result?.insights;
+    record('ai_quotation_intel', ok ? 'PASS' : 'FAIL',
+      `Status ${status}, ok: ${data.ok}, insights: ${data.result?.insights?.substring(0, 60)}`);
   } catch (e) { record('ai_quotation_intel', 'FAIL', e.message); }
 
   // ── Response Format Tests ──
@@ -210,7 +224,7 @@ async function ensureTestUsers() {
       `Has availableActions: ${hasAvailable}, count: ${data.availableActions?.length}`);
   } catch (e) { record('ai_error_format', 'FAIL', e.message); }
 
-  // 12. No SMTP/OpenAI credentials in error responses
+  // 12. No credentials leak in success responses
   try {
     const { status, data } = await callProxy(userToken, { action: 'magic_fill', text: 'test' });
     const body = JSON.stringify(data);
@@ -218,6 +232,9 @@ async function ensureTestUsers() {
     record('ai_no_creds_leak', !hasCreds ? 'PASS' : 'FAIL',
       `Credentials in response: ${hasCreds}`);
   } catch (e) { record('ai_no_creds_leak', 'FAIL', e.message); }
+
+  // Stop mock server
+  await mock.stop(mockServer);
 
   // ── Legacy Key Protection ──
 
@@ -248,6 +265,7 @@ async function ensureTestUsers() {
   const pass = results.filter(r => r.status === 'PASS').length;
   const fail = results.filter(r => r.status === 'FAIL').length;
   console.log(`  Total: ${results.length} | Pass: ${pass} | Fail: ${fail}`);
+  console.log(JSON.stringify({ suite: 'test_ai_proxy', pass, fail, total: results.length }));
 
   if (fail > 0) {
     console.log('\nFAILURES:');

@@ -20,6 +20,7 @@
 
 const http = require('http');
 const { createClient } = require('@supabase/supabase-js');
+const mock = require('./mock_openai');
 
 const SUPABASE_URL = process.env.SUPABASE_URL || 'http://127.0.0.1:54321';
 const ANON_KEY = process.env.SUPABASE_ANON_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS1kZW1vIiwicm9sZSI6ImFub24iLCJleHAiOjE5ODM4MTI5OTZ9.CRXP1A7WO_o0BopYoAhfVB78Yc2BMF-4kICDXXk-2nQ';
@@ -31,93 +32,6 @@ function record(name, status, detail) {
   results.push({ name, status, detail });
   const icon = status === 'PASS' ? '✅' : '❌';
   console.log(`  ${icon} [${status}] ${name}: ${detail}`);
-}
-
-// ── Mock OpenAI Server ──────────────────────────────────────────────
-// Returns deterministic JSON responses based on the action's system prompt.
-
-function buildMockResponse(body) {
-  const messages = body.messages || [];
-  const systemPrompt = (messages.find(m => m.role === 'system') || {}).content || '';
-  const userPrompt = (messages.find(m => m.role === 'user') || {}).content || '';
-
-  // Determine which action this is from the system prompt
-  let content;
-
-  if (systemPrompt.includes('quotation data extraction')) {
-    // magic_fill
-    content = JSON.stringify({
-      customer: 'Test Corp',
-      salesperson: 'John Smith',
-      item_code: 'CAT D6',
-      price: 150000,
-      lead_time: '4 Weeks',
-    });
-  } else if (systemPrompt.includes('professional titles')) {
-    // smart_title
-    content = JSON.stringify({
-      title: 'Heavy Equipment Supply Quotation — Test Client',
-    });
-  } else if (systemPrompt.includes('sales intelligence')) {
-    // quotation_intelligence
-    content = JSON.stringify({
-      insights: 'Competitive pricing for this market segment. Recommend volume discount.',
-      suggestedPrice: 145000,
-      competitorInfo: 'Similar models range $140k-$160k in this region.',
-      negotiationTips: ['Offer extended warranty', 'Bundle service package'],
-    });
-  } else if (systemPrompt.includes('sales analytics')) {
-    // order_intelligence
-    content = JSON.stringify({
-      insights: 'Strong Q3 performance. 15% growth over previous quarter.',
-      recommendations: ['Increase stock levels for excavators', 'Expand dealer network'],
-    });
-  } else if (systemPrompt.includes('test assistant')) {
-    // test_connection
-    content = JSON.stringify({ ok: true, message: 'Connection successful' });
-  } else {
-    content = JSON.stringify({ error: 'Unknown action in mock' });
-  }
-
-  return {
-    id: `chatcmpl-mock-${Date.now()}`,
-    object: 'chat.completion',
-    created: Math.floor(Date.now() / 1000),
-    model: body.model || 'gpt-4o-mini',
-    choices: [{
-      index: 0,
-      message: { role: 'assistant', content },
-      finish_reason: 'stop',
-    }],
-    usage: { prompt_tokens: 50, completion_tokens: 30, total_tokens: 80 },
-  };
-}
-
-function startMockServer() {
-  return new Promise((resolve) => {
-    const server = http.createServer((req, res) => {
-      let body = '';
-      req.on('data', chunk => { body += chunk; });
-      req.on('end', () => {
-        // Verify the Authorization header contains our mock key
-        const auth = req.headers.authorization || '';
-        if (!auth.includes('sk-mock-test-key-not-real')) {
-          res.writeHead(401, { 'Content-Type': 'application/json' });
-          res.end(JSON.stringify({ error: { message: 'Invalid API key', type: 'invalid_request_error' } }));
-          return;
-        }
-
-        const parsed = JSON.parse(body);
-        const response = buildMockResponse(parsed);
-        res.writeHead(200, { 'Content-Type': 'application/json' });
-        res.end(JSON.stringify(response));
-      });
-    });
-    server.listen(MOCK_PORT, '0.0.0.0', () => {
-      console.log(`  Mock OpenAI server listening on port ${MOCK_PORT}`);
-      resolve(server);
-    });
-  });
 }
 
 // ── Test Helpers ─────────────────────────────────────────────────────
@@ -177,7 +91,7 @@ async function ensureTestUsers() {
   console.log('============================================================');
 
   // Start mock server
-  const mockServer = await startMockServer();
+  const mockServer = await mock.start(MOCK_PORT);
 
   try {
     // Pre-flight: verify ai-proxy is accessible
@@ -329,7 +243,7 @@ async function ensureTestUsers() {
 
   } finally {
     // Shutdown mock server
-    mockServer.close();
+    await mock.stop(mockServer);
   }
 
   // ── Summary ──

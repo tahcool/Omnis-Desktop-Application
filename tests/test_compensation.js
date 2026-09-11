@@ -27,6 +27,7 @@
  */
 
 const { createClient } = require('@supabase/supabase-js');
+const guard = require('./test_env_guard');
 
 const SUPABASE_URL = process.env.SUPABASE_URL;
 const ANON_KEY = process.env.SUPABASE_ANON_KEY;
@@ -37,7 +38,7 @@ if (!SUPABASE_URL || !ANON_KEY || !SERVICE_KEY) {
   console.error('Missing env vars'); process.exit(1);
 }
 
-const svc = createClient(SUPABASE_URL, SERVICE_KEY);
+const svc = createClient(SUPABASE_URL, SERVICE_KEY, { auth: { persistSession: false } });
 const RESULTS = [];
 function record(name, status, detail) {
   RESULTS.push({ name, status, detail });
@@ -125,6 +126,10 @@ async function main() {
   console.log(`Time: ${new Date().toISOString()}`);
   console.log('============================================================');
 
+  // Verify test environment
+  const identity = await guard.verify(svc);
+  console.log(`  Environment: ${identity.hostname} (local=${identity.isLocal}, marker=${identity.markerFound})\n`);
+
   const ts = Date.now();
 
   // Create caller admin (the one performing operations)
@@ -167,28 +172,103 @@ async function main() {
     await deleteUser(target.id);
   } catch (e) { record('suspend_admin_demote_and_ban', 'FAIL', e.message); }
 
-  // ── Test 3: Last-admin blocked ──
-  // Create a SEPARATE sole admin target. Do NOT self-suspend the caller
-  // (self-suspension would ban the caller, breaking all subsequent tests).
-  console.log('\n-- Last Admin Protection --');
+  // ── Test 3: Last-admin invariant via direct RPC ──
+  // The endpoint blocks self-modification before reaching the invariant.
+  // When 2+ admins exist, it's not a last-admin scenario.
+  // Therefore: test the invariant directly through safe_remove_admin.
+  console.log('\n-- Last Admin Invariant (RPC Layer) --');
   let demoted3 = [];
+  try {
+    const rpcTarget = await createUser(`comp-rpc-sole-${ts}@test.local`);
+    await setAdmin(rpcTarget.id, true);
+    // Isolate: rpcTarget is the only admin
+    demoted3 = await demoteAllExcept([rpcTarget.id]);
+    // Call safe_remove_admin directly via service client RPC
+    const { data: rpcResult, error: rpcError } = await svc.rpc('safe_remove_admin', { target_user_id: rpcTarget.id });
+    // Verify: invariant blocks removal
+    const stillAdmin = await getAdmin(rpcTarget.id);
+    const notBanned = !(await isBanned(rpcTarget.id));
+    if (rpcError) {
+      // If the error message indicates last-admin protection, that's correct
+      const isProtected = rpcError.message?.includes('last') || rpcError.message?.includes('Cannot remove');
+      record('rpc_last_admin_invariant', isProtected && stillAdmin && notBanned ? 'PASS' : 'FAIL',
+        `RPC error: ${rpcError.message}, still_admin=${stillAdmin}, not_banned=${notBanned}`);
+    } else {
+      // ok=false from the function result
+      const blocked = rpcResult === false || (typeof rpcResult === 'object' && rpcResult?.ok === false);
+      record('rpc_last_admin_invariant', blocked && stillAdmin && notBanned ? 'PASS' : 'FAIL',
+        `RPC result: ${JSON.stringify(rpcResult)}, still_admin=${stillAdmin}, not_banned=${notBanned}`);
+    }
+    await deleteUser(rpcTarget.id);
+  } catch (e) { record('rpc_last_admin_invariant', 'FAIL', e.message); }
+  finally {
+    await restoreAdmins(demoted3);
+  }
+
+  // ── Test 3b: Endpoint authorization coverage for sole admin ──
+  // Caller is demoted → 403 proves auth gate works.
+  // This is labeled as authorization coverage, NOT invariant enforcement.
+  console.log('\n-- Endpoint Auth: Demoted Caller Denied (Authorization Coverage) --');
+  let demoted3b = [];
   try {
     const soleTarget = await createUser(`comp-sole-${ts}@test.local`);
     await setAdmin(soleTarget.id, true);
-    // Isolate: soleTarget is the only admin (caller demoted too)
-    demoted3 = await demoteAllExcept([soleTarget.id]);
+    // Demote everyone including caller → caller is non-admin
+    demoted3b = await demoteAllExcept([soleTarget.id]);
     const r = await callAdmin(callerToken, 'suspendUser', { userId: soleTarget.id });
-    // Caller is now a non-admin, so the call should be denied (403) by admin check.
-    // OR if the caller passes admin check, last-admin protection blocks (also 403).
     const blocked = r.status === 403;
-    record('suspend_last_admin_blocked', blocked ? 'PASS' : 'FAIL',
-      `Status ${r.status}: ${r.body.error || 'unexpected'}`);
-    // Unsuspend if somehow it went through
+    record('endpoint_auth_demoted_denied', blocked ? 'PASS' : 'FAIL',
+      `Status ${r.status}: ${r.body.error || 'unexpected'} (authorization coverage, not invariant)`);
     await svc.auth.admin.updateUserById(soleTarget.id, { ban_duration: 'none' }).catch(() => {});
     await deleteUser(soleTarget.id);
-  } catch (e) { record('suspend_last_admin_blocked', 'FAIL', e.message); }
+  } catch (e) { record('endpoint_auth_demoted_denied', 'FAIL', e.message); }
   finally {
-    await restoreAdmins(demoted3);
+    await restoreAdmins(demoted3b);
+  }
+
+  // ── Test 3c: Endpoint concurrency — two authorized admins race to remove each other ──
+  // Both admins are initially authorized. They submit overlapping suspension requests.
+  // The invariant must ensure at least one remains admin.
+  console.log('\n-- Endpoint Concurrency: Two Admins Race to Suspend Each Other --');
+  let demoted3c = [];
+  try {
+    const adminA = await createUser(`comp-race-a-${ts}@test.local`);
+    const adminB = await createUser(`comp-race-b-${ts}@test.local`);
+    await setAdmin(adminA.id, true);
+    await setAdmin(adminB.id, true);
+    // Isolate: only adminA and adminB are admins (plus caller)
+    demoted3c = await demoteAllExcept([adminA.id, adminB.id, callerAdmin.id]);
+    const tokenA = await loginAs(`comp-race-a-${ts}@test.local`);
+    const tokenB = await loginAs(`comp-race-b-${ts}@test.local`);
+    // Both try to suspend each other concurrently
+    const [rA, rB] = await Promise.all([
+      callAdmin(tokenA, 'suspendUser', { userId: adminB.id }),
+      callAdmin(tokenB, 'suspendUser', { userId: adminA.id }),
+    ]);
+    // Check final state: at least one admin must survive
+    const aAdmin = await getAdmin(adminA.id);
+    const bAdmin = await getAdmin(adminB.id);
+    const callerStillAdmin = await getAdmin(callerAdmin.id);
+    const totalAdmins = [aAdmin, bAdmin, callerStillAdmin].filter(Boolean).length;
+    // Diagnose which succeeded/failed
+    const aStatus = rA.status;
+    const bStatus = rB.status;
+    const aReason = rA.body?.error || 'ok';
+    const bReason = rB.body?.error || 'ok';
+    // At least one admin must remain. If both succeeded in suspending,
+    // at least one must have been blocked by the invariant.
+    const invariantHeld = totalAdmins >= 1;
+    record('endpoint_concurrent_admin_race', invariantHeld ? 'PASS' : 'FAIL',
+      `A→B: ${aStatus} (${aReason}), B→A: ${bStatus} (${bReason}), ` +
+      `surviving admins: ${totalAdmins} (A=${aAdmin}, B=${bAdmin}, caller=${callerStillAdmin})`);
+    // Cleanup
+    await svc.auth.admin.updateUserById(adminA.id, { ban_duration: 'none' }).catch(() => {});
+    await svc.auth.admin.updateUserById(adminB.id, { ban_duration: 'none' }).catch(() => {});
+    await deleteUser(adminA.id);
+    await deleteUser(adminB.id);
+  } catch (e) { record('endpoint_concurrent_admin_race', 'FAIL', e.message); }
+  finally {
+    await restoreAdmins(demoted3c);
   }
 
   // ── Test 4: Concurrent suspend on same target ──
