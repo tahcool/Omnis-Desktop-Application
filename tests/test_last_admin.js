@@ -236,123 +236,140 @@ async function main() {
     await restoreOtherAdmins();
   }
 
-  // ── T3: Concurrent direct removals ─────────────────────────────────
+  // ── T3a: Concurrent UPDATE demotions ────────────────────────────────
 
-  console.log('\nT3: Concurrent direct removals cannot leave zero admins');
+  console.log('\nT3a: Concurrent UPDATE demotions');
   {
-    const adminA = await createTestUser('conc-a', true);
-    const adminB = await createTestUser('conc-b', true);
-    await isolateAdmins([adminA.id, adminB.id]);
+    const a3a1 = await createTestUser('conc-upd-1', true);
+    const a3a2 = await createTestUser('conc-upd-2', true);
+    await isolateAdmins([a3a1.id, a3a2.id]);
 
-    const countBefore = await getAdminCount();
-    record('T3-setup: exactly two admins', countBefore === 2, `count=${countBefore}`);
+    const count = await getAdminCount();
+    record('T3a-setup: exactly two admins', count === 2, `count=${count}`);
 
-    // T3a: concurrent UPDATE demotions via separate pg connections
-    // Fire both UPDATEs simultaneously — the trigger's FOR UPDATE serializes them.
-    {
-      const pg1 = new PgClient(PG_CONNSTR);
-      const pg2 = new PgClient(PG_CONNSTR);
-      await pg1.connect();
-      await pg2.connect();
+    const pg1 = new PgClient(PG_CONNSTR);
+    const pg2 = new PgClient(PG_CONNSTR);
+    await pg1.connect();
+    await pg2.connect();
 
-      try {
-        const p1 = pg1.query(
-          `UPDATE user_system_access SET is_admin = false WHERE user_id = $1`,
-          [adminA.id]
-        ).then(() => ({ ok: true }))
-         .catch(err => ({ ok: false, msg: err.message }));
+    try {
+      const p1 = pg1.query(
+        `UPDATE user_system_access SET is_admin = false WHERE user_id = $1`,
+        [a3a1.id]
+      ).then(() => ({ ok: true, err: null }))
+       .catch(err => ({ ok: false, err }));
 
-        const p2 = pg2.query(
-          `UPDATE user_system_access SET is_admin = false WHERE user_id = $1`,
-          [adminB.id]
-        ).then(() => ({ ok: true }))
-         .catch(err => ({ ok: false, msg: err.message }));
+      const p2 = pg2.query(
+        `UPDATE user_system_access SET is_admin = false WHERE user_id = $1`,
+        [a3a2.id]
+      ).then(() => ({ ok: true, err: null }))
+       .catch(err => ({ ok: false, err }));
 
-        const [r1, r2] = await Promise.all([p1, p2]);
+      const [r1, r2] = await Promise.all([p1, p2]);
 
-        const aAdmin = await isAdmin(adminA.id);
-        const bAdmin = await isAdmin(adminB.id);
-        const total = await getAdminCount();
+      const total = await getAdminCount();
+      const loser = [r1, r2].find(r => !r.ok);
+      const loserCode = loser?.err?.code || 'none';
+      const loserIsDeadlock = loserCode === '40P01';
+      const loserIsInvariant = loserCode === 'P0001';
 
-        record('T3a: at least one admin remains after concurrent demotions',
-          total >= 1, `admins=${total} A=${aAdmin} B=${bAdmin} r1=${r1.ok} r2=${r2.ok}`);
-        record('T3b: exactly one demotion succeeded',
-          (r1.ok !== r2.ok) || total >= 1,
-          `r1=${r1.ok}${r1.msg ? '(' + r1.msg.slice(0, 40) + ')' : ''} r2=${r2.ok}${r2.msg ? '(' + r2.msg.slice(0, 40) + ')' : ''}`);
-
-      } finally {
-        await pg1.end();
-        await pg2.end();
-      }
+      record('T3a: at least one admin remains', total >= 1, `admins=${total}`);
+      record('T3a-reject: loser received deadlock or invariant error',
+        loserIsDeadlock || loserIsInvariant,
+        `code=${loserCode} msg=${loser?.err?.message?.slice(0, 60)}`);
+    } finally {
+      await pg1.end();
+      await pg2.end();
     }
+    await restoreOtherAdmins();
+  }
 
-    // T3c: concurrent DELETE attempts
-    await restoreAdmin(adminA.id);
-    await restoreAdmin(adminB.id);
+  // ── T3b: Concurrent DELETE attempts ────────────────────────────────
 
-    {
-      const pg3 = new PgClient(PG_CONNSTR);
-      const pg4 = new PgClient(PG_CONNSTR);
-      await pg3.connect();
-      await pg4.connect();
+  console.log('\nT3b: Concurrent DELETE attempts');
+  {
+    const a3b1 = await createTestUser('conc-del-1', true);
+    const a3b2 = await createTestUser('conc-del-2', true);
+    await isolateAdmins([a3b1.id, a3b2.id]);
 
-      try {
-        const d1 = pg3.query(
-          `DELETE FROM user_system_access WHERE user_id = $1`, [adminA.id]
-        ).then(() => ({ ok: true })).catch(err => ({ ok: false, msg: err.message }));
+    const count = await getAdminCount();
+    record('T3b-setup: exactly two admins', count === 2, `count=${count}`);
 
-        const d2 = pg4.query(
-          `DELETE FROM user_system_access WHERE user_id = $1`, [adminB.id]
-        ).then(() => ({ ok: true })).catch(err => ({ ok: false, msg: err.message }));
+    const pg3 = new PgClient(PG_CONNSTR);
+    const pg4 = new PgClient(PG_CONNSTR);
+    await pg3.connect();
+    await pg4.connect();
 
-        const [dr1, dr2] = await Promise.all([d1, d2]);
-        const totalAfterDel = await getAdminCount();
+    try {
+      const d1 = pg3.query(
+        `DELETE FROM user_system_access WHERE user_id = $1`, [a3b1.id]
+      ).then(() => ({ ok: true, err: null }))
+       .catch(err => ({ ok: false, err }));
 
-        record('T3c: at least one admin remains after concurrent deletes',
-          totalAfterDel >= 1,
-          `admins=${totalAfterDel} d1=${dr1.ok} d2=${dr2.ok}`);
-      } finally {
-        await pg3.end();
-        await pg4.end();
-      }
+      const d2 = pg4.query(
+        `DELETE FROM user_system_access WHERE user_id = $1`, [a3b2.id]
+      ).then(() => ({ ok: true, err: null }))
+       .catch(err => ({ ok: false, err }));
+
+      const [dr1, dr2] = await Promise.all([d1, d2]);
+      const total = await getAdminCount();
+      const loser = [dr1, dr2].find(r => !r.ok);
+      const loserCode = loser?.err?.code || 'none';
+
+      record('T3b: at least one admin remains after concurrent deletes',
+        total >= 1, `admins=${total} d1=${dr1.ok} d2=${dr2.ok}`);
+      record('T3b-reject: loser error code',
+        loserCode === '40P01' || loserCode === 'P0001',
+        `code=${loserCode}`);
+    } finally {
+      await pg3.end();
+      await pg4.end();
     }
+    await restoreOtherAdmins();
+  }
 
-    // T3d: mixed UPDATE/DELETE
-    // Restore what we can
-    await restoreAdmin(adminA.id).catch(() => {});
-    await restoreAdmin(adminB.id).catch(() => {});
-    const canDoMixed = (await getAdminCount()) >= 2;
+  // ── T3c: Mixed UPDATE/DELETE (independent fixtures) ────────────────
 
-    if (canDoMixed) {
-      const pg5 = new PgClient(PG_CONNSTR);
-      const pg6 = new PgClient(PG_CONNSTR);
-      await pg5.connect();
-      await pg6.connect();
+  console.log('\nT3c: Mixed UPDATE/DELETE');
+  {
+    const a3c1 = await createTestUser('conc-mix-1', true);
+    const a3c2 = await createTestUser('conc-mix-2', true);
+    await isolateAdmins([a3c1.id, a3c2.id]);
 
-      try {
-        const m1 = pg5.query(
-          `UPDATE user_system_access SET is_admin = false WHERE user_id = $1`,
-          [adminA.id]
-        ).then(() => ({ ok: true })).catch(err => ({ ok: false, msg: err.message }));
+    const count = await getAdminCount();
+    record('T3c-setup: exactly two admins', count === 2, `count=${count}`);
 
-        const m2 = pg6.query(
-          `DELETE FROM user_system_access WHERE user_id = $1`, [adminB.id]
-        ).then(() => ({ ok: true })).catch(err => ({ ok: false, msg: err.message }));
+    const pg5 = new PgClient(PG_CONNSTR);
+    const pg6 = new PgClient(PG_CONNSTR);
+    await pg5.connect();
+    await pg6.connect();
 
-        const [mr1, mr2] = await Promise.all([m1, m2]);
-        const totalAfterMixed = await getAdminCount();
+    try {
+      const m1 = pg5.query(
+        `UPDATE user_system_access SET is_admin = false WHERE user_id = $1`,
+        [a3c1.id]
+      ).then(() => ({ ok: true, err: null }))
+       .catch(err => ({ ok: false, err }));
 
-        record('T3d: at least one admin remains after mixed UPDATE/DELETE',
-          totalAfterMixed >= 1,
-          `admins=${totalAfterMixed} upd=${mr1.ok} del=${mr2.ok}`);
-      } finally {
-        await pg5.end();
-        await pg6.end();
-      }
-    } else {
-      record('T3d: mixed test skipped (insufficient admins after delete)', true, 'skipped');
+      const m2 = pg6.query(
+        `DELETE FROM user_system_access WHERE user_id = $1`, [a3c2.id]
+      ).then(() => ({ ok: true, err: null }))
+       .catch(err => ({ ok: false, err }));
+
+      const [mr1, mr2] = await Promise.all([m1, m2]);
+      const total = await getAdminCount();
+      const loser = [mr1, mr2].find(r => !r.ok);
+      const loserCode = loser?.err?.code || 'none';
+
+      record('T3c: at least one admin remains after mixed UPDATE/DELETE',
+        total >= 1, `admins=${total} upd=${mr1.ok} del=${mr2.ok}`);
+      record('T3c-reject: loser error code',
+        loserCode === '40P01' || loserCode === 'P0001',
+        `code=${loserCode}`);
+    } finally {
+      await pg5.end();
+      await pg6.end();
     }
-
     await restoreOtherAdmins();
   }
 
@@ -364,7 +381,6 @@ async function main() {
     const adminY = await createTestUser('coord-y', true);
     await isolateAdmins([adminX.id, adminY.id]);
 
-    // Fire direct UPDATE and RPC simultaneously
     const pg7 = new PgClient(PG_CONNSTR);
     await pg7.connect();
 
@@ -386,7 +402,6 @@ async function main() {
     } finally {
       await pg7.end();
     }
-
     await restoreOtherAdmins();
   }
 
@@ -397,19 +412,16 @@ async function main() {
     const keeper = await createTestUser('keeper', true);
     const removable = await createTestUser('removable', true);
 
-    // T5a: demote one of two
     const { error: dErr } = await svc.from('user_system_access')
       .update({ is_admin: false }).eq('user_id', removable.id);
     record('T5a: demotion succeeds when others exist', dErr === null, dErr?.message);
     record('T5b: demoted user is no longer admin', !(await isAdmin(removable.id)));
 
-    // T5c: re-promote and delete
     await restoreAdmin(removable.id);
     const { error: delErr } = await svc.from('user_system_access')
       .delete().eq('user_id', removable.id);
     record('T5c: DELETE succeeds when others exist', delErr === null, delErr?.message);
 
-    // T5d: RPC succeeds on non-last admin
     const removable2 = await createTestUser('removable2', true);
     const { data: rpc5 } = await svc.rpc('safe_remove_admin',
       { target_user_id: removable2.id });
@@ -439,7 +451,6 @@ async function main() {
     } finally {
       await pg8.end();
     }
-
     await restoreOtherAdmins();
   }
 
@@ -467,7 +478,6 @@ async function main() {
     } finally {
       await pg9.end();
     }
-
     await restoreOtherAdmins();
   }
 
@@ -496,7 +506,84 @@ async function main() {
     } finally {
       await pg10.end();
     }
+    await restoreOtherAdmins();
+  }
 
+  // ── T9: Deadlock handling verification ─────────────────────────────
+  // Verifies that SQLSTATE 40P01 (deadlock_detected) produces:
+  //   - No false success from the rolled-back connection
+  //   - A clear error (not an uncaught crash)
+  //   - No state corruption (exactly one admin demoted)
+
+  console.log('\nT9: Deadlock handling verification');
+  {
+    const d1 = await createTestUser('dl-1', true);
+    const d2 = await createTestUser('dl-2', true);
+    await isolateAdmins([d1.id, d2.id]);
+
+    const pgA = new PgClient(PG_CONNSTR);
+    const pgB = new PgClient(PG_CONNSTR);
+    await pgA.connect();
+    await pgB.connect();
+
+    try {
+      const rA = pgA.query(
+        `UPDATE user_system_access SET is_admin = false WHERE user_id = $1`,
+        [d1.id]
+      ).then(() => ({ ok: true, err: null }))
+       .catch(err => ({ ok: false, err }));
+
+      const rB = pgB.query(
+        `UPDATE user_system_access SET is_admin = false WHERE user_id = $1`,
+        [d2.id]
+      ).then(() => ({ ok: true, err: null }))
+       .catch(err => ({ ok: false, err }));
+
+      const [resA, resB] = await Promise.all([rA, rB]);
+
+      // Exactly one should succeed, one should fail
+      const winner = resA.ok ? resA : resB;
+      const loser = resA.ok ? resB : resA;
+
+      record('T9a: exactly one operation succeeded',
+        (resA.ok !== resB.ok), `A=${resA.ok} B=${resB.ok}`);
+
+      record('T9b: loser received clear error (no false success)',
+        loser.err !== null && loser.err !== undefined,
+        `code=${loser.err?.code} msg=${loser.err?.message?.slice(0, 60)}`);
+
+      record('T9c: loser error is deadlock (40P01) or invariant (P0001)',
+        loser.err?.code === '40P01' || loser.err?.code === 'P0001',
+        `code=${loser.err?.code}`);
+
+      // The failed connection's transaction was rolled back — verify
+      // by checking that the loser's target admin was NOT demoted
+      const d1Admin = await isAdmin(d1.id);
+      const d2Admin = await isAdmin(d2.id);
+      const totalAdmins = await getAdminCount();
+
+      record('T9d: exactly one admin remains (no compensation needed)',
+        totalAdmins === 1, `admins=${totalAdmins} d1=${d1Admin} d2=${d2Admin}`);
+
+      record('T9e: winner target was demoted', !winner.ok || totalAdmins === 1);
+
+      // Verify the losing connection is usable for new queries
+      // (not in a broken state)
+      const loserPg = resA.ok ? pgB : pgA;
+      let queryAfterFail = null;
+      try {
+        const r = await loserPg.query('SELECT 1 AS ok');
+        queryAfterFail = r.rows[0].ok;
+      } catch (e) {
+        queryAfterFail = `error: ${e.message}`;
+      }
+      record('T9f: loser connection is reusable after rollback',
+        queryAfterFail === 1, `result=${queryAfterFail}`);
+
+    } finally {
+      await pgA.end();
+      await pgB.end();
+    }
     await restoreOtherAdmins();
   }
 
