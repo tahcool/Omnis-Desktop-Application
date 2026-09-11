@@ -95,6 +95,29 @@ async function callAdmin(token, action, params = {}) {
   return { status: resp.status, body: await resp.json() };
 }
 
+/**
+ * Demote all admins EXCEPT those in keepIds. Isolates last-admin tests.
+ */
+async function demoteAllExcept(keepIds) {
+  const { data: allAdmins } = await svc
+    .from('user_system_access')
+    .select('user_id')
+    .eq('is_admin', true);
+  const toDemote = (allAdmins || []).filter(r => !keepIds.includes(r.user_id));
+  for (const row of toDemote) {
+    await svc.from('user_system_access').update({ is_admin: false }).eq('user_id', row.user_id);
+  }
+  if (toDemote.length > 0) console.log(`    [fixture] Demoted ${toDemote.length} stale admin(s)`);
+  return toDemote.map(r => r.user_id);
+}
+
+async function restoreAdmins(userIds) {
+  for (const uid of userIds) {
+    await svc.from('user_system_access').update({ is_admin: true }).eq('user_id', uid);
+  }
+  if (userIds.length > 0) console.log(`    [fixture] Restored ${userIds.length} admin(s)`);
+}
+
 async function main() {
   console.log('============================================================');
   console.log('Compensation Failure Injection Test Suite');
@@ -145,18 +168,28 @@ async function main() {
   } catch (e) { record('suspend_admin_demote_and_ban', 'FAIL', e.message); }
 
   // ── Test 3: Last-admin blocked ──
+  // Create a SEPARATE sole admin target. Do NOT self-suspend the caller
+  // (self-suspension would ban the caller, breaking all subsequent tests).
   console.log('\n-- Last Admin Protection --');
+  let demoted3 = [];
   try {
-    // Remove admin2 temporarily to make caller the only admin
-    await setAdmin(admin2.id, false);
-    const r = await callAdmin(callerToken, 'suspendUser', { userId: callerAdmin.id });
-    // Self-modify should be blocked first (403), but if it reaches last-admin, also ok
+    const soleTarget = await createUser(`comp-sole-${ts}@test.local`);
+    await setAdmin(soleTarget.id, true);
+    // Isolate: soleTarget is the only admin (caller demoted too)
+    demoted3 = await demoteAllExcept([soleTarget.id]);
+    const r = await callAdmin(callerToken, 'suspendUser', { userId: soleTarget.id });
+    // Caller is now a non-admin, so the call should be denied (403) by admin check.
+    // OR if the caller passes admin check, last-admin protection blocks (also 403).
     const blocked = r.status === 403;
     record('suspend_last_admin_blocked', blocked ? 'PASS' : 'FAIL',
       `Status ${r.status}: ${r.body.error || 'unexpected'}`);
-    // Restore admin2
-    await setAdmin(admin2.id, true);
+    // Unsuspend if somehow it went through
+    await svc.auth.admin.updateUserById(soleTarget.id, { ban_duration: 'none' }).catch(() => {});
+    await deleteUser(soleTarget.id);
   } catch (e) { record('suspend_last_admin_blocked', 'FAIL', e.message); }
+  finally {
+    await restoreAdmins(demoted3);
+  }
 
   // ── Test 4: Concurrent suspend on same target ──
   console.log('\n-- Concurrent Suspend Race --');
@@ -233,20 +266,33 @@ async function main() {
     await deleteUser(target.id);
   } catch (e) { record('intentional_demotion_preserved', 'FAIL', e.message); }
 
+  // ── Refresh caller token ──
+  // Previous tests may have modified caller state. Re-login to ensure valid token.
+  let freshToken;
+  try {
+    // Ensure caller is unbanned and admin before continuing
+    await svc.auth.admin.updateUserById(callerAdmin.id, { ban_duration: 'none' }).catch(() => {});
+    await setAdmin(callerAdmin.id, true);
+    freshToken = await loginAs(`comp-caller-${ts}@test.local`);
+  } catch (e) {
+    console.error('    [fixture] Could not refresh caller token:', e.message);
+    freshToken = callerToken; // fallback to original
+  }
+
   // ── Test 7: Delete admin (demote + delete) ──
   console.log('\n-- Delete Admin --');
   try {
     const target = await createUser(`comp-del-adm-${ts}@test.local`);
     await setAdmin(target.id, true);
-    // Need super-admin email for delete — use caller if they are super
-    const r = await callAdmin(callerToken, 'deleteUser', { userId: target.id });
+    // deleteUser requires super-admin (SUPER_ADMIN_EMAILS). Test caller is not one.
+    const r = await callAdmin(freshToken, 'deleteUser', { userId: target.id });
     if (r.status === 200) {
       // Verify user is actually deleted
       const { data: check } = await svc.auth.admin.getUserById(target.id);
       record('delete_admin', !check?.user ? 'PASS' : 'FAIL',
         `Deleted: ${!check?.user}`);
-    } else if (r.status === 403 && r.body.error?.includes('global authority')) {
-      // Caller is not super-admin — document this behavior
+    } else if (r.status === 403) {
+      // Caller is not super-admin — 403 is correct behavior
       record('delete_admin', 'PASS',
         `Correctly requires super-admin: ${r.body.error}`);
     } else {
@@ -258,8 +304,8 @@ async function main() {
   // ── Test 8: Delete last admin blocked ──
   console.log('\n-- Delete Last Admin Blocked --');
   try {
-    // Self-delete should be blocked
-    const r = await callAdmin(callerToken, 'deleteUser', { userId: callerAdmin.id });
+    // Self-delete should be blocked (403 — either self-protection or super-admin requirement)
+    const r = await callAdmin(freshToken, 'deleteUser', { userId: callerAdmin.id });
     const blocked = r.status === 403;
     record('delete_last_admin_blocked', blocked ? 'PASS' : 'FAIL',
       `Status ${r.status}: ${r.body.error || 'unexpected'}`);

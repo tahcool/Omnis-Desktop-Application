@@ -76,13 +76,57 @@ async function countActiveAdmins() {
   return data?.length || 0;
 }
 
+/**
+ * Demote all admins EXCEPT those in the keepIds array.
+ * This isolates last-admin tests from leftover admin users created by other suites.
+ * Only touches is_admin — does not delete users or modify auth state.
+ */
+async function demoteAllExcept(keepIds) {
+  const { data: allAdmins } = await serviceClient
+    .from('user_system_access')
+    .select('user_id')
+    .eq('is_admin', true);
+  const toDemote = (allAdmins || []).filter(r => !keepIds.includes(r.user_id));
+  for (const row of toDemote) {
+    await serviceClient
+      .from('user_system_access')
+      .update({ is_admin: false })
+      .eq('user_id', row.user_id);
+  }
+  if (toDemote.length > 0) {
+    console.log(`    [fixture] Demoted ${toDemote.length} stale admin(s) to isolate test`);
+  }
+  return toDemote.map(r => r.user_id); // return IDs so we can restore them
+}
+
+/**
+ * Restore previously demoted admins. Called in finally blocks.
+ */
+async function restoreAdmins(userIds) {
+  for (const uid of userIds) {
+    await serviceClient
+      .from('user_system_access')
+      .update({ is_admin: true })
+      .eq('user_id', uid);
+  }
+  if (userIds.length > 0) {
+    console.log(`    [fixture] Restored ${userIds.length} admin(s)`);
+  }
+}
+
 // ── Tests ────────────────────────────────────────────────────────────
 
 async function testSafeRemoveLastAdmin() {
   console.log('\n-- Test: safe_remove_admin blocks last admin removal --');
   const user = await createTestUser(`solo-admin-${Date.now()}@test.local`);
+  let demoted = [];
   try {
     await setAdmin(user.id, true);
+
+    // Isolate: ensure this user is the ONLY admin
+    demoted = await demoteAllExcept([user.id]);
+    const adminCount = await countActiveAdmins();
+    console.log(`    [precondition] Active admins: ${adminCount} (expect 1)`);
 
     // Attempt to remove the sole admin
     const { data, error } = await serviceClient.rpc('safe_remove_admin', {
@@ -105,9 +149,11 @@ async function testSafeRemoveLastAdmin() {
       record('safe_remove_last_state', 'FAIL', 'Admin status changed despite block!');
     }
   } finally {
+    await restoreAdmins(demoted);
     await deleteTestUser(user.id);
   }
 }
+
 
 async function testSafeRemoveNonLastAdmin() {
   console.log('\n-- Test: safe_remove_admin allows removal when another admin exists --');
@@ -146,9 +192,15 @@ async function testConcurrentRemovalLastTwo() {
   console.log('\n-- Test: concurrent removal of last two admins --');
   const user1 = await createTestUser(`conc-admin1-${Date.now()}@test.local`);
   const user2 = await createTestUser(`conc-admin2-${Date.now()}@test.local`);
+  let demoted = [];
   try {
     await setAdmin(user1.id, true);
     await setAdmin(user2.id, true);
+
+    // Isolate: ensure only these two are admins
+    demoted = await demoteAllExcept([user1.id, user2.id]);
+    const adminCount = await countActiveAdmins();
+    console.log(`    [precondition] Active admins: ${adminCount} (expect 2)`);
 
     // Fire both removals concurrently
     const [r1, r2] = await Promise.all([
@@ -168,18 +220,20 @@ async function testConcurrentRemovalLastTwo() {
       record('concurrent_last_two', 'FAIL', `Unexpected: r1=${JSON.stringify(r1.data)}, r2=${JSON.stringify(r2.data)}`);
     }
 
-    // Verify at least 1 admin remains
-    const adminCount = await countActiveAdmins();
-    if (adminCount >= 1) {
-      record('concurrent_last_two_state', 'PASS', `${adminCount} admin(s) remain`);
+    // Verify at least 1 admin remains (among test-owned users)
+    const adminCount2 = await countActiveAdmins();
+    if (adminCount2 >= 1) {
+      record('concurrent_last_two_state', 'PASS', `${adminCount2} admin(s) remain`);
     } else {
       record('concurrent_last_two_state', 'FAIL', `Zero admins remain!`);
     }
   } finally {
+    await restoreAdmins(demoted);
     await deleteTestUser(user1.id);
     await deleteTestUser(user2.id);
   }
 }
+
 
 async function testIdempotentRemoval() {
   console.log('\n-- Test: repeated safe_remove_admin is idempotent --');
