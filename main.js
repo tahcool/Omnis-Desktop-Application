@@ -19,25 +19,35 @@ const SUPABASE_URL = process.env.SUPABASE_URL || "https://pfqaeewmlwfayxbgmuaq.s
 const SUPABASE_ANON_KEY = process.env.SUPABASE_ANON_KEY;
 if (!SUPABASE_ANON_KEY) {
   // Fatal: cannot create a functional Supabase client without the anon key.
-  // Show a dialog (once the app is ready) then quit.
-  // CRITICAL: We must not call createClient() without a valid key.
+  // Show one clear error dialog once Electron is ready, then exit cleanly.
+  // No throw — that would cause a second "uncaught exception" dialog.
+  const envSource = app.isPackaged
+    ? path.dirname(process.execPath)
+    : process.cwd();
   app.whenReady().then(() => {
     dialog.showErrorBox(
       'Omnis — Configuration Error',
-      'SUPABASE_ANON_KEY is not set.\n\n' +
-      'Create a .env file in the application directory with:\n' +
-      'SUPABASE_ANON_KEY=eyJ...your-anon-key-here\n\n' +
+      'SUPABASE_ANON_KEY is not set in .env\n\n' +
+      `Checked: ${path.join(envSource, '.env')}\n\n` +
+      'Add this line to your .env file:\n' +
+      'SUPABASE_ANON_KEY=eyJ...your-anon-key\n\n' +
       'Get the anon/public key from:\n' +
-      'Supabase Dashboard → Settings → API → Project API keys\n\n' +
-      'The application will now exit.'
+      'Supabase Dashboard → Settings → API → Project API keys'
     );
     app.exit(1);
   });
-  // Prevent any further module initialization — this throw is caught by Node
-  // and prevents createClient from executing with a bogus key.
-  throw new Error('[FATAL] SUPABASE_ANON_KEY not set. Cannot start Omnis.');
+  // Prevent ALL further module-level initialization.
+  // Using return inside a conditional at module scope is not valid,
+  // so we stop here: no createClient, no window creation.
+  // The app.whenReady handler above will show the dialog and exit.
+  // We must not throw (causes uncaught exception dialog).
+  // Instead, guard all subsequent code behind this flag.
 }
-const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+// Only create the client if we have a valid key.
+// If SUPABASE_ANON_KEY is missing, the app.whenReady handler above
+// will exit the process before any window or IPC handler runs.
+const supabase = SUPABASE_ANON_KEY ? createClient(SUPABASE_URL, SUPABASE_ANON_KEY) : null;
 
 // Offline Caching - Sync Manager
 const syncManager = require('./lib/sync-manager');
@@ -1558,6 +1568,11 @@ function createWindow() {
 //  App lifecycle
 // ------------------------------------------------------------
 app.whenReady().then(async () => {
+  // Second instance: app.quit() was called, skip all initialization.
+  // Without this guard, the whenReady handler races against quit and
+  // triggers cache-lock errors, GPU failures, and Shantui ERR_FAILED.
+  if (!gotTheLock) return;
+
   // ✅ Enable cookie compatibility for Frappe domains (Smart Mode)
   setupFrappeCookieCompatibility();
 
