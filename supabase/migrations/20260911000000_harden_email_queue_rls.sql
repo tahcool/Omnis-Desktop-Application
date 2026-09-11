@@ -192,28 +192,54 @@ SET search_path = public
 AS $$
 DECLARE
   remaining_admins INTEGER;
+  is_removing_admin BOOLEAN := false;
 BEGIN
-  -- Only fire when an admin is being demoted or deleted
-  IF TG_OP = 'UPDATE' AND OLD.is_admin = true AND NEW.is_admin = false THEN
-    SELECT count(*) INTO remaining_admins
-    FROM user_system_access
-    WHERE is_admin = true AND user_id != OLD.user_id;
-    IF remaining_admins = 0 THEN
+  -- ── Determine whether this operation removes an admin ──
+  IF TG_OP = 'DELETE' THEN
+    is_removing_admin := (OLD.is_admin IS TRUE);
+  ELSIF TG_OP = 'UPDATE' THEN
+    -- Catches: true→false, true→NULL, user_id reassignment of admin row
+    is_removing_admin := (OLD.is_admin IS TRUE)
+      AND (
+        (NEW.is_admin IS DISTINCT FROM TRUE)           -- demotion
+        OR (NEW.user_id IS DISTINCT FROM OLD.user_id)  -- reassignment
+      );
+  END IF;
+
+  IF NOT is_removing_admin THEN
+    IF TG_OP = 'DELETE' THEN RETURN OLD; END IF;
+    RETURN NEW;
+  END IF;
+
+  -- ── Serialize all admin-removal operations ──
+  -- Lock all current admin rows. This blocks concurrent admin removals
+  -- until this transaction commits or rolls back.
+  -- Matches the locking pattern in safe_remove_admin RPC.
+  PERFORM 1 FROM user_system_access
+  WHERE is_admin = true
+  FOR UPDATE;
+
+  -- ── Count remaining active, non-banned admins ──
+  -- Excludes the admin being removed.
+  -- Banned users do not count as available replacements.
+  SELECT count(DISTINCT usa.user_id) INTO remaining_admins
+  FROM user_system_access usa
+  INNER JOIN auth.users au ON au.id = usa.user_id
+  WHERE usa.is_admin = true
+    AND usa.user_id != OLD.user_id
+    AND (au.banned_until IS NULL OR au.banned_until < now());
+
+  IF remaining_admins = 0 THEN
+    IF TG_OP = 'DELETE' THEN
+      RAISE EXCEPTION 'Cannot delete the last active administrator'
+        USING ERRCODE = 'P0001';
+    ELSE
       RAISE EXCEPTION 'Cannot remove the last active administrator'
         USING ERRCODE = 'P0001';
     END IF;
-  ELSIF TG_OP = 'DELETE' AND OLD.is_admin = true THEN
-    SELECT count(*) INTO remaining_admins
-    FROM user_system_access
-    WHERE is_admin = true AND user_id != OLD.user_id;
-    IF remaining_admins = 0 THEN
-      RAISE EXCEPTION 'Cannot delete the last active administrator'
-        USING ERRCODE = 'P0001';
-    END IF;
   END IF;
-  IF TG_OP = 'DELETE' THEN
-    RETURN OLD;
-  END IF;
+
+  IF TG_OP = 'DELETE' THEN RETURN OLD; END IF;
   RETURN NEW;
 END;
 $$;

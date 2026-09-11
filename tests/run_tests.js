@@ -30,6 +30,8 @@ const SUITES = [
   { name: 'test_compensation_transport', file: 'test_compensation_transport.js', timeout: 60 },
   { name: 'test_email_worker',           file: 'test_email_worker.js',           timeout: 60 },
   { name: 'test_email_queue_rls',        file: 'test_email_queue_rls.js',        timeout: 60 },
+  { name: 'test_last_admin',             file: 'test_last_admin.js',             timeout: 120 },
+  { name: 'test_returning_atomicity',    file: 'test_returning_atomicity.js',    timeout: 60 },
 ];
 
 function getCommitInfo() {
