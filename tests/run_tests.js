@@ -29,6 +29,7 @@ const SUITES = [
   { name: 'test_ai_proxy_success',       file: 'test_ai_proxy_success.js',       timeout: 60 },
   { name: 'test_compensation_transport', file: 'test_compensation_transport.js', timeout: 60 },
   { name: 'test_email_worker',           file: 'test_email_worker.js',           timeout: 60 },
+  { name: 'test_email_queue_rls',        file: 'test_email_queue_rls.js',        timeout: 60 },
 ];
 
 function getCommitInfo() {
