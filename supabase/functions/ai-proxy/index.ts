@@ -222,7 +222,8 @@ Deno.serve(async (req) => {
       openaiBody.response_format = { type: "json_object" };
     }
 
-    const openaiRes = await fetch("https://api.openai.com/v1/chat/completions", {
+    const openaiBaseUrl = Deno.env.get("OPENAI_BASE_URL") || "https://api.openai.com";
+    const openaiRes = await fetch(`${openaiBaseUrl}/v1/chat/completions`, {
       method: "POST",
       headers: {
         Authorization: `Bearer ${OPENAI_API_KEY}`,

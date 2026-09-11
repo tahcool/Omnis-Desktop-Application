@@ -258,24 +258,68 @@ async function isBanned(userId) {
       `Admin: ${finalAdmin} (should be true — re-promotion preserved), banned: ${finalBanned}`);
   } catch (e) { record('comp_preserves_later_decision', 'FAIL', e.message); }
 
-  // ── Test 7: Audit trail for compensation ──
+  // ── Test 7: Audit trail for compensation (STRICT) ──
+  // The admin-operations function writes to omnis_audit_trail with:
+  //   action_type = 'admin:<action>', user_id, user_email, target_user_id, details (JSONB)
+  // We perform a unique suspend operation and verify its audit record exists.
+
   try {
-    // Check that compensation events are logged in audit
-    const { data: auditLogs } = await sb.from('admin_audit_log')
-      .select('action, result, detail')
-      .in('action', ['compensate_suspend', 'suspendUser'])
-      .order('created_at', { ascending: false })
-      .limit(10);
+    // Create a uniquely identifiable target for this audit test
+    const auditTargetEmail = `comp_audit_${Date.now()}@test.local`;
+    const auditTargetId = await createTestTarget(auditTargetEmail, false);
+    const auditTimestamp = new Date().toISOString();
 
-    const hasCompensation = (auditLogs || []).some(l => l.action === 'compensate_suspend');
-    const hasSuspend = (auditLogs || []).some(l => l.action === 'suspendUser');
+    // Perform a suspend — this MUST produce an audit record
+    const auditResult = await callAdminOp(adminToken, { action: 'suspendUser', userId: auditTargetId });
 
-    record('comp_audit_trail', hasSuspend ? 'PASS' : 'FAIL',
-      `Suspend logs: ${(auditLogs || []).filter(l => l.action === 'suspendUser').length}, ` +
-      `compensation logs: ${(auditLogs || []).filter(l => l.action === 'compensate_suspend').length}`);
+    if (!auditResult.data.ok) {
+      record('comp_audit_trail', 'FAIL',
+        `Suspend operation failed — cannot verify audit: ${auditResult.data.error}`);
+    } else {
+      // Bounded polling: check for audit record (max 3 attempts, 500ms apart)
+      let auditFound = null;
+      let auditErr = null;
+      for (let attempt = 0; attempt < 3; attempt++) {
+        if (attempt > 0) await new Promise(r => setTimeout(r, 500));
+        const { data, error } = await sb.from('omnis_audit_trail')
+          .select('action_type, user_id, user_email, target_user_id, details, created_at')
+          .eq('target_user_id', auditTargetId)
+          .eq('action_type', 'admin:suspendUser')
+          .gte('created_at', auditTimestamp)
+          .order('created_at', { ascending: false })
+          .limit(1);
+
+        if (error) { auditErr = error; break; }
+        if (data && data.length > 0) { auditFound = data[0]; break; }
+      }
+
+      if (auditErr) {
+        // Table missing or query failed — STRICT FAIL
+        record('comp_audit_trail', 'FAIL',
+          `Audit query failed: ${auditErr.message} (table may not exist — this is a required component)`);
+      } else if (!auditFound) {
+        record('comp_audit_trail', 'FAIL',
+          `No audit record found for suspendUser on target ${auditTargetId} after ${auditTimestamp}`);
+      } else {
+        // Verify fields
+        const details = typeof auditFound.details === 'string'
+          ? JSON.parse(auditFound.details) : auditFound.details;
+        const actorCorrect = auditFound.user_email === adminEmail;
+        const targetCorrect = auditFound.target_user_id === auditTargetId;
+        const resultCorrect = details?.result === 'success';
+        const allCorrect = actorCorrect && targetCorrect && resultCorrect;
+
+        record('comp_audit_trail', allCorrect ? 'PASS' : 'FAIL',
+          `actor=${auditFound.user_email} (expect ${adminEmail}), ` +
+          `target=${auditFound.target_user_id} (expect ${auditTargetId}), ` +
+          `result=${details?.result} (expect success)`);
+      }
+    }
+
+    // Cleanup
+    await sb.auth.admin.updateUserById(auditTargetId, { ban_duration: 'none' });
   } catch (e) {
-    // Audit table might not exist in test fixtures
-    record('comp_audit_trail', 'PASS', `Audit check: ${e.message} (table may not exist yet)`);
+    record('comp_audit_trail', 'FAIL', `Audit test error: ${e.message}`);
   }
 
   // ── Summary ──

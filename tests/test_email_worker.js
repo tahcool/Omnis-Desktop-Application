@@ -69,17 +69,45 @@ async function getStatus(id) {
   return data;
 }
 
-/** Ensure email config points to Inbucket SMTP */
+/** Discover the Inbucket container's Docker IP at runtime */
+async function discoverInbucketIP() {
+  // Priority: explicit env var → Docker inspect → fallback
+  if (process.env.INBUCKET_DOCKER_IP) {
+    return { ip: process.env.INBUCKET_DOCKER_IP, source: 'INBUCKET_DOCKER_IP env var' };
+  }
+  try {
+    const { execSync } = require('child_process');
+    // Try the standard Supabase local dev container name
+    const names = ['supabase_inbucket_omnis', 'supabase_inbucket'];
+    for (const name of names) {
+      try {
+        const raw = execSync(
+          `docker inspect -f "{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}" ${name}`,
+          { timeout: 5000, encoding: 'utf8' }
+        ).trim();
+        if (raw && raw.match(/^\d+\.\d+\.\d+\.\d+$/)) {
+          return { ip: raw, source: `docker inspect ${name}` };
+        }
+      } catch {}
+    }
+  } catch {}
+  return { ip: '127.0.0.1', source: 'fallback (no Docker discovery)' };
+}
+
+/** Ensure email config points to Inbucket SMTP. Returns discovered config for metadata. */
 async function ensureInbucketConfig() {
+  const discovered = await discoverInbucketIP();
+  console.log(`  Inbucket SMTP IP: ${discovered.ip} (source: ${discovered.source})`);
   await sb.from('omnis_email_config').upsert({
     system: 'fleetrack',
-    smtp_host: '127.0.0.1',
-    smtp_port: 54325,
-    smtp_user: 'test@inbucket.local',
+    smtp_host: discovered.ip,
+    smtp_port: 1025,
+    smtp_user: 'test@omnis.local',
     smtp_pass: 'test',
     from_name: 'Omnis Test',
     use_tls: false,
   }, { onConflict: 'system' });
+  return discovered;
 }
 
 (async () => {
@@ -171,7 +199,8 @@ async function ensureInbucketConfig() {
 
   try {
     // Temporarily break SMTP config
-    await sb.from('omnis_email_config').update({ smtp_host: '192.0.2.1', smtp_port: 99 }).eq('system', 'fleetrack');
+    // Use a host that will immediately reject — localhost port 1 is fast-fail
+    await sb.from('omnis_email_config').update({ smtp_host: '127.0.0.1', smtp_port: 1 }).eq('system', 'fleetrack');
 
     const email = await insertEmail();
     const result = await callWorker({ id: email.id });
@@ -192,7 +221,7 @@ async function ensureInbucketConfig() {
   try {
     const email = await insertEmail({ retry_count: 4 });
     // Break SMTP to force failure
-    await sb.from('omnis_email_config').update({ smtp_host: '192.0.2.1', smtp_port: 99 }).eq('system', 'fleetrack');
+    await sb.from('omnis_email_config').update({ smtp_host: '127.0.0.1', smtp_port: 1 }).eq('system', 'fleetrack');
 
     await callWorker({ id: email.id });
     const after = await getStatus(email.id);
