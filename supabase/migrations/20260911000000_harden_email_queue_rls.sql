@@ -1,26 +1,25 @@
 -- Migration: Harden omnis_email_queue RLS policies
 -- Closes the direct cross-system email submission bypass.
+-- Aligns database access with the established scoped-admin design.
 --
 -- Background:
 --   Production has a single INSERT policy:
 --     allow_authenticated_insert_queue: WITH CHECK (auth.uid() IS NOT NULL)
---   This allows any authenticated user to insert emails to ANY system,
---   bypassing the email-submit Edge Function's scope enforcement.
+--   This allows any authenticated user to insert emails to ANY system.
+--
+-- Backend contract (admin-operations, email-submit Edge Functions):
+--   - Ordinary users: operate within their systems[] array
+--   - Scoped admins (is_admin=true): operate within their systems[] array
+--   - Super-admins (hardcoded emails): global access (bypasses system scope)
+--   The database helper must match this same contract.
 --
 -- Existing direct queue writers (backward compatibility):
 --   - systems/email/index.html: Direct PostgREST INSERT/GET/PATCH
+--     - PATCH sends { status: 'pending', retry_count: 0, error_message: null }
+--       for retry. Trigger must allow retry_count reset on failed→pending.
 --   - systems/salestrack/index.html: Direct PostgREST INSERT
 --   - supabase/functions/email-submit: Uses service_role (unaffected)
---   - supabase/functions/daily-quote-reminders: Uses service_role (unaffected)
 --   - supabase/functions/process-email-queue: Uses service_role (unaffected)
---
--- Scope:
---   1. Enforce system membership on INSERT via user_system_access.
---   2. Pin created_by_id to auth.uid() (deny spoofing).
---   3. Restrict writes to caller-owned fields only.
---   4. Provide scoped SELECT for the desktop queue viewer.
---   5. Allow only status-field UPDATEs (cancel/retry) on own-system rows.
---   6. Service role retains full access.
 
 BEGIN;
 
@@ -30,7 +29,10 @@ BEGIN;
 DROP POLICY IF EXISTS allow_authenticated_insert_queue ON omnis_email_queue;
 
 -- ═══════════════════════════════════════════════════════════════════
--- 2. Helper function: check system membership
+-- 2. Helper function: check system membership (scoped-admin design)
+--    Matches the backend contract: admins are scoped to their
+--    systems[] array, NOT global. Super-admin bypass is email-based
+--    and handled by the Edge Functions, not by the database.
 -- ═══════════════════════════════════════════════════════════════════
 CREATE OR REPLACE FUNCTION public.user_has_system_access(target_system TEXT)
 RETURNS BOOLEAN
@@ -42,10 +44,7 @@ AS $$
   SELECT EXISTS (
     SELECT 1 FROM user_system_access
     WHERE user_id = auth.uid()
-      AND (
-        is_admin = true
-        OR systems @> jsonb_build_array(target_system)
-      )
+      AND systems @> jsonb_build_array(target_system)
   );
 $$;
 
@@ -55,10 +54,8 @@ GRANT EXECUTE ON FUNCTION public.user_has_system_access(TEXT) TO service_role;
 
 -- ═══════════════════════════════════════════════════════════════════
 -- 3. Trigger: pin created_by_id to the calling user on INSERT
---    Prevents spoofing via the Data API.
 --    service_role (used by email-submit for on-behalf submissions)
---    bypasses RLS, so the trigger must also allow service_role to
---    set created_by_id explicitly.
+--    bypasses RLS, so the trigger checks current_setting('role').
 -- ═══════════════════════════════════════════════════════════════════
 CREATE OR REPLACE FUNCTION public.trg_pin_email_creator()
 RETURNS TRIGGER
@@ -76,10 +73,7 @@ BEGIN
   NEW.created_by_id := auth.uid();
 
   -- Protect worker-owned fields on INSERT: force safe defaults
-  NEW.status        := COALESCE(NEW.status, 'pending');
-  IF NEW.status NOT IN ('pending') THEN
-    NEW.status := 'pending';
-  END IF;
+  NEW.status        := 'pending';
   NEW.sent_at       := NULL;
   NEW.error_message := NULL;
   NEW.retry_count   := 0;
@@ -97,9 +91,10 @@ CREATE TRIGGER pin_email_creator
 
 -- ═══════════════════════════════════════════════════════════════════
 -- 4. Trigger: protect fields on UPDATE
---    Authenticated users may change only: status (cancel/retry).
---    Worker fields (sent_at, error_message, retry_count, payload_hash,
---    created_by_id, created_by, system) are immutable via client writes.
+--    Authenticated users may:
+--      pending→cancelled (cancel)
+--      failed→pending (retry — also resets retry_count and error_message)
+--    All other fields are immutable via client writes.
 -- ═══════════════════════════════════════════════════════════════════
 CREATE OR REPLACE FUNCTION public.trg_protect_email_fields()
 RETURNS TRIGGER
@@ -113,26 +108,28 @@ BEGIN
     RETURN NEW;
   END IF;
 
-  -- Prevent system change
+  -- Immutable fields: always preserved
   NEW.system        := OLD.system;
-  -- Prevent creator change
   NEW.created_by    := OLD.created_by;
   NEW.created_by_id := OLD.created_by_id;
-  -- Prevent worker-owned field changes
   NEW.sent_at       := OLD.sent_at;
-  NEW.error_message := OLD.error_message;
-  NEW.retry_count   := OLD.retry_count;
   NEW.payload_hash  := OLD.payload_hash;
-  -- Prevent scheduling change
   NEW.scheduled_for := OLD.scheduled_for;
 
-  -- Restrict status transitions: only pending→cancelled, failed→pending
+  -- Status transitions with field side-effects
   IF OLD.status = 'pending' AND NEW.status = 'cancelled' THEN
-    NULL; -- allowed
+    -- Cancel: only status changes
+    NEW.retry_count   := OLD.retry_count;
+    NEW.error_message := OLD.error_message;
   ELSIF OLD.status = 'failed' AND NEW.status = 'pending' THEN
-    NULL; -- retry allowed
+    -- Retry: reset retry_count and error_message (matches desktop payload)
+    NEW.retry_count   := 0;
+    NEW.error_message := NULL;
   ELSE
-    NEW.status := OLD.status; -- discard other transitions
+    -- No other transitions allowed; preserve all fields
+    NEW.status        := OLD.status;
+    NEW.retry_count   := OLD.retry_count;
+    NEW.error_message := OLD.error_message;
   END IF;
 
   RETURN NEW;
@@ -156,8 +153,7 @@ CREATE POLICY email_queue_insert_scoped ON omnis_email_queue
   );
 
 -- ═══════════════════════════════════════════════════════════════════
--- 6. SELECT policy: desktop queue viewer needs to read own-system rows
---    Scoped by system membership.
+-- 6. SELECT policy: desktop queue viewer reads own-system rows
 -- ═══════════════════════════════════════════════════════════════════
 CREATE POLICY email_queue_select_scoped ON omnis_email_queue
   FOR SELECT TO authenticated
@@ -167,7 +163,7 @@ CREATE POLICY email_queue_select_scoped ON omnis_email_queue
 
 -- ═══════════════════════════════════════════════════════════════════
 -- 7. UPDATE policy: cancel/retry on own-system rows
---    Trigger (trg_protect_email_fields) restricts which fields change.
+--    Trigger restricts which fields and transitions are allowed.
 -- ═══════════════════════════════════════════════════════════════════
 CREATE POLICY email_queue_update_scoped ON omnis_email_queue
   FOR UPDATE TO authenticated
@@ -183,10 +179,10 @@ CREATE POLICY email_queue_update_scoped ON omnis_email_queue
 -- ═══════════════════════════════════════════════════════════════════
 
 -- ═══════════════════════════════════════════════════════════════════
--- 9. Harden user_system_access: prevent self-modification edge cases
---    The existing FOR ALL policy with USING(is_admin()) allows admins
---    to modify any row including their own.
---    Add a trigger to prevent the last admin from demoting themselves.
+-- 9. Last-admin protection trigger on user_system_access
+--    Prevents direct UPDATE/DELETE that would remove the last admin.
+--    The safe_remove_admin RPC also enforces this; the trigger adds
+--    defense-in-depth for direct table writes.
 -- ═══════════════════════════════════════════════════════════════════
 CREATE OR REPLACE FUNCTION public.trg_protect_last_admin()
 RETURNS TRIGGER
@@ -195,23 +191,23 @@ SECURITY DEFINER
 SET search_path = public
 AS $$
 DECLARE
-  admin_count INTEGER;
+  remaining_admins INTEGER;
 BEGIN
-  -- Only care about changes that remove admin status or delete admins
+  -- Only fire when an admin is being demoted or deleted
   IF TG_OP = 'UPDATE' AND OLD.is_admin = true AND NEW.is_admin = false THEN
-    SELECT count(*) INTO admin_count
+    SELECT count(*) INTO remaining_admins
     FROM user_system_access
     WHERE is_admin = true AND user_id != OLD.user_id;
-    IF admin_count = 0 THEN
-      RAISE EXCEPTION 'Cannot remove the last active administrator via direct table access'
+    IF remaining_admins = 0 THEN
+      RAISE EXCEPTION 'Cannot remove the last active administrator'
         USING ERRCODE = 'P0001';
     END IF;
   ELSIF TG_OP = 'DELETE' AND OLD.is_admin = true THEN
-    SELECT count(*) INTO admin_count
+    SELECT count(*) INTO remaining_admins
     FROM user_system_access
     WHERE is_admin = true AND user_id != OLD.user_id;
-    IF admin_count = 0 THEN
-      RAISE EXCEPTION 'Cannot delete the last active administrator via direct table access'
+    IF remaining_admins = 0 THEN
+      RAISE EXCEPTION 'Cannot delete the last active administrator'
         USING ERRCODE = 'P0001';
     END IF;
   END IF;
@@ -229,14 +225,13 @@ CREATE TRIGGER protect_last_admin
   EXECUTE FUNCTION public.trg_protect_last_admin();
 
 -- ═══════════════════════════════════════════════════════════════════
--- 10. Harden audit trail: separate trusted from untrusted entries
---     Add a source column to distinguish client telemetry from
---     backend security events. Pin user_id to auth.uid() for clients.
+-- 10. Audit trail source separation
+--     Add a 'source' column to distinguish client telemetry from
+--     backend security events. Pin source and user_id for clients.
 -- ═══════════════════════════════════════════════════════════════════
 ALTER TABLE omnis_audit_trail
   ADD COLUMN IF NOT EXISTS source TEXT NOT NULL DEFAULT 'client';
 
--- Trigger: clients cannot mark entries as 'system' or 'admin'
 CREATE OR REPLACE FUNCTION public.trg_pin_audit_source()
 RETURNS TRIGGER
 LANGUAGE plpgsql
@@ -245,9 +240,10 @@ SET search_path = public
 AS $$
 BEGIN
   IF current_setting('role', true) IN ('service_role', 'postgres', 'supabase_admin') THEN
+    -- Backend: trust the supplied source value
     RETURN NEW;
   END IF;
-  -- Client entries: force source='client' and user_id=auth.uid()
+  -- Client: force source='client' and user_id=auth.uid()
   NEW.source  := 'client';
   NEW.user_id := auth.uid();
   RETURN NEW;

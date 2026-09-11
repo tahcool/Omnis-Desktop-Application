@@ -1,54 +1,69 @@
 
+# ═══════════════════════════════════════════════════════════════════
+# Functions with handler-level JWT validation
+# Gateway verify_jwt=true provides defense-in-depth.
+# ═══════════════════════════════════════════════════════════════════
+
 [functions.admin-operations]
 enabled = true
-verify_jwt = false
+verify_jwt = true
 entrypoint = "./functions/admin-operations/index.ts"
 
 [functions.email-submit]
 enabled = true
-verify_jwt = false
+verify_jwt = true
 entrypoint = "./functions/email-submit/index.ts"
+
+[functions.ai-proxy]
+enabled = true
+verify_jwt = true
+# Requires OPENAI_API_KEY secret. Returns 503 if not set.
+entrypoint = "./functions/ai-proxy/index.ts"
+
+[functions.ai-marketing-assistant]
+enabled = true
+verify_jwt = true
+import_map = "./functions/ai-marketing-assistant/deno.json"
+entrypoint = "./functions/ai-marketing-assistant/index.ts"
+
+[functions.process-email-queue]
+enabled = true
+verify_jwt = true
+# Called by pg_cron with service_role Bearer token.
+entrypoint = "./functions/process-email-queue/index.ts"
+
+[functions.daily-quote-reminders]
+enabled = true
+verify_jwt = true
+# Called by pg_cron with service_role Bearer token.
+entrypoint = "./functions/daily-quote-reminders/index.ts"
+
+[functions.send-push-notification]
+enabled = true
+verify_jwt = true
+entrypoint = "./functions/send-push-notification/index.ts"
+
+# ═══════════════════════════════════════════════════════════════════
+# Functions that accept unauthenticated requests by design
+# ═══════════════════════════════════════════════════════════════════
 
 [functions.omnis-link]
 enabled = true
 verify_jwt = false
+# Public deep-link redirect page. No secrets, no mutations.
 import_map = "./functions/omnis-link/deno.json"
-# Uncomment to specify a custom file path to the entrypoint.
-# Supported file extensions are: .ts, .js, .mjs, .jsx, .tsx
 entrypoint = "./functions/omnis-link/index.ts"
-# Specifies static files to be bundled with the function. Supports glob patterns.
-# For example, if you want to serve static HTML pages in your function:
-# static_files = [ "./functions/omnis-link/*.html" ]
-
-[functions.ai-marketing-assistant]
-enabled = true
-verify_jwt = false
-import_map = "./functions/ai-marketing-assistant/deno.json"
-# Uncomment to specify a custom file path to the entrypoint.
-# Supported file extensions are: .ts, .js, .mjs, .jsx, .tsx
-entrypoint = "./functions/ai-marketing-assistant/index.ts"
-# Specifies static files to be bundled with the function. Supports glob patterns.
-# For example, if you want to serve static HTML pages in your function:
-# static_files = [ "./functions/ai-marketing-assistant/*.html" ]
 
 [functions.notify-new-record]
 enabled = true
 verify_jwt = false
+# Called by Supabase database webhooks (no user JWT available).
 import_map = "./functions/notify-new-record/deno.json"
-# Uncomment to specify a custom file path to the entrypoint.
-# Supported file extensions are: .ts, .js, .mjs, .jsx, .tsx
 entrypoint = "./functions/notify-new-record/index.ts"
-# Specifies static files to be bundled with the function. Supports glob patterns.
-# For example, if you want to serve static HTML pages in your function:
-# static_files = [ "./functions/notify-new-record/*.html" ]
 
 [functions.migrate-frappe-user]
 enabled = true
 verify_jwt = false
+# Public migration endpoint — validates credentials against Frappe directly.
 import_map = "./functions/migrate-frappe-user/deno.json"
-# Uncomment to specify a custom file path to the entrypoint.
-# Supported file extensions are: .ts, .js, .mjs, .jsx, .tsx
 entrypoint = "./functions/migrate-frappe-user/index.ts"
-# Specifies static files to be bundled with the function. Supports glob patterns.
-# For example, if you want to serve static HTML pages in your function:
-# static_files = [ "./functions/migrate-frappe-user/*.html" ]
