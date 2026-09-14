@@ -576,3 +576,26 @@
   Files: .mcp/knowledge/_shared/commit_log.md,systems/salestrack/create_quotation_logic.js,systems/salestrack/dashboard_logic.js,systems/salestrack/index.html,systems/salestrack/orders_logic.js,
 - `70de3aa` 2026-09-09 [supabase-migration] [checkpoint] Quotation Form Layout Updates (Compact 3-column layout)
   Files: .mcp/knowledge/_shared/commit_log.md,omnis-tablet/src/screens/InboxScreen.tsx,supabase/functions/send-push-notification/index.ts,systems/salestrack/index.html,
+\n## 2026-09-11
+- `75e7c83` 2026-09-11 [feature/admin-service-key-separation] fix: strict audit test, AI success-path tests, Mailpit discovery
+  Files: supabase/functions/ai-proxy/index.ts,tests/.env.ai-mock,tests/test_ai_proxy_success.js,tests/test_compensation_transport.js,tests/test_email_worker.js,
+- `5530824` 2026-09-11 [feature/admin-service-key-separation] fix: single-instance guard and clean missing-key error handling
+  Files: main.js,
+- `20b6333` 2026-09-11 [feature/admin-service-key-separation] fix: isolate test fixtures and repair 11 previously-failing tests
+  Files: tests/test_ai_proxy.js,tests/test_compensation.js,tests/test_concurrency.js,
+- `0c7fce2` 2026-09-11 [feature/admin-service-key-separation] test: strict verification gate — 170/170 PASS, 0 SPEC, 0 NOT_RUN
+  Files: tests/mock_openai.js,tests/run_tests.js,tests/test_ai_proxy.js,tests/test_ai_proxy_success.js,tests/test_compensation.js,tests/test_compensation_transport.js,tests/test_concurrency.js,tests/test_email_worker.js,tests/test_env_guard.js,tests/test_rls.js,
+- `24e3486` 2026-09-11 [feature/admin-service-key-separation] refactor: move bootstrap migration to seed/ to prevent accidental production application
+  Files: supabase/migrations/20260620000000_stub_production_tables.sql,supabase/seed/local_bootstrap.sql,
+- `fb821bd` 2026-09-11 [feature/admin-service-key-separation] security: harden omnis_email_queue RLS to enforce system-scoped access
+  Files: supabase/migrations/20260911000000_harden_email_queue_rls.sql,
+- `761c6a6` 2026-09-11 [feature/admin-service-key-separation] security: harden email queue RLS, close creator spoofing, protect fields
+  Files: supabase/migrations/20260911000000_harden_email_queue_rls.sql,tests/test_email_queue_rls.js,
+- `06f8dde` 2026-09-11 [feature/admin-service-key-separation] security: harden email queue RLS, close creator spoofing, protect fields
+  Files: supabase/migrations/20260911000000_harden_email_queue_rls.sql,tests/run_tests.js,tests/test_email_queue_rls.js,
+- `b24f3e3` 2026-09-11 [feature/admin-service-key-separation] fix: correct scoped-admin design, retry compatibility, last-admin trigger, config.toml
+  Files: supabase/config.toml,supabase/migrations/20260911000000_harden_email_queue_rls.sql,tests/test_email_queue_rls.js,
+- `299d0e0` 2026-09-11 [feature/admin-service-key-separation] fix: serialize last-admin trigger with FOR UPDATE locking
+  Files: supabase/migrations/20260911000000_harden_email_queue_rls.sql,tests/run_tests.js,tests/test_last_admin.js,tests/test_returning_atomicity.js,
+- `319aae1` 2026-09-11 [feature/admin-service-key-separation] test: independent fixtures for T3c, deadlock handling verification (T9)
+  Files: tests/test_last_admin.js,

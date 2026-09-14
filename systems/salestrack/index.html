@@ -7410,7 +7410,7 @@
               <!-- SETTINGS VIEW (Optimized Grid Layout) -->
                 <div id="view-settings" class="view-page hidden" style="padding: 0; width:100%; min-height:100%; background:#f8fafc; overflow-y:auto;">
                   
-                  <div style="padding: 80px 40px 40px 40px; width: 100%; box-sizing: border-box;">
+                  <div style="padding: 30px 40px 40px 40px; width: 100%; box-sizing: border-box;">
                     
                     <div style="display:flex; justify-content:space-between; align-items:flex-end; margin-bottom: 30px; border-bottom: 1px solid #e2e8f0; padding-bottom: 20px;">
                       <div>
@@ -12612,13 +12612,13 @@
         // they are never hidden by an ancestor's display:none.
         const VIEWS_TO_ESCAPE = [
           'view-group-sales-list', 'view-customers-list', 'view-products-list',
-          'view-create-ce', 'view-ce-list', 'view-create-quotation'
+          'view-create-ce', 'view-ce-list', 'view-create-quotation', 'view-settings'
         ];
         if (VIEWS_TO_ESCAPE.includes(view.id) && !view.dataset.reparented) {
           let ancestor = view.parentElement;
           let needsReparent = false;
           while (ancestor) {
-            if (ancestor.id === 'view-marketing' || ancestor.classList.contains('view-page')) {
+            if (ancestor.id === 'view-marketing' || ancestor.id === 'view-dashboard' || ancestor.classList.contains('view-page') || ancestor.classList.contains('view-content')) {
               needsReparent = true;
               console.warn(`[Reparent] ${view.id} was nested inside #${ancestor.id} — moving to document.body`);
               break;
@@ -12639,13 +12639,23 @@
         console.log(`[ShowOnly] ${view.id} → display set to:`, window.getComputedStyle(view).display, '| inline style:', view.style.display);
 
         if (view.id === 'view-settings') {
-          // Settings is inside main-view-container (already below navbar) - use inset:0
-          view.style.setProperty("position", "absolute", "important");
-          view.style.setProperty("inset", "0", "important");
+          // Settings needs fixed positioning — the flex parent collapses to 0 height
+          // when all siblings are display:none, making absolute positioning invisible
+          var _navHS = parseInt(getComputedStyle(document.documentElement).getPropertyValue('--nav-height')) || 42;
+          var _taskbarHS = Math.max(0, window.screen.height - window.screen.availHeight);
+          console.log('[Settings FIX] Applying fixed positioning, navH=' + _navHS + ', taskbarH=' + _taskbarHS);
+          view.style.setProperty("position", "fixed", "important");
+          view.style.setProperty("top", _navHS + "px", "important");
+          view.style.setProperty("left", "0", "important");
+          view.style.setProperty("right", "0", "important");
+          view.style.setProperty("bottom", _taskbarHS + "px", "important");
           view.style.setProperty("width", "100%", "important");
-          view.style.setProperty("height", "100%", "important");
+          view.style.setProperty("height", "calc(100vh - " + _navHS + "px - " + _taskbarHS + "px)", "important");
           view.style.setProperty("overflow-y", "auto", "important");
-          view.style.setProperty("z-index", "10", "important");
+          view.style.setProperty("overflow-x", "hidden", "important");
+          view.style.setProperty("z-index", "1000", "important");
+          view.style.setProperty("background", "#f8fafc", "important");
+          console.log('[Settings FIX] Applied. Inline style:', view.style.cssText);
         } else if (view.id === 'view-training-library') {
           // OUTSIDE main-view-container — use fixed positioning with high z-index
           var _navH = parseInt(getComputedStyle(document.documentElement).getPropertyValue('--nav-height')) || 42;

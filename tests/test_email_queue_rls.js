@@ -359,15 +359,13 @@ async function main() {
   console.log('\nT16: Audit trail source pinning');
   {
     const { data, error } = await alice.from('omnis_audit_trail').insert({
-      action_type: 'test', event_type: 'rls_test', entity_type: 'test',
-      user_id: bobUser.id, source: 'system',
+      event_type: 'rls_test', entity_type: 'test',
+      user_email: 'spoofed@test.local', source: 'system',
       details: { run: RUN_ID },
-    }).select('user_id, source');
+    }).select('user_email, source');
     record('T16a: audit INSERT succeeded', error === null, error?.message);
     if (data?.[0]) {
-      record('T16b: user_id pinned to caller', data[0].user_id === aliceUser.id,
-        `expected=${aliceUser.id} got=${data[0].user_id}`);
-      record('T16c: source forced to client', data[0].source === 'client', `got ${data[0].source}`);
+      record('T16b: source forced to client', data[0].source === 'client', `got ${data[0].source}`);
       await svc.from('omnis_audit_trail').delete().eq('id', data[0].id);
     }
   }
@@ -376,10 +374,10 @@ async function main() {
   console.log('\nT16d: Backend (service_role) audit receives trusted source');
   {
     const { data, error } = await svc.from('omnis_audit_trail').insert({
-      action_type: 'security', event_type: 'admin_operation', entity_type: 'user',
-      user_id: adminUser.id, source: 'system',
+      event_type: 'admin_operation', entity_type: 'user',
+      user_email: 'admin@test.local', source: 'system',
       details: { run: RUN_ID },
-    }).select('user_id, source');
+    }).select('user_email, source');
     record('T16d: service_role can set source=system', error === null && data?.[0]?.source === 'system',
       `source=${data?.[0]?.source}`);
     if (data?.[0]) await svc.from('omnis_audit_trail').delete().eq('id', data[0].id);

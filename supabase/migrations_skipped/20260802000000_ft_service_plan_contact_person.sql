@@ -1,0 +1,1 @@
+﻿ALTER TABLE public.ft_service_plan ADD COLUMN IF NOT EXISTS contact_person text;

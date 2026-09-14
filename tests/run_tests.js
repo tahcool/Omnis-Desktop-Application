@@ -32,6 +32,11 @@ const SUITES = [
   { name: 'test_email_queue_rls',        file: 'test_email_queue_rls.js',        timeout: 60 },
   { name: 'test_last_admin',             file: 'test_last_admin.js',             timeout: 120 },
   { name: 'test_returning_atomicity',    file: 'test_returning_atomicity.js',    timeout: 60 },
+  // --- New regression suites (admin-gate-audit branch) ---
+  { name: 'test_extract_error',          file: 'test_extract_error.js',          timeout: 30 },
+  { name: 'test_super_admin_gate',       file: 'test_super_admin_gate.js',       timeout: 180 },
+  { name: 'test_audit_spoofing',         file: 'test_audit_spoofing.js',         timeout: 60 },
+  { name: 'test_email_submit',           file: 'test_email_submit.js',           timeout: 120 },
 ];
 
 function getCommitInfo() {
@@ -81,8 +86,8 @@ function parseCounts(stdout) {
     return { pass: parseInt(jsonMatch[1]), fail: parseInt(jsonMatch[2]), total: parseInt(jsonMatch[3]) };
   }
 
-  // Fallback: parse "Total: N | Pass: N | Fail: N" format
-  const match = stdout.match(/Total:\s*(\d+)\s*\|\s*Pass:\s*(\d+)\s*\|\s*Fail:\s*(\d+)/);
+  // Fallback: parse "Total: N | Pass: N | Fail: N" format (case-insensitive)
+  const match = stdout.match(/Total:\s*(\d+)\s*\|\s*Pass:\s*(\d+)\s*\|\s*Fail:\s*(\d+)/i);
   if (match) {
     return { total: parseInt(match[1]), pass: parseInt(match[2]), fail: parseInt(match[3]) };
   }

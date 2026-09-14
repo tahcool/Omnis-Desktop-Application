@@ -260,7 +260,7 @@ async function isBanned(userId) {
 
   // ── Test 7: Audit trail for compensation (STRICT) ──
   // The admin-operations function writes to omnis_audit_trail with:
-  //   action_type = 'admin:<action>', user_id, user_email, target_user_id, details (JSONB)
+  //   event_type = 'admin:<action>', entity_type = 'user', user_email, source = 'admin-operations', details (JSONB)
   // We perform a unique suspend operation on a freshly created target and verify
   // the audit record by matching actor + action + target (not just timestamp).
 
@@ -287,9 +287,9 @@ async function isBanned(userId) {
       for (let attempt = 0; attempt < 5; attempt++) {
         if (attempt > 0) await new Promise(r => setTimeout(r, 500));
         const { data, error } = await sb.from('omnis_audit_trail')
-          .select('action_type, user_id, user_email, target_user_id, details, created_at')
-          .eq('target_user_id', auditTargetId)
-          .eq('action_type', 'admin:suspendUser')
+          .select('event_type, user_email, entity_type, entity_name, source, details, created_at')
+          .eq('event_type', 'admin:suspendUser')
+          .eq('source', 'admin-operations')
           .gte('created_at', auditTimestamp)
           .order('created_at', { ascending: false })
           .limit(1);
@@ -305,8 +305,8 @@ async function isBanned(userId) {
       } else if (!auditFound) {
         // Diagnostic: check if ANY audit records exist for this target without timestamp filter
         const { data: anyRecords } = await sb.from('omnis_audit_trail')
-          .select('action_type, created_at')
-          .eq('target_user_id', auditTargetId)
+          .select('event_type, created_at')
+          .eq('event_type', 'admin:suspendUser')
           .limit(5);
         record('comp_audit_trail', 'FAIL',
           `No audit record for suspendUser on target ${auditTargetId} after ${auditTimestamp}. ` +
@@ -316,14 +316,16 @@ async function isBanned(userId) {
         const details = typeof auditFound.details === 'string'
           ? JSON.parse(auditFound.details) : auditFound.details;
         const actorCorrect = auditFound.user_email === adminEmail;
-        const targetCorrect = auditFound.target_user_id === auditTargetId;
+        const targetCorrect = details?.target_id === auditTargetId;
         const resultCorrect = details?.result === 'success';
-        const allCorrect = actorCorrect && targetCorrect && resultCorrect;
+        const sourceCorrect = auditFound.source === 'admin-operations';
+        const allCorrect = actorCorrect && targetCorrect && resultCorrect && sourceCorrect;
 
         record('comp_audit_trail', allCorrect ? 'PASS' : 'FAIL',
           `actor=${auditFound.user_email} (expect ${adminEmail}), ` +
-          `target=${auditFound.target_user_id} (expect ${auditTargetId}), ` +
+          `target=${details?.target_id} (expect ${auditTargetId}), ` +
           `result=${details?.result} (expect success), ` +
+          `source=${auditFound.source} (expect admin-operations), ` +
           `db_ts=${auditFound.created_at}, filter_ts=${auditTimestamp}`);
       }
     }

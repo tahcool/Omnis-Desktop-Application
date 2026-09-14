@@ -134,55 +134,31 @@ Deno.serve(async (req) => {
     auth: { persistSession: false },
   });
 
-  // Derive super-admin identity from validated JWT email
-  const callerEmail = (caller.email || "").toLowerCase();
-  const callerIsSuperAdmin = isSuperAdmin(callerEmail);
-
   // Look up caller's access from authoritative table (not from request)
-  // Use .maybeSingle() to distinguish "no row" from a genuine DB error
   const { data: callerAccess, error: accessError } = await adminClient
     .from("user_system_access")
     .select("is_admin, systems")
     .eq("user_id", caller.id)
-    .maybeSingle();
+    .single();
 
-  // Genuine database error (not merely an absent row) — fail for everyone
-  if (accessError) {
+  if (accessError || !callerAccess) {
     await audit(adminClient, {
       actor_id: caller.id,
-      actor_email: callerEmail,
+      actor_email: caller.email || "",
       action,
-      result: "error",
-      detail: `Database error looking up caller access: ${accessError.message}`,
+      result: "denied",
+      detail: "No access record found for caller",
     });
     return jsonResponse(
-      { ok: false, error: "Internal error checking authorization" },
-      500
+      { ok: false, error: "Access denied: no access record" },
+      403
     );
   }
 
-  // No access row found
-  if (!callerAccess) {
-    if (!callerIsSuperAdmin) {
-      // Non-super-admin with no access row — deny
-      await audit(adminClient, {
-        actor_id: caller.id,
-        actor_email: callerEmail,
-        action,
-        result: "denied",
-        detail: "No access record found for caller",
-      });
-      return jsonResponse(
-        { ok: false, error: "Access denied: no access record" },
-        403
-      );
-    }
-    // Super-admin without a row — allowed to continue
-  } else if (!callerAccess.is_admin && !callerIsSuperAdmin) {
-    // Has a row but is_admin is false and not a super-admin — deny
+  if (!callerAccess.is_admin) {
     await audit(adminClient, {
       actor_id: caller.id,
-      actor_email: callerEmail,
+      actor_email: caller.email || "",
       action,
       result: "denied",
       detail: "Caller is not an admin",
@@ -200,7 +176,6 @@ Deno.serve(async (req) => {
       adminClient,
       caller,
       callerAccess,
-      callerIsSuperAdmin,
       action,
       params
     );
@@ -208,7 +183,7 @@ Deno.serve(async (req) => {
   } catch (e: any) {
     await audit(adminClient, {
       actor_id: caller.id,
-      actor_email: callerEmail,
+      actor_email: caller.email || "",
       action,
       result: "error",
       detail: e.message,
@@ -223,7 +198,6 @@ async function executeAction(
   admin: any,
   caller: any,
   callerAccess: any,
-  callerIsSuperAdmin: boolean,
   action: string,
   params: any
 ): Promise<{ body: any; status: number }> {
@@ -245,7 +219,7 @@ async function executeAction(
         .select("*");
 
       // Scope: admin sees users who share at least one system
-      const callerSystems: string[] = callerAccess?.systems || [];
+      const callerSystems: string[] = callerAccess.systems || [];
       const isSuperAdmin = SUPER_ADMIN_EMAILS.includes(callerEmail);
 
       const users = (authData.users || [])
@@ -1072,7 +1046,7 @@ async function executeAction(
 
       // System scope check — admin can only grant systems they have
       if (systems && Array.isArray(systems)) {
-        const callerSystems: string[] = callerAccess?.systems || [];
+        const callerSystems: string[] = callerAccess.systems || [];
         const isSuperAdmin = SUPER_ADMIN_EMAILS.includes(callerEmail);
 
         if (!isSuperAdmin) {
@@ -1243,22 +1217,20 @@ async function checkCompanyScope(
 async function audit(admin: any, entry: AuditEntry) {
   try {
     await admin.from("omnis_audit_trail").insert({
-      event_type: `admin:${entry.action}`,
-      entity_type: "user",
-      entity_name: entry.target_email || entry.target_id || null,
+      action_type: `admin:${entry.action}`,
+      user_id: entry.actor_id,
       user_email: entry.actor_email,
-      details: {
-        actor_id: entry.actor_id,
-        target_id: entry.target_id || null,
-        target_email: entry.target_email || null,
+      target_user_id: entry.target_id || null,
+      details: JSON.stringify({
+        target_email: entry.target_email,
         result: entry.result,
-        detail: entry.detail || null,
-      },
-      source: "admin-operations",
+        detail: entry.detail,
+      }),
+      created_at: new Date().toISOString(),
     });
   } catch (e) {
-    // Audit failure must not break the operation, but log visibly
-    console.error("[Audit] Failed to write audit trail:", (e as Error).message);
+    // Audit failures must not break the operation
+    console.error("[Audit] Failed to log:", e);
   }
 }
 
