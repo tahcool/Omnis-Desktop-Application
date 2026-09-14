@@ -9541,6 +9541,7 @@ window.OmnisDashboardV6 = class OmnisDashboardV6 {
             } else if (filterVal === 'sent') {
                 queryParams.match = { status: 'sent' };
             }
+            // else: 'all' — no status filter
             
             if (categoryVal === 'order') {
                 queryParams.or.push('related_type.eq.order,related_type.eq.group_sale');
@@ -9550,7 +9551,6 @@ window.OmnisDashboardV6 = class OmnisDashboardV6 {
             }
 
             if (searchVal) {
-                // Supabase ilike allows searching across multiple columns with 'or'
                 queryParams.or.push(`subject.ilike.%${searchVal}%,to_email.ilike.%${searchVal}%,error_message.ilike.%${searchVal}%`);
             }
 
@@ -9574,17 +9574,16 @@ window.OmnisDashboardV6 = class OmnisDashboardV6 {
             if (!data || data.length === 0) {
                 listEl.innerHTML = '<div style="text-align: center; color: #10b981; padding: 20px; font-weight: 600;"><i class="fas fa-check-circle" style="margin-right:8px;"></i> Queue is healthy. No emails found for this view.</div>';
                 if (document.getElementById('email-queue-count')) document.getElementById('email-queue-count').innerText = '(0 items)';
+                if (document.getElementById('email-queue-page-current')) {
+                    document.getElementById('email-queue-page-current').innerText = '1';
+                    document.getElementById('email-queue-page-total').innerText = '1';
+                }
                 return;
-            }            
+            }
+
             if (document.getElementById('email-queue-page-current')) {
                 document.getElementById('email-queue-page-current').innerText = this.emailQueuePage;
                 document.getElementById('email-queue-page-total').innerText = this.emailQueueTotalPages;
-            }
-            
-            if (!data || data.length === 0) {
-                listEl.innerHTML = '<div style="text-align: center; color: #10b981; padding: 20px; font-weight: 600;"><i class="fas fa-check-circle" style="margin-right:8px;"></i> Queue is healthy. No emails found for this view.</div>';
-                if (document.getElementById('email-queue-count')) document.getElementById('email-queue-count').innerText = '(0 items)';
-                return;
             }
             
             if (document.getElementById('email-queue-count')) document.getElementById('email-queue-count').innerText = `(${count} ${count === 1 ? 'item' : 'items'})`;
@@ -9618,7 +9617,7 @@ window.OmnisDashboardV6 = class OmnisDashboardV6 {
                 }
                 
                 html += `<tr style="border-bottom: 1px solid #f1f5f9;">
-                    <td style="padding: 10px 8px; font-size: 11px; color: #94a3b8; font-weight: 600;">${idx + 1}</td>
+                    <td style="padding: 10px 8px; font-size: 11px; color: #94a3b8; font-weight: 600;">${offset + idx + 1}</td>
                     <td style="padding: 10px 8px; font-size: 11px; color: #64748b;">${dateStr}</td>
                     <td style="padding: 10px 8px;"><span style="background: ${statusBg}; color: ${statusColor}; padding: 2px 8px; border-radius: 12px; font-size: 11px; font-weight: 700; text-transform: uppercase;">${item.status}</span></td>
                     <td style="padding: 10px 8px;">${item.to_email || 'N/A'}</td>
@@ -9645,7 +9644,7 @@ window.OmnisDashboardV6 = class OmnisDashboardV6 {
             html += '</tbody></table>';
             listEl.innerHTML = html;
         } catch (e) {
-            console.error(e);
+            console.error('[Email Queue]', e);
             listEl.innerHTML = `<div style="color: #ef4444; padding: 20px;"><i class="fas fa-exclamation-triangle"></i> Error loading queue: ${e.message}</div>`;
         }
     }
@@ -9751,29 +9750,24 @@ window.OmnisDashboardV6 = class OmnisDashboardV6 {
     async deleteFailedEmail(id) {
         if (window.showOmnisConfirm) {
             const confirmed = await window.showOmnisConfirm({
-                title: 'Delete Email',
-                message: 'Are you sure you want to delete this email from the queue? It will not be sent.',
-                confirmText: 'Delete',
+                title: 'Cancel Email',
+                message: 'Are you sure you want to cancel this email? It will not be sent.',
+                confirmText: 'Cancel Email',
                 danger: true
             });
             if (!confirmed) return;
         } else {
-            if (!confirm('Are you sure you want to delete this email from the queue? It will not be sent.')) return;
+            if (!confirm('Are you sure you want to cancel this email? It will not be sent.')) return;
         }
         
         try {
-            const res = await window.electron.invoke('supabase:query', {
-                table: 'omnis_email_queue',
-                method: 'delete',
-                params: {
-                    match: { id: id }
-                }
-            });
-            if (!res.ok) throw new Error(res.error || 'Failed to delete email');
+            // Use email:cancelScheduled IPC (routes through Edge Function with service role)
+            const res = await window.electron.invoke('email:cancelScheduled', id);
+            if (!res || !res.ok) throw new Error((res && res.error) || 'Failed to cancel email');
             await this.loadFailedEmails();
         } catch (e) {
             console.error(e);
-            alert('Failed to delete email: ' + e.message);
+            alert('Failed to cancel email: ' + e.message);
         }
     }
 

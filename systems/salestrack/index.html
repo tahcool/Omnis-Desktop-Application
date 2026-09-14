@@ -1256,6 +1256,13 @@
     }
     .btn-confirm-primary.danger:hover { box-shadow: 0 6px 16px rgba(220,38,38,0.4); }
 
+    /* ── Omnis Toast Animations ── */
+    @keyframes omnis-toast-progress {
+      from { width: 100%; }
+      to   { width: 0%; }
+    }
+    .omnis-toast-close:hover { opacity: 1 !important; }
+
 
 
     left: 72px !important;
@@ -7758,8 +7765,8 @@
                                         <option value="marketing">Marketing</option>
                                     </select>
                                     <select id="email-queue-filter" onchange="if(window.salestrack) window.salestrack.loadFailedEmails(true)" style="padding: 9px 12px; border-radius: 8px; border: 1px solid #e2e8f0; background: #ffffff; font-size: 13px; font-weight: 600; color: #334155; outline: none; cursor: pointer; box-shadow: 0 1px 2px rgba(0,0,0,0.05);">
-                                        <option value="all">All Status</option>
-                                        <option value="failed_pending" selected>Pending & Failed</option>
+                                        <option value="all" selected>All Status</option>
+                                        <option value="failed_pending">Pending & Failed</option>
                                         <option value="sent">Sent Successfully</option>
                                     </select>
                                     <button onclick="if(window.salestrack) window.salestrack.requeueFailedEmails()" style="background: #1e293b; color: white; border: none; padding: 10px 20px; border-radius: 8px; font-weight: 700; cursor: pointer; font-size: 13px; transition: all 0.2s; display: flex; align-items: center; gap: 8px; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);">
@@ -15221,47 +15228,8 @@
     }
     initTerritorySearch();
 
-    const customerForm = document.getElementById('customerForm');
-    if (customerForm) {
-      customerForm.onsubmit = async (e) => {
-        e.preventDefault();
-        const terrVal = document.getElementById("customerTerritory").value.trim();
-        if (!zimbabweTowns.includes(terrVal)) {
-            if (window.showToast) window.showToast("Please select a valid location from the dropdown.", "error");
-            else alert("Please select a valid location from the dropdown.");
-            return;
-        }
-        const data = {
-          customer_name: document.getElementById('customerName').value,
-          customer_group: document.getElementById('customerGroup').value,
-          territory: document.getElementById('customerTerritory').value,
-          customer_type: document.getElementById('customerType').value,
-          default_price_list: document.getElementById('customerPriceList').value,
-          tier: parseInt(document.getElementById('customerTier').value) || 0,
-          frappe_id: document.getElementById('customerFrappeId').value || 'MANUAL-' + Date.now(),
-          updated_at: new Date().toISOString()
-        };
-
-        try {
-          // Use window.supabase which should be initialized globally
-          const { error } = await window.supabase.from('customers').upsert(data);
-          if (error) throw error;
-          
-          if (window.showToast) window.showToast('Customer saved successfully!', 'success');
-          else alert('Customer saved successfully!');
-          
-          const gsCustomer = document.getElementById('gs-customer');
-          if (gsCustomer) gsCustomer.value = data.customer_name;
-          
-          closeCustomerModal();
-          if (typeof loadCustomersList === 'function') loadCustomersList(true);
-        } catch (err) {
-          console.error('Error saving customer:', err);
-          if (window.showToast) window.showToast('Failed to save customer: ' + err.message, 'error');
-          else alert('Failed to save customer: ' + err.message);
-        }
-      };
-    }
+    // Customer form submit handler moved to inline <script> after the form HTML (line ~21668)
+    // It was here before but never ran because the form DOM element doesn't exist yet at this point.
 
     function updateCustomersInfo(rows, start, limit, total) {
       const info = document.getElementById("customers-list-info");
@@ -15708,7 +15676,6 @@
       }
 
     window.triggerDeleteSale = async function(name) {
-      if (window.showToast) window.showToast("Trash can clicked", "info");
       try {
         if (!name) {
           if (window.showOmnisConfirm) {
@@ -15738,29 +15705,31 @@
            return;
         }
         
-        const sys = typeof CURRENT_SYSTEM !== "undefined" ? CURRENT_SYSTEM : (window.CURRENT_SYSTEM || window._CURRENT_SYSTEM);
-        if (!sys || !sys.baseUrl) {
-            alert("System configuration error: CURRENT_SYSTEM is not defined.");
-            return;
-        }
-        const base = sys.baseUrl.replace(/\/$/, "");
-        const formData = new FormData();
-        formData.append("name", name);
-        const url = base + "/api/method/powerstar_salestrack.omnis_dashboard.delete_group_sale";
-        const res = await fetch(url, { method: "POST", credentials: "include", body: formData });
-        const json = await res.json();
-        const result = json.message || json;
-        if (result && result.ok) {
+        // Delete from Supabase — name is frappe_id or UUID id
+        const isUUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(name);
+        const deleteParams = isUUID
+          ? { id: name }
+          : { match: { frappe_id: name } };
+
+        const res = await window.electron.invoke('supabase:query', {
+          table: 'group_sales',
+          method: 'delete',
+          params: deleteParams
+        });
+
+        if (res.ok) {
           if (window.showToast) window.showToast("Sale deleted successfully", "success");
           else alert("Sale deleted successfully.");
           if (typeof loadGroupSalesList === 'function') loadGroupSalesList(true);
         } else {
-          const errMsg = result?.error || "Delete failed";
+          const errMsg = res.error || "Delete failed";
           if (window.showToast) window.showToast(errMsg, "error");
           else alert(errMsg);
         }
       } catch (fatalError) {
-        alert("FATAL ERROR IN DELETE: " + fatalError.message + "\n" + fatalError.stack);
+        console.error("[Delete Sale Error]", fatalError);
+        if (window.showToast) window.showToast("Delete failed: " + fatalError.message, "error");
+        else alert("Delete failed: " + fatalError.message);
       }
     };
 
@@ -21555,7 +21524,7 @@ thead th { padding:11px 12px; font-size:10px; font-weight:800; color:#fff; text-
         <i class="fas fa-times" style="cursor:pointer; font-size:18px;" onclick="closeCustomerModal()"></i>
       </div>
 
-      <form id="customerForm">
+      <form id="customerForm" onsubmit="return false">
         <div class="gs-form-content">
           <input type="hidden" id="customerFrappeId">
           
@@ -21629,6 +21598,86 @@ thead th { padding:11px 12px; font-size:10px; font-weight:800; color:#fff; text-
       </form>
     </div>
   </div>
+
+  <script>
+  // Customer form handler — must be AFTER the form HTML so the DOM element exists
+  (function() {
+    const customerForm = document.getElementById('customerForm');
+    if (!customerForm) { console.error('[Customer] Form element not found!'); return; }
+
+    customerForm.addEventListener('submit', async function(e) {
+      e.preventDefault();
+      e.stopPropagation();
+      e.stopImmediatePropagation();
+
+      const terrInput = document.getElementById("customerTerritory");
+      const terrVal = terrInput ? terrInput.value.trim() : '';
+
+      const customerName = (document.getElementById('customerName').value || '').trim();
+      if (!customerName) {
+        if (window.showToast) window.showToast("Customer name is required.", "error");
+        return false;
+      }
+
+      // Disable save button to prevent double-click
+      const saveBtn = customerForm.querySelector('button[type="submit"]');
+      const originalBtnText = saveBtn ? saveBtn.innerHTML : '';
+      if (saveBtn) {
+        saveBtn.disabled = true;
+        saveBtn.innerHTML = '<i class="fas fa-spinner fa-spin" style="margin-right:6px;"></i> Saving...';
+      }
+
+      const data = {
+        customer_name: customerName,
+        customer_group: document.getElementById('customerGroup').value || null,
+        territory: terrVal || null,
+        customer_type: document.getElementById('customerType').value || 'Company',
+        default_price_list: document.getElementById('customerPriceList').value || null,
+        tier: parseInt(document.getElementById('customerTier').value) || 0,
+        frappe_id: document.getElementById('customerFrappeId').value || ('MANUAL-' + Date.now()),
+        updated_at: new Date().toISOString()
+      };
+
+      try {
+        const res = await window.electron.invoke('supabase:query', {
+          table: 'customers',
+          method: 'insert',
+          params: { data }
+        });
+
+        if (!res.ok) throw new Error(res.error || 'Failed to save customer');
+
+        if (window.showToast) window.showToast('Customer "' + customerName + '" created successfully!', 'success');
+
+        // Pre-fill customer name in the sale form if open
+        const gsCustomer = document.getElementById('gs-customer');
+        if (gsCustomer) gsCustomer.value = customerName;
+
+        // Close modal and reset form without page reload
+        if (typeof closeCustomerModal === 'function') closeCustomerModal();
+        customerForm.reset();
+
+        // Refresh customers list inline
+        if (typeof loadCustomersList === 'function') {
+          loadCustomersList(true);
+        }
+      } catch (err) {
+        console.error('[Customer Save Error]', err);
+        const errMsg = (typeof err === 'string') ? err : (err.message || 'Unknown error');
+        if (window.showToast) window.showToast('Failed to save customer: ' + errMsg, 'error');
+      } finally {
+        if (saveBtn) {
+          saveBtn.disabled = false;
+          saveBtn.innerHTML = originalBtnText;
+        }
+      }
+      return false;
+    }, { capture: true });
+
+    console.log('[Customer] Form submit handler attached successfully');
+  })();
+  </script>
+
 
   <div id="taskModal" class="task-modal-overlay">
     <div class="task-modal-content">
@@ -22018,14 +22067,54 @@ thead th { padding:11px 12px; font-size:10px; font-weight:800; color:#fff; text-
 
       function showToast(message, type = 'success') {
         const container = document.getElementById('toastContainer');
+        if (!container) return;
         const toast = document.createElement('div');
-        const bgColor = type === 'error' ? '#f44336' : (type === 'warning' ? '#ffcc00' : '#4CAF50');
-        const icon = type === 'error' ? 'fa-circle-exclamation' : (type === 'warning' ? 'fa-triangle-exclamation' : 'fa-check');
-        toast.style.cssText = `background: ${bgColor}; color: white; padding: 1rem 1.5rem; border-radius: 12px; box-shadow: 0 10px 30px rgba(0,0,0,0.3); display: flex; align-items: center; gap: 0.8rem; font-weight: 500; min-width: 300px; margin-bottom: 0.5rem;`;
-        toast.innerHTML = `<i class="fa-solid ${icon}"></i> <span>${message}</span>`;
+        
+        const themes = {
+          success: { bg: 'linear-gradient(135deg, #059669 0%, #047857 100%)', icon: 'fa-check-circle',    border: '#34d399' },
+          error:   { bg: 'linear-gradient(135deg, #dc2626 0%, #991b1b 100%)', icon: 'fa-circle-xmark',    border: '#f87171' },
+          warning: { bg: 'linear-gradient(135deg, #d97706 0%, #b45309 100%)', icon: 'fa-triangle-exclamation', border: '#fbbf24' },
+          info:    { bg: 'linear-gradient(135deg, #8b2219 0%, #4c110d 100%)', icon: 'fa-circle-info',     border: '#c4564c' }
+        };
+        const t = themes[type] || themes.info;
+
+        toast.style.cssText = `
+          background: ${t.bg}; color: white; padding: 14px 20px; border-radius: 14px;
+          box-shadow: 0 16px 48px rgba(0,0,0,0.35), 0 0 0 1px rgba(255,255,255,0.08) inset;
+          display: flex; align-items: center; gap: 12px; font-weight: 600; font-size: 13.5px;
+          min-width: 320px; max-width: 480px; margin-bottom: 0.5rem;
+          border-left: 4px solid ${t.border}; backdrop-filter: blur(12px);
+          letter-spacing: -0.01em; font-family: 'Inter', 'Segoe UI', sans-serif;
+          transform: translateX(120%); opacity: 0; transition: all 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+          position: relative; overflow: hidden;
+        `;
+
+        toast.innerHTML = `
+          <div style="width:32px; height:32px; background:rgba(255,255,255,0.15); border-radius:9px; display:flex; align-items:center; justify-content:center; flex-shrink:0;">
+            <i class="fa-solid ${t.icon}" style="font-size:14px;"></i>
+          </div>
+          <span style="flex:1; line-height:1.4;">${message}</span>
+          <i class="fa-solid fa-xmark omnis-toast-close" style="cursor:pointer; opacity:0.6; font-size:12px; padding:4px; flex-shrink:0;" onclick="this.parentElement.style.transform='translateX(120%)'; this.parentElement.style.opacity='0'; setTimeout(()=>this.parentElement.remove(),300);"></i>
+          <div style="position:absolute; bottom:0; left:0; height:3px; background:rgba(255,255,255,0.25); border-radius:0 0 14px 14px; animation: omnis-toast-progress 4s linear forwards; width:100%;"></div>
+        `;
+
         container.appendChild(toast);
-        setTimeout(() => { toast.style.opacity = '0'; setTimeout(() => toast.remove(), 300); }, 3000);
+        // Trigger slide-in
+        requestAnimationFrame(() => {
+          requestAnimationFrame(() => {
+            toast.style.transform = 'translateX(0)';
+            toast.style.opacity = '1';
+          });
+        });
+        // Auto-dismiss
+        setTimeout(() => {
+          toast.style.transform = 'translateX(120%)';
+          toast.style.opacity = '0';
+          setTimeout(() => toast.remove(), 350);
+        }, 4000);
       }
+      // Expose globally so all modules can use the styled toast
+      window.showToast = showToast;
 
       function renderAssigneePerformance(gsmTasks) {
         const container = document.getElementById('gsmAssigneePerfContainer');
@@ -27994,40 +28083,43 @@ Commercial Team`);
 
             const bodyHtml = `<!DOCTYPE html><html><head><meta charset="UTF-8"><title>${subj}</title></head><body style="margin:0;padding:0;background:#f1f5f9;font-family:Arial,sans-serif;"><table width="100%" cellpadding="0" cellspacing="0" style="background:#f1f5f9;padding:40px 0;"><tr><td align="center"><table width="600" cellpadding="0" cellspacing="0" style="background:white;border-radius:12px;overflow:hidden;box-shadow:0 4px 24px rgba(0,0,0,0.08);max-width:600px;"><tr><td style="background:#0f172a;padding:20px 24px;text-align:center;"><p style="margin:0;color:white;font-size:22px;font-weight:800;">Machinery Exchange</p></td></tr><tr><td style="padding:32px;color:#334155;font-size:14px;line-height:1.6;">${body.replace(/\n/g, '<br>')}</td></tr><tr><td style="background:#f8fafc;padding:24px;text-align:center;border-top:1px solid #e2e8f0;"><p style="margin:0;font-size:12px;color:#94a3b8;">You received this from Machinery Exchange.</p></td></tr></table></td></tr></table></body></html>`;
 
-            // Insert the email into omnis_email_queue
-            const emailRow = {
-                system: 'salestrack',
-                to_email: to,
-                cc_email: ccStr,
-                subject: subj,
-                body_html: bodyHtml,
-                body_text: body,
-                status: 'pending',
-                scheduled_for: new Date().toISOString(),
-                related_doc: psvId,
-                related_type: 'psv_customer',
-                created_by: (window.CURRENT_SYSTEM && window.CURRENT_SYSTEM.user) ? window.CURRENT_SYSTEM.user.email : null
-            };
-
-            const queueRes = await window.supabase.from('omnis_email_queue').insert([emailRow]);
-            if (queueRes.error) throw queueRes.error;
-            // For now, mark as sent in Supabase
-            const { error } = await window.supabase.from('psv_logs').update({
-                customer_email_sent: true,
-                customer_email_sent_at: new Date().toISOString(),
-                customer_email_to: to
-            }).eq('id', psvId);
-
-            if(error) throw error;
+            // Send via email:send IPC (routes through email-submit Edge Function with service role)
+            if (!window.electron) throw new Error('Email service not available');
             
-            if(window.omnisLog) window.omnisLog("Customer email logged successfully!", "success");
+            const res = await window.electron.invoke('email:send', {
+                to: to,
+                cc: ccStr || undefined,
+                subject: subj,
+                html: bodyHtml,
+                text: body,
+                relatedDoc: psvId,
+                relatedType: 'psv_customer',
+                system: 'fleetrack',
+                createdBy: (window.CURRENT_SYSTEM && window.CURRENT_SYSTEM.user) ? window.CURRENT_SYSTEM.user.email : null
+            });
+
+            if (!res || !res.ok) {
+                throw new Error((res && res.error) || 'Email submission failed');
+            }
+
+            // Mark as sent in psv_logs (use correct IPC proxy signature)
+            const updateRes = await window.supabase.from('psv_logs').update(
+                { customer_email_sent: true, customer_email_sent_at: new Date().toISOString(), customer_email_to: to },
+                { id: psvId }
+            );
+
+            if(updateRes && updateRes.error) {
+                console.warn('[PSV] Email queued but psv_logs update failed:', updateRes.error);
+            }
+            
+            if(window.omnisLog) window.omnisLog("Customer email queued successfully!", "success");
             
             document.getElementById('psv-email-modal').style.display = 'none';
             window.loadPsvList();
 
         } catch(e) {
-            console.error(e);
-            errEl.innerText = "Failed to log email status.";
+            console.error('[PSV Email Error]', e);
+            errEl.innerText = e.message || "Failed to send email.";
             errEl.style.display = 'block';
         } finally {
             btn.disabled = false;
