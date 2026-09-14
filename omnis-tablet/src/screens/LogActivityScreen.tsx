@@ -546,8 +546,11 @@ const generateVisitEmailHtml = (params: {
     setSubmitting(true);
     try {
       const supabaseUrl = Constants.expoConfig?.extra?.supabaseUrl || 'https://pfqaeewmlwfayxbgmuaq.supabase.co';
-      const anonKey = Constants.expoConfig?.extra?.supabaseAnonKey || '';
+      const anonKey = Constants.expoConfig?.extra?.supabaseAnonKey || process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY || '';
       const { data: { user } } = await supabase.auth.getUser();
+      // Use the session access_token for Authorization (required for RLS)
+      const { data: { session } } = await supabase.auth.getSession();
+      const authToken = session?.access_token || anonKey;
 
       const metaName = user?.user_metadata?.full_name || user?.user_metadata?.name || user?.user_metadata?.display_name;
       const formattedEmailName = (user?.email || '').split('@')[0].split(/[._-]/).map((w: string) => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase()).join(' ');
@@ -605,7 +608,7 @@ const generateVisitEmailHtml = (params: {
         headers: {
           'Content-Type':  'application/json',
           'apikey':        anonKey,
-          'Authorization': `Bearer ${anonKey}`,
+          'Authorization': `Bearer ${authToken}`,
           'Prefer':        'return=minimal',
         },
         body: JSON.stringify(payload),
@@ -639,7 +642,7 @@ const generateVisitEmailHtml = (params: {
             headers: {
               'Content-Type':  'application/json',
               'apikey':        anonKey,
-              'Authorization': `Bearer ${anonKey}`,
+              'Authorization': `Bearer ${authToken}`,
               'Prefer':        'return=minimal',
             },
             body: JSON.stringify(payload),
@@ -706,7 +709,7 @@ const generateVisitEmailHtml = (params: {
             const edgeRes = await fetch(`${supabaseUrl}/functions/v1/process-email-queue`, {
               method: 'POST',
               headers: {
-                'Authorization': `Bearer ${anonKey}`,
+                'Authorization': `Bearer ${authToken}`,
                 'Content-Type': 'application/json',
               },
               body: JSON.stringify({}),
@@ -856,8 +859,10 @@ const generateEnquiryEmailHtml = (params: {
     setSubmitting(true);
     try {
       const supabaseUrl = Constants.expoConfig?.extra?.supabaseUrl || 'https://pfqaeewmlwfayxbgmuaq.supabase.co';
-      const anonKey = Constants.expoConfig?.extra?.supabaseAnonKey || '';
+      const anonKey = Constants.expoConfig?.extra?.supabaseAnonKey || process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY || '';
       const { data: { user } } = await supabase.auth.getUser();
+      const { data: { session } } = await supabase.auth.getSession();
+      const authToken = session?.access_token || anonKey;
 
       const metaName = user?.user_metadata?.full_name || user?.user_metadata?.name || user?.user_metadata?.display_name;
       const formattedEmailName = (user?.email || '').split('@')[0].split(/[._-]/).map((w: string) => w.charAt(0).toUpperCase() + w.slice(1).toLowerCase()).join(' ');
@@ -932,7 +937,7 @@ const generateEnquiryEmailHtml = (params: {
       try {
         const edgeRes = await fetch(`${supabaseUrl}/functions/v1/process-email-queue`, {
           method: 'POST',
-          headers: { 'Authorization': `Bearer ${anonKey}`, 'Content-Type': 'application/json' },
+          headers: { 'Authorization': `Bearer ${authToken}`, 'Content-Type': 'application/json' },
           body: JSON.stringify({}),
         });
         if (edgeRes.ok) {

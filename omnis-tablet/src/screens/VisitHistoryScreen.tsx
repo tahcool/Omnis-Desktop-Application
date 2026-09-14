@@ -56,11 +56,13 @@ export default function VisitHistoryScreen() {
       const fallbackEmail = user?.email || 'Mobile User';
 
       const supabaseUrl = Constants.expoConfig?.extra?.supabaseUrl || 'https://pfqaeewmlwfayxbgmuaq.supabase.co';
-      const anonKey = Constants.expoConfig?.extra?.supabaseAnonKey || '';
+      const anonKey = Constants.expoConfig?.extra?.supabaseAnonKey || process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY || '';
+      const { data: { session } } = await supabase.auth.getSession();
+      const authToken = session?.access_token || anonKey;
 
       const headers = {
         'apikey': anonKey,
-        'Authorization': `Bearer ${anonKey}`,
+        'Authorization': `Bearer ${authToken}`,
         'Content-Type': 'application/json',
         'Prefer': 'return=representation',
       };
@@ -149,7 +151,9 @@ export default function VisitHistoryScreen() {
     setSaving(true);
     try {
       const supabaseUrl = Constants.expoConfig?.extra?.supabaseUrl || 'https://pfqaeewmlwfayxbgmuaq.supabase.co';
-      const anonKey = Constants.expoConfig?.extra?.supabaseAnonKey || '';
+      const anonKey = Constants.expoConfig?.extra?.supabaseAnonKey || process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY || '';
+      const { data: { session } } = await supabase.auth.getSession();
+      const authToken = session?.access_token || anonKey;
 
       const payload: any = {
         action_required: actionRequired,
@@ -171,7 +175,7 @@ export default function VisitHistoryScreen() {
         method: 'PATCH',
         headers: {
           'apikey': anonKey,
-          'Authorization': `Bearer ${anonKey}`,
+          'Authorization': `Bearer ${authToken}`,
           'Content-Type': 'application/json',
           'Prefer': 'return=minimal',
         },
@@ -203,14 +207,16 @@ export default function VisitHistoryScreen() {
   const deleteVisit = async (visit: any) => {
     try {
       const supabaseUrl = Constants.expoConfig?.extra?.supabaseUrl || 'https://pfqaeewmlwfayxbgmuaq.supabase.co';
-      const anonKey = Constants.expoConfig?.extra?.supabaseAnonKey || '';
+      const anonKey = Constants.expoConfig?.extra?.supabaseAnonKey || process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY || '';
+      const { data: { session } } = await supabase.auth.getSession();
+      const authToken = session?.access_token || anonKey;
 
       const table = visit.type === 'PSV' ? 'psv_logs' : 'cdv_logs';
       const res = await fetch(`${supabaseUrl}/rest/v1/${table}?id=eq.${visit.id}`, {
         method: 'DELETE',
         headers: {
           'apikey': anonKey,
-          'Authorization': `Bearer ${anonKey}`,
+          'Authorization': `Bearer ${authToken}`,
         },
       });
 

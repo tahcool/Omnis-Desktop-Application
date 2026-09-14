@@ -1,8 +1,8 @@
-﻿{
+{
     "expo":  {
                  "name":  "Omnis",
                  "slug":  "omnis-tablet",
-                 "version":  "1.0.9-NEXUS",
+                 "version":  "1.1.0",
                  "orientation":  "default",
                  "icon":  "./assets/icon.png",
                  "userInterfaceStyle":  "light",
@@ -22,6 +22,10 @@
                  "web":  {
                              "favicon":  "./assets/favicon.png"
                          },
+                 "extra": {
+                              "supabaseUrl": "https://pfqaeewmlwfayxbgmuaq.supabase.co",
+                              "supabaseAnonKey": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InBmcWFlZXdtbHdmYXl4YmdtdWFxIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM4OTE0ODYsImV4cCI6MjA4OTQ2NzQ4Nn0.BlGzasfnu6zX5sWUup2jpa4eZfInJeXlMc4ZXzi1pfU"
+                          },
                  "plugins":  [
                                  "expo-sqlite",
                                  "expo-secure-store",
