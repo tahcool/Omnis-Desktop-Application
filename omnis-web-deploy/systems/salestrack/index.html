@@ -12901,14 +12901,34 @@
 
       const customer = ctx?.customer || "Customer";
       const fmb = ctx?.fmb || "Order";
+      const isTracking = ctx?.isTrackingOnly || (fmb || "").startsWith("TRACK-");
 
       const lines = [];
       lines.push(`Hello ${customer},`);
       lines.push("");
-      lines.push(`Update on your order (${fmb}):`);
-      if (status) lines.push(`Status: ${status}`);
-      if (notes) lines.push(`Notes: ${notes}`);
-      if (eta) lines.push(`ETA/Target: ${eta}`);
+
+      if (isTracking) {
+        // --- Tracking-Only notification: customer has NOT purchased ---
+        const machine = ctx?.machine || "machine";
+        const qty = ctx?.qty || "1";
+        lines.push(`We are writing to inform you about availability of the ${machine} that you expressed interest in.`);
+        lines.push("");
+        if (status) lines.push(`Current Location / Status: ${status}`);
+        if (qty && qty !== "0") lines.push(`Units Available: ${qty}`);
+        if (notes) lines.push(`Details: ${notes}`);
+        if (eta) lines.push(`Estimated Availability: ${eta}`);
+        lines.push("");
+        lines.push("Please note that a payment or deposit is required to fully secure the machine(s) for you. Availability is on a first-come, first-served basis.");
+        lines.push("");
+        lines.push("Should you wish to proceed, kindly contact us to arrange payment and finalise the order.");
+      } else {
+        // --- Standard order update ---
+        lines.push(`Update on your order (${fmb}):`);
+        if (status) lines.push(`Status: ${status}`);
+        if (notes) lines.push(`Notes: ${notes}`);
+        if (eta) lines.push(`ETA/Target: ${eta}`);
+      }
+
       lines.push("");
       lines.push("Thank you.");
       lines.push("Industrial Exchange Group");
@@ -12919,16 +12939,26 @@
     function openOrderModal(ctx) {
       currentOrderCtx = ctx;
 
-      orderModalTitle.textContent = `Send Order Update`;
-      orderModalSub.textContent =
-        `${ctx.customer || ""} · Order: ${ctx.fmb || ""}` +
-        (ctx.target ? ` · Target: ${ctx.target}` : "");
+      const isTracking = ctx.isTrackingOnly || (ctx.fmb || "").startsWith("TRACK-");
 
-      orderStatus.value = "In transit";
+      if (isTracking) {
+        orderModalTitle.textContent = `Send Machine Availability Update`;
+        orderModalSub.textContent =
+          `${ctx.customer || ""} · ${ctx.machine || ctx.fmb || ""}` +
+          (ctx.qty ? ` · Qty: ${ctx.qty}` : "");
+        orderStatus.value = "Available — awaiting payment";
+      } else {
+        orderModalTitle.textContent = `Send Order Update`;
+        orderModalSub.textContent =
+          `${ctx.customer || ""} · Order: ${ctx.fmb || ""}` +
+          (ctx.target ? ` · Target: ${ctx.target}` : "");
+        orderStatus.value = "In transit";
+      }
+
       orderNotes.value = "";
       orderEta.value = "";
 
-      if (ctx.target && /^\d{4}-\d{2}-\d{2}$/.test(ctx.target)) {
+      if (!isTracking && ctx.target && /^\d{4}-\d{2}-\d{2}$/.test(ctx.target)) {
         orderEta.value = ctx.target;
       }
 
@@ -12999,7 +13029,10 @@
           orderSendStatus.textContent = "No email address found for this customer.";
           return;
         }
-        const subject = "Order Update: " + (currentOrderCtx.fmb || "Order");
+        const isTracking = currentOrderCtx.isTrackingOnly || (currentOrderCtx.fmb || "").startsWith("TRACK-");
+        const subject = isTracking
+          ? "Machine Availability: " + (currentOrderCtx.machine || currentOrderCtx.fmb || "Enquiry")
+          : "Order Update: " + (currentOrderCtx.fmb || "Order");
         const url =
           "mailto:" + encodeURIComponent(currentOrderCtx.email) +
           "?subject=" + encodeURIComponent(subject) +

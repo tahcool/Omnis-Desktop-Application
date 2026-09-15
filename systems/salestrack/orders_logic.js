@@ -312,6 +312,53 @@ async function loadOrdersList(force = false) {
             });
         }
 
+        // --- Fetch Tracking-Only orders (not in fmb_reports) ---
+        try {
+            const trackRes = await window.electron.invoke('supabase:query', {
+                table: 'omnis_tracking_orders',
+                method: 'select',
+                params: { columns: '*' }
+            });
+            if (trackRes.ok && trackRes.data) {
+                const existingIds = new Set(ordersList.map(o => o.report_id));
+                const todayMs = new Date(); todayMs.setHours(0,0,0,0);
+                trackRes.data.forEach(t => {
+                    const rid = t.linked_sale_name || ('TRACK-' + t.id);
+                    if (existingIds.has(rid)) return; // already loaded from fmb_reports
+                    let days_left = '-';
+                    if (t.target_handover) {
+                        const target = new Date(t.target_handover);
+                        target.setHours(0,0,0,0);
+                        days_left = Math.ceil((target - todayMs) / 86400000);
+                    }
+                    ordersList.push({
+                        report_id: rid,
+                        supabase_id: t.id,
+                        machine_id: t.id,
+                        customer: t.customer,
+                        machine: t.machine || `${t.brand || ''} ${t.model || ''}`.trim(),
+                        brand: t.brand || '',
+                        model: t.model || '',
+                        qty: t.qty,
+                        status: t.status || 'Internal Tracking',
+                        notes: t.notes,
+                        internal_notes: t.internal_notes,
+                        target_handover: t.target_handover,
+                        revised_handover: t.revised_handover,
+                        actual_handover: t.actual_handover,
+                        order_date: t.order_date,
+                        company: t.company || 'Unassigned',
+                        is_payment_terms: t.is_payment_terms || false,
+                        is_tracking_only: !t.linked_sale_name,
+                        days_left: days_left,
+                        committed_lead_time: t.committed_lead_time
+                    });
+                });
+            }
+        } catch (trackErr) {
+            console.warn('[OrdersLogic] Could not fetch omnis_tracking_orders:', trackErr);
+        }
+
 
     if (ordersList.length > 0) {
 
@@ -779,6 +826,16 @@ window.setOrderStatusInline = async function(reportId, machineId, newStatus, sel
 function renderOrdersList() {
     console.log("[OrdersLogic] renderOrdersList called");
     try {
+        // Inject tracking-only CSS once
+        if (!document.getElementById('track-only-styles')) {
+            const style = document.createElement('style');
+            style.id = 'track-only-styles';
+            style.textContent = `
+                @keyframes trackPulse { 0%,100%{opacity:1} 50%{opacity:0.75} }
+                .ai-order-row.is-tracking-only { border-left:4px solid #7c3aed !important; background:linear-gradient(90deg, rgba(124,58,237,0.04) 0%, transparent 40%) !important; }
+            `;
+            document.head.appendChild(style);
+        }
         const container = document.getElementById("ol-orders-body");
         const info = document.getElementById("ol-list-info");
         if (!container) return;
@@ -1068,14 +1125,14 @@ function renderOrdersList() {
 
         const isChecked = window.olSelectedOrders && window.olSelectedOrders.has(r.report_id) ? 'checked' : '';
         return `
-          <div class="ai-order-row ${riskClass} ${(r.status || "").toLowerCase().includes("new sale") ? 'is-new-entry' : ''}" data-id="${r.report_id}">
+          <div class="ai-order-row ${riskClass} ${(r.status || "").toLowerCase().includes("new sale") ? 'is-new-entry' : ''} ${r.is_tracking_only ? 'is-tracking-only' : ''}" data-id="${r.report_id}">
             <div class="ai-order-cell" style="flex-direction:row; display:flex; gap:10px; align-items:flex-start;">
               <input type="checkbox" class="order-select-cb" value="${safeReportId}" data-machine="${safeMachineId}" style="margin-top:4px; transform:scale(1.2); cursor:pointer;" onclick="event.stopPropagation(); window.toggleOrderSelection(this)" ${isChecked}>
               <span style="font-size:12px; font-weight:800; color:#94a3b8; margin-top:2px; min-width:24px; display:inline-block;">${start + index + 1}.</span>
               <div style="flex:1;" onclick="window.dashManager.openOrderModal('${safeReportId}', '${safeMachineId}')">
                 <span class="cell-label">Customer / Risk</span>
                 <div style="font-weight:700; font-size:15px; color:#000000; margin-bottom:4px; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden;" title="${(r.customer || '').replace(/\"/g, '')}">${(r.customer || "-").replace(/\"/g, '')}</div>
-                ${r.is_tracking_only ? `<div style="margin-bottom:6px;"><span style="background:#f59e0b; color:#fff; font-size:10px; font-weight:800; padding:2px 6px; border-radius:4px; letter-spacing:0.02em;">INTERNAL TRACKING</span></div>` : ''}
+                ${r.is_tracking_only ? `<div style="margin-bottom:6px;"><span style="background:linear-gradient(135deg,#7c3aed,#a855f7); color:#fff; font-size:10px; font-weight:800; padding:3px 8px; border-radius:4px; letter-spacing:0.04em; display:inline-flex; align-items:center; gap:4px; box-shadow:0 2px 6px rgba(124,58,237,0.35); animation:trackPulse 2s infinite;"><i class="fas fa-eye"></i> TRACKING ONLY — NOT PURCHASED</span></div>` : ''}
                 <div style="display:flex; align-items:center; gap:6px; font-size:11px; font-weight:800; color:${riskColor}">
                   <i class="fas ${riskIcon}"></i> ${riskLabel}
                   <div style="margin-left:auto; display:flex; gap:6px;">
@@ -2035,6 +2092,159 @@ window.printMainOrdersReport = function() {
 };
 
 /* =========================================
+   TRACKING AUTOCOMPLETE — Customer & Product search
+   ========================================= */
+(function() {
+    let _customerCache = null;
+    let _productCache = null;
+    let _debounceTimer = null;
+
+    async function fetchCustomers() {
+        if (_customerCache) return _customerCache;
+        try {
+            const allCustomers = [];
+            let page = 0;
+            const PAGE_SIZE = 1000;
+            while (true) {
+                const res = await window.electron.invoke('supabase:query', {
+                    table: 'omnis_quotations',
+                    method: 'select',
+                    params: { columns: 'customer_name', range: { from: page * PAGE_SIZE, to: (page + 1) * PAGE_SIZE - 1 } }
+                });
+                const data = (res && res.data) || [];
+                allCustomers.push(...data);
+                if (data.length < PAGE_SIZE) break;
+                page++;
+            }
+            const unique = [...new Set(allCustomers.map(d => d.customer_name).filter(Boolean))].sort();
+            _customerCache = unique;
+            return unique;
+        } catch (e) {
+            console.error('Fetch customers error:', e);
+            return [];
+        }
+    }
+
+    async function fetchProducts() {
+        if (_productCache) return _productCache;
+        try {
+            const allItems = [];
+            let page = 0;
+            const PAGE_SIZE = 1000;
+            while (true) {
+                const res = await window.electron.invoke('supabase:query', {
+                    table: 'omnis_quotation_items',
+                    method: 'select',
+                    params: { columns: 'item_code', range: { from: page * PAGE_SIZE, to: (page + 1) * PAGE_SIZE - 1 } }
+                });
+                const data = (res && res.data) || [];
+                allItems.push(...data);
+                if (data.length < PAGE_SIZE) break;
+                page++;
+            }
+            const unique = [...new Set(allItems.map(d => d.item_code).filter(Boolean))].sort();
+            _productCache = unique;
+            return unique;
+        } catch (e) {
+            console.error('Fetch products error:', e);
+            return [];
+        }
+    }
+
+    function renderSuggestions(listEl, inputEl, matches, query, type) {
+        listEl.innerHTML = '';
+        if (!query && matches.length > 20) matches = matches.slice(0, 20);
+
+        matches.forEach(name => {
+            const div = document.createElement('div');
+            div.style.cssText = 'padding:8px 12px; cursor:pointer; font-size:13px; color:#1e293b; border-bottom:1px solid #f1f5f9; transition:background 0.1s;';
+            if (query) {
+                const idx = name.toLowerCase().indexOf(query.toLowerCase());
+                if (idx >= 0) {
+                    div.innerHTML = name.substring(0, idx) +
+                        '<strong style="color:#ef4444;">' + name.substring(idx, idx + query.length) + '</strong>' +
+                        name.substring(idx + query.length);
+                } else {
+                    div.textContent = name;
+                }
+            } else {
+                div.textContent = name;
+            }
+            div.onmouseenter = () => div.style.background = '#f8fafc';
+            div.onmouseleave = () => div.style.background = '';
+            div.onclick = (e) => {
+                e.stopPropagation();
+                inputEl.value = name;
+                listEl.style.display = 'none';
+            };
+            listEl.appendChild(div);
+        });
+
+        if (query && !matches.some(m => m.toLowerCase() === query.toLowerCase())) {
+            const addDiv = document.createElement('div');
+            addDiv.style.cssText = 'padding:10px 12px; cursor:pointer; font-size:13px; color:#f59e0b; font-weight:700; border-top:2px solid #fef3c7; display:flex; align-items:center; gap:8px; background:#fffbeb;';
+            addDiv.innerHTML = '<i class="fas fa-plus-circle"></i> Add New: <span style="color:#1e293b; font-weight:600;">' + query + '</span>';
+            addDiv.onmouseenter = () => addDiv.style.background = '#fef9c3';
+            addDiv.onmouseleave = () => addDiv.style.background = '#fffbeb';
+            addDiv.onclick = (e) => {
+                e.stopPropagation();
+                inputEl.value = query;
+                listEl.style.display = 'none';
+                if (type === 'customer' && _customerCache) _customerCache.push(query);
+                if (type === 'machine' && _productCache) _productCache.push(query);
+            };
+            listEl.appendChild(addDiv);
+        }
+
+        if (query && matches.length === 0) {
+            const noDiv = document.createElement('div');
+            noDiv.style.cssText = 'padding:10px 12px; font-size:12px; color:#94a3b8; text-align:center;';
+            noDiv.textContent = 'No existing ' + (type === 'customer' ? 'customers' : 'products') + ' match';
+            listEl.insertBefore(noDiv, listEl.firstChild);
+        }
+
+        listEl.style.display = listEl.children.length > 0 ? 'block' : 'none';
+    }
+
+    window._trackAutocomplete = function(type, query) {
+        clearTimeout(_debounceTimer);
+        _debounceTimer = setTimeout(async () => {
+            const inputEl = document.getElementById(type === 'customer' ? 'track-customer' : 'track-machine');
+            const listEl = document.getElementById(type === 'customer' ? 'track-customer-suggestions' : 'track-machine-suggestions');
+            if (!inputEl || !listEl) return;
+
+            const items = type === 'customer' ? await fetchCustomers() : await fetchProducts();
+            const q = (query || '').trim();
+
+            let matches;
+            if (!q) {
+                matches = items.slice(0, 20);
+            } else {
+                const startsWith = items.filter(i => i.toLowerCase().startsWith(q.toLowerCase()));
+                const contains = items.filter(i => !i.toLowerCase().startsWith(q.toLowerCase()) && i.toLowerCase().includes(q.toLowerCase()));
+                matches = [...startsWith, ...contains].slice(0, 30);
+            }
+
+            renderSuggestions(listEl, inputEl, matches, q, type);
+        }, 150);
+    };
+
+    document.addEventListener('click', function(e) {
+        ['track-customer-suggestions', 'track-machine-suggestions'].forEach(id => {
+            const el = document.getElementById(id);
+            if (el && !el.contains(e.target) && e.target.id !== id.replace('-suggestions', '')) {
+                el.style.display = 'none';
+            }
+        });
+    });
+
+    window._trackClearCaches = function() {
+        _customerCache = null;
+        _productCache = null;
+    };
+})();
+
+/* =========================================
    ADD TRACKING ORDER LOGIC
    ========================================= */
 window.openAddTrackingModal = function() {
@@ -2047,6 +2257,13 @@ window.openAddTrackingModal = function() {
         document.getElementById('track-target').value = '';
         document.getElementById('track-company').value = 'Unassigned';
         document.getElementById('track-notes').value = '';
+        // Hide any open suggestion dropdowns
+        const custSug = document.getElementById('track-customer-suggestions');
+        const machSug = document.getElementById('track-machine-suggestions');
+        if (custSug) custSug.style.display = 'none';
+        if (machSug) machSug.style.display = 'none';
+        // Invalidate autocomplete caches for fresh data
+        if (window._trackClearCaches) window._trackClearCaches();
         modal.style.display = 'flex';
     } else {
         console.error("Modal element 'tracking-order-modal' not found.");
