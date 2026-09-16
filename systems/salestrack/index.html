@@ -17146,7 +17146,7 @@
         const qqItem = document.getElementById('qq-item');
         const qqItemSuggest = document.getElementById('qq-item-suggest');
         if (qqItem && qqItemSuggest) {
-            window.setupSupabaseSuggestions(qqItem, qqItemSuggest, 'stock_inventory', 'model,brand');
+            window.setupSupabaseSuggestions(qqItem, qqItemSuggest, 'products', 'item_name,item_code,brand_name');
         }
 
         // Also wire Advanced Form salesperson (view-create-quotation)
@@ -17202,34 +17202,52 @@
 
             try {
                 let results = [];
-                const orFilter = `model.ilike.%${val}%,brand.ilike.%${val}%`;
+                // Search the PRODUCTS table (same as Product Catalog) using item_name, item_code, brand_name
+                const productsFilter = `item_name.ilike.%${val}%,item_code.ilike.%${val}%,brand_name.ilike.%${val}%`;
 
-                // Try Supabase preload proxy first (same as quick quotes)
+                // Try Supabase preload proxy first
                 const sp = (window.salestrack && window.salestrack.supabase) || window.supabase || null;
                 if (sp && sp.from) {
-                    const { data, error } = await sp.from('stock_inventory').select('*').or(orFilter).limit(15);
-                    if (!error && data) results = data;
+                    const { data, error } = await sp.from('products').select('*').or(productsFilter).limit(15);
+                    if (!error && data && data.length > 0) results = data;
                 }
 
-                // IPC fallback
+                // IPC fallback — products table
                 if (results.length === 0 && window.electron && typeof window.electron.invoke === 'function') {
                     const ipcRes = await window.electron.invoke('supabase:query', {
-                        table: 'stock_inventory', method: 'select',
-                        params: { columns: '*', or: orFilter, limit: 15 }
+                        table: 'products', method: 'select',
+                        params: { columns: '*', or: productsFilter, limit: 15 }
                     });
-                    if (ipcRes && ipcRes.ok && ipcRes.data) results = ipcRes.data;
+                    if (ipcRes && ipcRes.ok && ipcRes.data && ipcRes.data.length > 0) results = ipcRes.data;
+                }
+
+                // Fallback: also try stock_inventory for legacy items
+                if (results.length === 0) {
+                    const stockFilter = `model.ilike.%${val}%,brand.ilike.%${val}%`;
+                    if (sp && sp.from) {
+                        const { data: sData, error: sErr } = await sp.from('stock_inventory').select('*').or(stockFilter).limit(15);
+                        if (!sErr && sData && sData.length > 0) results = sData;
+                    }
+                    if (results.length === 0 && window.electron && typeof window.electron.invoke === 'function') {
+                        const ipcRes2 = await window.electron.invoke('supabase:query', {
+                            table: 'stock_inventory', method: 'select',
+                            params: { columns: '*', or: stockFilter, limit: 15 }
+                        });
+                        if (ipcRes2 && ipcRes2.ok && ipcRes2.data) results = ipcRes2.data;
+                    }
                 }
 
                 dd.innerHTML = '';
                 if (results.length > 0) {
                     dd.innerHTML = results.map((item, idx) => {
                         const title = item.item_name || item.model || item.name || item.item_code || '';
-                        const sub = item.item_code || item.brand || '';
-                        const details = item.brand ? `Brand: ${item.brand}` : (item.brand_name ? `Brand: ${item.brand_name}` : '');
+                        const sub = item.item_code || item.model || '';
+                        const details = item.brand_name ? `Brand: ${item.brand_name}` : (item.brand ? `Brand: ${item.brand}` : '');
+                        const group = item.item_group_name ? ` · ${item.item_group_name}` : '';
                         return `<div class="suggest-item" data-idx="${idx}" style="padding:10px 14px; border-bottom:1px solid #f1f5f9; cursor:pointer; transition: background 0.15s;">
                             <div style="font-weight:700; color:#1e293b; font-size:13.5px;">${title}</div>
                             <div style="display:flex; justify-content:space-between; align-items:center; margin-top:2px;">
-                               <div style="font-size:11px; color:#64748b; font-weight:500;">${sub}</div>
+                               <div style="font-size:11px; color:#64748b; font-weight:500;">${sub}${group}</div>
                                <div style="font-size:10px; color:#94a3b8; font-weight:700; text-transform:uppercase;">${details}</div>
                             </div>
                         </div>`;
@@ -17245,19 +17263,27 @@
                             const raw = results[idx];
                             if (!raw) return;
 
-                            // Fill CODE
-                            input.value = raw.model || raw.item_code || raw.name || '';
+                            // Fill CODE — prefer item_code (products table) over model (stock_inventory)
+                            const itemCode = raw.item_code || raw.model || raw.name || '';
+                            input.value = itemCode;
                             // Fill ITEM NAME
                             const nameInp = row.querySelector('.item-name');
                             if (nameInp) nameInp.value = raw.item_name || raw.model || raw.name || '';
-                            // Fill DESCRIPTION from stock_inventory
+                            // Fill DESCRIPTION
                             const descInp = row.querySelector('.item-desc');
-                            if (descInp) descInp.value = raw.description || raw.item_name || '';
+                            if (descInp) descInp.value = raw.description || '';
+                            // Fill RATE from product catalog if available
+                            if (raw.rate) {
+                                const rateInp = row.querySelector('.item-rate');
+                                if (rateInp && !rateInp.value) {
+                                    rateInp.value = raw.rate;
+                                    if (window.calculateQuotationTotals) window.calculateQuotationTotals();
+                                }
+                            }
 
                             dd.style.display = 'none';
 
                             // Lookup last quotation for this item to get rate + lead time
-                            const itemCode = raw.model || raw.item_code || raw.name || '';
                             if (itemCode) {
                                 try {
                                     const sp2 = (window.salestrack && window.salestrack.supabase) || window.supabase || null;
