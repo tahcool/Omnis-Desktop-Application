@@ -11824,7 +11824,7 @@
 
     <!-- Scripts -->
     <script src="create_ce_logic.js?v=202609072015"></script>
-    <script src="create_quotation_logic.js?v=202609080810"></script>
+    <script src="create_quotation_logic.js?v=202609161204"></script>
 
     <!-- Tutorial Logic -->
     <script src="tutorial_logic.js?v=202609072015"></script>
@@ -17161,6 +17161,53 @@
         const ceSalespersonSuggest = document.getElementById('ce-salesperson-suggest');
         if (ceSalesperson && ceSalespersonSuggest) {
             window.setupSupabaseSuggestions(ceSalesperson, ceSalespersonSuggest, 'omnis_sales_persons', 'name');
+        }
+
+        // Override addQuotationItemRow so item search uses Supabase (setupSupabaseSuggestions is now available)
+        const _origAddRow = window.addQuotationItemRow;
+        window.addQuotationItemRow = function() {
+            if (_origAddRow) _origAddRow();
+            const tbody = document.getElementById('qtn-items-body');
+            if (!tbody) return;
+            const row = tbody.lastElementChild;
+            if (!row) return;
+            const codeInp = row.querySelector('.item-code');
+            const suggestBox = row.querySelector('.suggest-list');
+            if (codeInp && suggestBox && !codeInp.hasAttribute('data-sb-suggest')) {
+                window.setupSupabaseSuggestions(codeInp, suggestBox, 'stock_inventory', 'model,brand', (item) => {
+                    codeInp.value = item.value;
+                    const nameInp = row.querySelector('.item-name');
+                    if (nameInp) nameInp.value = item.description || item.value;
+                    const descInp = row.querySelector('.item-desc');
+                    if (descInp) descInp.value = item.itemDescription || '';
+                    if (item.rate) {
+                        row.querySelector('.item-rate').value = item.rate;
+                        if (window.calculateQuotationTotals) window.calculateQuotationTotals();
+                    }
+                });
+            }
+        };
+
+        // Re-wire any existing rows (e.g. the default first row added by initCreateQuotation)
+        const existingTbody = document.getElementById('qtn-items-body');
+        if (existingTbody) {
+            Array.from(existingTbody.children).forEach(row => {
+                const codeInp = row.querySelector('.item-code');
+                const suggestBox = row.querySelector('.suggest-list');
+                if (codeInp && suggestBox && !codeInp.hasAttribute('data-sb-suggest')) {
+                    window.setupSupabaseSuggestions(codeInp, suggestBox, 'stock_inventory', 'model,brand', (item) => {
+                        codeInp.value = item.value;
+                        const nameInp = row.querySelector('.item-name');
+                        if (nameInp) nameInp.value = item.description || item.value;
+                        const descInp = row.querySelector('.item-desc');
+                        if (descInp) descInp.value = item.itemDescription || '';
+                        if (item.rate) {
+                            row.querySelector('.item-rate').value = item.rate;
+                            if (window.calculateQuotationTotals) window.calculateQuotationTotals();
+                        }
+                    });
+                }
+            });
         }
     })();
 
