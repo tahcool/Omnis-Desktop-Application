@@ -173,9 +173,32 @@ contextBridge.exposeInMainWorld("supabase", {
       },
       // Single-record fetch by name or id
       getOne:  (params) => ipcRenderer.invoke('supabase:query', { table, method: 'getOne', params }),
-      upsert:  (data, options) => ipcRenderer.invoke('supabase:query', { table, method: 'upsert', params: { data, options } }),
-      insert:  (data) => ipcRenderer.invoke('supabase:query', { table, method: 'insert', params: { data } }),
-      update:  (data, params) => ipcRenderer.invoke('supabase:query', { table, method: 'update', params: { data, ...params } }),
+      upsert:  (data, options) => {
+        const p = { data, options, returning: false };
+        const chain = {
+          select: () => { p.returning = true; return chain; },
+          then: (onOk, onErr) => ipcRenderer.invoke('supabase:query', { table, method: 'upsert', params: p }).then(onOk, onErr)
+        };
+        return chain;
+      },
+      insert:  (data) => {
+        const p = { data, returning: false };
+        const chain = {
+          select: () => { p.returning = true; return chain; },
+          then: (onOk, onErr) => ipcRenderer.invoke('supabase:query', { table, method: 'insert', params: p }).then(onOk, onErr)
+        };
+        return chain;
+      },
+      update:  (data, params) => {
+        const p = { data, ...(params || {}), returning: false };
+        const chain = {
+          eq:     (col, val) => { if (!p.filters) p.filters = {}; p.filters[col] = val; return chain; },
+          match:  (m) => { p.match = m; return chain; },
+          select: () => { p.returning = true; return chain; },
+          then: (onOk, onErr) => ipcRenderer.invoke('supabase:query', { table, method: 'update', params: p }).then(onOk, onErr)
+        };
+        return chain;
+      },
       delete:  (params) => ipcRenderer.invoke('supabase:query', { table, method: 'delete', params })
     };
   },

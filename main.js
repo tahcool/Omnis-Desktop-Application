@@ -880,15 +880,6 @@ ipcMain.handle('supabase:query', async (event, { table, method, params, data }) 
       else if (params.match) query = query.match(params.match);
       if (!params.skipSelect) query = query.select();
 
-    } else if (method === 'insert') {
-      query = query.insert(params.data || data).select();
-      
-    } else if (method === 'update') {
-      query = query.update(params.data || data);
-      if (params.match) query = query.match(params.match);
-      else if (params.id) query = query.eq('id', params.id);
-      query = query.select();
-
     } else if (method === 'upsert') {
       const options = params.options || {};
       if (params.onConflict) options.onConflict = params.onConflict;
