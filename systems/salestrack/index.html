@@ -2794,6 +2794,7 @@
       cursor: pointer;
       position: relative;
       box-shadow: 0 4px 15px -3px rgba(0,0,0,0.02);
+      overflow: visible;
     }
 
     .ai-order-row:hover {
@@ -14477,14 +14478,22 @@
 
     /* ── 3-dot action menu helpers ── */
     window.closeQRowMenus = function() {
-      document.querySelectorAll('.qrow-dropdown.open').forEach(d => d.classList.remove('open'));
+      document.querySelectorAll('.qrow-dropdown.open').forEach(d => {
+        d.classList.remove('open');
+        const row = d.closest('.ai-order-row');
+        if (row) row.style.zIndex = '';
+      });
     };
 
     window.toggleQRowMenu = function(btn) {
       const dropdown = btn.nextElementSibling;
       const wasOpen = dropdown.classList.contains('open');
       window.closeQRowMenus();
-      if (!wasOpen) dropdown.classList.add('open');
+      if (!wasOpen) {
+        dropdown.classList.add('open');
+        const row = dropdown.closest('.ai-order-row');
+        if (row) row.style.zIndex = '100';
+      }
     };
 
     document.addEventListener('click', function() {
