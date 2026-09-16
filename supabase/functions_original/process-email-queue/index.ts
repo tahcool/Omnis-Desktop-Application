@@ -112,7 +112,7 @@ Deno.serve(async (req) => {
         errors.push(`${row.id}: ${e.message}`);
         
         const newRetryCount = (row.retry_count || 0) + 1;
-        const newStatus = newRetryCount >= 5 ? "failed" : "pending";
+        const newStatus = newRetryCount >= 3 ? "failed" : "pending";
 
         const updateData: any = {
           status:        newStatus,

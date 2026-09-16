@@ -511,6 +511,7 @@
             }
 
             if (!data.customer) throw new Error("Customer is required");
+            if (!data.sales_person) throw new Error("Sales Person is required");
             if (data.items.length === 0) throw new Error("At least one item is required");
 
             const sp = (window.salestrack && window.salestrack.supabase) || window.supabase || null;
@@ -1055,8 +1056,27 @@
                 }
             }
 
-            // 7. Render HTML Locally
-            const html = renderQuotationHTML(data, template, { mxgLogo, spzLogo, oemLogos });
+            // 7. Look up sales person profile for signature block
+            let salesPersonProfile = {};
+            if (qtnData.sales_person) {
+                try {
+                    const spLookup = await window.electron.invoke('supabase:query', {
+                        table: 'omnis_sales_persons',
+                        method: 'select',
+                        params: {
+                            columns: 'name, job_title, phone_number, email',
+                            filters: { name: qtnData.sales_person },
+                            limit: 1
+                        }
+                    });
+                    if (spLookup.ok && spLookup.data && spLookup.data[0]) {
+                        salesPersonProfile = spLookup.data[0];
+                    }
+                } catch (e) { console.warn('Could not load sales person profile', e); }
+            }
+
+            // 8. Render HTML Locally
+            const html = renderQuotationHTML(data, template, { mxgLogo, spzLogo, oemLogos, salesPersonProfile });
 
             // 7. Generate PDF via Electron's native printToPDF (preserves clickable hyperlinks)
             console.log("Generating PDF via Electron printToPDF...");
@@ -1076,6 +1096,7 @@
         const qtn = data.quotation;
         const customer = data.customer || {};
         const items = data.items || [];
+        const sp = logos.salesPersonProfile || {};
 
         const formatCurr = (num) => (num || 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
         const formatDate = (ds) => {
@@ -1157,7 +1178,7 @@
             signatureHtml = `
             <div style="margin-top: 30px;">
                 <p>Yours truly<br>For and on behalf of Sinopower (Pvt) Ltd</p>
-                <p style="margin-top: 40px;"><strong>${qtn.sales_person || 'Sales Department'}</strong><br>Sinopower</p>
+                <p style="margin-top: 40px;"><strong>${sp.name || qtn.sales_person || 'Sales Department'}</strong><br>${sp.job_title || 'Sinopower'}${sp.phone_number ? '<br>Mobile: ' + sp.phone_number : ''}${sp.email ? '<br>Email: ' + sp.email : ''}</p>
             </div>
             <div class="footer-logos">
                 <div class="footer-logos-text" style="color: #1e3a8a;">SINOPOWER | GENERATORS | PUMPS</div>
@@ -1192,7 +1213,7 @@
             signatureHtml = `
             <div style="margin-top: 30px;">
                 <p>Yours truly<br>For and on behalf of Machinery Exchange (Pvt) Ltd</p>
-                <p style="margin-top: 40px;"><strong>${qtn.sales_person || 'Antony Dube'}</strong><br>National Equipment Sales Manager<br>Mobile: +263 772 294 246<br>Email: antony.dube@machinery-exchange.com</p>
+                <p style="margin-top: 40px;"><strong>${sp.name || qtn.sales_person || 'Sales Department'}</strong><br>${sp.job_title || 'Sales Department'}${sp.phone_number ? '<br>Mobile: ' + sp.phone_number : ''}${sp.email ? '<br>Email: ' + sp.email : ''}</p>
             </div>
             <div class="footer-logos">
                 <div style="font-size: 9px; font-weight: bold; text-align: left; margin-bottom: 8px;">PROUD DISTRIBUTORS OF:</div>

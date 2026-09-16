@@ -8585,6 +8585,133 @@ window.OmnisDashboardV6 = class OmnisDashboardV6 {
         }
     }
 
+    /* ---------- SALES TEAM PROFILES ---------- */
+    async loadSalesTeam() {
+        try {
+            const tbody = document.getElementById('sales-team-table-body');
+            if (!tbody) return;
+            tbody.innerHTML = '<tr><td colspan="7" style="padding:20px; text-align:center;"><i class="fas fa-spinner fa-spin"></i> Loading sales team...</td></tr>';
+            
+            const res = await window.electron.invoke('supabase:query', {
+                table: 'omnis_sales_persons',
+                method: 'select',
+                params: {
+                    columns: 'id, name, job_title, phone_number, email, whatsapp_number, is_active',
+                    order: { column: 'name', ascending: true }
+                }
+            });
+            
+            if (!res.ok) {
+                tbody.innerHTML = `<tr><td colspan="7" style="padding:20px; text-align:center; color:red;">Error: ${res.error}</td></tr>`;
+                return;
+            }
+            this.renderSalesTeam(res.data || []);
+        } catch (e) {
+            console.error("Failed to load sales team", e);
+        }
+    }
+
+    renderSalesTeam(persons) {
+        const tbody = document.getElementById('sales-team-table-body');
+        if (!tbody) return;
+        tbody.innerHTML = '';
+        
+        if (persons.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="7" style="padding:20px; text-align:center; color:#64748b;">No sales persons found.</td></tr>';
+            return;
+        }
+
+        persons.forEach(p => {
+            const tr = document.createElement('tr');
+            tr.style.borderBottom = '1px solid #f1f5f9';
+            
+            const statusBadge = p.is_active !== false
+                ? '<span style="padding:4px 8px; background:#f0fdf4; color:#166534; border-radius:12px; font-size:11px; font-weight:600;">Active</span>'
+                : '<span style="padding:4px 8px; background:#fef2f2; color:#991b1b; border-radius:12px; font-size:11px; font-weight:600;">Inactive</span>';
+
+            tr.innerHTML = `
+                <td style="padding:12px; font-weight:600; color:#1e293b;">${p.name || ''}</td>
+                <td style="padding:12px; color:#475569;">${p.job_title || '<span style="color:#cbd5e1; font-style:italic;">Not set</span>'}</td>
+                <td style="padding:12px; color:#475569;">${p.phone_number || '<span style="color:#cbd5e1;">—</span>'}</td>
+                <td style="padding:12px; color:#475569; font-size:12px;">${p.email || '<span style="color:#cbd5e1;">—</span>'}</td>
+                <td style="padding:12px; color:#475569; font-size:12px;">${p.whatsapp_number || '<span style="color:#cbd5e1;">—</span>'}</td>
+                <td style="padding:12px;">${statusBadge}</td>
+                <td style="padding:12px; text-align:right;">
+                    <button onclick='salestrack.editSalesPerson(${JSON.stringify(p).replace(/'/g, "&#39;")})' style="background:transparent; border:none; color:#3b82f6; cursor:pointer; padding:4px 8px; font-weight:600;"><i class="fas fa-edit"></i> Edit</button>
+                </td>
+            `;
+            tbody.appendChild(tr);
+        });
+    }
+
+    openAddSalesPersonModal() {
+        document.getElementById('sp-modal-title').textContent = 'Add Sales Person';
+        document.getElementById('sp-edit-id').value = '';
+        document.getElementById('sp-edit-name').value = '';
+        document.getElementById('sp-edit-name').disabled = false;
+        document.getElementById('sp-edit-title').value = 'Sales Representative';
+        document.getElementById('sp-edit-phone').value = '';
+        document.getElementById('sp-edit-email').value = '';
+        document.getElementById('sp-edit-whatsapp').value = '';
+        document.getElementById('sp-edit-active').checked = true;
+        document.getElementById('sales-person-modal').style.display = 'flex';
+    }
+
+    editSalesPerson(p) {
+        document.getElementById('sp-modal-title').textContent = 'Edit Sales Person';
+        document.getElementById('sp-edit-id').value = p.id;
+        document.getElementById('sp-edit-name').value = p.name || '';
+        document.getElementById('sp-edit-name').disabled = false;
+        document.getElementById('sp-edit-title').value = p.job_title || '';
+        document.getElementById('sp-edit-phone').value = p.phone_number || '';
+        document.getElementById('sp-edit-email').value = p.email || '';
+        document.getElementById('sp-edit-whatsapp').value = p.whatsapp_number || '';
+        document.getElementById('sp-edit-active').checked = p.is_active !== false;
+        document.getElementById('sales-person-modal').style.display = 'flex';
+    }
+
+    async saveSalesPerson() {
+        const id = document.getElementById('sp-edit-id').value;
+        const name = document.getElementById('sp-edit-name').value.trim();
+        const job_title = document.getElementById('sp-edit-title').value.trim();
+        const phone_number = document.getElementById('sp-edit-phone').value.trim();
+        const email = document.getElementById('sp-edit-email').value.trim();
+        const whatsapp_number = document.getElementById('sp-edit-whatsapp').value.trim();
+        const is_active = document.getElementById('sp-edit-active').checked;
+
+        if (!name) { this.showToast("Name is required", "error"); return; }
+
+        this.showToast("Saving sales person...", "info");
+        try {
+            const data = { name, job_title: job_title || null, phone_number: phone_number || null, email: email || null, whatsapp_number: whatsapp_number || null, is_active };
+            
+            if (id) {
+                // Update existing
+                const res = await window.electron.invoke('supabase:query', {
+                    table: 'omnis_sales_persons',
+                    method: 'update',
+                    params: { data, match: { id: parseInt(id) } }
+                });
+                if (res.error) throw new Error(res.error);
+            } else {
+                // Insert new
+                const res = await window.electron.invoke('supabase:query', {
+                    table: 'omnis_sales_persons',
+                    method: 'insert',
+                    params: { data }
+                });
+                if (res.error) throw new Error(res.error);
+            }
+            
+            this.showToast("Sales person saved!", "success");
+            document.getElementById('sales-person-modal').style.display = 'none';
+            this.loadSalesTeam();
+        } catch (e) {
+            console.error("Save sales person error", e);
+            this.showToast("Failed: " + e.message, "error");
+        }
+    }
+
     async initWhatsAppUpdate(reportId, machineId) {
         if (!window.electron) {
             console.error("WhatsApp built-in requires Desktop environment");
@@ -8838,14 +8965,13 @@ window.OmnisDashboardV6 = class OmnisDashboardV6 {
             const isSinopower = company.includes("sinopower") || owner.includes("sinopower");
             const isIEG = company.includes("industrial equipment") || owner.includes("industrial equipment");
 
-            let contactPerson = "Chetan Samji";
-            let contactPhone = "+263772949515";
+            const config = this._getRecipients(this._currentFullDoc?.company || '');
+            let contactPerson = config.contactName || "Chetan Samji";
+            let contactPhone = config.contactPhone || "+263772949515";
             let companyName = "Machinery Exchange";
             let signOff = `*The ${companyName} Team*`;
 
             if (isSinopower) {
-                contactPerson = "Brett Berry";
-                contactPhone = "+263775553862";
                 companyName = "Sinopower";
                 signOff = `*Sinopower*`;
             } else if (isIEG) {
@@ -9769,7 +9895,7 @@ window.OmnisDashboardV6 = class OmnisDashboardV6 {
                 table: 'omnis_email_queue',
                 method: 'update',
                 params: {
-                    data: { status: 'pending', error_message: null },
+                    data: { status: 'pending', error_message: null, retry_count: 0, scheduled_for: new Date().toISOString() },
                     match: { id: id }
                 }
             });
@@ -9818,7 +9944,7 @@ window.OmnisDashboardV6 = class OmnisDashboardV6 {
                 table: 'omnis_email_queue',
                 method: 'update',
                 params: {
-                    data: { status: 'pending', error_message: null },
+                    data: { status: 'pending', error_message: null, retry_count: 0, scheduled_for: new Date().toISOString() },
                     match: { status: 'failed' }
                 }
             });
@@ -9899,6 +10025,15 @@ window.OmnisDashboardV6 = class OmnisDashboardV6 {
     });
 
         if (window.omnisLog) window.omnisLog(`[Settings] Switched to tab: ${tabId.toUpperCase()}`);
+
+        if (tabId === 'team') {
+            this.loadTeamUsers();
+            this.loadSalesTeam();
+        }
+
+        if (tabId === 'notifications') {
+            this.loadEmailRecipients();
+        }
 
         if (tabId === 'email-queue') {
             if (this.loadFailedEmails) this.loadFailedEmails();
@@ -11385,10 +11520,10 @@ window.OutboxManager = {
                     }).catch(err => {
                         console.error('Failed to send outbox item', err);
                         item.retries = (item.retries || 0) + 1;
-                        if (item.retries <= 5) {
-                            // Retry delays: 1m, 5m, 15m, 30m, 60m
-                            const delays = [60000, 300000, 900000, 1800000, 3600000];
-                            const delayMs = delays[item.retries - 1];
+                        if (item.retries <= 3) {
+                            // Retry delays: 5m, 15m, 45m
+                            const delays = [300000, 900000, 2700000];
+                            const delayMs = delays[item.retries - 1] || 2700000;
                             item.sendAt = Date.now() + delayMs;
                             item.status = 'pending';
                             if (window.salestrack && window.salestrack.showToast) {
@@ -11401,7 +11536,7 @@ window.OutboxManager = {
                                 window.salestrack.showToast(`Final failure: ${item.displayTitle} could not be sent.`, 'error');
                             }
                             if (window.electron && window.electron.invoke) {
-                                window.electron.invoke('shell:showNotification', { title: "Email Failed", body: "An email permanently failed to send after 5 retries." }).catch(console.error);
+                                window.electron.invoke('shell:showNotification', { title: "Email Failed", body: "An email permanently failed to send after 3 retries." }).catch(console.error);
                             }
                         }
                         this.render();

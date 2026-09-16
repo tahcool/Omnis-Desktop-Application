@@ -726,3 +726,5 @@
   Files: .mcp/knowledge/_shared/commit_log.md,package.json,
 - `100d633` 2026-09-16 [feature/admin-service-key-separation] [checkpoint] Email system fixes: remove fleetrack access gate, per-item lead time in Mark as Sale, new branded email template with logos, green row highlight for Ordered quotations
   Files: .mcp/knowledge/_shared/commit_log.md,lib/email-manager.js,supabase/functions/email-submit/index.ts,systems/salestrack/create_quotation_logic.js,systems/salestrack/index.html,
+- `16f184e` 2026-09-16 [feature/admin-service-key-separation] [checkpoint] Hot Leads Report: Supabase migration, notes/follow-up columns, admin-only sales restriction
+  Files: .mcp/knowledge/_shared/commit_log.md,systems/salestrack/dashboard_logic.js,systems/salestrack/index.html,

@@ -419,9 +419,18 @@
       background: #94a3b8;
     }
 
-    /* GLOBALLY FORCE MODALS TO TOP */
+    /* GLOBALLY FORCE MODALS TO TOP — explicit list only (no wildcards) */
     .omnis-modal, .modal-overlay, .task-modal-overlay, .insight-modal-overlay, .gs-form-overlay,
-    [id$="-modal"], [id$="-overlay"] {
+    #dash-generic-modal, #omnis-confirm-overlay, #omnis-confirm-modal,
+    #tracking-order-modal, #sync-sales-modal, #ftq-log-modal,
+    #rf-machine-modal, #rd-view-modal, #rd-add-modal,
+    #mkt-dispatch-modal, #cdv-log-modal, #psv-log-modal, #psv-email-modal,
+    #ct-new-deal-modal, #ct-manage-deal-modal,
+    #gift-list-overlay, #product-pricing-overlay, #product-form-overlay,
+    #aftersales-form-overlay, #customerModal, #sp-form-overlay,
+    #whatsapp-scan-overlay, #whatsapp-preview-overlay, #qtn-opts-overlay,
+    #profile-crop-modal, #defects-modal-overlay, #help-modal,
+    #inactivity-warning-overlay {
       z-index: 999999 !important;
     }
 
@@ -1180,11 +1189,13 @@
       justify-content: center;
       opacity: 0;
       visibility: hidden;
+      pointer-events: none;
       transition: opacity 0.25s ease, visibility 0.25s ease;
     }
     #omnis-confirm-overlay.active {
       opacity: 1;
       visibility: visible;
+      pointer-events: auto;
     }
     .omnis-confirm-card {
       background: white;
@@ -7656,6 +7667,10 @@
                           style="padding:8px 20px; border:none; border-radius:8px; font-size:12px; font-weight:700; cursor:pointer; transition:all 0.3s; background:transparent; color:#64748b; display:flex; align-items:center; gap:8px;">
                           <i class="fas fa-users"></i> Team
                         </button>
+                        <button onclick="salestrack.setSettingsTab('notifications')" class="settings-tab-btn" data-tab="notifications"
+                          style="padding:8px 20px; border:none; border-radius:8px; font-size:12px; font-weight:700; cursor:pointer; transition:all 0.3s; background:transparent; color:#64748b; display:flex; align-items:center; gap:8px;">
+                          <i class="fas fa-bell"></i> Notifications
+                        </button>
                         <button onclick="salestrack.setSettingsTab('email-queue')" class="settings-tab-btn" data-tab="email-queue"
                                 style="padding:8px 20px; border:none; border-radius:8px; font-size:12px; font-weight:700; cursor:pointer; transition:all 0.3s; background:transparent; color:#64748b; display:flex; align-items:center; gap:8px;">
                           <i class="fas fa-envelope"></i> Email Queue
@@ -7671,14 +7686,16 @@
                       
                       <!-- TAB: TEAM / ACCESS MANAGEMENT -->
                       <div id="settings-tab-team" class="settings-tab-content hidden">
+
+                          <!-- SALES TEAM PROFILES -->
                           <div class="dash-card" style="background: #fff; padding: 30px; border-radius: 16px; border: 1px solid #e2e8f0; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);">
                             <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 20px;">
                                 <div>
-                                  <h3 style="font-size: 18px; font-weight: 700; color: #1e293b; margin: 0 0 4px 0;">User & Access Management</h3>
-                                  <p style="font-size: 13px; color: #64748b; margin: 0;">Manage users and their module-specific access permissions.</p>
+                                  <h3 style="font-size: 18px; font-weight: 700; color: #1e293b; margin: 0 0 4px 0;"><i class="fas fa-id-badge" style="color:#3b82f6; margin-right:6px;"></i>Sales Team Profiles</h3>
+                                  <p style="font-size: 13px; color: #64748b; margin: 0;">Manage sales person details shown on quotation signoff (title, phone, email).</p>
                                 </div>
-                                <button onclick="salestrack.openCreateUserModal()" class="primary-btn" style="padding: 8px 16px; background: #8b2219; color: #fff; border: none; border-radius: 8px; font-weight: 600; cursor: pointer;">
-                                  <i class="fas fa-user-plus"></i> Create User
+                                <button onclick="salestrack.openAddSalesPersonModal()" class="primary-btn" style="padding: 8px 16px; background: #1e40af; color: #fff; border: none; border-radius: 8px; font-weight: 600; cursor: pointer;">
+                                  <i class="fas fa-user-plus"></i> Add Sales Person
                                 </button>
                             </div>
                             
@@ -7686,15 +7703,151 @@
                               <table style="width: 100%; border-collapse: collapse; font-size: 13px; text-align: left;">
                                 <thead>
                                   <tr style="border-bottom: 2px solid #e2e8f0; color: #64748b;">
-                                    <th style="padding: 12px; font-weight: 600;">User (Email)</th>
-                                    <th style="padding: 12px; font-weight: 600;">Role</th>
-                                    <th style="padding: 12px; font-weight: 600;">System Access</th>
+                                    <th style="padding: 12px; font-weight: 600;">Name</th>
+                                    <th style="padding: 12px; font-weight: 600;">Job Title</th>
+                                    <th style="padding: 12px; font-weight: 600;">Phone</th>
+                                    <th style="padding: 12px; font-weight: 600;">Email</th>
+                                    <th style="padding: 12px; font-weight: 600;">WhatsApp</th>
+                                    <th style="padding: 12px; font-weight: 600;">Status</th>
                                     <th style="padding: 12px; font-weight: 600; text-align: right;">Actions</th>
                                   </tr>
                                 </thead>
-                                <tbody id="team-users-table-body">
+                                <tbody id="sales-team-table-body">
                                 </tbody>
                               </table>
+                            </div>
+                          </div>
+                      </div>
+
+                      <!-- SALES PERSON EDIT MODAL -->
+                      <div id="sales-person-modal" style="display:none; position:fixed; top:0; left:0; width:100vw; height:100vh; background:rgba(0,0,0,0.5); z-index:9999; align-items:center; justify-content:center;">
+                        <div style="background:white; border-radius:16px; padding:30px; width:460px; max-width:95vw; box-shadow:0 25px 50px -12px rgba(0,0,0,0.25);">
+                          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
+                            <h3 id="sp-modal-title" style="margin:0; font-size:18px; font-weight:700; color:#1e293b;">Edit Sales Person</h3>
+                            <button onclick="document.getElementById('sales-person-modal').style.display='none'" style="background:none; border:none; font-size:20px; cursor:pointer; color:#94a3b8;">&times;</button>
+                          </div>
+                          <input type="hidden" id="sp-edit-id" />
+                          <div style="margin-bottom:14px;">
+                            <label style="display:block; font-size:12px; font-weight:600; color:#475569; margin-bottom:4px;">Full Name *</label>
+                            <input type="text" id="sp-edit-name" style="width:100%; padding:10px; border:1px solid #e2e8f0; border-radius:8px; font-size:14px; box-sizing:border-box;" />
+                          </div>
+                          <div style="margin-bottom:14px;">
+                            <label style="display:block; font-size:12px; font-weight:600; color:#475569; margin-bottom:4px;">Job Title</label>
+                            <input type="text" id="sp-edit-title" placeholder="e.g. National Equipment Sales Manager" style="width:100%; padding:10px; border:1px solid #e2e8f0; border-radius:8px; font-size:14px; box-sizing:border-box;" />
+                          </div>
+                          <div style="margin-bottom:14px;">
+                            <label style="display:block; font-size:12px; font-weight:600; color:#475569; margin-bottom:4px;">Phone Number</label>
+                            <input type="text" id="sp-edit-phone" placeholder="+263 772 000 000" style="width:100%; padding:10px; border:1px solid #e2e8f0; border-radius:8px; font-size:14px; box-sizing:border-box;" />
+                          </div>
+                          <div style="margin-bottom:14px;">
+                            <label style="display:block; font-size:12px; font-weight:600; color:#475569; margin-bottom:4px;">Email</label>
+                            <input type="email" id="sp-edit-email" placeholder="name@company.com" style="width:100%; padding:10px; border:1px solid #e2e8f0; border-radius:8px; font-size:14px; box-sizing:border-box;" />
+                          </div>
+                          <div style="margin-bottom:14px;">
+                            <label style="display:block; font-size:12px; font-weight:600; color:#475569; margin-bottom:4px;">WhatsApp Number</label>
+                            <input type="text" id="sp-edit-whatsapp" placeholder="263772000000" style="width:100%; padding:10px; border:1px solid #e2e8f0; border-radius:8px; font-size:14px; box-sizing:border-box;" />
+                          </div>
+                          <div style="margin-bottom:20px;">
+                            <label style="display:flex; align-items:center; gap:8px; font-size:13px; font-weight:600; color:#475569; cursor:pointer;">
+                              <input type="checkbox" id="sp-edit-active" checked style="width:16px; height:16px;" /> Active
+                            </label>
+                          </div>
+                          <div style="display:flex; gap:10px; justify-content:flex-end;">
+                            <button onclick="document.getElementById('sales-person-modal').style.display='none'" style="padding:10px 20px; background:#f1f5f9; color:#475569; border:1px solid #e2e8f0; border-radius:8px; font-weight:600; cursor:pointer;">Cancel</button>
+                            <button onclick="salestrack.saveSalesPerson()" style="padding:10px 20px; background:#1e40af; color:white; border:none; border-radius:8px; font-weight:600; cursor:pointer;">Save</button>
+                          </div>
+                        </div>
+                      </div>
+
+                      <!-- TAB: NOTIFICATIONS -->
+                      <div id="settings-tab-notifications" class="settings-tab-content hidden">
+                          <div class="dash-card" style="background: #fff; padding: 30px; border-radius: 16px; border: 1px solid #e2e8f0; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.05);">
+                            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom: 6px;">
+                                <div>
+                                  <h3 style="font-size: 18px; font-weight: 700; color: #1e293b; margin: 0 0 4px 0;"><i class="fas fa-bell" style="color:#f59e0b; margin-right:6px;"></i>Order Update Recipients</h3>
+                                  <p style="font-size: 13px; color: #64748b; margin: 0;">Manage who gets CC'd on order tracking emails and the contact person shown in email &amp; WhatsApp updates.</p>
+                                </div>
+                                <div style="display:flex; gap:8px;">
+                                  <button onclick="salestrack.resetEmailRecipients()" style="padding:8px 16px; background:#f1f5f9; color:#475569; border:1px solid #e2e8f0; border-radius:8px; font-weight:600; cursor:pointer; font-size:12px;">
+                                    <i class="fas fa-undo"></i> Reset Defaults
+                                  </button>
+                                  <button onclick="salestrack.saveEmailRecipients()" style="padding:8px 16px; background:#1e40af; color:#fff; border:none; border-radius:8px; font-weight:600; cursor:pointer; font-size:12px;">
+                                    <i class="fas fa-save"></i> Save Changes
+                                  </button>
+                                </div>
+                            </div>
+                            <p style="font-size:12px; color:#94a3b8; margin:0 0 20px 0;">These settings apply to the <strong>Send Email</strong> and <strong>Send WhatsApp</strong> buttons on the order tracking page.</p>
+
+                            <div style="display:grid; grid-template-columns:1fr 1fr; gap:24px;">
+                              <!-- MXG Column -->
+                              <div style="border:1px solid #e2e8f0; border-radius:12px; overflow:hidden;">
+                                <div style="background:linear-gradient(135deg,#c92222,#991b1b); padding:14px 20px; color:white;">
+                                  <div style="font-size:15px; font-weight:700;">Machinery Exchange</div>
+                                  <div style="font-size:11px; opacity:0.8; margin-top:2px;">MXG email &amp; WhatsApp settings</div>
+                                </div>
+                                <div style="padding:20px; display:flex; flex-direction:column; gap:14px;">
+                                  <div>
+                                    <label style="display:block; font-size:11px; font-weight:700; color:#64748b; text-transform:uppercase; letter-spacing:0.5px; margin-bottom:6px;">CC Email List <span style="font-weight:400; text-transform:none;">(one per line)</span></label>
+                                    <textarea id="email-recipients-mxg" rows="6" style="width:100%; padding:10px; border:1px solid #e2e8f0; border-radius:8px; font-size:12px; font-family:monospace; resize:vertical; box-sizing:border-box; line-height:1.6;" placeholder="takunda@industrial-exchange.group&#10;antony@industrial-exchange.group"></textarea>
+                                  </div>
+                                  <div style="border-top:1px solid #f1f5f9; padding-top:14px;">
+                                    <div style="font-size:11px; font-weight:700; color:#64748b; text-transform:uppercase; letter-spacing:0.5px; margin-bottom:10px;"><i class="fas fa-user-tie" style="color:#3b82f6; margin-right:4px;"></i>Contact Person / Manager</div>
+                                    <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
+                                      <div>
+                                        <label style="display:block; font-size:11px; font-weight:600; color:#475569; margin-bottom:3px;">Name</label>
+                                        <input type="text" id="email-contact-name-mxg" style="width:100%; padding:8px 10px; border:1px solid #e2e8f0; border-radius:6px; font-size:13px; box-sizing:border-box;" placeholder="Chetan Samji" />
+                                      </div>
+                                      <div>
+                                        <label style="display:block; font-size:11px; font-weight:600; color:#475569; margin-bottom:3px;">Title</label>
+                                        <input type="text" id="email-contact-title-mxg" style="width:100%; padding:8px 10px; border:1px solid #e2e8f0; border-radius:6px; font-size:13px; box-sizing:border-box;" placeholder="Commercial Manager" />
+                                      </div>
+                                      <div>
+                                        <label style="display:block; font-size:11px; font-weight:600; color:#475569; margin-bottom:3px;">Email</label>
+                                        <input type="email" id="email-contact-email-mxg" style="width:100%; padding:8px 10px; border:1px solid #e2e8f0; border-radius:6px; font-size:13px; box-sizing:border-box;" placeholder="chetan.samji@machinery-exchange.com" />
+                                      </div>
+                                      <div>
+                                        <label style="display:block; font-size:11px; font-weight:600; color:#475569; margin-bottom:3px;">Phone / WhatsApp</label>
+                                        <input type="text" id="email-contact-phone-mxg" style="width:100%; padding:8px 10px; border:1px solid #e2e8f0; border-radius:6px; font-size:13px; box-sizing:border-box;" placeholder="+263772949515" />
+                                      </div>
+                                    </div>
+                                  </div>
+                                </div>
+                              </div>
+
+                              <!-- SPZ Column -->
+                              <div style="border:1px solid #e2e8f0; border-radius:12px; overflow:hidden;">
+                                <div style="background:linear-gradient(135deg,#7b1515,#450a0a); padding:14px 20px; color:white;">
+                                  <div style="font-size:15px; font-weight:700;">Sinopower</div>
+                                  <div style="font-size:11px; opacity:0.8; margin-top:2px;">SPZ email &amp; WhatsApp settings</div>
+                                </div>
+                                <div style="padding:20px; display:flex; flex-direction:column; gap:14px;">
+                                  <div>
+                                    <label style="display:block; font-size:11px; font-weight:700; color:#64748b; text-transform:uppercase; letter-spacing:0.5px; margin-bottom:6px;">CC Email List <span style="font-weight:400; text-transform:none;">(one per line)</span></label>
+                                    <textarea id="email-recipients-spz" rows="6" style="width:100%; padding:10px; border:1px solid #e2e8f0; border-radius:8px; font-size:12px; font-family:monospace; resize:vertical; box-sizing:border-box; line-height:1.6;" placeholder="logistics@sinopower.co.zw&#10;brett@sinopower.co.zw"></textarea>
+                                  </div>
+                                  <div style="border-top:1px solid #f1f5f9; padding-top:14px;">
+                                    <div style="font-size:11px; font-weight:700; color:#64748b; text-transform:uppercase; letter-spacing:0.5px; margin-bottom:10px;"><i class="fas fa-user-tie" style="color:#3b82f6; margin-right:4px;"></i>Contact Person / Manager</div>
+                                    <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
+                                      <div>
+                                        <label style="display:block; font-size:11px; font-weight:600; color:#475569; margin-bottom:3px;">Name</label>
+                                        <input type="text" id="email-contact-name-spz" style="width:100%; padding:8px 10px; border:1px solid #e2e8f0; border-radius:6px; font-size:13px; box-sizing:border-box;" placeholder="Brett Berry" />
+                                      </div>
+                                      <div>
+                                        <label style="display:block; font-size:11px; font-weight:600; color:#475569; margin-bottom:3px;">Title</label>
+                                        <input type="text" id="email-contact-title-spz" style="width:100%; padding:8px 10px; border:1px solid #e2e8f0; border-radius:6px; font-size:13px; box-sizing:border-box;" placeholder="Commercial Manager" />
+                                      </div>
+                                      <div>
+                                        <label style="display:block; font-size:11px; font-weight:600; color:#475569; margin-bottom:3px;">Email</label>
+                                        <input type="email" id="email-contact-email-spz" style="width:100%; padding:8px 10px; border:1px solid #e2e8f0; border-radius:6px; font-size:13px; box-sizing:border-box;" placeholder="brett@sinopower.co.zw" />
+                                      </div>
+                                      <div>
+                                        <label style="display:block; font-size:11px; font-weight:600; color:#475569; margin-bottom:3px;">Phone / WhatsApp</label>
+                                        <input type="text" id="email-contact-phone-spz" style="width:100%; padding:8px 10px; border:1px solid #e2e8f0; border-radius:6px; font-size:13px; box-sizing:border-box;" placeholder="+263775553862" />
+                                      </div>
+                                    </div>
+                                  </div>
+                                </div>
+                              </div>
                             </div>
                           </div>
                       </div>
@@ -11790,7 +11943,7 @@
                   </select>
                 </div>
                 <div class="form-row">
-                  <label class="form-label">Sales Person</label>
+                  <label class="form-label">Sales Person <span style="color:#dc2626;">*</span></label>
                   <div class="suggest-container">
                     <input type="text" id="qtn-sales-person" class="form-input" placeholder="Search Sales Person...">
                     <div id="qtn-salesperson-suggest" class="suggest-list hidden"></div>
@@ -12896,30 +13049,107 @@
     }
 
     window.closeAllOmnisModals = function() {
-        // 1. GSM & Sales Forms
+        // 1. GSM & Sales Forms (function-based close)
         if (typeof closeGsmModal === 'function') closeGsmModal();
         if (typeof closeOrderModal === 'function') closeOrderModal();
         if (typeof closeInsightModal === 'function') closeInsightModal();
         if (typeof closeRiskModal === 'function') closeRiskModal();
         if (typeof window.closeGroupSalesForm === 'function') window.closeGroupSalesForm();
         if (typeof window.closeStockPipelineForm === 'function') window.closeStockPipelineForm();
-        
-        // 2. Task Manager Modals
+        if (typeof window.closeCustomerModal === 'function') window.closeCustomerModal();
+        if (typeof window.ftqCloseModal === 'function') window.ftqCloseModal();
+        if (typeof window.cdvCloseLogModal === 'function') window.cdvCloseLogModal();
+        if (typeof window.psvCloseLogModal === 'function') window.psvCloseLogModal();
+        if (typeof window.closeProfileCropModal === 'function') window.closeProfileCropModal();
+
+        // 2. Dashboard generic modal
+        if (typeof salestrack !== 'undefined' && typeof salestrack.closeListModal === 'function') {
+            salestrack.closeListModal();
+        } else {
+            const dgm = document.getElementById('dash-generic-modal');
+            if (dgm) dgm.style.display = 'none';
+        }
+
+        // 3. Task Manager Modals (class-toggle)
         const taskView = document.getElementById('taskViewModal');
         if (taskView) taskView.classList.remove('active');
         const perfModal = document.getElementById('individualPerfModal');
         if (perfModal) perfModal.classList.remove('active');
-        
-        // 3. Others (WhatsApp, etc.)
-        const wp = document.getElementById("whatsapp-preview-overlay");
-        if (wp) wp.classList.add("hidden");
-        const qtnOpts = document.getElementById("qtn-opts-overlay");
-        if (qtnOpts) qtnOpts.classList.add("hidden");
-        const construction = document.getElementById("construction-modal");
-        if (construction) construction.classList.add("hidden");
-        const handover = document.getElementById("handover-modal");
-        if (handover) handover.classList.add("hidden");
+        const taskModal = document.getElementById('taskModal');
+        if (taskModal) taskModal.classList.remove('active');
+
+        // 4. display:none modals
+        const displayNoneModals = [
+            'omnis-confirm-modal', 'tracking-order-modal', 'sync-sales-modal',
+            'ftq-log-modal', 'rf-machine-modal', 'rd-view-modal', 'rd-add-modal',
+            'mkt-dispatch-modal', 'cdv-log-modal', 'psv-log-modal', 'psv-email-modal',
+            'ct-new-deal-modal', 'ct-manage-deal-modal', 'product-pricing-overlay',
+            'help-modal'
+        ];
+        displayNoneModals.forEach(id => {
+            const el = document.getElementById(id);
+            if (el && el.style.display !== 'none') el.style.display = 'none';
+        });
+
+        // 5. class="hidden" overlays
+        const hiddenClassOverlays = [
+            'whatsapp-preview-overlay', 'qtn-opts-overlay', 'whatsapp-scan-overlay',
+            'construction-modal', 'handover-modal', 'gift-list-overlay',
+            'aftersales-form-overlay', 'product-form-overlay', 'defects-modal-overlay',
+            'inactivity-warning-overlay'
+        ];
+        hiddenClassOverlays.forEach(id => {
+            const el = document.getElementById(id);
+            if (el && !el.classList.contains('hidden')) el.classList.add('hidden');
+        });
+
+        // 6. Premium confirm overlay (visibility + class)
+        const confirmOverlay = document.getElementById('omnis-confirm-overlay');
+        if (confirmOverlay && confirmOverlay.classList.contains('active')) {
+            if (window._omnisConfirmResolve) {
+                window._omnisConfirmResolve(false);
+            } else {
+                confirmOverlay.classList.remove('active');
+            }
+        }
+
+        // 7. PQ overlay (class-toggle)
+        const pqOverlay = document.getElementById('pq-overlay');
+        if (pqOverlay) pqOverlay.classList.remove('active');
     };
+
+    // ── GLOBAL ESCAPE KEY: dismiss topmost visible overlay ──
+    document.addEventListener('keydown', function(e) {
+        if (e.key !== 'Escape') return;
+
+        // Priority 1: Premium confirm (has its own handler, but safety net)
+        const confirmOv = document.getElementById('omnis-confirm-overlay');
+        if (confirmOv && confirmOv.classList.contains('active')) {
+            if (window._omnisConfirmResolve) window._omnisConfirmResolve(false);
+            return;
+        }
+
+        // Priority 2: Any visible display:flex/block modal
+        const allFixedOverlays = document.querySelectorAll(
+            '[style*="position: fixed"], [style*="position:fixed"]'
+        );
+        for (const el of allFixedOverlays) {
+            const cs = getComputedStyle(el);
+            if (cs.display !== 'none' && cs.visibility !== 'hidden' && cs.opacity !== '0'
+                && el.id && el.id !== 'splash-overlay'
+                && (el.id.includes('modal') || el.id.includes('overlay') || el.id.includes('form'))) {
+                // Try known close methods first
+                if (el.id === 'dash-generic-modal' && typeof salestrack !== 'undefined' && salestrack.closeListModal) {
+                    salestrack.closeListModal();
+                } else if (el.classList.contains('active')) {
+                    el.classList.remove('active');
+                } else {
+                    el.style.display = 'none';
+                }
+                return; // Close only one at a time
+            }
+        }
+    });
 
     function showOnly(view) {
       if (!view) return;
@@ -17507,6 +17737,42 @@
         if (Notification.permission !== 'granted' && Notification.permission !== 'denied') {
             Notification.requestPermission();
         }
+
+        // ── Auto-process email queue every 5 minutes ──
+        // Replaces the missing pg_cron job by calling process-email-queue edge function
+        // on an interval while the app is open. This ensures pending emails get sent
+        // and failed emails get their auto-retries (up to 3 attempts with exponential backoff).
+        const EMAIL_QUEUE_PROCESS_INTERVAL = 5 * 60 * 1000; // 5 minutes
+        let _emailQueueProcessing = false;
+
+        async function processEmailQueue() {
+            if (_emailQueueProcessing) return;
+            if (!window.electron) return;
+            _emailQueueProcessing = true;
+            try {
+                const res = await window.electron.invoke('supabase:edgeFunction', {
+                    name: 'process-email-queue',
+                    data: {}
+                });
+                if (res && (res.sent > 0 || res.errors > 0)) {
+                    console.log(`[Email Queue] Processed: ${res.sent} sent, ${res.errors} errors`);
+                    // Refresh the queue UI if it's currently visible
+                    if (window.salestrack && typeof window.salestrack.loadFailedEmails === 'function') {
+                        const tab = document.querySelector('[data-tab="email-queue"].active, [data-tab="email-queue"][style*="background"]');
+                        if (tab) window.salestrack.loadFailedEmails();
+                    }
+                }
+            } catch (e) {
+                // Silent fail — edge function may be unavailable or not deployed
+                console.debug('[Email Queue] Auto-process skipped:', e.message);
+            } finally {
+                _emailQueueProcessing = false;
+            }
+        }
+
+        // Run once shortly after load, then every 5 minutes
+        setTimeout(processEmailQueue, 30000); // 30s after load
+        setInterval(processEmailQueue, EMAIL_QUEUE_PROCESS_INTERVAL);
     });
 
 
@@ -19657,6 +19923,10 @@ thead th { padding:11px 12px; font-size:10px; font-weight:800; color:#fff; text-
         // Setup resolution
         window._omnisConfirmResolve = (val) => {
           overlay.classList.remove('active');
+          if (window._omnisConfirmAutoTimer) {
+            clearTimeout(window._omnisConfirmAutoTimer);
+            delete window._omnisConfirmAutoTimer;
+          }
           delete window._omnisConfirmResolve;
           if (window._omnisConfirmKeyHandler) {
             document.removeEventListener('keydown', window._omnisConfirmKeyHandler);
@@ -19678,6 +19948,16 @@ thead th { padding:11px 12px; font-size:10px; font-weight:800; color:#fff; text-
         };
         document.addEventListener('keydown', window._omnisConfirmKeyHandler);
         setTimeout(() => primaryBtn.focus(), 50);
+
+        // Safety auto-dismiss for OK-only dialogs (prevents ghost overlays from non-awaited calls)
+        const isOkOnly = (opts.confirmText || '').toLowerCase() === 'ok';
+        if (isOkOnly) {
+          window._omnisConfirmAutoTimer = setTimeout(() => {
+            if (window._omnisConfirmResolve) {
+              window._omnisConfirmResolve(false);
+            }
+          }, 30000);
+        }
       });
     };
 
@@ -23589,8 +23869,8 @@ thead th { padding:11px 12px; font-size:10px; font-weight:800; color:#fff; text-
   </div>
 
   <!-- Global Confirmation Modal -->
-  <div id="omnis-confirm-modal" class="omnis-modal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(15,23,42,0.8); z-index:20000; backdrop-filter:blur(8px); align-items:center; justify-content:center;">
-    <div style="background:white; width:450px; border-radius:16px; overflow:hidden; box-shadow:0 25px 50px -12px rgba(0,0,0,0.5); display:flex; flex-direction:column; text-align:center;">
+  <div id="omnis-confirm-modal" class="omnis-modal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(15,23,42,0.8); z-index:20000; backdrop-filter:blur(8px); align-items:center; justify-content:center;" onclick="this.style.display='none'">
+    <div style="background:white; width:450px; border-radius:16px; overflow:hidden; box-shadow:0 25px 50px -12px rgba(0,0,0,0.5); display:flex; flex-direction:column; text-align:center;" onclick="event.stopPropagation()">
       <div style="padding:32px 32px 24px 32px;">
         <div style="width:64px; height:64px; background:#eff6ff; color:#3b82f6; border-radius:50%; display:flex; align-items:center; justify-content:center; font-size:28px; margin:0 auto 20px auto;">
           <i class="fas fa-question-circle"></i>
