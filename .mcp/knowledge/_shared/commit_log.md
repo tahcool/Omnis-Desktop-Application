@@ -672,3 +672,13 @@
   Files: .mcp/knowledge/_shared/commit_log.md,
 - `f0bfc8a` 2026-09-16 [feature/admin-service-key-separation] Fix: support params.filters in update handler for chainable .eq() from preload proxy - fixes WHERE clause error
   Files: main.js,
+- `9816c09` 2026-09-16 [feature/admin-service-key-separation] [checkpoint] Restore point: quotation edit/update flow working with preload chainable filters
+  Files: .mcp/knowledge/_shared/commit_log.md,
+- `dbf3f10` 2026-09-16 [feature/admin-service-key-separation] Fix: even logo spacing - change from space-around to space-between for consistent gaps
+  Files: systems/salestrack/create_quotation_logic.js,
+- `2cdfb27` 2026-09-16 [feature/admin-service-key-separation] Fix: print template Lead Time column now uses per-item custom_lead_time instead of delivery terms
+  Files: systems/salestrack/create_quotation_logic.js,
+- `b5bde30` 2026-09-16 [feature/admin-service-key-separation] Feature: per-item delivery column with Apply All button - delivery set per machine, printed per item
+  Files: systems/salestrack/create_quotation_logic.js,systems/salestrack/index.html,
+- `08058be` 2026-09-16 [feature/admin-service-key-separation] Fix: carry over custom_lead_time and delivery during print enrichment - were being dropped
+  Files: systems/salestrack/create_quotation_logic.js,
