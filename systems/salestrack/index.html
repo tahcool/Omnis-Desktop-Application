@@ -11640,36 +11640,31 @@
     <div id="view-create-quotation" class="view-page hidden">
       <div class="create-card" style="max-width: 100%;">
         <div class="create-header-row"
-          style="display:flex;justify-content:space-between;align-items:center;margin-bottom:15px;">
-          <div>
-            <div class="create-title">New Quotation</div>
+          style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
+          <div style="display:flex; align-items:center; gap:12px;">
+            <div class="create-title" style="margin:0;">New Quotation</div>
+            <input type="text" id="qtn-title-display" class="form-input" readonly
+              style="background:#f3f4f6; font-size:12px; font-weight:600; color:#64748b; padding:4px 10px; width:280px; border-radius:6px;"
+              placeholder="Auto-generated on save...">
           </div>
-          <div style="display:flex;gap:10px;">
-            <button id="btn-submit-quotation" type="button" class="btn-primary" style="padding:0 20px; border-radius:10px; font-weight:800; height: 42px; font-size: 12px; text-transform:uppercase; letter-spacing:0.02em; background:#800000; color:#fff; border:none; box-shadow: 0 4px 12px rgba(128,0,0,0.2);">
+          <div style="display:flex;gap:8px;">
+            <button id="btn-print-quotation" type="button" class="btn-secondary" style="padding:0 16px; height:38px; font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:0.02em; display:none;">
+              <i class="fas fa-print" style="margin-right:6px;"></i> Print
+            </button>
+            <button id="btn-submit-quotation" type="button" class="btn-primary" style="padding:0 20px; border-radius:10px; font-weight:800; height: 38px; font-size: 11px; text-transform:uppercase; letter-spacing:0.02em; background:#800000; color:#fff; border:none; box-shadow: 0 4px 12px rgba(128,0,0,0.2);">
               <i class="fas fa-save" style="margin-right:8px;"></i> Save
             </button>
-            <button id="btn-cancel-quotation" type="button" class="btn-secondary">Close</button>
+            <button id="btn-cancel-quotation" type="button" class="btn-secondary" style="height:38px;">Close</button>
           </div>
-        </div>
-
-        <div class="form-row" style="margin-bottom: 30px;">
-          <label class="form-label">Quotation Title</label>
-          <input type="text" id="qtn-title-display" class="form-input" readonly style="background:#f3f4f6;"
-            placeholder="Title will be auto-generated...">
         </div>
 
         <form id="qtn-form" onsubmit="event.preventDefault();">
 
-          <div class="grid-3-col" style="gap: 40px; margin-bottom: 30px; align-items: start;">
+          <div class="grid-3-col" style="gap: 24px; margin-bottom: 16px; align-items: start;">
             
             <!-- Column 1: Customer Details -->
             <div class="qtn-section-col">
               <div class="section-label" style="margin-top:0;">Customer Details</div>
-              
-              <div class="form-row">
-                <label class="form-label">Quotation To <span class="asterisk">*</span></label>
-                <input type="text" value="Customer" class="form-input" readonly>
-              </div>
               
               <div class="grid-2-col">
                 <div class="form-row">
@@ -11765,7 +11760,7 @@
             <div class="qtn-section-col">
               <div class="section-label" style="margin-top:0;">Additional Notes</div>
               <div class="form-row">
-                <textarea id="qtn-notes" class="form-textarea" style="height:250px; resize:vertical;" placeholder="Enter notes here..."></textarea>
+                <textarea id="qtn-notes" class="form-textarea" style="height:140px; resize:vertical;" placeholder="Enter notes here..."></textarea>
               </div>
             </div>
 

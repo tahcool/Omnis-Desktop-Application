@@ -15,8 +15,12 @@
         window._editingQtnName = null;
 
         // Reset form header to "New Quotation"
-        const mainTitle = document.querySelector('#view-create-quotation .section-title, #view-create-quotation h2');
+        const mainTitle = document.querySelector('#view-create-quotation .create-title');
         if (mainTitle) mainTitle.textContent = "New Quotation";
+
+        // Hide print button for new quotations
+        const printBtn = document.getElementById('btn-print-quotation');
+        if (printBtn) printBtn.style.display = 'none';
 
         // Add one empty row and calc
         if (window.addQuotationItemRow) window.addQuotationItemRow();
@@ -143,8 +147,12 @@
             if (window.calculateQuotationTotals) window.calculateQuotationTotals();
 
             // Update the form header to show "Edit Quotation"
-            const mainTitle = document.querySelector('#view-create-quotation .section-title, #view-create-quotation h2');
+            const mainTitle = document.querySelector('#view-create-quotation .create-title');
             if (mainTitle) mainTitle.textContent = "Edit Quotation";
+
+            // Show print button for existing quotations
+            const printBtn = document.getElementById('btn-print-quotation');
+            if (printBtn) printBtn.style.display = '';
 
             console.log("[QtnEdit] Loaded quotation:", qtn.name, "with", items.length, "items");
 
@@ -241,7 +249,23 @@
         if (submitBtn) submitBtn.onclick = submitQuotation;
 
         const cancelBtn = document.getElementById("btn-cancel-quotation");
-        if (cancelBtn) cancelBtn.onclick = () => showOnly(document.getElementById("view-quotations-list"));
+        if (cancelBtn) cancelBtn.onclick = () => {
+            resetQtnForm();
+            const printBtn = document.getElementById('btn-print-quotation');
+            if (printBtn) printBtn.style.display = 'none';
+            showOnly(document.getElementById("view-quotations-list"));
+        };
+
+        // Print button — triggers PDF generation for the current quotation
+        const printBtn = document.getElementById("btn-print-quotation");
+        if (printBtn) printBtn.onclick = () => {
+            const qtnName = window._editingQtnName || document.getElementById("qtn-title-display")?.value;
+            if (qtnName && window.downloadPDF) {
+                window.downloadPDF(qtnName);
+            } else {
+                if (window.showToast) window.showToast('Save the quotation first before printing.', 'warning');
+            }
+        };
 
         // Initial Row
         const tbody = document.getElementById("qtn-items-body");
@@ -491,7 +515,8 @@
 
             } else {
                 // --- CREATE new quotation ---
-                qtnId = "SAL-QTN-" + new Date().getFullYear().toString().slice(-2) + "-" + Math.floor(1000 + Math.random() * 9000);
+                const salCode = "SAL-QTN-" + new Date().getFullYear().toString().slice(-2) + "-" + Math.floor(1000 + Math.random() * 9000);
+                qtnId = data.customer ? (data.customer + " - " + salCode) : salCode;
                 console.log("[QtnSave] Creating new quotation:", qtnId);
 
                 const qtnRes = await sp.from("omnis_quotations").insert([{
@@ -531,20 +556,29 @@
             console.log("[QtnSave] Insert items result:", JSON.stringify(itemRes));
             if (itemRes.error) throw new Error(typeof itemRes.error === 'string' ? itemRes.error : (itemRes.error.message || JSON.stringify(itemRes.error)));
             
-            // Clear editing state
-            window._editingQtnId = null;
-            window._editingQtnName = null;
+            // After save, stay on the form — update state to "editing" mode
+            window._editingQtnId = dbQtnId;
+            window._editingQtnName = qtnId;
 
-            const payload = { ok: true, name: qtnId };
+            // Update the title display
+            const titleDisplay = document.getElementById("qtn-title-display");
+            if (titleDisplay) titleDisplay.value = qtnId;
 
-            if (payload.ok) {
-                resetQtnForm();
-                showOnly(document.getElementById("view-quotations-list"));
-                if (window.loadQuotationList) window.loadQuotationList();
-                window.showQuotationOptions(payload.name, !isEdit);
-            } else {
-                throw new Error(payload.error || payload.message || "Save failed");
-            }
+            // Update header to Edit mode
+            const mainTitle = document.querySelector('#view-create-quotation .create-title');
+            if (mainTitle) mainTitle.textContent = 'Edit Quotation';
+
+            // Show print button
+            const printBtn = document.getElementById('btn-print-quotation');
+            if (printBtn) printBtn.style.display = '';
+
+            // Refresh the quotation list in the background
+            if (window.loadQuotationList) window.loadQuotationList();
+
+            if (window.showToast) window.showToast('Quotation saved successfully!', 'success');
+
+            // Show quotation options (PDF etc) after a beat
+            setTimeout(() => window.showQuotationOptions(qtnId, !isEdit), 500);
 
         } catch (e) {
             console.error("[QtnSave] Error:", e);
@@ -711,7 +745,8 @@
                 items: [{ item_code: itemCode, qty: 1, rate: parseFloat(price || 0) }]
             };
 
-            const qtnId = "SAL-QTN-" + new Date().getFullYear().toString().slice(-2) + "-" + Math.floor(1000 + Math.random() * 9000);
+            const salCode = "SAL-QTN-" + new Date().getFullYear().toString().slice(-2) + "-" + Math.floor(1000 + Math.random() * 9000);
+            const qtnId = customer ? (customer + " - " + salCode) : salCode;
             
             // Insert parent quotation via IPC proxy
             const qtnRes = await window.electron.invoke('supabase:query', {
