@@ -668,3 +668,7 @@
   Files: .mcp/knowledge/_shared/commit_log.md,supabase/migrations/20260916000001_add_quotation_item_columns.sql,
 - `f2f9b16` 2026-09-16 [feature/admin-service-key-separation] Fix: move openQuotationForEdit to module scope so it's available before initCreateQuotation runs
   Files: systems/salestrack/create_quotation_logic.js,
+- `554e1fd` 2026-09-16 [feature/admin-service-key-separation] [checkpoint] Restore point: quotation edit form opens from row click, edit mode working but update save has WHERE clause issue
+  Files: .mcp/knowledge/_shared/commit_log.md,
+- `f0bfc8a` 2026-09-16 [feature/admin-service-key-separation] Fix: support params.filters in update handler for chainable .eq() from preload proxy - fixes WHERE clause error
+  Files: main.js,
