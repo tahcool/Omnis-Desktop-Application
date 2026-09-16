@@ -1703,7 +1703,7 @@ window.OmnisDashboardV6 = class OmnisDashboardV6 {
     }
 
 
-    openHotLeadsReportModalV5(targetPeriod, targetSalesperson) {
+    async openHotLeadsReportModalV5(targetPeriod, targetSalesperson) {
         if (!this._hotFilters) {
             this._hotFilters = { period: "This Month", salesperson: "All" };
         }
@@ -1712,13 +1712,9 @@ window.OmnisDashboardV6 = class OmnisDashboardV6 {
 
         const periodText = this._hotFilters.period;
         const spText = this._hotFilters.salesperson;
-        const allLeads = this.data.hot_leads || [];
-        const reps = [...new Set(allLeads.map(l => l.sales_person_name || 'No Rep'))].sort();
 
-        let repOptionsHtml = `<option value="All" ${spText === 'All' ? 'selected' : ''}>All Sales Reps</option>`;
-        reps.forEach(rep => { repOptionsHtml += `<option value="${rep}" ${spText === rep ? 'selected' : ''}>${rep}</option>`; });
-
-        const headerTitle = `
+        // Build header with placeholder rep options (updated after fetch)
+        const buildHeader = (repOptionsHtml) => `
             <div id="hot-report-header" style="display:flex; align-items:center; gap:15px; width:100%; justify-content:space-between; background: #f0f7ff; padding: 10px; border-radius: 8px;">
                 <span style="font-size:18px; font-weight:800; color:#0f172a;">Hot Leads Report</span>
                 <div style="display:flex; align-items:center; gap:10px;">
@@ -1741,7 +1737,7 @@ window.OmnisDashboardV6 = class OmnisDashboardV6 {
         const loaderHtml = `
             <div style="display:flex; flex-direction:column; align-items:center; justify-content:center; height:100%; min-height:400px; color:#64748b;">
                 <div style="width:50px; height:50px; border:4px solid #f3f4f6; border-top:4px solid #2563eb; border-radius:50%; animation:spin 1s linear infinite; margin-bottom:20px;"></div>
-                <div style="font-size:16px; font-weight:600;">Analyzing Hot Leads...</div>
+                <div style="font-size:16px; font-weight:600;">Fetching Hot Leads from database...</div>
                 <style>@keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }</style>
             </div>
         `;
@@ -1750,7 +1746,8 @@ window.OmnisDashboardV6 = class OmnisDashboardV6 {
         const modalBody = document.getElementById('dash-generic-body');
 
         if (!existingHeader) {
-            this.openListModal(headerTitle, loaderHtml, "1500px");
+            const initRepHtml = `<option value="All" selected>All Sales Reps</option>`;
+            this.openListModal(buildHeader(initRepHtml), loaderHtml, "1500px");
             const inner = document.getElementById('dash-modal-inner');
             if (inner) inner.style.maxHeight = '95vh';
         } else {
@@ -1761,51 +1758,93 @@ window.OmnisDashboardV6 = class OmnisDashboardV6 {
             if (sPeri) sPeri.value = periodText;
         }
 
-        setTimeout(() => {
-            try {
-                let filteredRows = [];
-                const now = new Date();
-                const currentMonth = now.getMonth();
-                const currentYear = now.getFullYear();
+        try {
+            // ── Fetch hot leads from Supabase ──
+            if (!window.electron) throw new Error('Electron bridge not available');
 
-                allLeads.forEach(t => {
-                    if (spText !== 'All' && (t.sales_person_name || 'No Rep') !== spText) return;
-                    const actualDate = new Date(t.date || t.creation);
-                    if (isNaN(actualDate)) return;
+            const res = await window.electron.invoke('supabase:query', {
+                table: 'omnis_quotations',
+                method: 'select',
+                params: {
+                    columns: 'name, customer_name, sales_person, transaction_date, status, likelihood_percent, notes, salesperson_follow_up_date, omnis_quotation_items(item_code, qty)',
+                    gte: [{ col: 'likelihood_percent', val: 75 }],
+                    order: { column: 'transaction_date', ascending: false },
+                    limit: 500
+                }
+            });
 
-                    let include = false;
-                    if (periodText === 'All Time') {
-                        include = true;
-                    } else if (periodText === 'This Year') {
-                        if (actualDate.getFullYear() === currentYear) include = true;
-                    } else if (periodText === 'This Month') {
-                        if (actualDate.getFullYear() === currentYear && actualDate.getMonth() === currentMonth) include = true;
-                    } else if (periodText === 'Last Month') {
-                        let lastM = currentMonth - 1;
-                        let lastY = currentYear;
-                        if (lastM < 0) { lastM = 11; lastY--; }
-                        if (actualDate.getFullYear() === lastY && actualDate.getMonth() === lastM) include = true;
-                    }
-                    if (include) filteredRows.push(t);
-                });
+            if (res.error) throw new Error(res.error.message || JSON.stringify(res.error));
 
-                let totalLeads = filteredRows.length;
-                let openLeads = 0;
-                let closedLeads = 0;
+            const allLeads = (res.data || []).map(q => {
+                const items = q.omnis_quotation_items || [];
+                const equipment = items.map(i => `${i.item_code || 'Item'} (x${i.qty || 1})`).join(', ') || 'N/A';
+                return {
+                    name: q.name,
+                    customer_name: q.customer_name || 'Unknown',
+                    sales_person_name: q.sales_person || 'No Rep',
+                    equipment: equipment,
+                    date: q.transaction_date,
+                    status: q.status || 'Open',
+                    likelihood_percent: q.likelihood_percent,
+                    notes: q.notes || '',
+                    follow_up_date: q.salesperson_follow_up_date || ''
+                };
+            });
 
-                filteredRows.forEach(r => {
-                    const status = (r.status || '').toLowerCase();
-                    if (status.includes('close') || status.includes('won') || status.includes('convert')) {
-                        closedLeads++;
-                    } else {
-                        openLeads++;
-                    }
-                });
+            // Update rep dropdown
+            const reps = [...new Set(allLeads.map(l => l.sales_person_name))].sort();
+            let repOptionsHtml = `<option value="All" ${spText === 'All' ? 'selected' : ''}>All Sales Reps</option>`;
+            reps.forEach(rep => { repOptionsHtml += `<option value="${rep}" ${spText === rep ? 'selected' : ''}>${rep}</option>`; });
+            const headerEl = document.getElementById('hot-report-header');
+            if (headerEl) {
+                const spSelect = headerEl.querySelector('#hot-sp-select-v5');
+                if (spSelect) { spSelect.innerHTML = repOptionsHtml; spSelect.value = spText; }
+            }
 
-                let convRate = totalLeads > 0 ? ((closedLeads / totalLeads) * 100).toFixed(1) : "0.0";
-                const convColor = convRate >= 40 ? '#22c55e' : (convRate >= 20 ? '#f59e0b' : '#ef4444');
+            // ── Filter by period and salesperson ──
+            const now = new Date();
+            const currentMonth = now.getMonth();
+            const currentYear = now.getFullYear();
 
-                let html = `
+            let filteredRows = [];
+            allLeads.forEach(t => {
+                if (spText !== 'All' && t.sales_person_name !== spText) return;
+                const actualDate = new Date(t.date);
+                if (isNaN(actualDate)) return;
+
+                let include = false;
+                if (periodText === 'All Time') {
+                    include = true;
+                } else if (periodText === 'This Year') {
+                    if (actualDate.getFullYear() === currentYear) include = true;
+                } else if (periodText === 'This Month') {
+                    if (actualDate.getFullYear() === currentYear && actualDate.getMonth() === currentMonth) include = true;
+                } else if (periodText === 'Last Month') {
+                    let lastM = currentMonth - 1;
+                    let lastY = currentYear;
+                    if (lastM < 0) { lastM = 11; lastY--; }
+                    if (actualDate.getFullYear() === lastY && actualDate.getMonth() === lastM) include = true;
+                }
+                if (include) filteredRows.push(t);
+            });
+
+            let totalLeads = filteredRows.length;
+            let openLeads = 0;
+            let closedLeads = 0;
+
+            filteredRows.forEach(r => {
+                const status = (r.status || '').toLowerCase();
+                if (status.includes('close') || status.includes('won') || status.includes('convert') || status.includes('ordered')) {
+                    closedLeads++;
+                } else {
+                    openLeads++;
+                }
+            });
+
+            let convRate = totalLeads > 0 ? ((closedLeads / totalLeads) * 100).toFixed(1) : "0.0";
+            const convColor = convRate >= 40 ? '#22c55e' : (convRate >= 20 ? '#f59e0b' : '#ef4444');
+
+            let html = `
                     <div class="eff-report-container" style="padding:32px; font-family:'Inter', sans-serif;">
                         <style>
                             @media print {
@@ -1859,7 +1898,7 @@ window.OmnisDashboardV6 = class OmnisDashboardV6 {
                             <i class="fa fa-info-circle" style="color:#3b82f6; font-size:20px; margin-top:2px;"></i>
                             <div style="font-size:13px; color:#475569; line-height:1.6;">
                                 <h4 style="margin:0 0 8px 0; color:#0f172a; font-size:14px; font-weight:700;">Hot Leads Analysis</h4>
-                                <p style="margin:0 0 8px 0;">This report shows the performance of highly engaged opportunities:</p>
+                                <p style="margin:0 0 8px 0;">This report shows quotations with a likelihood of <strong>75% or higher</strong>:</p>
                                 <ul style="margin:0; padding-left:20px;">
                                     <li style="margin-bottom:4px;"><strong>Open Leads:</strong> Active opportunities that have not yet resulted in a won or lost deal.</li>
                                     <li><strong>Conversion Rate %:</strong> The percentage of total hot leads that successfully converted to closed deals.</li>
@@ -1875,32 +1914,52 @@ window.OmnisDashboardV6 = class OmnisDashboardV6 {
                                         <th style="padding:16px 20px; font-weight:800; color:#475569; text-transform:uppercase; letter-spacing:0.05em;">Customer</th>
                                         <th style="padding:16px 20px; font-weight:800; color:#475569; text-transform:uppercase; letter-spacing:0.05em;">Sales Person</th>
                                         <th style="padding:16px 20px; font-weight:800; color:#475569; text-transform:uppercase; letter-spacing:0.05em;">Equipment</th>
+                                        <th style="padding:16px 20px; font-weight:800; color:#475569; text-transform:uppercase; letter-spacing:0.05em;">Likelihood</th>
                                         <th style="padding:16px 20px; font-weight:800; color:#475569; text-transform:uppercase; letter-spacing:0.05em;">Date</th>
-                                        <th style="padding:16px 20px; font-weight:800; color:#475569; text-transform:uppercase; letter-spacing:0.05em;">Status</th>
-                                        <th style="padding:16px 20px; font-weight:800; color:#475569; text-transform:uppercase; letter-spacing:0.05em;">Ref ID</th>
+                                        <th style="padding:16px 20px; font-weight:800; color:#475569; text-transform:uppercase; letter-spacing:0.05em;">Notes</th>
+                                        <th style="padding:16px 20px; font-weight:800; color:#475569; text-transform:uppercase; letter-spacing:0.05em;">Next Follow Up</th>
                                     </tr>
                                 </thead>
                                 <tbody>
                                     ${filteredRows.length > 0 ? filteredRows.map(r => {
-                                        const rDate = new Date(r.date || r.creation);
+                                        const rDate = new Date(r.date);
                                         const dateFmt = isNaN(rDate) ? 'N/A' : rDate.toLocaleDateString();
-                                        const statusLabel = r.status || 'Open';
-                                        const stColor = statusLabel.toLowerCase().includes('close') || statusLabel.toLowerCase().includes('won') ? '#16a34a' : '#2563eb';
+                                        const lkColor = r.likelihood_percent >= 90 ? '#ef4444' : r.likelihood_percent >= 80 ? '#f59e0b' : '#3b82f6';
+                                        const notesSnippet = r.notes.length > 60 ? r.notes.substring(0, 60) + '…' : (r.notes || '—');
+                                        const fuVal = r.follow_up_date || '';
+                                        const fuDisplay = fuVal ? new Date(fuVal + 'T00:00:00').toLocaleDateString() : '';
+                                        // Color code: overdue = red, within 3 days = orange, future = green
+                                        let fuColor = '#64748b';
+                                        if (fuVal) {
+                                            const fuDate = new Date(fuVal + 'T00:00:00');
+                                            const today = new Date(); today.setHours(0,0,0,0);
+                                            const diffDays = Math.floor((fuDate - today) / 86400000);
+                                            if (diffDays < 0) fuColor = '#dc2626';
+                                            else if (diffDays <= 3) fuColor = '#ea580c';
+                                            else fuColor = '#16a34a';
+                                        }
                                         return `
                                             <tr>
-                                                <td style="padding:16px 20px; border-bottom:1px solid #e2e8f0; font-weight:600; color:#0f172a;">${r.customer_name || 'Unknown'}</td>
-                                                <td style="padding:16px 20px; border-bottom:1px solid #e2e8f0; color:#475569;">${r.sales_person_name || 'No Rep'}</td>
-                                                <td style="padding:16px 20px; border-bottom:1px solid #e2e8f0; color:#475569;">${r.equipment || 'N/A'}</td>
-                                                <td style="padding:16px 20px; border-bottom:1px solid #e2e8f0; color:#475569;">${dateFmt}</td>
+                                                <td style="padding:16px 20px; border-bottom:1px solid #e2e8f0; font-weight:600; color:#0f172a;">${r.customer_name}</td>
+                                                <td style="padding:16px 20px; border-bottom:1px solid #e2e8f0; color:#475569;">${r.sales_person_name}</td>
+                                                <td style="padding:16px 20px; border-bottom:1px solid #e2e8f0; color:#475569; max-width:200px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;" title="${r.equipment}">${r.equipment}</td>
                                                 <td style="padding:16px 20px; border-bottom:1px solid #e2e8f0;">
-                                                    <span style="background:${stColor}15; color:${stColor}; padding:4px 8px; border-radius:4px; font-size:11px; font-weight:700; text-transform:uppercase;">
-                                                        ${statusLabel}
-                                                    </span>
+                                                    <span style="background:${lkColor}15; color:${lkColor}; padding:4px 8px; border-radius:4px; font-size:12px; font-weight:800;">${r.likelihood_percent}%</span>
                                                 </td>
-                                                <td style="padding:16px 20px; border-bottom:1px solid #e2e8f0; color:#64748b; font-family:monospace;">${r.name || 'N/A'}</td>
+                                                <td style="padding:16px 20px; border-bottom:1px solid #e2e8f0; color:#475569;">${dateFmt}</td>
+                                                <td style="padding:12px 16px; border-bottom:1px solid #e2e8f0; color:#475569; font-size:12px; max-width:180px;" title="${r.notes}">${notesSnippet}</td>
+                                                <td style="padding:12px 16px; border-bottom:1px solid #e2e8f0; min-width:150px;">
+                                                    <div style="display:flex; align-items:center; gap:6px;">
+                                                        <span style="color:${fuColor}; font-weight:600; font-size:12px;">${fuDisplay || '<span style="color:#cbd5e1;">Not set</span>'}</span>
+                                                        <input type="date" value="${fuVal}" data-quote-name="${r.name}"
+                                                            onchange="window._saveHotLeadFollowUp(this)"
+                                                            class="no-print"
+                                                            style="width:20px; height:20px; border:none; background:transparent; cursor:pointer; padding:0; opacity:0.5;" title="Set follow-up date">
+                                                    </div>
+                                                </td>
                                             </tr>
                                         `;
-                                    }).join('') : `<tr><td colspan="6" style="padding:30px; text-align:center; color:#94a3b8; font-style:italic;">No hot leads found for this period.</td></tr>`}
+                                    }).join('') : `<tr><td colspan="7" style="padding:30px; text-align:center; color:#94a3b8; font-style:italic;">No hot leads found for this period.</td></tr>`}
                                 </tbody>
                             </table>
                         </div>
@@ -1911,25 +1970,63 @@ window.OmnisDashboardV6 = class OmnisDashboardV6 {
                     </div>
                 `;
 
-                if (document.getElementById('dash-generic-body')) {
-                    document.getElementById('dash-generic-body').innerHTML = html;
-                }
-
-            } catch (e) {
-                console.error("Hot Leads Report Error:", e);
-                if (document.getElementById('dash-generic-body')) {
-                    document.getElementById('dash-generic-body').innerHTML = `
-                        <div style="padding:60px; text-align:center; color:#ef4444;">
-                            <div style="font-size:40px; margin-bottom:16px;">&#x2705;</div>
-                            <div style="font-size:18px; font-weight:800; margin-bottom:8px;">Report Generation Failed</div>
-                            <div style="color:#64748b; font-size:14px; line-height:1.6;">
-                                ${e.message || "An unexpected network error occurred."}
-                            </div>
-                        </div>
-                    `;
-                }
+            if (document.getElementById('dash-generic-body')) {
+                document.getElementById('dash-generic-body').innerHTML = html;
             }
-        }, 100);
+
+            // ── Follow-up date save handler ──
+            if (!window._saveHotLeadFollowUp) {
+                window._saveHotLeadFollowUp = async function(inputEl) {
+                    const quoteName = inputEl.getAttribute('data-quote-name');
+                    const newDate = inputEl.value || null;
+                    if (!quoteName || !window.electron) return;
+                    const row = inputEl.closest('tr');
+                    try {
+                        const res = await window.electron.invoke('supabase:query', {
+                            table: 'omnis_quotations',
+                            method: 'update',
+                            params: {
+                                name: quoteName,
+                                data: { salesperson_follow_up_date: newDate }
+                            }
+                        });
+                        if (res.error) throw new Error(res.error.message || res.error);
+                        // Update the displayed date in the same cell
+                        const span = inputEl.parentElement.querySelector('span');
+                        if (span && newDate) {
+                            const d = new Date(newDate + 'T00:00:00');
+                            const today = new Date(); today.setHours(0,0,0,0);
+                            const diff = Math.floor((d - today) / 86400000);
+                            const c = diff < 0 ? '#dc2626' : diff <= 3 ? '#ea580c' : '#16a34a';
+                            span.style.color = c;
+                            span.style.fontWeight = '600';
+                            span.textContent = d.toLocaleDateString();
+                        } else if (span) {
+                            span.innerHTML = '<span style="color:#cbd5e1;">Not set</span>';
+                        }
+                        // Brief success flash
+                        if (row) { row.style.background = '#f0fdf4'; setTimeout(() => { row.style.background = ''; }, 800); }
+                    } catch (e) {
+                        console.error('Failed to save follow-up:', e);
+                        if (row) { row.style.background = '#fef2f2'; setTimeout(() => { row.style.background = ''; }, 1200); }
+                    }
+                };
+            }
+
+        } catch (e) {
+            console.error("Hot Leads Report Error:", e);
+            if (document.getElementById('dash-generic-body')) {
+                document.getElementById('dash-generic-body').innerHTML = `
+                    <div style="padding:60px; text-align:center; color:#ef4444;">
+                        <div style="font-size:40px; margin-bottom:16px;">&#x26A0;</div>
+                        <div style="font-size:18px; font-weight:800; margin-bottom:8px;">Report Generation Failed</div>
+                        <div style="color:#64748b; font-size:14px; line-height:1.6;">
+                            ${e.message || "An unexpected error occurred."}
+                        </div>
+                    </div>
+                `;
+            }
+        }
     }
 
     renderHotLeads() {

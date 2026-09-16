@@ -15,6 +15,9 @@
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/driver.js@1.0.1/dist/driver.css"/>
 
   <style>
+    /* Admin-only sales elements: hidden for non-admin users */
+    body.non-admin-user .admin-only-sales { display: none !important; }
+
     :root {
       /* OMNIS PREMIUM LIGHT THEME (SLATE & MAROON) */
       --page-bg: #f8fafc;
@@ -6842,6 +6845,13 @@
           applyOmnisAutoScaling();
           document.addEventListener('DOMContentLoaded', applyOmnisAutoScaling);
 
+          // Admin-only sales: hide create/edit/delete UI for non-admin users
+          document.addEventListener('DOMContentLoaded', () => {
+            if (localStorage.getItem('omnis_is_admin') !== 'true') {
+              document.body.classList.add('non-admin-user');
+            }
+          });
+
           // Responsive Navigation Bar height tracking
           document.addEventListener('DOMContentLoaded', () => {
             const nav = document.querySelector('.omnis-top-nav');
@@ -7214,7 +7224,7 @@
               </div>
 
               <!-- 12 -->
-              <div data-shortcut-id="sales-entry" id="tour-sales-entry" onclick="window.showGroupSalesForm()" class="rpt-card rpt-card-maroon">
+              <div data-shortcut-id="sales-entry" id="tour-sales-entry" onclick="window.showGroupSalesForm()" class="rpt-card rpt-card-maroon admin-only-sales">
                 <div style="font-size:16px; width:32px; height:32px; display:flex; align-items:center; justify-content:center; border-radius:12px; background:rgba(0,0,0,0.04); box-shadow:inset 0 2px 4px rgba(255,255,255,0.5);" class="icon-container">
                   <i class="fas fa-cart-plus" style="color:#334155;"></i>
                 </div>
@@ -9421,14 +9431,14 @@
 
         <!-- Grid Header -->
         <div class="ai-order-header ai-quotations-grid" id="qlist-head-grid" style="border-radius: 12px 12px 0 0; margin-bottom: 8px;">
-          <div style="padding-left: 56px;"><span>Customer / Status</span> <i class="fas fa-sort sort-icon"></i></div>
-          <div><span>Items</span> <i class="fas fa-sort sort-icon"></i></div>
-          <div><span>Notes</span> <i class="fas fa-sort sort-icon"></i></div>
-          <div style="text-align:center;"><span>Likelihood</span> <i class="fas fa-sort sort-icon"></i></div>
-          <div style="text-align:center;"><span>Date</span> <i class="fas fa-sort sort-icon"></i></div>
-          <div><span>Sales Person</span> <i class="fas fa-sort sort-icon"></i></div>
-          <div style="text-align:center;"><span>Total Items</span> <i class="fas fa-sort sort-icon"></i></div>
-          <div style="text-align:center;"><span>Follow Up</span> <i class="fas fa-sort sort-icon"></i></div>
+          <div data-sort="customer_name" style="padding-left: 56px; cursor:pointer;"><span>Customer / Status</span> <i class="fas fa-sort sort-icon"></i></div>
+          <div><span>Items</span></div>
+          <div><span>Notes</span></div>
+          <div data-sort="likelihood_percent" style="text-align:center; cursor:pointer;"><span>Likelihood</span> <i class="fas fa-sort sort-icon"></i></div>
+          <div data-sort="transaction_date" style="text-align:center; cursor:pointer;" class="active"><span>Date</span> <i class="fas fa-sort-down sort-icon"></i></div>
+          <div data-sort="sales_person" style="cursor:pointer;"><span>Sales Person</span> <i class="fas fa-sort sort-icon"></i></div>
+          <div style="text-align:center;"><span>Total Items</span></div>
+          <div style="text-align:center;"><span>Follow Up</span></div>
           <div style="text-align:right;">Action</div>
         </div>
 
@@ -12123,7 +12133,7 @@
               style="width:100%; border:1px solid #e2e8f0; background:#fff; border-radius:10px; padding:0 14px 0 36px; font-size:12px; font-weight:600; color:#334155; outline:none; height: 42px; box-shadow: 0 1px 2px rgba(0,0,0,0.03);">
           </div>
 
-          <button class="primary-pill-btn" onclick="showGroupSalesForm()"
+          <button class="primary-pill-btn admin-only-sales" onclick="showGroupSalesForm()"
             style="background:#0f172a; color:white; border:none; border-radius:10px; padding:0 24px; height: 42px; font-size:12px; font-weight:700; cursor:pointer; transition: all 0.2s; box-shadow: 0 4px 12px rgba(15, 23, 42, 0.15); display:flex; align-items:center; gap:8px;">
             <i class="fas fa-plus"></i> NEW SALE
           </button>
@@ -12828,6 +12838,8 @@
     let qFuFromValue = "";
     let qFuToValue = "";
     let qOemValue = "";
+    let qSortCol = 'transaction_date';
+    let qSortAsc = false;
 
     function setStatus(text, cls) {
       if (!statusEl) return;
@@ -14257,7 +14269,7 @@
             options: { count: 'exact' },
             filters: filters,
             or: orCondition,
-            order: { column: 'transaction_date', ascending: false },
+            order: { column: qSortCol, ascending: qSortAsc },
             range: { from: qOffset, to: qOffset + qPageLength - 1 }
           }
         });
@@ -15559,6 +15571,34 @@
       }
     });
 
+    // ── Quotation header sort click handler ──
+    document.addEventListener("click", function(e) {
+      const sortDiv = e.target.closest('#qlist-head-grid div[data-sort]');
+      if (!sortDiv) return;
+      const col = sortDiv.getAttribute('data-sort');
+      if (!col) return;
+      if (qSortCol === col) {
+        qSortAsc = !qSortAsc;
+      } else {
+        qSortCol = col;
+        qSortAsc = false;
+      }
+      // Update header icons
+      const header = document.getElementById('qlist-head-grid');
+      if (header) {
+        header.querySelectorAll('div[data-sort]').forEach(d => {
+          d.classList.remove('active');
+          const icon = d.querySelector('i.sort-icon');
+          if (icon) { icon.className = 'fas fa-sort sort-icon'; }
+        });
+        sortDiv.classList.add('active');
+        const activeIcon = sortDiv.querySelector('i.sort-icon');
+        if (activeIcon) { activeIcon.className = qSortAsc ? 'fas fa-sort-up sort-icon' : 'fas fa-sort-down sort-icon'; }
+      }
+      qOffset = 0;
+      forceReloadQuotations();
+    });
+
     /* ---------- ENQUIRIES LIST (Native) ---------- */
     let cePageLength = 20;
     let ceHasMore = false;
@@ -16729,8 +16769,8 @@
             <div style="font-weight:600; font-size:12px; color:#64748b;">${dateStr}</div>
           </div>
           <div class="ai-order-row-actions" style="text-align:right; display:flex; gap:8px; justify-content:flex-end;">
-            <button class="btn-text-action btn-delete-gs" data-name="${escapeHtml(item.name)}" onclick="window.triggerDeleteSale(this.dataset.name)" style="color:#ef4444; position:relative; z-index:10;"><i class="fas fa-trash-alt" style="pointer-events:none;"></i></button>
-            <button class="btn-text-action btn-edit-gs" data-name="${escapeHtml(item.name)}" onclick="editGroupSale(this.dataset.name)" style="color:#3b82f6; position:relative; z-index:10;"><i class="fas fa-pencil-alt" style="pointer-events:none;"></i></button>
+            <button class="btn-text-action btn-delete-gs admin-only-sales" data-name="${escapeHtml(item.name)}" onclick="window.triggerDeleteSale(this.dataset.name)" style="color:#ef4444; position:relative; z-index:10;"><i class="fas fa-trash-alt" style="pointer-events:none;"></i></button>
+            <button class="btn-text-action btn-edit-gs admin-only-sales" data-name="${escapeHtml(item.name)}" onclick="editGroupSale(this.dataset.name)" style="color:#3b82f6; position:relative; z-index:10;"><i class="fas fa-pencil-alt" style="pointer-events:none;"></i></button>
           </div>
         `;
         tbody.appendChild(row);
@@ -16739,6 +16779,11 @@
       }
 
     window.triggerDeleteSale = async function(name) {
+      // Admin-only gate
+      if (localStorage.getItem('omnis_is_admin') !== 'true') {
+        if (window.showOmnisConfirm) window.showOmnisConfirm({ title: 'Access Restricted', message: 'Only administrators can delete sales entries.', confirmText: 'OK' });
+        return;
+      }
       try {
         if (!name) {
           if (window.showOmnisConfirm) {
@@ -16799,6 +16844,13 @@
     // ── Show/hide the New/Edit Sale overlay ──
     var groupSalesInited = (typeof groupSalesInited !== 'undefined') ? groupSalesInited : false;
     function showGroupSalesForm() {
+      // Admin-only gate
+      if (localStorage.getItem('omnis_is_admin') !== 'true') {
+        if (window.showOmnisConfirm) {
+          window.showOmnisConfirm({ title: 'Access Restricted', message: 'Only administrators can create or edit sales entries.', confirmText: 'OK' });
+        }
+        return;
+      }
       const overlay = document.getElementById('gs-form-overlay');
       if (overlay) {
         // Escape any hidden ancestor: position:fixed is still invisible when a
