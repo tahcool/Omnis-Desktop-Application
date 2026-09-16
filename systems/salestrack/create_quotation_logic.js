@@ -302,22 +302,25 @@
         if (!tbody) return;
 
         const row = document.createElement("tr");
+        row.style.cssText = "border-bottom:1px solid #f1f5f9; transition:background 0.15s;";
+        row.onmouseenter = function() { this.style.background = '#f8fafc'; };
+        row.onmouseleave = function() { this.style.background = ''; };
         row.innerHTML = `
-            <td style="padding:6px; position:relative;">
+            <td style="padding:8px 10px; position:relative;">
                 <div style="display:flex; align-items:center; gap:4px;">
                     <input type="text" class="form-input item-code" placeholder="Search product..." style="font-size:12px; flex:1;">
                     <button type="button" class="btn-edit-product" title="Edit product data" style="background:none; border:none; cursor:pointer; color:#94a3b8; font-size:14px; padding:2px 4px; flex-shrink:0; transition:color 0.2s;" onmouseenter="this.style.color='#3b82f6'" onmouseleave="this.style.color='#94a3b8'"><i class="fas fa-pencil-alt"></i></button>
                 </div>
                 <div class="suggest-list hidden" style="position:absolute; top:100%; left:6px; right:6px; z-index:9999; background:#fff; border:1px solid #e2e8f0; border-radius:8px; max-height:250px; overflow-y:auto; box-shadow:0 8px 25px rgba(0,0,0,0.15);"></div>
             </td>
-            <td style="padding:6px;"><input type="text" class="form-input item-name" placeholder="Item Name" readonly style="font-size:12px; width:100%; background:#f9fafb; color:#374151;"></td>
-            <td style="padding:6px;"><textarea class="form-input item-desc" placeholder="Description" style="font-size:11px; width:100%; min-height:40px; resize:vertical; background:#f9fafb; color:#374151;"></textarea></td>
-            <td style="padding:6px;"><input type="number" class="form-input item-qty" value="1" min="1" style="font-size:12px; width:60px;"></td>
-            <td style="padding:6px;"><input type="number" class="form-input item-rate" placeholder="0.00" style="font-size:12px; width:100px;"></td>
-            <td style="padding:6px;"><input type="text" class="form-input item-lead-time" placeholder="e.g. 2 Weeks" style="font-size:12px; width:100%;"></td>
-            <td style="padding:6px;"><input type="text" class="form-input item-delivery" placeholder="e.g. Harare" style="font-size:12px; width:100%;"></td>
-            <td style="padding:6px;"><input type="text" class="form-input item-amount" readonly style="font-size:12px; width:100px; background:#f3f4f6;"></td>
-            <td style="padding:6px; text-align:center;"><button type="button" class="btn-text-action text-red-600" onclick="this.closest('tr').remove(); calculateQuotationTotals();" style="font-size:18px;">&times;</button></td>
+            <td style="padding:8px 6px;"><input type="text" class="form-input item-name" placeholder="Item Name" readonly style="font-size:12px; width:100%; background:#f9fafb; color:#374151;"></td>
+            <td style="padding:8px 6px;"><textarea class="form-input item-desc" placeholder="Description" style="font-size:11px; width:100%; min-height:36px; resize:vertical; background:#f9fafb; color:#374151;"></textarea></td>
+            <td style="padding:8px 6px; text-align:center;"><input type="number" class="form-input item-qty" value="1" min="1" style="font-size:12px; width:55px; text-align:center;"></td>
+            <td style="padding:8px 6px;"><input type="number" class="form-input item-rate" placeholder="0.00" style="font-size:12px; width:90px; text-align:right;"></td>
+            <td style="padding:8px 6px;"><input type="text" class="form-input item-lead-time" placeholder="e.g. 2 Weeks" style="font-size:12px; width:100%;"></td>
+            <td style="padding:8px 6px;"><input type="text" class="form-input item-delivery" placeholder="e.g. Harare" style="font-size:12px; width:100%;"></td>
+            <td style="padding:8px 6px;"><input type="text" class="form-input item-amount" readonly style="font-size:12px; width:90px; background:#f3f4f6; text-align:right; font-weight:600;"></td>
+            <td style="padding:8px 4px; text-align:center;"><button type="button" class="btn-text-action text-red-600" onclick="this.closest('tr').remove(); calculateQuotationTotals();" style="font-size:16px; color:#ef4444; opacity:0.6; transition:opacity 0.2s;" onmouseenter="this.style.opacity='1'" onmouseleave="this.style.opacity='0.6'">&times;</button></td>
         `;
         tbody.appendChild(row);
         // Product search is handled via event delegation in index.html
@@ -408,28 +411,14 @@
 
         const currency = window._qtnSelectedCurrency || 'USD';
         const sym = CURRENCY_SYMBOLS[currency] || currency;
-        const rate = window._qtnExchangeRate || 1.0;
 
         const qtyInp = document.getElementById("qtn-total-qty");
         const totalLabel = document.getElementById("qtn-total-label");
         const usdInp = document.getElementById("qtn-total-usd");
-        const convertedRow = document.getElementById("qtn-converted-row");
-        const convertedInp = document.getElementById("qtn-total-converted");
 
-        if (qtyInp) qtyInp.value = totalQty;
+        if (qtyInp) qtyInp.textContent = totalQty;
         if (totalLabel) totalLabel.textContent = `Total (${currency})`;
-        if (usdInp) usdInp.value = sym + " " + totalAmount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-
-        // Show converted amount if not USD
-        if (currency !== 'USD' && rate !== 1.0) {
-            const usdEquiv = totalAmount / rate;
-            if (convertedRow) { convertedRow.style.display = 'block'; convertedRow.innerHTML = `USD: <input style="background:transparent; border:none; width:120px; text-align:right;" readonly value="$ ${usdEquiv.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}">`;}
-        } else if (currency === 'USD') {
-            // Show ZAR conversion as secondary info (using stored rate if available)
-            if (convertedRow) { convertedRow.style.display = 'block'; convertedRow.innerHTML = `ZAR: <input style="background:transparent; border:none; width:120px; text-align:right;" readonly value="R ${(totalAmount * (window._zarRate || 18.5)).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}">`;}
-        } else {
-            if (convertedRow) convertedRow.style.display = 'none';
-        }
+        if (usdInp) usdInp.textContent = sym + " " + totalAmount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
     };
 
     window.submitQuotation = async function () {

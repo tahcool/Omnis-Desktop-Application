@@ -11757,27 +11757,27 @@
           </div>
 
           <!-- Items Table -->
-          <div class="section-label" style="margin-top:20px;">Items</div>
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-top:20px; margin-bottom:8px;">
+            <div class="section-label" style="margin:0;">Items</div>
+            <button type="button" id="qtn-add-row-btn" class="btn-secondary"
+              style="font-size:11px; padding:5px 14px; font-weight:700; border-radius:6px;">
+              <i class="fas fa-plus" style="margin-right:4px;"></i> Add Item
+            </button>
+          </div>
 
-          <div
-            style="background:#ffffff; border:1px solid var(--border); border-radius:8px; padding:15px; margin-bottom:20px; box-shadow: inset 0 1px 2px rgba(0,0,0,0.02);">
-            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:12px;">
-              <div style="font-size:12px; color:var(--text-muted); font-weight:600;">Add quotation items below</div>
-              <button type="button" id="qtn-add-row-btn" class="btn-secondary"
-                style="font-size:12px; padding:4px 10px;">+ Add Item</button>
-            </div>
+          <div style="border:1px solid #e2e8f0; border-radius:10px; overflow:hidden; margin-bottom:16px; box-shadow: 0 1px 3px rgba(0,0,0,0.04);">
             <table id="qtn-items-table" style="width:100%; font-size:13px; border-collapse:collapse;">
               <thead>
-                <tr style="text-align:left; color:#4b5563; font-weight:700; border-bottom:2px solid #e5e7eb; text-transform:uppercase; font-size:11px;">
-                  <th style="padding:10px 8px; width:14%;">Code</th>
-                  <th style="padding:10px 8px; width:14%;">Item Name</th>
-                  <th style="padding:10px 8px; width:18%;">Description</th>
-                  <th style="padding:10px 8px; width:5%;">Qty</th>
-                  <th style="padding:10px 8px; width:9%;">Rate</th>
+                <tr style="background: linear-gradient(135deg, #1e293b 0%, #334155 100%); color:#fff; text-align:left; font-weight:700; text-transform:uppercase; font-size:10px; letter-spacing:0.06em;">
+                  <th style="padding:10px 10px; width:13%;">Code</th>
+                  <th style="padding:10px 8px; width:13%;">Item Name</th>
+                  <th style="padding:10px 8px; width:20%;">Description</th>
+                  <th style="padding:10px 8px; width:5%; text-align:center;">Qty</th>
+                  <th style="padding:10px 8px; width:9%; text-align:right;">Rate</th>
                   <th style="padding:10px 8px; width:10%;">Lead Time</th>
                   <th style="padding:10px 8px; width:10%;">Delivery</th>
-                  <th style="padding:10px 8px; width:9%;">Amount</th>
-                  <th style="padding:10px 8px; width:4%;"></th>
+                  <th style="padding:10px 8px; width:10%; text-align:right;">Amount</th>
+                  <th style="padding:10px 6px; width:3%;"></th>
                 </tr>
               </thead>
               <tbody id="qtn-items-body"></tbody>
@@ -11785,25 +11785,14 @@
           </div>
 
           <!-- Totals -->
-          <div
-            style="background:#f3f4f6; padding:15px; border-radius:8px; display:flex; justify-content:space-between; align-items:flex-end;">
+          <div style="background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%); padding:14px 20px; border-radius:10px; display:flex; justify-content:space-between; align-items:center; border:1px solid #e2e8f0;">
             <div>
-              <label
-                style="display:block; font-size:11px; color:#6b7280; font-weight:700; text-transform:uppercase;">Total
-                Qty</label>
-              <input type="text" id="qtn-total-qty" style="background:transparent; border:none; font-weight:700;"
-                readonly value="0">
+              <label style="display:block; font-size:10px; color:#94a3b8; font-weight:700; text-transform:uppercase; letter-spacing:0.05em;">Total Qty</label>
+              <div id="qtn-total-qty" style="font-size:18px; font-weight:800; color:#1e293b; margin-top:2px;">0</div>
             </div>
             <div style="text-align:right;">
-              <label id="qtn-total-label"
-                style="display:block; font-size:11px; color:#6b7280; font-weight:700; text-transform:uppercase;">Total
-                (USD)</label>
-              <input type="text" id="qtn-total-usd"
-                style="background:transparent; border:none; font-weight:800; font-size:20px; text-align:right; width:100%; outline:none;"
-                readonly value="$ 0.00">
-              <div id="qtn-converted-row" style="font-size:12px; color:#6b7280; margin-top:4px;">ZAR: <input id="qtn-total-converted"
-                  style="background:transparent; border:none; width:120px; text-align:right;" readonly value="R 0.00">
-              </div>
+              <label id="qtn-total-label" style="display:block; font-size:10px; color:#94a3b8; font-weight:700; text-transform:uppercase; letter-spacing:0.05em;">Total (USD)</label>
+              <div id="qtn-total-usd" style="font-size:22px; font-weight:800; color:#1e293b; margin-top:2px;">$ 0.00</div>
             </div>
           </div>
 
