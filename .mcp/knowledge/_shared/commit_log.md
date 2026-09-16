@@ -682,3 +682,9 @@
   Files: systems/salestrack/create_quotation_logic.js,systems/salestrack/index.html,
 - `08058be` 2026-09-16 [feature/admin-service-key-separation] Fix: carry over custom_lead_time and delivery during print enrichment - were being dropped
   Files: systems/salestrack/create_quotation_logic.js,
+- `d1c6f35` 2026-09-16 [feature/admin-service-key-separation] [checkpoint] Restore point: per-item delivery + lead time fully working in form, save, edit, and print
+  Files: .mcp/knowledge/_shared/commit_log.md,
+- `304aca2` 2026-09-16 [feature/admin-service-key-separation] Feature: edit product pencil button on item rows + data quality warnings for missing warranty/spec sheet
+  Files: systems/salestrack/create_quotation_logic.js,systems/salestrack/index.html,
+- `74ff728` 2026-09-16 [feature/admin-service-key-separation] Fix: replace all alert() with showToast() to prevent Electron freeze + async product lookup for edit button
+  Files: systems/salestrack/create_quotation_logic.js,systems/salestrack/index.html,
