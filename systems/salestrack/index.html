@@ -351,6 +351,16 @@
       animation: fadeInUp 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
     }
 
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to { opacity: 1; }
+    }
+
+    @keyframes slideUp {
+      from { opacity: 0; transform: translateY(20px) scale(0.97); }
+      to { opacity: 1; transform: translateY(0) scale(1); }
+    }
+
     /* GLASSMORPHISM UTILS */
     .glass {
       background: var(--glass-bg);
@@ -14516,24 +14526,104 @@
     });
 
     window.deleteQuotation = async function(quoteId, customerName) {
-      const confirmed = confirm(`Are you sure you want to delete the quotation for "${customerName}"?\n\nQuotation: ${quoteId}\n\nThis action cannot be undone.`);
-      if (!confirmed) return;
+      // Show custom styled confirm modal
+      return new Promise((resolve) => {
+        // Remove any existing modal
+        const existing = document.getElementById('omnis-confirm-modal');
+        if (existing) existing.remove();
 
-      if (!window.electron) return;
+        const overlay = document.createElement('div');
+        overlay.id = 'omnis-confirm-modal';
+        overlay.style.cssText = 'position:fixed; inset:0; z-index:99999; display:flex; align-items:center; justify-content:center; background:rgba(0,0,0,0.5); backdrop-filter:blur(4px); animation:fadeIn 0.15s ease;';
 
-      try {
-        const res = await window.electron.invoke('supabase:query', {
-          method: 'delete',
-          table: 'omnis_quotations',
-          params: { match: { name: quoteId } }
-        });
+        overlay.innerHTML = `
+          <div style="background:#fff; border-radius:16px; width:420px; max-width:92vw; box-shadow:0 20px 60px rgba(0,0,0,0.3); overflow:hidden; animation:slideUp 0.2s ease;">
+            <!-- Header -->
+            <div style="background:linear-gradient(135deg, #4c110d 0%, #8b2219 55%, #6b1a14 100%); padding:18px 24px; display:flex; align-items:center; gap:12px;">
+              <div style="width:40px; height:40px; background:rgba(255,255,255,0.15); border-radius:10px; display:flex; align-items:center; justify-content:center;">
+                <i class="fas fa-trash-alt" style="color:#fca5a5; font-size:18px;"></i>
+              </div>
+              <div>
+                <div style="font-size:16px; font-weight:800; color:#fff; letter-spacing:0.02em;">Delete Quotation</div>
+                <div style="font-size:11px; color:rgba(255,255,255,0.6); margin-top:2px;">This action cannot be undone</div>
+              </div>
+            </div>
+            <!-- Body -->
+            <div style="padding:24px;">
+              <div style="font-size:14px; color:#334155; line-height:1.6; margin-bottom:16px;">
+                Are you sure you want to permanently delete this quotation?
+              </div>
+              <div style="background:#fef2f2; border:1px solid #fecaca; border-radius:10px; padding:14px 16px;">
+                <div style="font-size:13px; color:#991b1b; font-weight:700; margin-bottom:4px;">
+                  <i class="fas fa-user" style="margin-right:6px; opacity:0.7;"></i>${customerName || 'Unknown Customer'}
+                </div>
+                <div style="font-size:12px; color:#7f1d1d; font-weight:600; font-family:monospace; opacity:0.8;">
+                  <i class="fas fa-file-alt" style="margin-right:6px; opacity:0.5;"></i>${quoteId}
+                </div>
+              </div>
+            </div>
+            <!-- Footer -->
+            <div style="padding:0 24px 20px; display:flex; justify-content:flex-end; gap:10px;">
+              <button id="omnis-confirm-cancel" style="padding:10px 24px; border-radius:8px; border:1px solid #e2e8f0; background:#fff; color:#475569; font-weight:700; font-size:13px; cursor:pointer; transition:all 0.15s;">
+                Cancel
+              </button>
+              <button id="omnis-confirm-delete" style="padding:10px 24px; border-radius:8px; border:none; background:linear-gradient(135deg, #dc2626, #b91c1c); color:#fff; font-weight:700; font-size:13px; cursor:pointer; box-shadow:0 2px 8px rgba(220,38,38,0.3); transition:all 0.15s;">
+                <i class="fas fa-trash-alt" style="margin-right:6px;"></i>Delete
+              </button>
+            </div>
+          </div>
+        `;
 
-        if (res.error) throw res.error;
-        loadQuotationList(true);
-      } catch (e) {
-        console.error("Error deleting quotation:", e);
-        alert("Failed to delete quotation: " + (e.message || e));
-      }
+        document.body.appendChild(overlay);
+
+        const cancelBtn = document.getElementById('omnis-confirm-cancel');
+        const deleteBtn = document.getElementById('omnis-confirm-delete');
+
+        // Hover effects
+        cancelBtn.onmouseenter = () => { cancelBtn.style.background = '#f8fafc'; cancelBtn.style.borderColor = '#cbd5e1'; };
+        cancelBtn.onmouseleave = () => { cancelBtn.style.background = '#fff'; cancelBtn.style.borderColor = '#e2e8f0'; };
+        deleteBtn.onmouseenter = () => { deleteBtn.style.transform = 'translateY(-1px)'; deleteBtn.style.boxShadow = '0 4px 12px rgba(220,38,38,0.4)'; };
+        deleteBtn.onmouseleave = () => { deleteBtn.style.transform = 'none'; deleteBtn.style.boxShadow = '0 2px 8px rgba(220,38,38,0.3)'; };
+
+        function dismiss() {
+          overlay.style.opacity = '0';
+          setTimeout(() => overlay.remove(), 150);
+          document.removeEventListener('keydown', onKey);
+        }
+
+        async function doDelete() {
+          deleteBtn.disabled = true;
+          deleteBtn.innerHTML = '<i class="fas fa-spinner fa-spin" style="margin-right:6px;"></i>Deleting...';
+          
+          try {
+            if (!window.electron) throw new Error('Electron not available');
+            const res = await window.electron.invoke('supabase:query', {
+              method: 'delete',
+              table: 'omnis_quotations',
+              params: { match: { name: quoteId } }
+            });
+            if (res.error) throw res.error;
+            dismiss();
+            if (window.showToast) window.showToast('Quotation deleted successfully', 'success');
+            loadQuotationList(true);
+          } catch (e) {
+            console.error("Error deleting quotation:", e);
+            deleteBtn.disabled = false;
+            deleteBtn.innerHTML = '<i class="fas fa-trash-alt" style="margin-right:6px;"></i>Delete';
+            if (window.showToast) window.showToast('Failed to delete: ' + (e.message || e), 'error');
+          }
+        }
+
+        function onKey(e) {
+          if (e.key === 'Escape') dismiss();
+          if (e.key === 'Enter') doDelete();
+        }
+
+        cancelBtn.onclick = dismiss;
+        deleteBtn.onclick = doDelete;
+        overlay.onclick = (e) => { if (e.target === overlay) dismiss(); };
+        document.addEventListener('keydown', onKey);
+      });
     };
 
     async function loadQuotationsKPI() {
