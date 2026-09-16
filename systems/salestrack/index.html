@@ -17239,22 +17239,59 @@
                     dd.querySelectorAll('.suggest-item').forEach(el => {
                         el.onmouseenter = () => { el.style.background = '#f1f5f9'; };
                         el.onmouseleave = () => { el.style.background = ''; };
-                        el.onclick = (e) => {
+                        el.onclick = async (e) => {
                             e.stopPropagation();
                             const idx = parseInt(el.getAttribute('data-idx'), 10);
                             const raw = results[idx];
                             if (!raw) return;
+
+                            // Fill CODE
                             input.value = raw.model || raw.item_code || raw.name || '';
+                            // Fill ITEM NAME
                             const nameInp = row.querySelector('.item-name');
                             if (nameInp) nameInp.value = raw.item_name || raw.model || raw.name || '';
+                            // Fill DESCRIPTION from stock_inventory
                             const descInp = row.querySelector('.item-desc');
-                            if (descInp) descInp.value = raw.description || '';
-                            if (raw.rate) {
-                                const rateInp = row.querySelector('.item-rate');
-                                if (rateInp) rateInp.value = raw.rate;
-                                if (window.calculateQuotationTotals) window.calculateQuotationTotals();
-                            }
+                            if (descInp) descInp.value = raw.description || raw.item_name || '';
+
                             dd.style.display = 'none';
+
+                            // Lookup last quotation for this item to get rate + lead time
+                            const itemCode = raw.model || raw.item_code || raw.name || '';
+                            if (itemCode) {
+                                try {
+                                    const sp2 = (window.salestrack && window.salestrack.supabase) || window.supabase || null;
+                                    if (sp2 && sp2.from) {
+                                        const { data: lastQtn } = await sp2
+                                            .from('omnis_quotation_items')
+                                            .select('rate, description, custom_lead_time, created_at')
+                                            .eq('item_code', itemCode)
+                                            .order('created_at', { ascending: false })
+                                            .limit(1);
+                                        if (lastQtn && lastQtn.length > 0) {
+                                            const prev = lastQtn[0];
+                                            // Fill rate from last quotation if not already set
+                                            const rateInp = row.querySelector('.item-rate');
+                                            if (rateInp && !rateInp.value) {
+                                                rateInp.value = prev.rate || '';
+                                                if (window.calculateQuotationTotals) window.calculateQuotationTotals();
+                                            }
+                                            // Fill description from last quotation if stock didn't have one
+                                            if (descInp && !descInp.value && prev.description) {
+                                                descInp.value = prev.description;
+                                            }
+                                            // Fill lead time from last quotation
+                                            const leadInp = row.querySelector('.item-lead-time');
+                                            if (leadInp && !leadInp.value && prev.custom_lead_time) {
+                                                leadInp.value = prev.custom_lead_time;
+                                            }
+                                            console.log('[QtnItemSearch] Pre-filled from last quotation - rate:', prev.rate, 'lead:', prev.custom_lead_time);
+                                        }
+                                    }
+                                } catch (lookupErr) {
+                                    console.warn('[QtnItemSearch] Last quotation lookup failed:', lookupErr);
+                                }
+                            }
                         };
                     });
                 } else {
