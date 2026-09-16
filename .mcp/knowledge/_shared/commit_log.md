@@ -626,3 +626,29 @@
   Files: .mcp/knowledge/_shared/commit_log.md,systems/salestrack/create_quotation_logic.js,systems/salestrack/index.html,
 - `8e28899` 2026-09-16 [feature/admin-service-key-separation] Clean up quotation pipeline follow-up column: date on own line, color-coded stage pills
   Files: systems/salestrack/index.html,
+- `71d0d40` 2026-09-16 [feature/admin-service-key-separation] [checkpoint] Restore point before next changes
+  Files: .mcp/knowledge/_shared/commit_log.md,
+- `afd96b2` 2026-09-16 [feature/admin-service-key-separation] Quotation pipeline: 3-dot action menu with delete, keep quick print button
+  Files: systems/salestrack/index.html,
+- `ebfe848` 2026-09-16 [feature/admin-service-key-separation] Fix: 3-dot dropdown clipped by sibling rows - overflow visible + z-index elevation
+  Files: systems/salestrack/index.html,
+- `a5cb76c` 2026-09-16 [feature/admin-service-key-separation] Create Quotation: switch item search to Supabase stock_inventory, add Lead Time column
+  Files: systems/salestrack/create_quotation_logic.js,systems/salestrack/index.html,
+- `89850ec` 2026-09-16 [feature/admin-service-key-separation] Fix: inline Supabase product search via IPC - setupSupabaseSuggestions not available at load time
+  Files: systems/salestrack/create_quotation_logic.js,
+- `9d70a21` 2026-09-16 [feature/admin-service-key-separation] Fix: override addQuotationItemRow in index.html where setupSupabaseSuggestions is available
+  Files: systems/salestrack/index.html,
+- `c743e74` 2026-09-16 [feature/admin-service-key-separation] Fix: IIFE closure was bypassing window.addQuotationItemRow override - use window. prefix
+  Files: systems/salestrack/create_quotation_logic.js,systems/salestrack/index.html,
+- `a357809` 2026-09-16 [feature/admin-service-key-separation] Fix: wire product search directly using window.supabase preload proxy - no override needed
+  Files: systems/salestrack/create_quotation_logic.js,systems/salestrack/index.html,
+- `492e7b5` 2026-09-16 [feature/admin-service-key-separation] Fix: use event delegation for quotation item search - inline in index.html, no external JS dependency
+  Files: systems/salestrack/index.html,
+- `c4ba3c3` 2026-09-16 [feature/admin-service-key-separation] Debug: add logging to trace event delegation for quotation item search
+  Files: systems/salestrack/index.html,
+- `704585a` 2026-09-16 [feature/admin-service-key-separation] Debug: remove competing search handler, add detailed search tracing
+  Files: systems/salestrack/create_quotation_logic.js,systems/salestrack/index.html,
+- `5f76349` 2026-09-16 [feature/admin-service-key-separation] Fix: render item search dropdown as body-level fixed element to avoid table overflow clipping
+  Files: systems/salestrack/index.html,
+- `ec33bcd` 2026-09-16 [feature/admin-service-key-separation] Feature: auto-fill description, last rate & lead time from previous quotations when selecting item
+  Files: systems/salestrack/index.html,
