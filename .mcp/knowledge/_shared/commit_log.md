@@ -618,3 +618,5 @@
   Files: .mcp/knowledge/_shared/commit_log.md,systems/salestrack/create_quotation_logic.js,
 - `a8cfbdf` 2026-09-16 [feature/admin-service-key-separation] checkpoint: native printToPDF with clickable hyperlinks, removed duplicate IPC handlers
   Files: .mcp/knowledge/_shared/commit_log.md,systems/salestrack/create_quotation_logic.js,
+- `6600b68` 2026-09-16 [feature/admin-service-key-separation] checkpoint: letterhead polish, compact layout, no blank pages
+  Files: .mcp/knowledge/_shared/commit_log.md,systems/salestrack/create_quotation_logic.js,

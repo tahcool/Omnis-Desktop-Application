@@ -671,6 +671,7 @@
 
             // 5. Load company logos for PDF embedding
             let mxgLogo = '', spzLogo = '';
+            const oemLogos = {};
             try {
                 const mxgRes = await window.electron.invoke('app:getAssetBase64', { relativePath: 'assets/images/MXG Logo.png' });
                 if (mxgRes.ok) mxgLogo = mxgRes.dataUri;
@@ -679,9 +680,22 @@
                 const spzRes = await window.electron.invoke('app:getAssetBase64', { relativePath: 'systems/powertrack/sinopower_logo.png' });
                 if (spzRes.ok) spzLogo = spzRes.dataUri;
             } catch (e) { console.warn('Could not load SPZ logo', e); }
+            // Load OEM brand logos for footer
+            const oemPaths = {
+                shantui: 'assets/images/Shantui_logo.png',
+                bobcat: 'assets/images/Bobcat_Black.png',
+                hitachi: 'assets/images/Landcross_logo.jpg',
+                wirtgen: 'assets/images/Wirtgen_logo.png'
+            };
+            for (const [key, relPath] of Object.entries(oemPaths)) {
+                try {
+                    const res = await window.electron.invoke('app:getAssetBase64', { relativePath: relPath });
+                    if (res.ok) oemLogos[key] = res.dataUri;
+                } catch (e) { console.warn(`Could not load ${key} logo`, e); }
+            }
 
             // 6. Render HTML Locally
-            const html = renderQuotationHTML(data, template, { mxgLogo, spzLogo });
+            const html = renderQuotationHTML(data, template, { mxgLogo, spzLogo, oemLogos });
 
             // 7. Generate PDF via Electron's native printToPDF (preserves clickable hyperlinks)
             console.log("Generating PDF via Electron printToPDF...");
@@ -820,8 +834,13 @@
                 <p style="margin-top: 40px;"><strong>${qtn.sales_person || 'Antony Dube'}</strong><br>National Equipment Sales Manager<br>Mobile: +263 772 294 246<br>Email: antony.dube@machinery-exchange.com</p>
             </div>
             <div class="footer-logos">
-                <div style="font-size: 9px; font-weight: bold; text-align: left; margin-bottom: 5px;">PROUD DISTRIBUTORS OF:</div>
-                <div class="footer-logos-text">SHANTUI | Bobcat | HITACHI | WIRTGEN | ROKBAK</div>
+                <div style="font-size: 9px; font-weight: bold; text-align: left; margin-bottom: 8px;">PROUD DISTRIBUTORS OF:</div>
+                <div style="display: flex; align-items: center; justify-content: space-around; gap: 20px;">
+                    ${logos.oemLogos?.shantui ? `<img src="${logos.oemLogos.shantui}" style="height: 45px; width: auto;" />` : '<span style="font-weight:900;font-size:18px;">SHANTUI</span>'}
+                    ${logos.oemLogos?.bobcat ? `<img src="${logos.oemLogos.bobcat}" style="height: 45px; width: auto;" />` : '<span style="font-weight:900;font-size:18px;">Bobcat</span>'}
+                    ${logos.oemLogos?.hitachi ? `<img src="${logos.oemLogos.hitachi}" style="height: 45px; width: auto;" />` : '<span style="font-weight:900;font-size:18px;">LANDCROSS</span>'}
+                    ${logos.oemLogos?.wirtgen ? `<img src="${logos.oemLogos.wirtgen}" style="height: 45px; width: auto;" />` : '<span style="font-weight:900;font-size:18px;">WIRTGEN</span>'}
+                </div>
             </div>`;
         }
 
