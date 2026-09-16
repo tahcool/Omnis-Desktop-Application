@@ -700,3 +700,21 @@
   Files: systems/salestrack/index.html,
 - `a74a135` 2026-09-16 [feature/admin-service-key-separation] UI: Currency + Delivery side by side in Transaction Details, rename to Delivery
   Files: systems/salestrack/index.html,
+- `df9a25f` 2026-09-16 [feature/admin-service-key-separation] [checkpoint] RESTORE POINT: Compact quotation form - Customer/SalesPerson/Currency/Delivery layout, print button, stay-on-page save, Customer-SAL title format
+  Files: .mcp/knowledge/_shared/commit_log.md,
+- `db00b8f` 2026-09-16 [feature/admin-service-key-separation] UI: align Additional Notes textarea with inputs in other columns
+  Files: systems/salestrack/index.html,
+- `9cbe57d` 2026-09-16 [feature/admin-service-key-separation] UI: polished items table with dark header, hover rows, single-currency total, cleaner layout
+  Files: systems/salestrack/create_quotation_logic.js,systems/salestrack/index.html,
+- `ce33f11` 2026-09-16 [feature/admin-service-key-separation] UI: items table uses system maroon theme header, CSS variables for consistent styling
+  Files: systems/salestrack/index.html,
+- `2d7a0a5` 2026-09-16 [feature/admin-service-key-separation] UI: fix table-wrapper class on div for maroon header to match Order Tracking theme
+  Files: systems/salestrack/index.html,
+- `4fbe371` 2026-09-16 [feature/admin-service-key-separation] UI: items table solid maroon header bar with rounded corners matching Pipeline style
+  Files: systems/salestrack/index.html,
+- `4db7a0f` 2026-09-16 [feature/admin-service-key-separation] Perf: remove stale cache flash, optimize KPI with parallel count queries instead of fetching all 4000+ rows
+  Files: systems/salestrack/index.html,
+- `09fce94` 2026-09-16 [feature/admin-service-key-separation] UI: replace native confirm() with styled maroon-themed delete confirmation modal
+  Files: systems/salestrack/index.html,
+- `0b8a9a5` 2026-09-16 [feature/admin-service-key-separation] UI: resize Order Tracking buttons to match Pipeline compact style (42px, 12px, 10px radius)
+  Files: systems/salestrack/index.html,
