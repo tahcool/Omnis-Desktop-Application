@@ -11696,14 +11696,6 @@
                   </div>
                 </div>
               </div>
-
-              <div class="form-row">
-                <label class="form-label">Delivery Terms</label>
-                <div style="display:flex; gap:6px; align-items:center;">
-                  <input type="text" id="qtn-delivery" class="form-input" placeholder="e.g. Harare" style="flex:1;">
-                  <button type="button" onclick="window.applyDeliveryToAllItems()" style="white-space:nowrap; padding:6px 10px; font-size:11px; font-weight:700; background:#3b82f6; color:white; border:none; border-radius:6px; cursor:pointer;" title="Set this delivery location on all items">Apply All</button>
-                </div>
-              </div>
             </div>
 
             <!-- Column 2: Transaction Details -->
@@ -11721,26 +11713,35 @@
                 </div>
               </div>
 
-              <div class="form-row">
-                <label class="form-label">Currency</label>
-                <div style="display:flex; gap:8px; align-items:center;">
-                  <select id="qtn-currency" class="form-input" style="flex:1;" onchange="window.onQtnCurrencyChange()">
-                    <option value="USD">USD — US Dollar</option>
-                    <option value="ZAR">ZAR — South African Rand</option>
-                    <option value="BWP">BWP — Botswana Pula</option>
-                    <option value="ZMW">ZMW — Zambian Kwacha</option>
-                    <option value="MZN">MZN — Mozambican Metical</option>
-                    <option value="EUR">EUR — Euro</option>
-                    <option value="GBP">GBP — British Pound</option>
-                  </select>
-                  <button type="button" id="qtn-fetch-rate-btn" onclick="window.fetchExchangeRate()" style="padding:6px 12px; background:#3b82f6; color:white; border:none; border-radius:6px; font-size:11px; font-weight:700; cursor:pointer; white-space:nowrap; box-shadow:0 2px 4px rgba(59,130,246,0.3);">
-                    <i class="fas fa-sync-alt"></i> Rate
-                  </button>
+              <div class="grid-2-col">
+                <div class="form-row">
+                  <label class="form-label">Currency</label>
+                  <div style="display:flex; gap:6px; align-items:center;">
+                    <select id="qtn-currency" class="form-input" style="flex:1;" onchange="window.onQtnCurrencyChange()">
+                      <option value="USD">USD — US Dollar</option>
+                      <option value="ZAR">ZAR — South African Rand</option>
+                      <option value="BWP">BWP — Botswana Pula</option>
+                      <option value="ZMW">ZMW — Zambian Kwacha</option>
+                      <option value="MZN">MZN — Mozambican Metical</option>
+                      <option value="EUR">EUR — Euro</option>
+                      <option value="GBP">GBP — British Pound</option>
+                    </select>
+                    <button type="button" id="qtn-fetch-rate-btn" onclick="window.fetchExchangeRate()" style="padding:6px 10px; background:#3b82f6; color:white; border:none; border-radius:6px; font-size:11px; font-weight:700; cursor:pointer; white-space:nowrap; box-shadow:0 2px 4px rgba(59,130,246,0.3);">
+                      <i class="fas fa-sync-alt"></i> Rate
+                    </button>
+                  </div>
+                  <div id="qtn-rate-info" style="font-size:10px; color:#6b7280; margin-top:4px; display:none;">
+                    <i class="fas fa-chart-line" style="color:#10b981;"></i>
+                    <span id="qtn-rate-display">1 USD = 1.00 USD</span>
+                    <span id="qtn-rate-source" style="margin-left:4px; color:#94a3b8;">• Frankfurter ECB</span>
+                  </div>
                 </div>
-                <div id="qtn-rate-info" style="font-size:10px; color:#6b7280; margin-top:4px; display:none;">
-                  <i class="fas fa-chart-line" style="color:#10b981;"></i>
-                  <span id="qtn-rate-display">1 USD = 1.00 USD</span>
-                  <span id="qtn-rate-source" style="margin-left:4px; color:#94a3b8;">• Frankfurter ECB</span>
+                <div class="form-row">
+                  <label class="form-label">Delivery</label>
+                  <div style="display:flex; gap:6px; align-items:center;">
+                    <input type="text" id="qtn-delivery" class="form-input" placeholder="e.g. Harare" style="flex:1;">
+                    <button type="button" onclick="window.applyDeliveryToAllItems()" style="white-space:nowrap; padding:6px 10px; font-size:11px; font-weight:700; background:#3b82f6; color:white; border:none; border-radius:6px; cursor:pointer;" title="Set this delivery location on all items">Apply All</button>
+                  </div>
                 </div>
               </div>
             </div>
