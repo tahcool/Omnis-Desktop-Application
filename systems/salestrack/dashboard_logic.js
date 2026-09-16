@@ -8817,6 +8817,7 @@ window.OmnisDashboardV6 = class OmnisDashboardV6 {
 
             const config = this._getRecipients(company);
             let contactPerson = config.contactName || "Chetan Samji";
+            let contactTitle = config.contactTitle || "Commercial Manager";
             let contactPhone = config.contactPhone || "+263772949515";
             let companyName = "Machinery Exchange";
             let signOff = `*The ${companyName} Team*`;
@@ -8854,7 +8855,7 @@ window.OmnisDashboardV6 = class OmnisDashboardV6 {
                 const dateToShow = m.revised ? `${m.revised} (Revised)` : m.target;
                 previewMsg += `${numEmoji} *${m.name}* (Qty: ${m.qty})\n    ↳ Status: _${m.notes || orderStatus}_\n    ↳ Target Handover Date: *${dateToShow}*\n\n`;
             });
-            previewMsg += `Should you have any questions or require further assistance, please do not hesitate to contact your dedicated representative:\n👤 *${contactPerson}* | Commercial Manager\n📞 ${contactPhone}\n\nBest regards,\n${signOff}`;
+            previewMsg += `Should you have any questions or require further assistance, please do not hesitate to contact your dedicated representative:\n👤 *${contactPerson}* | ${contactTitle}\n📞 ${contactPhone}\n\nBest regards,\n${signOff}`;
 
             const recipientLabels = validContacts.map(c =>
                 `${c.salutation ? c.salutation + ' ' : ''}${c.name} (${c.phone})`
@@ -8967,6 +8968,7 @@ window.OmnisDashboardV6 = class OmnisDashboardV6 {
 
             const config = this._getRecipients(this._currentFullDoc?.company || '');
             let contactPerson = config.contactName || "Chetan Samji";
+            let contactTitle = config.contactTitle || "Commercial Manager";
             let contactPhone = config.contactPhone || "+263772949515";
             let companyName = "Machinery Exchange";
             let signOff = `*The ${companyName} Team*`;
@@ -9007,7 +9009,7 @@ window.OmnisDashboardV6 = class OmnisDashboardV6 {
                     const dateToShow = m.revised ? `${m.revised} (Revised)` : m.target;
                     customerMsg += `${numEmoji} *${m.name}* (Qty: ${m.qty})\n    ↳ Status: _${m.notes || orderStatus}_\n    ↳ Target Handover Date: *${dateToShow}*\n\n`;
                 });
-                customerMsg += `Should you have any questions or require further assistance, please do not hesitate to contact your dedicated representative:\n👤 *${contactPerson}* | Commercial Manager\n📞 ${contactPhone}\n\nBest regards,\n${signOff}`;
+                customerMsg += `Should you have any questions or require further assistance, please do not hesitate to contact your dedicated representative:\n👤 *${contactPerson}* | ${contactTitle}\n📞 ${contactPhone}\n\nBest regards,\n${signOff}`;
 
                 if (window.omnisLog) window.omnisLog(`[WhatsApp] Sending to ${contact.name} (${contact.phone})...`);
                 const res = await window.electron.invoke('whatsapp:send-msg', { to: contact.phone, body: customerMsg });
@@ -9111,14 +9113,14 @@ window.OmnisDashboardV6 = class OmnisDashboardV6 {
             spz: {
                 cc: [
                     'takunda@industrial-exchange.group', 'antony@industrial-exchange.group',
-                    'logistics@sinopower.co.zw', 'brett@sinopower.co.zw', 'trucks@sinopower.co.zw',
+                    'logistics@sinopower.co.zw', 'jamie@sinopower.co.zw', 'trucks@sinopower.co.zw',
                     'rutendo@industrial-exchange.group', 'louis@industrial-exchange.group',
                     'mathew@industrial-exchange.group', 'barry@industrial-exchange.group',
                     'brendan@industrial-exchange.group'
                 ],
-                contactName: 'Brett Berry',
-                contactTitle: 'Commercial Manager',
-                contactEmail: 'brett@sinopower.co.zw',
+                contactName: 'Jamie Cawood',
+                contactTitle: 'Commercial Supervisor',
+                contactEmail: 'jamie@sinopower.co.zw',
                 contactPhone: '+263775553862'
             }
         };

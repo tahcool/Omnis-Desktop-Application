@@ -6450,7 +6450,7 @@
       <div style="height:16px; width:1px; background:rgba(255,255,255,0.15);"></div>
 
 
-      <div id="app-version-label" style="font-size:10px; color:rgba(255,255,255,0.4); font-weight:700; letter-spacing:0.02em;">V1.0.1-STABLE</div>
+      <div id="app-version-label" style="font-size:10px; color:rgba(255,255,255,0.4); font-weight:700; letter-spacing:0.02em;">V4.5.0-AURORA</div>
     </div>
 
     <div class="top-nav-group" style="gap:8px;">
@@ -6617,7 +6617,7 @@
         </div>
 
         <div class="system-info-card">
-          <div><b>Version</b> <span>4.2.0-stable</span></div>
+          <div><b>Version</b> <span>4.5.0-stable</span></div>
           <div><b>Engine</b> <span>Omnis V4-Core</span></div>
           <div><b>Security</b> <span>V4-EPX-882</span></div>
           <div style="margin-top:4px; opacity:0.8; font-size:9px;">Updates applied: 2026-04-16</div>
@@ -7823,14 +7823,14 @@
                                 <div style="padding:20px; display:flex; flex-direction:column; gap:14px;">
                                   <div>
                                     <label style="display:block; font-size:11px; font-weight:700; color:#64748b; text-transform:uppercase; letter-spacing:0.5px; margin-bottom:6px;">CC Email List <span style="font-weight:400; text-transform:none;">(one per line)</span></label>
-                                    <textarea id="email-recipients-spz" rows="6" style="width:100%; padding:10px; border:1px solid #e2e8f0; border-radius:8px; font-size:12px; font-family:monospace; resize:vertical; box-sizing:border-box; line-height:1.6;" placeholder="logistics@sinopower.co.zw&#10;brett@sinopower.co.zw"></textarea>
+                                    <textarea id="email-recipients-spz" rows="6" style="width:100%; padding:10px; border:1px solid #e2e8f0; border-radius:8px; font-size:12px; font-family:monospace; resize:vertical; box-sizing:border-box; line-height:1.6;" placeholder="logistics@sinopower.co.zw&#10;jamie@sinopower.co.zw"></textarea>
                                   </div>
                                   <div style="border-top:1px solid #f1f5f9; padding-top:14px;">
                                     <div style="font-size:11px; font-weight:700; color:#64748b; text-transform:uppercase; letter-spacing:0.5px; margin-bottom:10px;"><i class="fas fa-user-tie" style="color:#3b82f6; margin-right:4px;"></i>Contact Person / Manager</div>
                                     <div style="display:grid; grid-template-columns:1fr 1fr; gap:10px;">
                                       <div>
                                         <label style="display:block; font-size:11px; font-weight:600; color:#475569; margin-bottom:3px;">Name</label>
-                                        <input type="text" id="email-contact-name-spz" style="width:100%; padding:8px 10px; border:1px solid #e2e8f0; border-radius:6px; font-size:13px; box-sizing:border-box;" placeholder="Brett Berry" />
+                                        <input type="text" id="email-contact-name-spz" style="width:100%; padding:8px 10px; border:1px solid #e2e8f0; border-radius:6px; font-size:13px; box-sizing:border-box;" placeholder="Jamie Cawood" />
                                       </div>
                                       <div>
                                         <label style="display:block; font-size:11px; font-weight:600; color:#475569; margin-bottom:3px;">Title</label>
@@ -7838,7 +7838,7 @@
                                       </div>
                                       <div>
                                         <label style="display:block; font-size:11px; font-weight:600; color:#475569; margin-bottom:3px;">Email</label>
-                                        <input type="email" id="email-contact-email-spz" style="width:100%; padding:8px 10px; border:1px solid #e2e8f0; border-radius:6px; font-size:13px; box-sizing:border-box;" placeholder="brett@sinopower.co.zw" />
+                                        <input type="email" id="email-contact-email-spz" style="width:100%; padding:8px 10px; border:1px solid #e2e8f0; border-radius:6px; font-size:13px; box-sizing:border-box;" placeholder="jamie@sinopower.co.zw" />
                                       </div>
                                       <div>
                                         <label style="display:block; font-size:11px; font-weight:600; color:#475569; margin-bottom:3px;">Phone / WhatsApp</label>
@@ -12194,7 +12194,7 @@
                 <div style="margin-bottom: 30px;">
                   <label
                     style="display: block; color: #64748b; font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.1em; margin-bottom: 8px;">Licensee</label>
-                  <div style="color: #f1f5f9; font-size: 18px; font-weight: 700;">Machinery Exchange (Pvt) Ltd</div>
+                  <div style="color: #f1f5f9; font-size: 18px; font-weight: 700;">4.5.0-stable</div>
                 </div>
                 <div>
                   <label
@@ -15380,12 +15380,13 @@
       const isMxg = companyLower.includes('machinery');
       const companyKey = isMxg ? 'mxg' : 'spz';
 
-      // Use the same email recipients config as Order Update Emails
-      let recipientConfig;
-      if (window.ordersDashboard && window.ordersDashboard._defaultEmailRecipients) {
-        recipientConfig = window.ordersDashboard._defaultEmailRecipients();
+      // Use the same saved email recipients config as Order Update Emails (Settings → Notifications)
+      let teamCfg;
+      if (window.ordersDashboard && window.ordersDashboard._getRecipients) {
+        teamCfg = window.ordersDashboard._getRecipients(qtn.company || '');
       } else {
-        recipientConfig = {
+        // Fallback only if dashboard instance is not available
+        const recipientConfig = {
           mxg: {
             cc: ['takunda@industrial-exchange.group', 'antony@industrial-exchange.group',
                  'isaac@machinery-exchange.com', 'mathew@industrial-exchange.group',
@@ -15396,17 +15397,17 @@
           },
           spz: {
             cc: ['takunda@industrial-exchange.group', 'antony@industrial-exchange.group',
-                 'logistics@sinopower.co.zw', 'brett@sinopower.co.zw', 'trucks@sinopower.co.zw',
+                 'logistics@sinopower.co.zw', 'jamie@sinopower.co.zw', 'trucks@sinopower.co.zw',
                  'rutendo@industrial-exchange.group', 'louis@industrial-exchange.group',
                  'mathew@industrial-exchange.group', 'barry@industrial-exchange.group',
                  'brendan@industrial-exchange.group'],
-            contactName: 'Brett Berry', contactTitle: 'Commercial Manager',
-            contactEmail: 'brett@sinopower.co.zw', contactPhone: '+263775553862'
+            contactName: 'Jamie Cawood', contactTitle: 'Commercial Supervisor',
+            contactEmail: 'jamie@sinopower.co.zw', contactPhone: '+263775553862'
           }
         };
+        teamCfg = recipientConfig[companyKey] || recipientConfig.mxg;
       }
 
-      const teamCfg = recipientConfig[companyKey] || recipientConfig.mxg;
       const ccList = teamCfg.cc.join(', ');
 
       // 3. Build formatted date

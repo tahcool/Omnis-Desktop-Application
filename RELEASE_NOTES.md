@@ -1,3 +1,9 @@
+# Release Notes: Omnis v4.5.0 AURORA
+
+**Release Date:** 2026-09-16  
+**Version:** 4.5.0 AURORA  
+**Platform:** Windows (Electron)
+
 ## [4.3.8] - 2026-09-07
 
 ### Added
