@@ -631,7 +631,7 @@
                         table: 'products',
                         method: 'select',
                         params: {
-                            columns: 'item_name,description,warranty,spec_sheet_url,brand_name,image_url',
+                            columns: 'item_name,item_group_name,description,warranty,spec_sheet_url,brand_name,image_url',
                             or: `item_code.eq.${i.item_code},item_name.eq.${i.item_code}`,
                             limit: 1
                         }
@@ -643,6 +643,7 @@
                 enrichedItems.push({
                     item_code: i.item_code,
                     item_name: productData.item_name || i.item_name || i.item_code,
+                    item_group: productData.item_group_name || '',
                     description: productData.description || i.description || '',
                     warranty: productData.warranty || '',
                     spec_sheet_url: productData.spec_sheet_url || '',
@@ -731,6 +732,7 @@
         const currSymMap = { USD: '$', ZAR: 'R', BWP: 'P', ZMW: 'ZK', MZN: 'MT', EUR: '€', GBP: '£' };
         const currSym = currSymMap[currCode] || '$';
         const currName = currCode;
+        const fmtPrice = (num) => `${currSym} ${(num || 0).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
 
         // Determine PDF title from brand(s) in items
         const brandSet = new Set();
@@ -738,24 +740,36 @@
         const pdfBrandTitle = brandSet.size === 1 ? `${[...brandSet][0]} QUOTATION` : 'EQUIPMENT QUOTATION';
 
         let itemsHtml = "";
-        items.forEach(row => {
+        items.forEach((row, idx) => {
             const itemName = row.item_name || row.item_code;
-            const descText = row.description || 'Standard industrial specifications and performance features.';
-            // Build spec sheet link only if URL exists
-            const specLink = row.spec_sheet_url
-                ? `<div style="margin-top: 15px;"><a href="${row.spec_sheet_url}" target="_blank" style="color: #cc0000; font-weight: bold; font-size: 13px; text-decoration: underline;">📄 Download Spec Sheet</a></div>`
+            const equipType = row.item_group || 'Equipment';
+            const descText = row.description || '';
+            // Bold product name header + description
+            const specContent = `<strong>${itemName}</strong>${descText ? '<br>' + descText : ''}`;
+            // Build spec sheet link only if a valid URL exists
+            const hasValidSpec = row.spec_sheet_url && row.spec_sheet_url.startsWith('http');
+            const specLink = hasValidSpec
+                ? `<div style="margin-top: 10px; text-align: center;"><a href="${row.spec_sheet_url}" style="color: #cc0000; font-weight: bold; font-size: 12px; text-decoration: underline;">Download Spec</a></div>`
                 : '';
             itemsHtml += `
-            <tr style="page-break-inside: avoid; text-align: center;">
-                <td style="border: 1px solid #000; padding: 10px;">Equipment</td>
-                <td style="border: 1px solid #000; padding: 10px;">${itemName}</td>
-                <td style="border: 1px solid #000; padding: 10px; text-align: left; font-size: 11px;">
-                    ${descText}
+            <tr style="page-break-inside: avoid; vertical-align: top;">
+                <td style="border: 1px solid #000; padding: 8px; text-align: center;">${row.qty || 1}</td>
+                <td style="border: 1px solid #000; padding: 8px; text-align: center;">${equipType}</td>
+                <td style="border: 1px solid #000; padding: 8px; text-align: center;">${itemName}</td>
+                <td style="border: 1px solid #000; padding: 8px; text-align: left; font-size: 11px;">
+                    ${specContent}
                     ${specLink}
                 </td>
-                <td style="border: 1px solid #000; padding: 10px;">${qtn.delivery || '2 - 3 Weeks'}</td>
-                <td style="border: 1px solid #000; padding: 10px;">${currSym} ${formatCurr(row.rate)}</td>
-                <td style="border: 1px solid #000; padding: 10px; font-weight: bold;">${currSym} ${formatCurr(row.amount)}</td>
+                <td style="border: 1px solid #000; padding: 8px; text-align: center;">${qtn.delivery || 'TBD'}</td>
+                <td style="border: 1px solid #000; padding: 8px; text-align: right; white-space: nowrap;">${fmtPrice(row.rate)}</td>
+                <td style="border: 1px solid #000; padding: 8px; text-align: right; font-weight: bold; white-space: nowrap;">${fmtPrice(row.amount)}</td>
+            </tr>`;
+            // Per-item warranty + delivery row
+            const warranty = row.warranty || '3000 hours or 1 year parts warranty';
+            itemsHtml += `
+            <tr style="page-break-inside: avoid;">
+                <td colspan="4" style="border: 1px solid #000; padding: 6px 10px; text-align: left; font-size: 12px;"><strong>Warranty:</strong> ${warranty}</td>
+                <td colspan="3" style="border: 1px solid #000; padding: 6px 10px; text-align: left; font-size: 12px;"><strong>Delivery:</strong> ${qtn.delivery || 'Harare'}</td>
             </tr>`;
         });
 
@@ -768,7 +782,6 @@
             <div class="header">
                 <div class="logo-section">
                     ${logos.spzLogo ? `<img src="${logos.spzLogo}" style="max-width: 220px; height: auto;" />` : `<div style="font-size: 28px; font-weight: 900; color: #1e3a8a; line-height: 0.9;">SINOPOWER<br>PUMP & GENERATOR</div>`}
-                    <div style="font-size: 10px; font-weight: bold; color: #000; margin-top: 5px;">Power Generation Specialists</div>
                     <div style="height: 4px; background: linear-gradient(to right, #60a5fa, #1e3a8a); margin-top: 5px; width: 100%;"></div>
                 </div>
                 <div class="company-details">
@@ -798,7 +811,6 @@
             <div class="header">
                 <div class="logo-section">
                     ${logos.mxgLogo ? `<img src="${logos.mxgLogo}" style="max-width: 200px; height: auto;" />` : `<div style="font-size: 28px; font-weight: 900; color: #cc0000; line-height: 0.9; font-style: italic;">MACHINERY<br>EXCHANGE</div>`}
-                    <div style="font-size: 10px; font-weight: bold; color: #000; margin-top: 5px;">Earthmoving Equipment Specialists</div>
                     <div style="height: 4px; background: linear-gradient(to right, #ffcc00, #cc0000); margin-top: 5px; width: 100%;"></div>
                 </div>
                 <div class="company-details">
@@ -841,8 +853,9 @@
                 .title { text-align: center; font-size: 26px; font-weight: bold; margin: 30px 0; }
                 .info-table { width: 40%; border-collapse: collapse; margin-bottom: 20px; font-size: 13px; }
                 .info-table td { border: 1px solid #000; padding: 4px 8px; }
-                .main-table { width: 100%; border-collapse: collapse; margin-top: 20px; table-layout: fixed; }
-                .main-table th { border: 1px solid #000; padding: 8px; text-align: center; font-weight: bold; vertical-align: middle; }
+                .main-table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+                .main-table th { border: 1px solid #000; padding: 8px 6px; text-align: center; font-weight: bold; vertical-align: middle; font-size: 12px; }
+                .main-table td { font-size: 12px; }
                 .footer-logos { margin-top: 50px; border-top: 1px solid #ccc; padding-top: 10px; text-align: center; }
                 .footer-logos-text { font-weight: 900; font-size: 20px; color: #000; word-spacing: 20px; }
             </style>
@@ -885,20 +898,17 @@
             <table class="main-table">
                 <thead>
                     <tr>
-                        <th width="12%">Equipment</th>
-                        <th width="15%"><u>Make/</u><br><u>Model</u></th>
-                        <th width="35%"><u>Specification</u></th>
-                        <th width="13%"><u>Lead</u><br><u>Time/</u><br><u>Pricing</u><br><u>Notes</u></th>
-                        <th width="12%"><u>Unit Price</u></th>
-                        <th width="13%"><u>Total Unit Price</u><br><u>(Excl. VAT) ${currName}</u></th>
+                        <th style="width: 30px;">Qty</th>
+                        <th style="width: 80px;">Equipment</th>
+                        <th style="width: 95px;">Make/Model</th>
+                        <th>Specification</th>
+                        <th style="width: 70px;">Lead Time</th>
+                        <th style="width: 90px;">Unit Price</th>
+                        <th style="width: 100px;">Total (Excl. VAT)<br>${currName}</th>
                     </tr>
                 </thead>
                 <tbody>
                     ${itemsHtml}
-                    <tr>
-                        <td colspan="3" style="border: 1px solid #000; padding: 6px 10px; text-align: left;"><u>Warranty</u> — ${(() => { const ws = items.map(i => i.warranty).filter(Boolean); return ws.length ? ws.join('; ') : '3000 hours or 1 year parts warranty'; })()}</td>
-                        <td colspan="3" style="border: 1px solid #000; padding: 6px 10px; text-align: left;"><u>Delivery</u> — ${qtn.delivery || 'HARARE'}</td>
-                    </tr>
                 </tbody>
             </table>
 
