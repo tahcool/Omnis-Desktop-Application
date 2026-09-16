@@ -1027,7 +1027,7 @@
             </div>
             <div class="footer-logos">
                 <div style="font-size: 9px; font-weight: bold; text-align: left; margin-bottom: 8px;">PROUD DISTRIBUTORS OF:</div>
-                <div style="display: flex; align-items: center; justify-content: space-around; gap: 20px;">
+                <div style="display: flex; align-items: center; justify-content: space-between; gap: 15px;">
                     ${logos.oemLogos?.shantui ? `<img src="${logos.oemLogos.shantui}" style="height: 45px; width: auto;" />` : '<span style="font-weight:900;font-size:18px;">SHANTUI</span>'}
                     ${logos.oemLogos?.bobcat ? `<img src="${logos.oemLogos.bobcat}" style="height: 45px; width: auto;" />` : '<span style="font-weight:900;font-size:18px;">Bobcat</span>'}
                     ${logos.oemLogos?.hitachi ? `<img src="${logos.oemLogos.hitachi}" style="height: 45px; width: auto;" />` : '<span style="font-weight:900;font-size:18px;">LANDCROSS</span>'}
