@@ -14293,7 +14293,13 @@
             // Normal quotations have no highlight and use the standard ai-order-row borders
         }
         
-        item.onclick = () => window.open(`${base}/app/quotation/${row.name}`, "_blank");
+        item.onclick = () => {
+            if (window.openQuotationForEdit) {
+                window.openQuotationForEdit(row.name);
+            } else {
+                alert("Edit view not available. Please reload the app.");
+            }
+        };
         item.style.cursor = "pointer";
 
         item.innerHTML = `
@@ -14385,6 +14391,9 @@
               ⋮
             </button>
             <div class="qrow-dropdown">
+              <div class="qrow-dropdown-item" onclick="event.stopPropagation(); window.closeQRowMenus(); window.openQuotationForEdit('${row.name}')">
+                <i class="fas fa-edit" style="color:#3b82f6;"></i> Edit Quotation
+              </div>
               <div class="qrow-dropdown-item" onclick="event.stopPropagation(); window.closeQRowMenus(); window.pingRep('${row.name}', '${escapeHtml(row.custom_sales_person || '')}')">
                 <i class="fas fa-bell" style="color:#ea580c;"></i> Ping Rep
               </div>

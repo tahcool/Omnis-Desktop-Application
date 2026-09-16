@@ -10,6 +10,14 @@
         const titleDisplay = document.getElementById("qtn-title-display");
         if (titleDisplay) titleDisplay.value = "";
 
+        // Clear editing state
+        window._editingQtnId = null;
+        window._editingQtnName = null;
+
+        // Reset form header to "New Quotation"
+        const mainTitle = document.querySelector('#view-create-quotation .section-title, #view-create-quotation h2');
+        if (mainTitle) mainTitle.textContent = "New Quotation";
+
         // Add one empty row and calc
         if (window.addQuotationItemRow) window.addQuotationItemRow();
         if (window.calculateQuotationTotals) window.calculateQuotationTotals();
@@ -17,6 +25,126 @@
 
     // Expose init function globally
     window.initCreateQuotation = function () {
+
+    // --- OPEN EXISTING QUOTATION FOR EDITING ---
+    window.openQuotationForEdit = async function (qtnName) {
+        console.log("[QtnEdit] Opening quotation for edit:", qtnName);
+        try {
+            const sp = (window.salestrack && window.salestrack.supabase) || window.supabase || null;
+            if (!sp || !sp.from) throw new Error("Supabase client not available");
+
+            // Fetch the parent quotation
+            const { data: qtnData, error: qtnErr } = await sp.from('omnis_quotations')
+                .select('*')
+                .eq('name', qtnName)
+                .limit(1);
+            
+            if (qtnErr) throw new Error(typeof qtnErr === 'string' ? qtnErr : qtnErr.message);
+            if (!qtnData || qtnData.length === 0) throw new Error("Quotation not found: " + qtnName);
+            const qtn = qtnData[0];
+
+            // Fetch the child items
+            const { data: itemsData, error: itemsErr } = await sp.from('omnis_quotation_items')
+                .select('*')
+                .eq('quotation_id', qtn.id);
+            
+            if (itemsErr) console.warn("[QtnEdit] Items fetch error:", itemsErr);
+            const items = itemsData || [];
+
+            // Switch to the create/edit form view
+            if (window.switchToView) window.switchToView('view-create-quotation');
+
+            // Reset the form first
+            if (window.resetQtnForm) window.resetQtnForm();
+
+            // Store editing state
+            window._editingQtnId = qtn.id;
+            window._editingQtnName = qtn.name;
+
+            // Populate header fields
+            const titleDisplay = document.getElementById("qtn-title-display");
+            if (titleDisplay) titleDisplay.value = qtn.name || '';
+
+            const customerInp = document.getElementById("qtn-customer");
+            if (customerInp) customerInp.value = qtn.customer_name || '';
+
+            const customerNameInp = document.getElementById("qtn-customer-name");
+            if (customerNameInp) customerNameInp.value = qtn.contact_person || qtn.customer_name || '';
+
+            const companySelect = document.getElementById("qtn-company");
+            if (companySelect && qtn.company) companySelect.value = qtn.company;
+
+            const deliveryInp = document.getElementById("qtn-delivery");
+            if (deliveryInp) deliveryInp.value = qtn.delivery || '';
+
+            const dateInp = document.getElementById("qtn-date");
+            if (dateInp && qtn.transaction_date) dateInp.value = qtn.transaction_date;
+
+            const validTillInp = document.getElementById("qtn-valid-till");
+            if (validTillInp && qtn.valid_till) validTillInp.value = qtn.valid_till;
+
+            const salesPersonInp = document.getElementById("qtn-sales-person");
+            if (salesPersonInp) salesPersonInp.value = qtn.sales_person || '';
+
+            const bankInp = document.getElementById("qtn-bank");
+            if (bankInp) bankInp.value = qtn.bank_account || '';
+
+            const currencySelect = document.getElementById("qtn-currency");
+            if (currencySelect && qtn.currency) currencySelect.value = qtn.currency;
+
+            const pfiCheckbox = document.getElementById("qtn-pfi");
+            if (pfiCheckbox) pfiCheckbox.checked = !!qtn.pfi_checked;
+
+            const notesArea = document.getElementById("qtn-notes");
+            if (notesArea) notesArea.value = qtn.notes || '';
+
+            // Populate item rows
+            const tbody = document.getElementById("qtn-items-body");
+            if (tbody) tbody.innerHTML = ""; // Clear the default empty row
+
+            if (items.length > 0) {
+                items.forEach(item => {
+                    if (window.addQuotationItemRow) window.addQuotationItemRow();
+                    const lastRow = tbody.lastElementChild;
+                    if (!lastRow) return;
+
+                    const codeInp = lastRow.querySelector('.item-code');
+                    if (codeInp) codeInp.value = item.item_code || '';
+
+                    const nameInp = lastRow.querySelector('.item-name');
+                    if (nameInp) nameInp.value = item.item_name || item.item_code || '';
+
+                    const descInp = lastRow.querySelector('.item-desc');
+                    if (descInp) descInp.value = item.description || '';
+
+                    const qtyInp = lastRow.querySelector('.item-qty');
+                    if (qtyInp) qtyInp.value = item.qty || 1;
+
+                    const rateInp = lastRow.querySelector('.item-rate');
+                    if (rateInp) rateInp.value = item.rate || 0;
+
+                    const leadInp = lastRow.querySelector('.item-lead-time');
+                    if (leadInp) leadInp.value = item.custom_lead_time || '';
+                });
+            } else {
+                // Add one empty row if no items
+                if (window.addQuotationItemRow) window.addQuotationItemRow();
+            }
+
+            // Update totals
+            if (window.calculateQuotationTotals) window.calculateQuotationTotals();
+
+            // Update the form header to show "Edit Quotation"
+            const mainTitle = document.querySelector('#view-create-quotation .section-title, #view-create-quotation h2');
+            if (mainTitle) mainTitle.textContent = "Edit Quotation";
+
+            console.log("[QtnEdit] Loaded quotation:", qtn.name, "with", items.length, "items");
+        } catch (e) {
+            console.error("[QtnEdit] Error:", e);
+            alert("Error opening quotation: " + (e.message || e));
+        }
+    };
+
         console.log("Initializing Create Quotation View...");
 
         // Set Default Dates
@@ -239,33 +367,65 @@
             if (!data.customer) throw new Error("Customer is required");
             if (data.items.length === 0) throw new Error("At least one item is required");
 
-            if (!window.supabase) throw new Error("Supabase client not found");
-            const qtnId = "SAL-QTN-" + new Date().getFullYear().toString().slice(-2) + "-" + Math.floor(1000 + Math.random() * 9000);
+            const sp = (window.salestrack && window.salestrack.supabase) || window.supabase || null;
+            if (!sp) throw new Error("Supabase client not found");
+
+            const isEdit = !!window._editingQtnId;
+            let dbQtnId, qtnId;
+
+            if (isEdit) {
+                // --- UPDATE existing quotation ---
+                dbQtnId = window._editingQtnId;
+                qtnId = window._editingQtnName;
+                console.log("[QtnSave] Updating existing quotation:", qtnId, dbQtnId);
+
+                const updatePayload = {
+                    customer_name: data.customer,
+                    contact_person: data.contact_person,
+                    transaction_date: data.transaction_date || new Date().toISOString().split('T')[0],
+                    company: data.company,
+                    currency: data.currency,
+                    sales_person: data.sales_person,
+                    bank_account: data.bank_account,
+                    pfi_checked: data.pfi_checked,
+                    delivery: data.delivery,
+                    notes: data.notes,
+                    updated_at: new Date().toISOString()
+                };
+
+                const updRes = await sp.from("omnis_quotations").update(updatePayload).eq('id', dbQtnId).select();
+                console.log("[QtnSave] Update parent result:", JSON.stringify(updRes));
+                if (updRes.error) throw new Error(typeof updRes.error === 'string' ? updRes.error : (updRes.error.message || JSON.stringify(updRes.error)));
+
+                // Delete old items and re-insert
+                await sp.from("omnis_quotation_items").delete({ match: { quotation_id: dbQtnId } });
+
+            } else {
+                // --- CREATE new quotation ---
+                qtnId = "SAL-QTN-" + new Date().getFullYear().toString().slice(-2) + "-" + Math.floor(1000 + Math.random() * 9000);
+                console.log("[QtnSave] Creating new quotation:", qtnId);
+
+                const qtnRes = await sp.from("omnis_quotations").insert([{
+                    name: qtnId,
+                    customer_name: data.customer,
+                    contact_person: data.contact_person,
+                    transaction_date: data.transaction_date || new Date().toISOString().split('T')[0],
+                    company: data.company,
+                    currency: data.currency,
+                    sales_person: data.sales_person,
+                    bank_account: data.bank_account,
+                    pfi_checked: data.pfi_checked,
+                    delivery: data.delivery,
+                    notes: data.notes
+                }]).select();
+
+                console.log("[QtnSave] Insert parent result:", JSON.stringify(qtnRes));
+                if (qtnRes.error) throw new Error(typeof qtnRes.error === 'string' ? qtnRes.error : (qtnRes.error.message || JSON.stringify(qtnRes.error)));
+                if (!qtnRes.data || !qtnRes.data.length) throw new Error("Insert succeeded but no data returned. Check RLS policies on omnis_quotations.");
+                dbQtnId = qtnRes.data[0].id;
+            }
             
-            // Insert parent
-            const qtnRes = await window.supabase.from("omnis_quotations").insert([{
-                name: qtnId,
-                customer_name: data.customer,
-                contact_person: data.contact_person,
-                transaction_date: data.transaction_date || new Date().toISOString().split('T')[0],
-                company: data.company,
-                currency: data.currency,
-                sales_person: data.sales_person,
-                bank_account: data.bank_account,
-                pfi_checked: data.pfi_checked,
-                delivery: data.delivery,
-                notes: data.notes
-            }]).select();
-            
-            console.log("[QtnSave] Insert parent result:", JSON.stringify(qtnRes));
-            
-            // Handle both real Supabase response {data, error} and IPC proxy response {ok, data, error}
-            if (qtnRes.error) throw new Error(typeof qtnRes.error === 'string' ? qtnRes.error : (qtnRes.error.message || JSON.stringify(qtnRes.error)));
-            if (!qtnRes.data || !qtnRes.data.length) throw new Error("Insert succeeded but no data returned. Check RLS policies on omnis_quotations.");
-            
-            const dbQtnId = qtnRes.data[0].id;
-            
-            // Insert children
+            // Insert children (both create and update)
             const itemPayloads = data.items.map(i => ({
                 quotation_id: dbQtnId,
                 item_code: i.item_code,
@@ -277,17 +437,21 @@
                 custom_lead_time: i.custom_lead_time || ''
             }));
             
-            const itemRes = await window.supabase.from("omnis_quotation_items").insert(itemPayloads).select();
+            const itemRes = await sp.from("omnis_quotation_items").insert(itemPayloads).select();
             console.log("[QtnSave] Insert items result:", JSON.stringify(itemRes));
             if (itemRes.error) throw new Error(typeof itemRes.error === 'string' ? itemRes.error : (itemRes.error.message || JSON.stringify(itemRes.error)));
             
+            // Clear editing state
+            window._editingQtnId = null;
+            window._editingQtnName = null;
+
             const payload = { ok: true, name: qtnId };
 
             if (payload.ok) {
                 resetQtnForm();
                 showOnly(document.getElementById("view-quotations-list"));
                 if (window.loadQuotationList) window.loadQuotationList();
-                window.showQuotationOptions(payload.name, true);
+                window.showQuotationOptions(payload.name, !isEdit);
             } else {
                 throw new Error(payload.error || payload.message || "Save failed");
             }
