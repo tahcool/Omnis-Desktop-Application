@@ -683,32 +683,13 @@
             // 6. Render HTML Locally
             const html = renderQuotationHTML(data, template, { mxgLogo, spzLogo });
 
-            // 3. Generate PDF on the client (Print to PDF)
-            console.log("Generating PDF locally...");
-            
-            const iframe = document.createElement('iframe');
-            iframe.style.position = 'fixed';
-            iframe.style.right = '-10000px';
-            iframe.style.bottom = '-10000px';
-            document.body.appendChild(iframe);
-            
-            iframe.contentWindow.document.open();
-            iframe.contentWindow.document.write(html);
-            iframe.contentWindow.document.close();
-            
-            // Wait a moment for styles to apply before printing
-            setTimeout(() => {
-                iframe.contentWindow.focus();
-                iframe.contentWindow.print();
-                // Clean up after print dialog closes
-                setTimeout(() => {
-                    if (document.body.contains(iframe)) {
-                        document.body.removeChild(iframe);
-                    }
-                }, 2000);
-            }, 500);
-
-            console.log("Local PDF print dialog triggered.");
+            // 7. Generate PDF via Electron's native printToPDF (preserves clickable hyperlinks)
+            console.log("Generating PDF via Electron printToPDF...");
+            const pdfFilename = `${qtnId}_Quotation.pdf`;
+            const pdfResult = await window.electron.invoke('print:toPDF', { htmlContent: html, filename: pdfFilename });
+            if (pdfResult.canceled) { console.log("PDF save cancelled by user."); return; }
+            if (!pdfResult.ok) throw new Error(pdfResult.error || 'PDF generation failed');
+            console.log("PDF saved to:", pdfResult.filePath);
 
         } catch (err) {
             console.error("PDF Download Error:", err);
