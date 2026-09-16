@@ -21095,10 +21095,45 @@ thead th { padding:11px 12px; font-size:10px; font-weight:800; color:#fff; text-
         }
     };
 
-    window.editProduct = function (id) {
-        if (!window._fullCatalog) return;
-        const p = window._fullCatalog.find(item => item.id === id);
-        if (!p) return;
+    window.editProduct = async function (id) {
+        let p = null;
+
+        // 1. Try _fullCatalog first
+        if (window._fullCatalog) {
+            p = window._fullCatalog.find(item => item.id === id);
+        }
+
+        // 2. Fallback: fetch from Supabase directly
+        if (!p) {
+            try {
+                const sp = (window.salestrack && window.salestrack.supabase) || window.supabase || null;
+                if (sp && sp.from) {
+                    const { data } = await sp.from('products').select('*').eq('id', id).limit(1);
+                    if (data && data.length > 0) p = data[0];
+                }
+                if (!p && window.electron) {
+                    const res = await window.electron.invoke('supabase:query', {
+                        table: 'products', method: 'select',
+                        params: { columns: '*', eq: { id: id }, limit: 1 }
+                    });
+                    if (res?.ok && res.data?.length > 0) p = res.data[0];
+                }
+                // Cache for future use
+                if (p) {
+                    if (!window._fullCatalog) window._fullCatalog = [];
+                    if (!window._fullCatalog.find(item => item.id === p.id)) {
+                        window._fullCatalog.push(p);
+                    }
+                }
+            } catch (err) {
+                console.warn('[EditProduct] DB fetch failed:', err);
+            }
+        }
+
+        if (!p) {
+            if (window.showToast) window.showToast('Product not found. It may have been deleted.', 'warning');
+            return;
+        }
 
         window._editingProductId = id;
         document.getElementById('product-form-overlay').classList.remove('hidden');
