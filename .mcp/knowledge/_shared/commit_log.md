@@ -609,3 +609,6 @@
 \n## 2026-09-15
 - `6e00388` 2026-09-15 [feature/admin-service-key-separation] feat: tracking-only order visual marking and notification templates
   Files: omnis-web-deploy/systems/salestrack/index.html,omnis-web-deploy/systems/salestrack/orders_logic.js,systems/salestrack/index.html,systems/salestrack/orders_logic.js,
+\n## 2026-09-16
+- `b593ce5` 2026-09-16 [feature/admin-service-key-separation] checkpoint: AI image search, quick create form cleanup, IPC proxy migration
+  Files: .env,.mcp/knowledge/_shared/commit_log.md,admin_dashboard.html,admin_logic.js,main.js,migrate_stock.js,omnis-tablet/App.tsx,omnis-tablet/src/hooks/useResponsive.ts,omnis-tablet/src/screens/AfterSalesScreen.tsx,omnis-tablet/src/screens/CustomerEnquiriesScreen.tsx,omnis-tablet/src/screens/CustomerFleetsScreen.tsx,omnis-tablet/src/screens/DashboardScreen.tsx,omnis-tablet/src/screens/EmailQueueScreen.tsx,omnis-tablet/src/screens/FleetrackDashboardScreen.tsx,omnis-tablet/src/screens/LogActivityScreen.tsx,omnis-tablet/src/screens/LoginScreen.tsx,omnis-tablet/src/screens/OrderTrackingScreen.tsx,omnis-tablet/src/screens/SalestackCustomersScreen.tsx,omnis-tablet/src/screens/VisitHistoryScreen.tsx,omnis-tablet/src/utils/visitEmailHtml.ts,

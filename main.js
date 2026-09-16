@@ -789,6 +789,25 @@ ipcMain.handle('sync:setOnline', async (event, online) => {
   return { ok: true, online };
 });
 
+// ✅ Asset file reader — for embedding logos in PDFs as base64 data URIs
+const fs = require('fs');
+ipcMain.handle('app:getAssetBase64', async (event, { relativePath }) => {
+  try {
+    const appRoot = app.isPackaged ? path.join(process.resourcesPath, 'app.asar') : process.cwd();
+    const filePath = path.join(appRoot, relativePath);
+    if (!filePath.includes('assets') && !filePath.includes('systems')) {
+      throw new Error('Access denied: only asset files can be read');
+    }
+    const data = fs.readFileSync(filePath);
+    const ext = path.extname(filePath).toLowerCase().replace('.', '');
+    const mime = ext === 'png' ? 'image/png' : ext === 'jpg' || ext === 'jpeg' ? 'image/jpeg' : 'image/svg+xml';
+    return { ok: true, dataUri: `data:${mime};base64,${data.toString('base64')}` };
+  } catch (err) {
+    console.error('[Asset Read Error]', err.message);
+    return { ok: false, error: err.message };
+  }
+});
+
 // ✅ Supabase Proxy API - Allows renderer to query Supabase safely
 ipcMain.handle('supabase:edgeFunction', async (event, { name, data }) => {
   try {

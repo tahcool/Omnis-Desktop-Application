@@ -605,37 +605,82 @@
         console.log("downloadPDF ID:", qtnId);
 
         try {
-            // 1. Fetch Full Data
-            if (!window.supabase) throw new Error("Supabase client not found");
-            const qtnRes = await window.supabase.from("omnis_quotations").select("*").eq("name", qtnId).limit(1);
-            if (qtnRes.error) throw qtnRes.error;
-            if (!qtnRes.data || qtnRes.data.length === 0) throw new Error("Quotation not found");
+            // 1. Fetch quotation data via IPC proxy
+            const qtnRes = await window.electron.invoke('supabase:query', {
+                table: 'omnis_quotations',
+                method: 'select',
+                params: { match: { name: qtnId }, limit: 1 }
+            });
+            if (!qtnRes.ok || !qtnRes.data || qtnRes.data.length === 0) throw new Error(qtnRes.error || "Quotation not found");
             const qtnData = qtnRes.data[0];
             
-            const itemsRes = await window.supabase.from("omnis_quotation_items").select("*").eq("quotation_id", qtnData.id);
-            if (itemsRes.error) throw itemsRes.error;
+            // 2. Fetch line items
+            const itemsRes = await window.electron.invoke('supabase:query', {
+                table: 'omnis_quotation_items',
+                method: 'select',
+                params: { filters: { quotation_id: qtnData.id } }
+            });
+            if (!itemsRes.ok) throw new Error(itemsRes.error || "Failed to fetch items");
             
-            // Map to expected Frappe output shape
+            // 3. Enrich items with product catalog data (description, warranty, spec_sheet_url, brand)
+            const enrichedItems = [];
+            for (const i of (itemsRes.data || [])) {
+                let productData = {};
+                if (i.item_code) {
+                    const prodRes = await window.electron.invoke('supabase:query', {
+                        table: 'products',
+                        method: 'select',
+                        params: {
+                            columns: 'item_name,description,warranty,spec_sheet_url,brand_name,image_url',
+                            or: `item_code.eq.${i.item_code},item_name.eq.${i.item_code}`,
+                            limit: 1
+                        }
+                    });
+                    if (prodRes.ok && prodRes.data && prodRes.data.length > 0) {
+                        productData = prodRes.data[0];
+                    }
+                }
+                enrichedItems.push({
+                    item_code: i.item_code,
+                    item_name: productData.item_name || i.item_name || i.item_code,
+                    description: productData.description || i.description || '',
+                    warranty: productData.warranty || '',
+                    spec_sheet_url: productData.spec_sheet_url || '',
+                    brand_name: productData.brand_name || '',
+                    qty: i.qty,
+                    rate: i.rate,
+                    amount: i.amount
+                });
+            }
+
+            // Map to expected shape
             const data = {
                 ok: true,
                 quotation: qtnData,
                 customer: { custom_primary_contact_name: qtnData.contact_person },
-                items: itemsRes.data.map(i => ({
-                    item_code: i.item_code,
-                    item_name: i.item_name || i.item_code,
-                    description: i.description || '',
-                    qty: i.qty,
-                    rate: i.rate,
-                    amount: i.amount
-                }))
+                items: enrichedItems
             };
-            if (!data.ok) throw new Error(data.error || "Failed to fetch quotation details");
 
+            // 4. Auto-detect template from company name
             const templateSelect = document.getElementById("qtn-opts-template");
-            const template = templateSelect ? templateSelect.value : 'machinery_exchange';
+            let template = templateSelect ? templateSelect.value : 'machinery_exchange';
+            if (qtnData.company && qtnData.company.toLowerCase().includes('sinopower')) {
+                template = 'sinopower';
+            }
 
-            // 2. Render HTML Locally
-            const html = renderQuotationHTML(data, template);
+            // 5. Load company logos for PDF embedding
+            let mxgLogo = '', spzLogo = '';
+            try {
+                const mxgRes = await window.electron.invoke('app:getAssetBase64', { relativePath: 'assets/images/MXG Logo.png' });
+                if (mxgRes.ok) mxgLogo = mxgRes.dataUri;
+            } catch (e) { console.warn('Could not load MXG logo', e); }
+            try {
+                const spzRes = await window.electron.invoke('app:getAssetBase64', { relativePath: 'systems/powertrack/sinopower_logo.png' });
+                if (spzRes.ok) spzLogo = spzRes.dataUri;
+            } catch (e) { console.warn('Could not load SPZ logo', e); }
+
+            // 6. Render HTML Locally
+            const html = renderQuotationHTML(data, template, { mxgLogo, spzLogo });
 
             // 3. Generate PDF on the client (Print to PDF)
             console.log("Generating PDF locally...");
@@ -670,7 +715,7 @@
         }
     };
 
-    function renderQuotationHTML(data, template = 'machinery_exchange') {
+    function renderQuotationHTML(data, template = 'machinery_exchange', logos = {}) {
         const qtn = data.quotation;
         const customer = data.customer || {};
         const items = data.items || [];
@@ -687,16 +732,26 @@
         const currSym = currSymMap[currCode] || '$';
         const currName = currCode;
 
+        // Determine PDF title from brand(s) in items
+        const brandSet = new Set();
+        items.forEach(row => { if (row.brand_name) brandSet.add(row.brand_name.toUpperCase()); });
+        const pdfBrandTitle = brandSet.size === 1 ? `${[...brandSet][0]} QUOTATION` : 'EQUIPMENT QUOTATION';
+
         let itemsHtml = "";
         items.forEach(row => {
             const itemName = row.item_name || row.item_code;
+            const descText = row.description || 'Standard industrial specifications and performance features.';
+            // Build spec sheet link only if URL exists
+            const specLink = row.spec_sheet_url
+                ? `<div style="margin-top: 15px;"><a href="${row.spec_sheet_url}" target="_blank" style="color: #cc0000; font-weight: bold; font-size: 13px; text-decoration: underline;">📄 Download Spec Sheet</a></div>`
+                : '';
             itemsHtml += `
             <tr style="page-break-inside: avoid; text-align: center;">
                 <td style="border: 1px solid #000; padding: 10px;">Equipment</td>
                 <td style="border: 1px solid #000; padding: 10px;">${itemName}</td>
-                <td style="border: 1px solid #000; padding: 10px;">
-                    ${row.description || 'Standard industrial specifications and performance features.'}
-                    <div style="color: red; font-weight: bold; margin-top: 15px; font-size: 14px;">Download Spec Sheet</div>
+                <td style="border: 1px solid #000; padding: 10px; text-align: left; font-size: 11px;">
+                    ${descText}
+                    ${specLink}
                 </td>
                 <td style="border: 1px solid #000; padding: 10px;">${qtn.delivery || '2 - 3 Weeks'}</td>
                 <td style="border: 1px solid #000; padding: 10px;">${currSym} ${formatCurr(row.rate)}</td>
@@ -712,7 +767,7 @@
             headerHtml = `
             <div class="header">
                 <div class="logo-section">
-                    <div style="font-size: 28px; font-weight: 900; color: #1e3a8a; line-height: 0.9;">SINOPOWER<br>PUMP & GENERATOR</div>
+                    ${logos.spzLogo ? `<img src="${logos.spzLogo}" style="max-width: 220px; height: auto;" />` : `<div style="font-size: 28px; font-weight: 900; color: #1e3a8a; line-height: 0.9;">SINOPOWER<br>PUMP & GENERATOR</div>`}
                     <div style="font-size: 10px; font-weight: bold; color: #000; margin-top: 5px;">Power Generation Specialists</div>
                     <div style="height: 4px; background: linear-gradient(to right, #60a5fa, #1e3a8a); margin-top: 5px; width: 100%;"></div>
                 </div>
@@ -742,7 +797,7 @@
             headerHtml = `
             <div class="header">
                 <div class="logo-section">
-                    <div style="font-size: 28px; font-weight: 900; color: #cc0000; line-height: 0.9; font-style: italic;">MACHINERY<br>EXCHANGE</div>
+                    ${logos.mxgLogo ? `<img src="${logos.mxgLogo}" style="max-width: 200px; height: auto;" />` : `<div style="font-size: 28px; font-weight: 900; color: #cc0000; line-height: 0.9; font-style: italic;">MACHINERY<br>EXCHANGE</div>`}
                     <div style="font-size: 10px; font-weight: bold; color: #000; margin-top: 5px;">Earthmoving Equipment Specialists</div>
                     <div style="height: 4px; background: linear-gradient(to right, #ffcc00, #cc0000); margin-top: 5px; width: 100%;"></div>
                 </div>
@@ -795,7 +850,7 @@
         <body>
             ${headerHtml}
 
-            <div class="title">SHANTUI QUOTATION</div>
+            <div class="title">${pdfBrandTitle}</div>
 
             <table class="info-table">
                 <tr>
@@ -841,8 +896,8 @@
                 <tbody>
                     ${itemsHtml}
                     <tr>
-                        <td colspan="3" style="border: 1px solid #000; padding: 6px 10px; text-align: left;"><u>Warranty</u> — 3000 hours or 1 year parts warranty</td>
-                        <td colspan="3" style="border: 1px solid #000; padding: 6px 10px; text-align: left;"><u>Delivery</u> — HARARE</td>
+                        <td colspan="3" style="border: 1px solid #000; padding: 6px 10px; text-align: left;"><u>Warranty</u> — ${(() => { const ws = items.map(i => i.warranty).filter(Boolean); return ws.length ? ws.join('; ') : '3000 hours or 1 year parts warranty'; })()}</td>
+                        <td colspan="3" style="border: 1px solid #000; padding: 6px 10px; text-align: left;"><u>Delivery</u> — ${qtn.delivery || 'HARARE'}</td>
                     </tr>
                 </tbody>
             </table>

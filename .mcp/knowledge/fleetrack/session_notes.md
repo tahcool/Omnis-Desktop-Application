@@ -169,3 +169,4 @@
 \n- **Commit b0ad365** (2026-08-07): Update Sinopower brand filtering and print headers
 \n- **Commit 3038ef7** (2026-08-07): Fix UI silent failures, restore toast-wrap, and bump version
 \n- **Commit c62eb52** (2026-08-17): Restore point before salestrack contacts fix
+\n- **Commit b593ce5** (2026-09-16): checkpoint: AI image search, quick create form cleanup, IPC proxy migration

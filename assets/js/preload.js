@@ -67,7 +67,7 @@ contextBridge.exposeInMainWorld("syncAPI", {
 // Derived from scanning all electron.invoke() call sites in systems/*.html
 const ALLOWED_INVOKE_CHANNELS = new Set([
   // App lifecycle
-  'app:getVersion', 'app:checkForUpdates',
+  'app:getVersion', 'app:checkForUpdates', 'app:getAssetBase64',
   // Window management
   'window:minimize', 'window:maximize', 'window:close',
   'window:openDashboard', 'window:openLogin', 'window:openAuxiliary',
