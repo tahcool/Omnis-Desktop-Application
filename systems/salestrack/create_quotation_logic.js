@@ -825,7 +825,9 @@
                     brand_name: productData.brand_name || '',
                     qty: i.qty,
                     rate: i.rate,
-                    amount: i.amount
+                    amount: i.amount,
+                    custom_lead_time: i.custom_lead_time || '',
+                    delivery: i.delivery || ''
                 });
             }
 
