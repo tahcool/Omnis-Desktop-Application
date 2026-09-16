@@ -23,8 +23,7 @@
         if (window.calculateQuotationTotals) window.calculateQuotationTotals();
     };
 
-    // Expose init function globally
-    window.initCreateQuotation = function () {
+
 
     // --- OPEN EXISTING QUOTATION FOR EDITING ---
     window.openQuotationForEdit = async function (qtnName) {
@@ -145,6 +144,8 @@
         }
     };
 
+    // Expose init function globally
+    window.initCreateQuotation = function () {
         console.log("Initializing Create Quotation View...");
 
         // Set Default Dates
