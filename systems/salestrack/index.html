@@ -11695,7 +11695,10 @@
 
               <div class="form-row">
                 <label class="form-label">Delivery Terms</label>
-                <input type="text" id="qtn-delivery" class="form-input" placeholder="Delivery terms...">
+                <div style="display:flex; gap:6px; align-items:center;">
+                  <input type="text" id="qtn-delivery" class="form-input" placeholder="e.g. Harare" style="flex:1;">
+                  <button type="button" onclick="window.applyDeliveryToAllItems()" style="white-space:nowrap; padding:6px 10px; font-size:11px; font-weight:700; background:#3b82f6; color:white; border:none; border-radius:6px; cursor:pointer;" title="Set this delivery location on all items">Apply All</button>
+                </div>
               </div>
             </div>
 
@@ -11781,13 +11784,14 @@
             <table id="qtn-items-table" style="width:100%; font-size:13px; border-collapse:collapse;">
               <thead>
                 <tr style="text-align:left; color:#4b5563; font-weight:700; border-bottom:2px solid #e5e7eb; text-transform:uppercase; font-size:11px;">
-                  <th style="padding:10px 8px; width:18%;">Code</th>
-                  <th style="padding:10px 8px; width:17%;">Item Name</th>
-                  <th style="padding:10px 8px; width:22%;">Description</th>
-                  <th style="padding:10px 8px; width:6%;">Qty</th>
-                  <th style="padding:10px 8px; width:10%;">Rate</th>
-                  <th style="padding:10px 8px; width:12%;">Lead Time</th>
-                  <th style="padding:10px 8px; width:10%;">Amount</th>
+                  <th style="padding:10px 8px; width:14%;">Code</th>
+                  <th style="padding:10px 8px; width:14%;">Item Name</th>
+                  <th style="padding:10px 8px; width:18%;">Description</th>
+                  <th style="padding:10px 8px; width:5%;">Qty</th>
+                  <th style="padding:10px 8px; width:9%;">Rate</th>
+                  <th style="padding:10px 8px; width:10%;">Lead Time</th>
+                  <th style="padding:10px 8px; width:10%;">Delivery</th>
+                  <th style="padding:10px 8px; width:9%;">Amount</th>
                   <th style="padding:10px 8px; width:4%;"></th>
                 </tr>
               </thead>

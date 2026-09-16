@@ -124,6 +124,9 @@
 
                     const leadInp = lastRow.querySelector('.item-lead-time');
                     if (leadInp) leadInp.value = item.custom_lead_time || '';
+
+                    const deliveryInp = lastRow.querySelector('.item-delivery');
+                    if (deliveryInp) deliveryInp.value = item.delivery || '';
                 });
             } else {
                 // Add one empty row if no items
@@ -216,11 +219,22 @@
             <td style="padding:6px;"><input type="number" class="form-input item-qty" value="1" min="1" style="font-size:12px; width:60px;"></td>
             <td style="padding:6px;"><input type="number" class="form-input item-rate" placeholder="0.00" style="font-size:12px; width:100px;"></td>
             <td style="padding:6px;"><input type="text" class="form-input item-lead-time" placeholder="e.g. 2 Weeks" style="font-size:12px; width:100%;"></td>
+            <td style="padding:6px;"><input type="text" class="form-input item-delivery" placeholder="e.g. Harare" style="font-size:12px; width:100%;"></td>
             <td style="padding:6px;"><input type="text" class="form-input item-amount" readonly style="font-size:12px; width:100px; background:#f3f4f6;"></td>
             <td style="padding:6px; text-align:center;"><button type="button" class="btn-text-action text-red-600" onclick="this.closest('tr').remove(); calculateQuotationTotals();" style="font-size:18px;">&times;</button></td>
         `;
         tbody.appendChild(row);
         // Product search is handled via event delegation in index.html
+    };
+
+    // Apply top-level delivery to all item rows
+    window.applyDeliveryToAllItems = function () {
+        const deliveryVal = document.getElementById('qtn-delivery')?.value || '';
+        if (!deliveryVal.trim()) { alert('Enter a delivery location first.'); return; }
+        const tbody = document.getElementById('qtn-items-body');
+        if (tbody) {
+            Array.from(tbody.querySelectorAll('.item-delivery')).forEach(inp => inp.value = deliveryVal);
+        }
     };
 
     // --- CURRENCY HELPERS ---
@@ -351,6 +365,7 @@
                     const qty = row.querySelector(".item-qty")?.value;
                     const rate = row.querySelector(".item-rate")?.value;
                     const leadTime = row.querySelector(".item-lead-time")?.value?.trim() || '';
+                    const itemDelivery = row.querySelector(".item-delivery")?.value?.trim() || '';
 
                     if (itemCode && qty) {
                         data.items.push({
@@ -359,7 +374,8 @@
                             description: itemDesc || '',
                             qty: parseFloat(qty),
                             rate: parseFloat(rate || 0),
-                            custom_lead_time: leadTime
+                            custom_lead_time: leadTime,
+                            delivery: itemDelivery
                         });
                     }
                 });
@@ -435,7 +451,8 @@
                 qty: i.qty,
                 rate: i.rate,
                 amount: i.qty * i.rate,
-                custom_lead_time: i.custom_lead_time || ''
+                custom_lead_time: i.custom_lead_time || '',
+                delivery: i.delivery || ''
             }));
             
             const itemRes = await sp.from("omnis_quotation_items").insert(itemPayloads).select();
@@ -956,7 +973,7 @@
             itemsHtml += `
             <tr style="page-break-inside: avoid;">
                 <td colspan="4" style="border: 1px solid #000; padding: 6px 10px; text-align: left; font-size: 12px;"><strong>Warranty:</strong> ${warranty}</td>
-                <td colspan="3" style="border: 1px solid #000; padding: 6px 10px; text-align: left; font-size: 12px;"><strong>Delivery:</strong> ${qtn.delivery || 'Harare'}</td>
+                <td colspan="3" style="border: 1px solid #000; padding: 6px 10px; text-align: left; font-size: 12px;"><strong>Delivery:</strong> ${row.delivery || qtn.delivery || 'Harare'}</td>
             </tr>`;
         });
 
