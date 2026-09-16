@@ -664,3 +664,7 @@
   Files: systems/salestrack/create_quotation_logic.js,
 - `5b90f17` 2026-09-16 [feature/admin-service-key-separation] Feature: click quotation row opens edit form instead of Frappe URL - supports full create/edit flow with update on save
   Files: systems/salestrack/create_quotation_logic.js,systems/salestrack/index.html,
+- `f939536` 2026-09-16 [feature/admin-service-key-separation] [checkpoint] Restore point: quotation row click opens edit form, create/edit save working, preload chainable insert/update/upsert
+  Files: .mcp/knowledge/_shared/commit_log.md,supabase/migrations/20260916000001_add_quotation_item_columns.sql,
+- `f2f9b16` 2026-09-16 [feature/admin-service-key-separation] Fix: move openQuotationForEdit to module scope so it's available before initCreateQuotation runs
+  Files: systems/salestrack/create_quotation_logic.js,
