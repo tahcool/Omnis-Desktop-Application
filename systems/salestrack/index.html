@@ -17387,28 +17387,69 @@
     })();
 
     // --- EDIT PRODUCT FROM QUOTATION ROW ---
-    window.editProductFromQtnRow = function (itemRow) {
+    window.editProductFromQtnRow = async function (itemRow) {
         if (!itemRow) return;
         const itemCode = itemRow.querySelector('.item-code')?.value?.trim();
         const productId = itemRow.getAttribute('data-product-id');
         
+        // 1. Use stored product ID if available
         if (productId && window.editProduct) {
             window.editProduct(productId);
             return;
         }
         
-        // Fallback: search _fullCatalog by item_code
+        // 2. Search _fullCatalog by item_code
         if (itemCode && window._fullCatalog) {
             const match = window._fullCatalog.find(p => 
                 p.item_code === itemCode || p.item_name === itemCode
             );
             if (match && match.id) {
+                itemRow.setAttribute('data-product-id', match.id);
                 window.editProduct(match.id);
                 return;
             }
         }
         
-        alert('Product not found in catalog. Please search for it in the Product Catalog first.');
+        // 3. Async fallback: query Supabase directly
+        if (itemCode) {
+            try {
+                const sp = (window.salestrack && window.salestrack.supabase) || window.supabase || null;
+                let product = null;
+                
+                if (sp && sp.from) {
+                    const { data } = await sp.from('products')
+                        .select('*')
+                        .or(`item_code.eq.${itemCode},item_name.eq.${itemCode}`)
+                        .limit(1);
+                    if (data && data.length > 0) product = data[0];
+                }
+                
+                if (!product && window.electron) {
+                    const res = await window.electron.invoke('supabase:query', {
+                        table: 'products', method: 'select',
+                        params: { columns: '*', or: `item_code.eq.${itemCode},item_name.eq.${itemCode}`, limit: 1 }
+                    });
+                    if (res?.ok && res.data?.length > 0) product = res.data[0];
+                }
+                
+                if (product && product.id) {
+                    // Add to _fullCatalog cache so future clicks are instant
+                    if (!window._fullCatalog) window._fullCatalog = [];
+                    if (!window._fullCatalog.find(p => p.id === product.id)) {
+                        window._fullCatalog.push(product);
+                    }
+                    itemRow.setAttribute('data-product-id', product.id);
+                    window.editProduct(product.id);
+                    return;
+                }
+            } catch (err) {
+                console.warn('[EditProduct] DB lookup failed:', err);
+            }
+        }
+        
+        if (window.showToast) {
+            window.showToast('Product not found in catalog. Add it via Product Catalog first.', 'warning');
+        }
     };
 
     // Edit button click delegation

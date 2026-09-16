@@ -149,7 +149,7 @@
             console.log("[QtnEdit] Loaded quotation:", qtn.name, "with", items.length, "items");
         } catch (e) {
             console.error("[QtnEdit] Error:", e);
-            alert("Error opening quotation: " + (e.message || e));
+            if (window.showToast) window.showToast('Error opening quotation: ' + (e.message || e), 'error');
         }
     };
 
@@ -239,7 +239,7 @@
     // Apply top-level delivery to all item rows
     window.applyDeliveryToAllItems = function () {
         const deliveryVal = document.getElementById('qtn-delivery')?.value || '';
-        if (!deliveryVal.trim()) { alert('Enter a delivery location first.'); return; }
+        if (!deliveryVal.trim()) { if (window.showToast) window.showToast('Enter a delivery location first.', 'warning'); return; }
         const tbody = document.getElementById('qtn-items-body');
         if (tbody) {
             Array.from(tbody.querySelectorAll('.item-delivery')).forEach(inp => inp.value = deliveryVal);
@@ -485,7 +485,7 @@
 
         } catch (e) {
             console.error("[QtnSave] Error:", e);
-            alert("Error: " + (e.message || e || "Unknown error"));
+            if (window.showToast) window.showToast('Error: ' + (e.message || e || 'Unknown error'), 'error');
         } finally {
             if (submitBtn) submitBtn.innerHTML = originalText;
         }
@@ -521,7 +521,7 @@
             
         } catch (e) {
             console.error("Magic Fill Error", e);
-            alert("Magic Fill Error: " + e.message);
+            if (window.showToast) window.showToast('Magic Fill Error: ' + e.message, 'error');
         } finally {
             if (btn) btn.innerHTML = originalText;
         }
@@ -630,8 +630,8 @@
         const price = document.getElementById("qq-price")?.value;
         const leadTime = document.getElementById("qq-lead-time")?.value;
 
-        if (!customer) { alert("Please select a customer"); return; }
-        if (!itemCode) { alert("Please select an item"); return; }
+        if (!customer) { if (window.showToast) window.showToast('Please select a customer', 'warning'); return; }
+        if (!itemCode) { if (window.showToast) window.showToast('Please select an item', 'warning'); return; }
 
         const originalText = btn ? btn.textContent : "Create Quote";
         if (btn) btn.textContent = "Creating...";
@@ -720,7 +720,7 @@
                 throw new Error(payload.error || payload.message || "Failed");
             }
         } catch (e) {
-            alert("Quick Create Error: " + e.message);
+            if (window.showToast) window.showToast('Quick Create Error: ' + e.message, 'error');
         } finally {
             if (btn) btn.textContent = originalText;
         }
@@ -927,7 +927,7 @@
 
         } catch (err) {
             console.error("PDF Download Error:", err);
-            alert("Error: " + err.message);
+            if (window.showToast) window.showToast('Error: ' + err.message, 'error');
         }
     };
 
@@ -1204,7 +1204,7 @@
         });
 
         document.getElementById("btn-opts-whatsapp")?.addEventListener("click", () => {
-            alert("WhatsApp sharing will be implemented in a future update.");
+            if (window.showToast) window.showToast('WhatsApp sharing will be implemented in a future update.', 'info');
         });
 
         document.getElementById("btn-opts-copy-draft")?.addEventListener("click", () => {
