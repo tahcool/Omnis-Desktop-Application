@@ -620,3 +620,5 @@
   Files: .mcp/knowledge/_shared/commit_log.md,systems/salestrack/create_quotation_logic.js,
 - `6600b68` 2026-09-16 [feature/admin-service-key-separation] checkpoint: letterhead polish, compact layout, no blank pages
   Files: .mcp/knowledge/_shared/commit_log.md,systems/salestrack/create_quotation_logic.js,
+- `be19321` 2026-09-16 [feature/admin-service-key-separation] checkpoint: OEM brand logos in footer (Shantui, Bobcat, Landcross, Wirtgen), letterhead polish
+  Files: .mcp/knowledge/_shared/commit_log.md,systems/salestrack/create_quotation_logic.js,

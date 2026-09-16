@@ -694,7 +694,41 @@
                 } catch (e) { console.warn(`Could not load ${key} logo`, e); }
             }
 
-            // 6. Render HTML Locally
+            // 6. Format specifications using OpenAI (display-only, no DB changes)
+            console.log("Formatting specifications for PDF...");
+            for (const item of data.items || []) {
+                if (!item.description) continue;
+                try {
+                    const resp = await fetch('https://api.openai.com/v1/chat/completions', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Authorization': 'Bearer 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'
+                        },
+                        body: JSON.stringify({
+                            model: 'gpt-4o-mini',
+                            messages: [{
+                                role: 'system',
+                                content: 'You are a specification formatter. Convert the raw equipment specification text into clean HTML bullet points. Rules: 1) Use a <ul> list with <li> items. 2) Keep EVERY specification detail exactly as-is — do NOT change any values, model numbers, measurements, or text. 3) Just organize and separate the items into logical bullet points for readability. 4) Do NOT add any text, explanations, or headings. 5) Return ONLY the <ul>...</ul> HTML, nothing else.'
+                            }, {
+                                role: 'user',
+                                content: item.description
+                            }],
+                            max_tokens: 500,
+                            temperature: 0
+                        })
+                    });
+                    const result = await resp.json();
+                    const formatted = result.choices?.[0]?.message?.content?.trim();
+                    if (formatted && formatted.includes('<ul>')) {
+                        item._formattedDesc = formatted;
+                    }
+                } catch (e) {
+                    console.warn('AI spec format failed for', item.item_name, e);
+                }
+            }
+
+            // 7. Render HTML Locally
             const html = renderQuotationHTML(data, template, { mxgLogo, spzLogo, oemLogos });
 
             // 7. Generate PDF via Electron's native printToPDF (preserves clickable hyperlinks)
@@ -738,8 +772,8 @@
         items.forEach((row, idx) => {
             const itemName = row.item_name || row.item_code;
             const equipType = row.item_group || 'Equipment';
-            const descText = row.description || '';
-            // Bold product name header + description
+            const descText = row._formattedDesc || row.description || '';
+            // Bold product name header + description (AI-formatted or raw)
             const specContent = `<strong>${itemName}</strong>${descText ? '<br>' + descText : ''}`;
             // Build spec sheet link only if a valid URL exists
             const hasValidSpec = row.spec_sheet_url && row.spec_sheet_url.startsWith('http');
@@ -839,7 +873,7 @@
                     ${logos.oemLogos?.shantui ? `<img src="${logos.oemLogos.shantui}" style="height: 45px; width: auto;" />` : '<span style="font-weight:900;font-size:18px;">SHANTUI</span>'}
                     ${logos.oemLogos?.bobcat ? `<img src="${logos.oemLogos.bobcat}" style="height: 45px; width: auto;" />` : '<span style="font-weight:900;font-size:18px;">Bobcat</span>'}
                     ${logos.oemLogos?.hitachi ? `<img src="${logos.oemLogos.hitachi}" style="height: 45px; width: auto;" />` : '<span style="font-weight:900;font-size:18px;">LANDCROSS</span>'}
-                    ${logos.oemLogos?.wirtgen ? `<img src="${logos.oemLogos.wirtgen}" style="height: 45px; width: auto;" />` : '<span style="font-weight:900;font-size:18px;">WIRTGEN</span>'}
+                    ${logos.oemLogos?.wirtgen ? `<img src="${logos.oemLogos.wirtgen}" style="height: 60px; width: auto;" />` : '<span style="font-weight:900;font-size:18px;">WIRTGEN</span>'}
                 </div>
             </div>`;
         }
