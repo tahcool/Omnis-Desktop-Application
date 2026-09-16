@@ -656,3 +656,11 @@
   Files: .mcp/knowledge/_shared/commit_log.md,
 - `2107000` 2026-09-16 [feature/admin-service-key-separation] Fix: search products table instead of stock_inventory for quotation item search - matches Product Catalog data
   Files: systems/salestrack/index.html,
+- `c67e6c9` 2026-09-16 [feature/admin-service-key-separation] [checkpoint] Restore point: quotation item search working with products table, auto-fill from last quotation
+  Files: .mcp/knowledge/_shared/commit_log.md,
+- `e7161ef` 2026-09-16 [feature/admin-service-key-separation] Fix: make preload insert/upsert/update return chainable objects supporting .select() - fixes quotation save error
+  Files: assets/js/preload.js,main.js,
+- `641bc11` 2026-09-16 [feature/admin-service-key-separation] Fix: proper error handling for IPC-proxied quotation save - wrap string errors in Error objects, add debug logging
+  Files: systems/salestrack/create_quotation_logic.js,
+- `5b90f17` 2026-09-16 [feature/admin-service-key-separation] Feature: click quotation row opens edit form instead of Frappe URL - supports full create/edit flow with update on save
+  Files: systems/salestrack/create_quotation_logic.js,systems/salestrack/index.html,
