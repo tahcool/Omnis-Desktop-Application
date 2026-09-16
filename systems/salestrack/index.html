@@ -14095,19 +14095,9 @@
         qListBody.innerHTML = skeletons;
       }
 
-      // 1. OFFLINE-FIRST: Try to load from local SQLite cache first
-      try {
-        if (window.frappeAPI) {
-          const cached = await window.frappeAPI.getCached('quotations');
-          if (cached && cached.ok && cached.data && cached.data.length > 0) {
-            console.log(`[OfflineFix] Loaded ${cached.data.length} quotations from SQLite cache.`);
-            // Only render the current page to prevent UI blocking
-            const paginatedData = cached.data.slice(qOffset, qOffset + qPageLength);
-            renderQuotationsTable(paginatedData);
-            if (qListInfo) qListInfo.textContent = "Showing offline results...";
-          }
-        }
-      } catch (ce) { console.warn("Offline cache load failed:", ce); }
+      // REMOVED: Offline SQLite cache render — the cached data comes from legacy Frappe
+      // and lacks omnis_quotation_items join, so it always shows '—' for items/notes.
+      // Skeleton loaders remain visible until the Supabase query (with joins) completes.
 
       // 5-minute TTL check (bypass if user has active search/filter)
       const now = Date.now();
@@ -14117,7 +14107,7 @@
         return;
       }
 
-      loadQuotationsKPI();
+      loadQuotationsKPI(); // Fire-and-forget — runs in parallel with table query
       if (!CURRENT_SYSTEM) return;
 
       if (qListInfo) qListInfo.textContent = "Refreshing...";
@@ -14555,58 +14545,42 @@
         const fromDate = fromInput ? fromInput.value : "";
         const toDate = toInput ? toInput.value : "";
         
-        let filters = {};
-        if (qCompanyValue) filters['company'] = qCompanyValue;
+        let baseFilters = {};
+        if (qCompanyValue) baseFilters['company'] = qCompanyValue;
         
-        let allData = [];
-        let offset = 0;
-        let pageSize = 1000;
+        // Build date filters array for reuse
+        const gteArr = fromDate ? [{ col: 'transaction_date', val: fromDate }] : undefined;
+        const lteArr = toDate ? [{ col: 'transaction_date', val: toDate }] : undefined;
         
-        while (true) {
-            let params = {
-              columns: 'id, status, likelihood_percent',
-              filters: filters,
-              range: { from: offset, to: offset + pageSize - 1 }
-            };
-            if (fromDate) params.gte = [ { col: 'transaction_date', val: fromDate } ];
-            if (toDate) params.lte = [ { col: 'transaction_date', val: toDate } ];
-            
-            const res = await window.electron.invoke('supabase:query', {
-              table: 'omnis_quotations',
-              method: 'select',
-              params: params
-            });
-            
-            const chunk = res.data || [];
-            allData = allData.concat(chunk);
-            
-            if (chunk.length < pageSize) {
-                break;
-            }
-            offset += pageSize;
-        }
+        // Run 4 lightweight count queries in parallel instead of fetching all rows
+        const [totalRes, openRes, hotRes, wonRes] = await Promise.all([
+          // Total count
+          window.electron.invoke('supabase:query', {
+            table: 'omnis_quotations', method: 'select',
+            params: { columns: 'id', options: { count: 'exact', head: true }, filters: baseFilters, gte: gteArr, lte: lteArr }
+          }),
+          // Open count
+          window.electron.invoke('supabase:query', {
+            table: 'omnis_quotations', method: 'select',
+            params: { columns: 'id', options: { count: 'exact', head: true }, filters: { ...baseFilters, status: 'Open' }, gte: gteArr, lte: lteArr }
+          }),
+          // Hot prospects (likelihood >= 75)
+          window.electron.invoke('supabase:query', {
+            table: 'omnis_quotations', method: 'select',
+            params: { columns: 'id', options: { count: 'exact', head: true }, filters: baseFilters, gte: [...(gteArr || []), { col: 'likelihood_percent', val: 75 }], lte: lteArr }
+          }),
+          // Won/Converted count
+          window.electron.invoke('supabase:query', {
+            table: 'omnis_quotations', method: 'select',
+            params: { columns: 'id', options: { count: 'exact', head: true }, filters: baseFilters, or: 'status.eq.Converted,status.eq.Ordered,status.eq.Won', gte: gteArr, lte: lteArr }
+          })
+        ]);
         
-        const data = allData;
-        
-        let totalCount = data.length;
-        let openCount = 0;
-        let hotCount = 0;
-        let wonCount = 0;
-        
-        for (const q of data) {
-            const s = (q.status || "").toLowerCase();
-            if (s === 'open') {
-                openCount++;
-            }
-            if (s === 'converted' || s === 'ordered' || s === 'won') {
-                wonCount++;
-            }
-            if (Number(q.likelihood_percent) >= 75) {
-                hotCount++;
-            }
-        }
-        
-        let winRate = totalCount > 0 ? Math.round((wonCount / totalCount) * 100) : 0;
+        const totalCount = totalRes.count || 0;
+        const openCount = openRes.count || 0;
+        const hotCount = hotRes.count || 0;
+        const wonCount = wonRes.count || 0;
+        const winRate = totalCount > 0 ? Math.round((wonCount / totalCount) * 100) : 0;
         
         const totalStat = document.getElementById('qlist-stat-total');
         if(totalStat) totalStat.textContent = totalCount;
