@@ -616,3 +616,5 @@
   Files: .mcp/knowledge/_shared/commit_log.md,.mcp/knowledge/fleetrack/session_notes.md,assets/js/preload.js,main.js,systems/salestrack/create_quotation_logic.js,
 - `1a06c3d` 2026-09-16 [feature/admin-service-key-separation] checkpoint: PDF table polish - unsquashed headers, per-item warranty, spec link validation
   Files: .mcp/knowledge/_shared/commit_log.md,systems/salestrack/create_quotation_logic.js,
+- `a8cfbdf` 2026-09-16 [feature/admin-service-key-separation] checkpoint: native printToPDF with clickable hyperlinks, removed duplicate IPC handlers
+  Files: .mcp/knowledge/_shared/commit_log.md,systems/salestrack/create_quotation_logic.js,

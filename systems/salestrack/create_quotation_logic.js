@@ -791,8 +791,7 @@
             headerHtml = `
             <div class="header">
                 <div class="logo-section">
-                    ${logos.mxgLogo ? `<img src="${logos.mxgLogo}" style="max-width: 200px; height: auto;" />` : `<div style="font-size: 28px; font-weight: 900; color: #cc0000; line-height: 0.9; font-style: italic;">MACHINERY<br>EXCHANGE</div>`}
-                    <div style="height: 4px; background: linear-gradient(to right, #ffcc00, #cc0000); margin-top: 5px; width: 100%;"></div>
+                    ${logos.mxgLogo ? `<img src="${logos.mxgLogo}" style="max-width: 180px; height: auto;" />` : `<div style="font-size: 28px; font-weight: 900; color: #cc0000; line-height: 0.9; font-style: italic;">MACHINERY<br>EXCHANGE</div>`}
                 </div>
                 <div class="company-details">
                     <strong>Machinery Exchange (Pvt) Ltd</strong><br>
@@ -802,6 +801,11 @@
                     Reg No: 584/1954 • VAT No: 220119780 • TIN No: 2001663680
                 </div>
                 <div class="clear"></div>
+                <div style="text-align: center; font-size: 14px; font-weight: bold; color: #000; margin-top: 2px; margin-bottom: 4px;">Earthmoving Equipment Specialists</div>
+                <div style="height: 3px; background: #cc0000; width: 100%;"></div>
+                <div style="text-align: center; font-size: 10px; font-style: italic; font-weight: bold; color: #333; margin-top: 4px;">
+                    Equipment Sales &amp; Rental • Machine Servicing • Repairs &amp; Rebuilds • Heavy Engineering &amp; Undercarriage Services
+                </div>
             </div>`;
             supportHtml = `
             <div style="text-decoration: underline; margin-bottom: 5px;">Product Support</div>
@@ -826,15 +830,15 @@
         <head>
             <meta charset="UTF-8">
             <style>
-                body { font-family: 'Calibri', 'Arial', sans-serif; font-size: 13px; margin: 30px; padding: 0; color: #000; line-height: 1.4; }
-                .header { margin-bottom: 30px; }
+                body { font-family: 'Calibri', 'Arial', sans-serif; font-size: 12px; margin: 20px 30px; padding: 0; color: #000; line-height: 1.35; }
+                .header { margin-bottom: 15px; }
                 .logo-section { float: left; width: 45%; }
                 .company-details { float: right; text-align: right; width: 50%; font-size: 10px; color: #000; }
                 .clear { clear: both; }
-                .title { text-align: center; font-size: 26px; font-weight: bold; margin: 30px 0; }
-                .info-table { width: 40%; border-collapse: collapse; margin-bottom: 20px; font-size: 13px; }
+                .title { text-align: center; font-size: 24px; font-weight: bold; margin: 15px 0; }
+                .info-table { width: 40%; border-collapse: collapse; margin-bottom: 10px; font-size: 12px; }
                 .info-table td { border: 1px solid #000; padding: 4px 8px; }
-                .main-table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+                .main-table { width: 100%; border-collapse: collapse; margin-top: 10px; }
                 .main-table th { border: 1px solid #000; padding: 8px 6px; text-align: center; font-weight: bold; vertical-align: middle; font-size: 12px; }
                 .main-table td { font-size: 12px; }
                 .footer-logos { margin-top: 50px; border-top: 1px solid #ccc; padding-top: 10px; text-align: center; }
@@ -873,8 +877,8 @@
                 </tr>
             </table>
 
-            <p style="margin-top: 25px;">Dear Sir/Madam,</p>
-            <p>We have pleasure in submitting our quotation for the requested equipment as follows:</p>
+            <p style="margin-top: 15px; margin-bottom: 3px;">Dear Sir/Madam,</p>
+            <p style="margin-top: 0;">We have pleasure in submitting our quotation for the requested equipment as follows:</p>
 
             <table class="main-table">
                 <thead>
@@ -893,30 +897,29 @@
                 </tbody>
             </table>
 
-            <div style="margin-top: 20px; text-decoration: underline; margin-bottom: 5px;">Price qualification</div>
-            <ul style="margin-top: 0; padding-left: 20px;">
+            <div style="margin-top: 15px; text-decoration: underline; margin-bottom: 3px; font-size: 12px;">Price qualification</div>
+            <ul style="margin-top: 0; padding-left: 20px; font-size: 11px;">
                 <li>Prices are subject to change as a result of deviations in the exchange rate, statutory regulations or for errors or ommissions on behalf of Machinery Exchange (Pvt), it's employees and suppliers. Furthermore, the price of the equipment is subject to change if delivery is delayed by the customer beyond the delivery period. The price ruling at the date of delivery to the customer will then apply.</li>
             </ul>
 
-            <div style="text-decoration: underline; margin-bottom: 5px;">Payment terms</div>
-            <ul style="margin-top: 0; padding-left: 20px;">
+            <div style="text-decoration: underline; margin-bottom: 3px; font-size: 12px;">Payment terms</div>
+            <ul style="margin-top: 0; padding-left: 20px; font-size: 11px;">
                 <li>Upon acceptance of this quotation, we will issue a proforma invoice. Payment terms to be discussed.</li>
                 <li>Finance terms are available subject to customers meeting due diligence requirements. These are available upon request.</li>
             </ul>
 
-            <div style="text-decoration: underline; margin-bottom: 5px;">Validity</div>
-            <ul style="margin-top: 0; padding-left: 20px;">
+            <div style="text-decoration: underline; margin-bottom: 3px; font-size: 12px;">Validity</div>
+            <ul style="margin-top: 0; padding-left: 20px; font-size: 11px;">
                 <li>The offer is valid for your acceptance for 30 days after the date of this quotation and thereafter subject to confirmation from us in writing.</li>
             </ul>
             
-            <div style="page-break-before: always;"></div>
-            ${headerHtml}
-
+            <div style="page-break-inside: avoid;">
             ${supportHtml}
 
-            <p style="margin-top: 25px;">We trust this meets with your requirements.</p>
+            <p style="margin-top: 15px;">We trust this meets with your requirements.</p>
 
             ${signatureHtml}
+            </div>
         </body>
         </html>`;
     }
