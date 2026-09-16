@@ -92,22 +92,94 @@
         `;
         tbody.appendChild(row);
 
-        // Wire up Item Suggestions via Supabase (same as quick quotes)
+        // Wire up Item Suggestions — inline Supabase search via IPC
+        // (setupSupabaseSuggestions loads later in index.html, so we inline it here)
         const codeInp = row.querySelector(".item-code");
         const suggestBox = row.querySelector(".suggest-list");
-        if (window.setupSupabaseSuggestions) {
-            window.setupSupabaseSuggestions(codeInp, suggestBox, 'stock_inventory', 'model,brand', (item) => {
-                codeInp.value = item.value;
-                const nameInp = row.querySelector(".item-name");
-                if (nameInp) nameInp.value = item.description || item.value;
-                const descInp = row.querySelector(".item-desc");
-                if (descInp) descInp.value = item.itemDescription || '';
-                if (item.rate) {
-                    row.querySelector(".item-rate").value = item.rate;
-                    calculateQuotationTotals();
+
+        let _qtnItemTimer = null;
+        const onSelectItem = (item) => {
+            codeInp.value = item.value;
+            const nameInp = row.querySelector(".item-name");
+            if (nameInp) nameInp.value = item.description || item.value;
+            const descInp = row.querySelector(".item-desc");
+            if (descInp) descInp.value = item.itemDescription || '';
+            if (item.rate) {
+                row.querySelector(".item-rate").value = item.rate;
+                calculateQuotationTotals();
+            }
+            suggestBox.classList.add('hidden');
+        };
+
+        const doItemSearch = async (val) => {
+            val = (val || "").trim();
+            if (val.length < 1) { suggestBox.classList.add('hidden'); return; }
+
+            suggestBox.innerHTML = `<div style="padding:8px; color:#64748b; font-size:11px; font-style:italic; text-align:center;"><i class="fa fa-spinner fa-spin"></i> Searching...</div>`;
+            suggestBox.classList.remove('hidden');
+
+            try {
+                let results = [];
+                if (window.electron && typeof window.electron.invoke === 'function') {
+                    const orFilter = 'model.ilike.%' + val + '%,brand.ilike.%' + val + '%';
+                    const ipcRes = await window.electron.invoke('supabase:query', {
+                        table: 'stock_inventory',
+                        method: 'select',
+                        params: { columns: '*', or: orFilter, limit: 15 }
+                    });
+                    if (ipcRes && ipcRes.data) results = ipcRes.data;
                 }
-            });
-        }
+
+                suggestBox.innerHTML = '';
+                if (results.length > 0) {
+                    suggestBox.innerHTML = results.map((item, idx) => {
+                        const title = item.item_name || item.model || item.name || item.item_code || '';
+                        const sub = item.item_code || item.brand || '';
+                        const details = item.brand ? 'Brand: ' + item.brand : '';
+                        return `<div class="suggest-item" data-idx="${idx}" style="padding:10px 14px; border-bottom:1px solid #f1f5f9; cursor:pointer;">
+                            <div style="font-weight:700; color:#1e293b; font-size:13.5px;">${title}</div>
+                            <div style="display:flex; justify-content:space-between; align-items:center; margin-top:2px;">
+                               <div style="font-size:11px; color:#64748b; font-weight:500;">${sub}</div>
+                               <div style="font-size:10px; color:#94a3b8; font-weight:700; text-transform:uppercase;">${details}</div>
+                            </div>
+                        </div>`;
+                    }).join('');
+                    suggestBox.classList.remove('hidden');
+
+                    suggestBox.querySelectorAll('.suggest-item').forEach(el => {
+                        el.onclick = (e) => {
+                            e.stopPropagation();
+                            const idx = parseInt(el.getAttribute('data-idx'), 10);
+                            const raw = results[idx];
+                            if (!raw) return;
+                            onSelectItem({
+                                value: raw.model || raw.item_code || raw.name || '',
+                                description: raw.item_name || raw.model || raw.name || '',
+                                itemDescription: raw.description || '',
+                                rate: raw.rate || 0
+                            });
+                        };
+                    });
+                } else {
+                    suggestBox.innerHTML = `<div style="padding:12px; color:#64748b; font-size:12px; text-align:center;">No matches found</div>`;
+                    suggestBox.classList.remove('hidden');
+                }
+            } catch (e) {
+                console.error("Item search error:", e);
+                suggestBox.classList.add('hidden');
+            }
+        };
+
+        codeInp.addEventListener('input', (e) => {
+            clearTimeout(_qtnItemTimer);
+            _qtnItemTimer = setTimeout(() => doItemSearch(e.target.value), 400);
+        });
+        codeInp.addEventListener('focus', () => doItemSearch(codeInp.value));
+        document.addEventListener('click', (e) => {
+            if (e.target !== codeInp && !suggestBox.contains(e.target)) {
+                suggestBox.classList.add('hidden');
+            }
+        }, { capture: true });
     };
 
     // --- CURRENCY HELPERS ---
