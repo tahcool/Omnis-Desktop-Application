@@ -622,3 +622,7 @@
   Files: .mcp/knowledge/_shared/commit_log.md,systems/salestrack/create_quotation_logic.js,
 - `be19321` 2026-09-16 [feature/admin-service-key-separation] checkpoint: OEM brand logos in footer (Shantui, Bobcat, Landcross, Wirtgen), letterhead polish
   Files: .mcp/knowledge/_shared/commit_log.md,systems/salestrack/create_quotation_logic.js,
+- `194d864` 2026-09-16 [feature/admin-service-key-separation] [checkpoint] Before quotation pipeline follow-up/stage cleanup
+  Files: .mcp/knowledge/_shared/commit_log.md,systems/salestrack/create_quotation_logic.js,systems/salestrack/index.html,
+- `8e28899` 2026-09-16 [feature/admin-service-key-separation] Clean up quotation pipeline follow-up column: date on own line, color-coded stage pills
+  Files: systems/salestrack/index.html,
