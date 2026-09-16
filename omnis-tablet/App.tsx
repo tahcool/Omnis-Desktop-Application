@@ -3,7 +3,7 @@ import React, { useEffect, useState } from 'react';
 import { NavigationContainer } from '@react-navigation/native';
 import { createDrawerNavigator } from '@react-navigation/drawer';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
-import { ActivityIndicator, View } from 'react-native';
+import { ActivityIndicator, View, useWindowDimensions } from 'react-native';
 
 import LoginScreen from './src/screens/LoginScreen';
 import ForceResetPasswordScreen from './src/screens/ForceResetPasswordScreen';
@@ -26,6 +26,7 @@ import DefectsScreen from './src/screens/DefectsScreen';
 import ServiceTrackingScreen from './src/screens/ServiceTrackingScreen';
 import InitialServiceReportScreen from './src/screens/InitialServiceReportScreen';
 import MachineRegistryScreen from './src/screens/MachineRegistryScreen';
+import EmailQueueScreen from './src/screens/EmailQueueScreen';
 import { frappe } from './src/api/frappe';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { initDB } from './src/database/db';
@@ -36,13 +37,17 @@ const Stack = createNativeStackNavigator();
 const Drawer = createDrawerNavigator();
 
 function DrawerNavigator() {
+  const { width, height } = useWindowDimensions();
+  const shortSide = Math.min(width, height);
+  const drawerWidth = shortSide < 380 ? 240 : 280;
+
   return (
     <Drawer.Navigator
       screenOptions={{
         headerShown: false,
         drawerType: 'front', // Collapsible front drawer
         drawerStyle: {
-          width: 280,
+          width: drawerWidth,
         },
       }}
     >
@@ -65,6 +70,7 @@ function DrawerNavigator() {
       <Drawer.Screen name="Service Tracking" component={ServiceTrackingScreen} />
       <Drawer.Screen name="Initial Service Report" component={InitialServiceReportScreen} />
       <Drawer.Screen name="Machine Registry" component={MachineRegistryScreen} />
+      <Drawer.Screen name="Email Queue" component={EmailQueueScreen} />
     </Drawer.Navigator>
   );
 }

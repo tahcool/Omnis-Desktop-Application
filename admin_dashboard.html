@@ -36,13 +36,17 @@
     
     .main-wrapper { flex: 1; display: flex; flex-direction: column; min-width: 0; }
     
-    .topbar { height: 64px; background: var(--surface); border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; padding: 0 24px; z-index: 5; }
+    .topbar { height: 44px; background: var(--surface); border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; padding: 0 16px; z-index: 5; }
     
     /* System Switcher */
-    .system-switcher { display: flex; align-items: center; gap: 12px; }
-    .system-switcher label { font-size: 12px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; }
-    .system-select { padding: 8px 12px; border-radius: 6px; border: 1px solid var(--border); background: var(--bg); color: var(--text); font-weight: 600; font-size: 13px; outline: none; cursor: pointer; min-width: 200px; }
-    .system-select:focus { border-color: var(--primary); }
+    .system-switcher { display: flex; align-items: center; gap: 4px; }
+    .system-switcher .switcher-label { font-size: 10px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; margin-right: 4px; white-space: nowrap; }
+    .sys-btn { display: inline-flex; align-items: center; gap: 4px; padding: 4px 8px; border-radius: 5px; border: 1px solid var(--border); background: var(--surface); color: var(--text-muted); font-weight: 600; font-size: 11px; cursor: pointer; transition: all 0.15s ease; white-space: nowrap; line-height: 1; }
+    .sys-btn:hover { background: #f1f5f9; color: var(--text); border-color: #cbd5e1; }
+    .sys-btn.active { background: var(--primary); color: #fff; border-color: var(--primary); box-shadow: 0 1px 4px rgba(239,68,68,0.3); }
+    .sys-btn i { font-size: 10px; width: 12px; text-align: center; }
+    .sys-btn-close { display: none; align-items: center; gap: 3px; padding: 4px 8px; border-radius: 5px; border: 1px solid #fecaca; background: #fee2e2; color: var(--primary); font-size: 11px; font-weight: 700; cursor: pointer; transition: all 0.15s; line-height: 1; }
+    .sys-btn-close:hover { background: var(--primary); color: #fff; }
     
     .topbar-right { display: flex; align-items: center; gap: 16px; }
     .admin-badge { background: #fee2e2; color: #ef4444; padding: 4px 10px; border-radius: 20px; font-size: 11px; font-weight: 800; text-transform: uppercase; }
@@ -55,8 +59,8 @@
     .view-panel { position: absolute; top: 0; left: 0; right: 0; bottom: 0; display: none; background: var(--bg); padding: 32px; overflow-y: auto; }
     .view-panel.active { display: block; }
     
-    .system-frame-wrapper { position: absolute; top: 0; left: 0; right: 0; bottom: 0; display: none; background: #fff; }
-    .system-frame-wrapper.active { display: flex; flex-direction: column; }
+    .system-frame-wrapper { position: absolute; top: 0; left: 0; right: 0; bottom: 0; display: none; background: #fff; z-index: 1; }
+    .system-frame-wrapper.active { display: flex; flex-direction: column; z-index: 10; }
     .system-frame { flex: 1; border: none; width: 100%; height: 100%; }
     
     /* Forms & Tables for Settings */
@@ -119,13 +123,17 @@
     
     .main-wrapper { flex: 1; display: flex; flex-direction: column; min-width: 0; }
     
-    .topbar { height: 64px; background: var(--surface); border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; padding: 0 24px; z-index: 5; }
+    .topbar { height: 44px; background: var(--surface); border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; padding: 0 16px; z-index: 5; }
     
     /* System Switcher */
-    .system-switcher { display: flex; align-items: center; gap: 12px; }
-    .system-switcher label { font-size: 12px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; }
-    .system-select { padding: 8px 12px; border-radius: 6px; border: 1px solid var(--border); background: var(--bg); color: var(--text); font-weight: 600; font-size: 13px; outline: none; cursor: pointer; min-width: 200px; }
-    .system-select:focus { border-color: var(--primary); }
+    .system-switcher { display: flex; align-items: center; gap: 4px; }
+    .system-switcher .switcher-label { font-size: 10px; font-weight: 700; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; margin-right: 4px; white-space: nowrap; }
+    .sys-btn { display: inline-flex; align-items: center; gap: 4px; padding: 4px 8px; border-radius: 5px; border: 1px solid var(--border); background: var(--surface); color: var(--text-muted); font-weight: 600; font-size: 11px; cursor: pointer; transition: all 0.15s ease; white-space: nowrap; line-height: 1; }
+    .sys-btn:hover { background: #f1f5f9; color: var(--text); border-color: #cbd5e1; }
+    .sys-btn.active { background: var(--primary); color: #fff; border-color: var(--primary); box-shadow: 0 1px 4px rgba(239,68,68,0.3); }
+    .sys-btn i { font-size: 10px; width: 12px; text-align: center; }
+    .sys-btn-close { display: none; align-items: center; gap: 3px; padding: 4px 8px; border-radius: 5px; border: 1px solid #fecaca; background: #fee2e2; color: var(--primary); font-size: 11px; font-weight: 700; cursor: pointer; transition: all 0.15s; line-height: 1; }
+    .sys-btn-close:hover { background: var(--primary); color: #fff; }
     
     .topbar-right { display: flex; align-items: center; gap: 16px; }
     .admin-badge { background: #fee2e2; color: #ef4444; padding: 4px 10px; border-radius: 20px; font-size: 11px; font-weight: 800; text-transform: uppercase; }
@@ -138,8 +146,8 @@
     .view-panel { position: absolute; top: 0; left: 0; right: 0; bottom: 0; display: none; background: var(--bg); padding: 32px; overflow-y: auto; }
     .view-panel.active { display: block; }
     
-    .system-frame-wrapper { position: absolute; top: 0; left: 0; right: 0; bottom: 0; display: none; background: #fff; }
-    .system-frame-wrapper.active { display: flex; flex-direction: column; }
+    .system-frame-wrapper { position: absolute; top: 0; left: 0; right: 0; bottom: 0; display: none; background: #fff; z-index: 1; }
+    .system-frame-wrapper.active { display: flex; flex-direction: column; z-index: 10; }
     .system-frame { flex: 1; border: none; width: 100%; height: 100%; }
     
     /* Forms & Tables for Settings */
@@ -230,17 +238,24 @@
     <!-- Topbar -->
     <header class="topbar">
       <div class="system-switcher">
-        <label>System Switcher:</label>
-        <select id="sys-switcher" class="system-select">
-          <option value="" disabled selected>-- Select a System to Load --</option>
-          <option value="systems/fleetrack/index.html">Fleetrack</option>
-          <option value="systems/salestrack/index.html">Salestrack</option>
-          <option value="systems/powertrack/dashboard.html">Powertrack</option>
-          <option value="systems/engtrack/index.html">Engtrack (Coming Soon)</option>
-          <option value="systems/spe/index.html">SPE (Coming Soon)</option>
-        </select>
-        <button id="btn-close-system" class="btn secondary" style="display:none; padding:8px; margin-left:8px;" title="Close System View">
-          <i class="fas fa-times"></i>
+        <span class="switcher-label">Quick Launch:</span>
+        <button class="sys-btn" data-system="systems/fleetrack/index.html" title="Fleetrack">
+          <i class="fas fa-truck"></i> Fleetrack
+        </button>
+        <button class="sys-btn" data-system="systems/salestrack/index.html" title="Salestrack">
+          <i class="fas fa-chart-line"></i> Salestrack
+        </button>
+        <button class="sys-btn" data-system="systems/powertrack/dashboard.html" title="Powertrack">
+          <i class="fas fa-bolt"></i> Powertrack
+        </button>
+        <button class="sys-btn" data-system="systems/engtrack/index.html" title="Engtrack">
+          <i class="fas fa-cogs"></i> Engtrack
+        </button>
+        <button class="sys-btn" data-system="systems/spe/index.html" title="SPE">
+          <i class="fas fa-box-open"></i> SPE
+        </button>
+        <button id="btn-close-system" class="sys-btn-close" title="Close System">
+          <i class="fas fa-times"></i> Close
         </button>
       </div>
       
@@ -292,6 +307,9 @@
                 <label style="display:flex; align-items:center; gap:6px; font-weight:500; font-size:13px; text-transform:none; color:var(--text);">
                   <input type="checkbox" value="medicals"> Medicals
                 </label>
+                <label style="display:flex; align-items:center; gap:6px; font-weight:500; font-size:13px; text-transform:none; color:var(--text);">
+                  <input type="checkbox" value="omnis-tablet"> Omnis Tablet (Mobile)
+                </label>
               </div>
             </div>
             <div class="form-group">
@@ -307,7 +325,33 @@
         <div class="card">
           <div class="card-header">
             <span>Active Directory</span>
-            <button id="btn-refresh-users" class="btn secondary" style="padding:4px 8px; font-size:11px;"><i class="fas fa-sync-alt"></i> Refresh</button>
+            <div style="display:flex; align-items:center; gap:8px;">
+              <span id="users-count" style="font-size:11px; color:var(--text-muted); font-weight:600;"></span>
+              <button id="btn-refresh-users" class="btn secondary" style="padding:4px 8px; font-size:11px;"><i class="fas fa-sync-alt"></i> Refresh</button>
+            </div>
+          </div>
+          <div id="users-filter-bar" style="display:flex; gap:10px; align-items:center; padding:12px 16px; background:#f8fafc; border-bottom:1px solid #e2e8f0; flex-wrap:wrap;">
+            <div style="position:relative; flex:1; min-width:200px;">
+              <i class="fas fa-search" style="position:absolute; left:10px; top:50%; transform:translateY(-50%); color:#94a3b8; font-size:12px;"></i>
+              <input type="text" id="users-search" placeholder="Search by email..." style="width:100%; box-sizing:border-box; padding:7px 10px 7px 30px; border:1px solid #e2e8f0; border-radius:6px; font-size:12px; outline:none; background:#fff; transition:border-color .2s;" onfocus="this.style.borderColor='var(--primary)'" onblur="this.style.borderColor='#e2e8f0'">
+            </div>
+            <select id="users-filter-role" style="padding:7px 10px; border:1px solid #e2e8f0; border-radius:6px; font-size:12px; background:#fff; outline:none; cursor:pointer; min-width:110px;">
+              <option value="">All Roles</option>
+              <option value="admin">Admin</option>
+              <option value="standard">Standard</option>
+            </select>
+            <select id="users-filter-system" style="padding:7px 10px; border:1px solid #e2e8f0; border-radius:6px; font-size:12px; background:#fff; outline:none; cursor:pointer; min-width:120px;">
+              <option value="">All Systems</option>
+              <option value="fleetrack">Fleetrack</option>
+              <option value="salestrack">Salestrack</option>
+              <option value="powertrack">Powertrack</option>
+              <option value="engtrack">Engtrack</option>
+              <option value="spe">SPE</option>
+              <option value="medicals">Medicals</option>
+              <option value="omnis-tablet">Omnis Tablet</option>
+              <option value="none">No Access</option>
+            </select>
+            <button id="btn-clear-filters" class="btn secondary" style="padding:5px 10px; font-size:11px; white-space:nowrap;" title="Clear all filters"><i class="fas fa-times"></i> Clear</button>
           </div>
           <table class="users-table">
             <thead>
@@ -642,6 +686,9 @@
             <label style="display:flex; align-items:center; gap:8px; font-weight:600; font-size:13px; text-transform:none; color:var(--text);">
               <input type="checkbox" value="medicals"> Clinic / Medicals
             </label>
+            <label style="display:flex; align-items:center; gap:8px; font-weight:600; font-size:13px; text-transform:none; color:var(--text);">
+              <input type="checkbox" value="omnis-tablet"> Omnis Tablet (Mobile)
+            </label>
           </div>
         </div>
         <div class="form-group" style="margin-top:24px; padding-top:16px; border-top:1px solid var(--border);">
@@ -649,6 +696,39 @@
             <input type="checkbox" id="edit-user-admin"> Grant Administrator Privileges
           </label>
           <p style="font-size:11px; color:var(--text-muted); margin-top:4px; margin-left:22px; text-transform:none; font-weight:normal;">Allows user to access this console and manage other users.</p>
+        </div>
+        <div class="form-group" style="margin-top:24px; padding-top:16px; border-top:1px solid var(--border);">
+          <label style="font-weight:800; font-size:13px; color:var(--text); display:flex; align-items:center; gap:6px;">
+            <i class="fas fa-key" style="color:#f59e0b;"></i> Password Management
+          </label>
+          <div style="margin-top:10px; display:flex; flex-direction:column; gap:10px;">
+            <!-- Send Reset Email -->
+            <div style="display:flex; align-items:center; gap:8px;">
+              <button id="btn-send-reset-email" class="btn secondary" style="padding:6px 12px; font-size:11px; white-space:nowrap;">
+                <i class="fas fa-envelope"></i> Send Reset Email
+              </button>
+              <span style="font-size:11px; color:var(--text-muted); font-weight:normal; text-transform:none;">Sends a password reset link to the user's email address.</span>
+            </div>
+            <!-- Set Password Directly (super-admin only) -->
+            <div id="direct-password-section" style="margin-top:4px; padding:12px; background:#f8fafc; border:1px solid #e2e8f0; border-radius:8px;">
+              <label style="font-size:11px; font-weight:700; color:#475569; display:block; margin-bottom:6px; text-transform:none;">
+                <i class="fas fa-lock" style="color:var(--primary); margin-right:4px;"></i> Set Password Directly
+                <span style="font-weight:400; color:#94a3b8; margin-left:4px;">(Super-Admin only)</span>
+              </label>
+              <div style="display:flex; gap:8px; align-items:center;">
+                <div style="position:relative; flex:1;">
+                  <input type="password" id="edit-user-new-pwd" placeholder="New password (min 6 chars)" style="width:100%; box-sizing:border-box; padding:7px 32px 7px 10px; border:1px solid #e2e8f0; border-radius:6px; font-size:12px; outline:none;">
+                  <button type="button" id="btn-toggle-pwd-vis" style="position:absolute; right:6px; top:50%; transform:translateY(-50%); background:none; border:none; cursor:pointer; color:#94a3b8; font-size:12px; padding:2px;" title="Show/hide password">
+                    <i class="fas fa-eye"></i>
+                  </button>
+                </div>
+                <button id="btn-set-password" class="btn" style="padding:6px 14px; font-size:11px; white-space:nowrap; background:var(--primary);">
+                  <i class="fas fa-save"></i> Set Password
+                </button>
+              </div>
+            </div>
+          </div>
+          <div id="password-action-status" style="font-size:12px; font-weight:600; margin-top:8px;"></div>
         </div>
         <div id="edit-user-status" style="font-size:12px; font-weight:600; margin-top:12px;"></div>
       </div>

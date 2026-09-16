@@ -1037,7 +1037,7 @@ const styles = StyleSheet.create({
   newEnquiryBtnText: { color: '#fff', fontSize: 13, fontWeight: '700' },
 
   // Stats strip
-  statsStrip: { flexDirection: 'row', paddingHorizontal: 14, gap: 8, marginBottom: 10 },
+  statsStrip: { flexDirection: 'row', flexWrap: 'wrap', paddingHorizontal: 14, gap: 8, marginBottom: 10 },
   statChip: {
     flex: 1, backgroundColor: 'rgba(0,0,0,0.25)', borderRadius: 10,
     paddingVertical: 6, alignItems: 'center',

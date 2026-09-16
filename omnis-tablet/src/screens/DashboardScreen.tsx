@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useRef } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Dimensions, Animated, ImageBackground, StatusBar, Image } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Dimensions, Animated, ImageBackground, StatusBar, Image, useWindowDimensions } from 'react-native';
 import { supabase, getCurrentUserProfile } from '../api/supabaseClient';
 import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -7,11 +7,13 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { registerForPushNotificationsAsync } from '../services/NotificationService';
 import { getSyncQueue } from '../database/db';
 import { BlurView } from 'expo-blur';
-import * as ScreenOrientation from 'expo-screen-orientation';
 import { useFocusEffect } from '@react-navigation/native';
+import { useResponsive } from '../hooks/useResponsive';
 
 export default function DashboardScreen({ navigation }: any) {
   const insets = useSafeAreaInsets();
+  const responsive = useResponsive();
+  const { isPhone, isPortrait, isSmallPhone, hp, showLogo, logoSize, cardColumns, shortcutColumns, fabStyle } = responsive;
   const [pendingSyncs, setPendingSyncs] = useState(0);
   const [userName, setUserName] = useState('Administrator');
   const [greeting, setGreeting] = useState('Good morning');
@@ -20,7 +22,7 @@ export default function DashboardScreen({ navigation }: any) {
   const [openEnquiries, setOpenEnquiries] = useState(0);
   const [overdueVisits, setOverdueVisits] = useState(0);
   const [alertDismissed, setAlertDismissed] = useState(false);
-  const screenWidth = Dimensions.get('window').width;
+  const screenWidth = responsive.width;
 
   // Animated values for progress bars (0→1 on mount)
   const spMtdAnim = useRef(new Animated.Value(0)).current;
@@ -122,14 +124,10 @@ export default function DashboardScreen({ navigation }: any) {
     navigation.replace('Login');
   };
 
-  // Lock to landscape when this screen is focused, unlock when leaving
+  // Refresh counts when screen is focused (no longer locking orientation)
   useFocusEffect(
     React.useCallback(() => {
-      ScreenOrientation.lockAsync(ScreenOrientation.OrientationLock.LANDSCAPE);
-      fetchCounts(); // ← refresh Late Orders + Open Enquiries every time screen is focused
-      return () => {
-        ScreenOrientation.unlockAsync();
-      };
+      fetchCounts();
     }, [fetchCounts])
   );
 
@@ -213,14 +211,14 @@ export default function DashboardScreen({ navigation }: any) {
         <View style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, overflow: 'hidden' }} pointerEvents="none">
           {circuitPattern}
         </View>
-        <ScrollView style={{ flex: 1 }} contentContainerStyle={styles.content} bounces={false} scrollEnabled={false}>
+        <ScrollView style={{ flex: 1 }} contentContainerStyle={styles.content} bounces={false}>
           
           {/* Top Header Row: Red Profile Card + KPIs */}
         <LinearGradient
           colors={['#4c110d', '#8b2219', '#6b1a14']}
           start={{ x: 0, y: 0 }}
           end={{ x: 1, y: 1 }}
-          style={[styles.headerCard, { paddingTop: insets.top + 10 }]}
+          style={[styles.headerCard, { paddingTop: insets.top + 10, paddingHorizontal: hp + 6 }]}
         >
           <ImageBackground
             source={require('../../assets/header_bg_earthmoving.jpg')}
@@ -241,7 +239,7 @@ export default function DashboardScreen({ navigation }: any) {
             </View>
           </View>
           
-          <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', width: '100%' }}>
+          <View style={{ flexDirection: isPhone && isPortrait ? 'column' : 'row', alignItems: isPhone && isPortrait ? 'flex-start' : 'center', justifyContent: 'space-between', width: '100%' }}>
             
             {/* Left Side: Profile Text & Actions */}
             <View style={[styles.profileSection, { justifyContent: 'flex-start', alignItems: 'flex-start', flex: 1 }]}>
@@ -279,44 +277,45 @@ export default function DashboardScreen({ navigation }: any) {
               </View>
             </View>
 
-            {/* Right Side: Omnis Logo — premium glow on letters only */}
-            <View style={{ justifyContent: 'center', alignItems: 'flex-end', minHeight: 75, marginLeft: 16, marginTop: 20 }}>
-              {/* Glow lives on the Image shadow, not a container */}
-              <View style={{
-                shadowColor: '#ffffff',
-                shadowOffset: { width: 0, height: 0 },
-                shadowOpacity: 0.35,
-                shadowRadius: 18,
-              }}>
-                <Image
-                  source={require('../../assets/omnis-logo-white.png')}
-                  style={{ width: 300, height: 75, resizeMode: 'contain' }}
-                />
+            {/* Right Side: Omnis Logo — hidden on phones */}
+            {showLogo && (
+              <View style={{ justifyContent: 'center', alignItems: 'flex-end', minHeight: logoSize.h, marginLeft: 16, marginTop: 20 }}>
+                <View style={{
+                  shadowColor: '#ffffff',
+                  shadowOffset: { width: 0, height: 0 },
+                  shadowOpacity: 0.35,
+                  shadowRadius: 18,
+                }}>
+                  <Image
+                    source={require('../../assets/omnis-logo-white.png')}
+                    style={{ width: logoSize.w, height: logoSize.h, resizeMode: 'contain' }}
+                  />
+                </View>
+                <Text style={{
+                  color: '#f8fafc',
+                  fontWeight: '800',
+                  letterSpacing: 2,
+                  fontSize: 10,
+                  marginTop: 8,
+                  opacity: 0.7,
+                  textTransform: 'uppercase',
+                }}>
+                  Unified Intelligence
+                </Text>
               </View>
-              <Text style={{
-                color: '#f8fafc',
-                fontWeight: '800',
-                letterSpacing: 2,
-                fontSize: 10,
-                marginTop: 8,
-                opacity: 0.7,
-                textTransform: 'uppercase',
-              }}>
-                Unified Intelligence
-              </Text>
-            </View>
+            )}
           </View>
         </LinearGradient>
 
-        <View style={styles.innerContent}>
+        <View style={[styles.innerContent, { paddingHorizontal: hp }]}>
 
           {/* Performance Cards Row */}
-          <View style={styles.performanceRow}>
+          <View style={[styles.performanceRow, cardColumns === 1 && { flexDirection: 'column', gap: 10 }]}>
             {/* Sinopower Card */}
             <LinearGradient
               colors={['#4c110d', '#8b2219', '#6b1a14']}
               start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }}
-              style={styles.perfCard}
+              style={[styles.perfCard, isPhone && styles.perfCardPhone]}
             >
               {/* Watermark pattern icon */}
               <View style={{ position: 'absolute', right: -16, bottom: -20, opacity: 0.08 }} pointerEvents="none">
@@ -328,13 +327,13 @@ export default function DashboardScreen({ navigation }: any) {
                   <View key={`${r}-${c}`} style={{ position: 'absolute', left: c * 22 - 10, top: r * 22 - 10, width: 3, height: 3, borderRadius: 2, backgroundColor: '#fff' }} />
                 )))}
               </View>
-              <View style={styles.perfHeader}>
+              <View style={[styles.perfHeader, isPhone && { marginBottom: 8 }]}>
                 <View>
-                  <Text style={[styles.perfTitle, { color: '#ffffff' }]}>SINOPOWER</Text>
-                  <Text style={styles.perfSubtitle}>MTD & YTD PERFORMANCE</Text>
+                  <Text style={[styles.perfTitle, { color: '#ffffff' }, isPhone && { fontSize: 10 }]}>SINOPOWER</Text>
+                  <Text style={[styles.perfSubtitle, isPhone && { fontSize: 8 }]}>MTD & YTD PERFORMANCE</Text>
                 </View>
-                <View style={[styles.perfIconContainer, { backgroundColor: 'rgba(255,255,255,0.15)' }]}>
-                  <Ionicons name="trending-up" size={14} color="#ffffff" />
+                <View style={[styles.perfIconContainer, { backgroundColor: 'rgba(255,255,255,0.15)' }, isPhone && { width: 24, height: 24, borderRadius: 6 }]}>
+                  <Ionicons name="trending-up" size={isPhone ? 12 : 14} color="#ffffff" />
                 </View>
               </View>
               
@@ -342,18 +341,18 @@ export default function DashboardScreen({ navigation }: any) {
                 <View style={styles.perfBlock}>
                   <Text style={styles.perfBlockTitle}>MONTH TO DATE</Text>
                   <View style={styles.perfBlockValues}>
-                    <Text style={styles.perfValue}>4</Text>
-                    <Text style={styles.perfTarget}>/ 15</Text>
+                    <Text style={[styles.perfValue, isPhone && styles.perfValuePhone]}>4</Text>
+                    <Text style={[styles.perfTarget, isPhone && { fontSize: 10 }]}>/ 15</Text>
                   </View>
-                  <View style={styles.perfBarBg}>
+                  <View style={[styles.perfBarBg, isPhone && { height: 6 }]}>
                     <Animated.View style={[styles.perfBarFill, {
                       width: spMtdAnim.interpolate({ inputRange: [0, 1], outputRange: ['0%', '100%'] }),
                       backgroundColor: 'rgba(255,255,255,0.82)',
                     }]} />
                   </View>
                   <View style={styles.perfBlockFooter}>
-                    <Text style={[styles.perfPct, { color: '#ffffff' }]}>25%</Text>
-                    <Text style={styles.perfNote}>Need 11 more</Text>
+                    <Text style={[styles.perfPct, { color: '#ffffff' }, isPhone && { fontSize: 12 }]}>25%</Text>
+                    <Text style={[styles.perfNote, isPhone && { fontSize: 8 }]}>Need 11 more</Text>
                   </View>
                 </View>
                 
@@ -362,18 +361,18 @@ export default function DashboardScreen({ navigation }: any) {
                 <View style={styles.perfBlock}>
                   <Text style={styles.perfBlockTitle}>YEAR TO DATE</Text>
                   <View style={styles.perfBlockValues}>
-                    <Text style={styles.perfValue}>79</Text>
-                    <Text style={styles.perfTarget}>/ 192</Text>
+                    <Text style={[styles.perfValue, isPhone && styles.perfValuePhone]}>79</Text>
+                    <Text style={[styles.perfTarget, isPhone && { fontSize: 10 }]}>/ 192</Text>
                   </View>
-                  <View style={styles.perfBarBg}>
+                  <View style={[styles.perfBarBg, isPhone && { height: 6 }]}>
                     <Animated.View style={[styles.perfBarFill, {
                       width: spYtdAnim.interpolate({ inputRange: [0, 1], outputRange: ['0%', '100%'] }),
                       backgroundColor: 'rgba(255,255,255,0.82)',
                     }]} />
                   </View>
                   <View style={styles.perfBlockFooter}>
-                    <Text style={[styles.perfPct, { color: '#ffffff' }]}>41%</Text>
-                    <Text style={styles.perfNote}>Need 113 more</Text>
+                    <Text style={[styles.perfPct, { color: '#ffffff' }, isPhone && { fontSize: 12 }]}>41%</Text>
+                    <Text style={[styles.perfNote, isPhone && { fontSize: 8 }]}>Need 113 more</Text>
                   </View>
                 </View>
               </View>
@@ -383,7 +382,7 @@ export default function DashboardScreen({ navigation }: any) {
             <LinearGradient
               colors={['#6b1a14', '#8b2219', '#4c110d']}
               start={{ x: 1, y: 0 }} end={{ x: 0, y: 1 }}
-              style={styles.perfCard}
+              style={[styles.perfCard, isPhone && styles.perfCardPhone]}
             >
               {/* Watermark pattern icon */}
               <View style={{ position: 'absolute', right: -16, bottom: -20, opacity: 0.08 }} pointerEvents="none">
@@ -395,13 +394,13 @@ export default function DashboardScreen({ navigation }: any) {
                   <View key={`${r}-${c}`} style={{ position: 'absolute', left: c * 22 - 10, top: r * 22 - 10, width: 3, height: 3, borderRadius: 2, backgroundColor: '#fff' }} />
                 )))}
               </View>
-              <View style={styles.perfHeader}>
+              <View style={[styles.perfHeader, isPhone && { marginBottom: 8 }]}>
                 <View>
-                  <Text style={[styles.perfTitle, { color: '#ffffff' }]}>MACHINERY EXCHANGE</Text>
-                  <Text style={styles.perfSubtitle}>MTD & YTD PERFORMANCE</Text>
+                  <Text style={[styles.perfTitle, { color: '#ffffff' }, isPhone && { fontSize: 10 }]}>MACHINERY EXCHANGE</Text>
+                  <Text style={[styles.perfSubtitle, isPhone && { fontSize: 8 }]}>MTD & YTD PERFORMANCE</Text>
                 </View>
-                <View style={[styles.perfIconContainer, { backgroundColor: 'rgba(255,255,255,0.15)' }]}>
-                  <Ionicons name="trending-up" size={14} color="#ffffff" />
+                <View style={[styles.perfIconContainer, { backgroundColor: 'rgba(255,255,255,0.15)' }, isPhone && { width: 24, height: 24, borderRadius: 6 }]}>
+                  <Ionicons name="trending-up" size={isPhone ? 12 : 14} color="#ffffff" />
                 </View>
               </View>
               
@@ -409,18 +408,18 @@ export default function DashboardScreen({ navigation }: any) {
                 <View style={styles.perfBlock}>
                   <Text style={styles.perfBlockTitle}>MONTH TO DATE</Text>
                   <View style={styles.perfBlockValues}>
-                    <Text style={styles.perfValue}>4</Text>
-                    <Text style={styles.perfTarget}>/ 18</Text>
+                    <Text style={[styles.perfValue, isPhone && styles.perfValuePhone]}>4</Text>
+                    <Text style={[styles.perfTarget, isPhone && { fontSize: 10 }]}>/ 18</Text>
                   </View>
-                  <View style={styles.perfBarBg}>
+                  <View style={[styles.perfBarBg, isPhone && { height: 6 }]}>
                     <Animated.View style={[styles.perfBarFill, {
                       width: mxMtdAnim.interpolate({ inputRange: [0, 1], outputRange: ['0%', '100%'] }),
                       backgroundColor: 'rgba(255,255,255,0.82)',
                     }]} />
                   </View>
                   <View style={styles.perfBlockFooter}>
-                    <Text style={[styles.perfPct, { color: '#ffffff' }]}>22%</Text>
-                    <Text style={styles.perfNote}>Need 14 more</Text>
+                    <Text style={[styles.perfPct, { color: '#ffffff' }, isPhone && { fontSize: 12 }]}>22%</Text>
+                    <Text style={[styles.perfNote, isPhone && { fontSize: 8 }]}>Need 14 more</Text>
                   </View>
                 </View>
                 
@@ -429,18 +428,18 @@ export default function DashboardScreen({ navigation }: any) {
                 <View style={styles.perfBlock}>
                   <Text style={styles.perfBlockTitle}>YEAR TO DATE</Text>
                   <View style={styles.perfBlockValues}>
-                    <Text style={styles.perfValue}>119</Text>
-                    <Text style={styles.perfTarget}>/ 215</Text>
+                    <Text style={[styles.perfValue, isPhone && styles.perfValuePhone]}>119</Text>
+                    <Text style={[styles.perfTarget, isPhone && { fontSize: 10 }]}>/ 215</Text>
                   </View>
-                  <View style={styles.perfBarBg}>
+                  <View style={[styles.perfBarBg, isPhone && { height: 6 }]}>
                     <Animated.View style={[styles.perfBarFill, {
                       width: mxYtdAnim.interpolate({ inputRange: [0, 1], outputRange: ['0%', '100%'] }),
                       backgroundColor: 'rgba(255,255,255,0.82)',
                     }]} />
                   </View>
                   <View style={styles.perfBlockFooter}>
-                    <Text style={[styles.perfPct, { color: '#ffffff' }]}>55%</Text>
-                    <Text style={styles.perfNote}>Need 96 more</Text>
+                    <Text style={[styles.perfPct, { color: '#ffffff' }, isPhone && { fontSize: 12 }]}>55%</Text>
+                    <Text style={[styles.perfNote, isPhone && { fontSize: 8 }]}>Need 96 more</Text>
                   </View>
                 </View>
               </View>
@@ -450,74 +449,74 @@ export default function DashboardScreen({ navigation }: any) {
         </View>
 
         {/* Quick Access Bar — single flat row of square buttons */}
-        <View style={styles.shortcutsFlat}>
-          <TouchableOpacity style={styles.shortcutSquare} onPress={() => navigation.navigate('Salestrack Customers')}>
+        <View style={[styles.shortcutsFlat, { paddingHorizontal: hp, flexWrap: shortcutColumns === 4 ? 'wrap' : 'nowrap' }, isPhone && styles.shortcutsFlatPhone]}>
+          <TouchableOpacity style={[styles.shortcutSquare, isPhone && styles.shortcutSquarePhone]} onPress={() => navigation.navigate('Salestrack Customers')}>
             <LinearGradient colors={['rgba(255,255,255,0.11)', 'rgba(255,255,255,0)']} start={{ x: 0, y: 0 }} end={{ x: 0, y: 1 }} style={StyleSheet.absoluteFill as any} />
-            <Ionicons name="people-circle" size={18} color="#ffffff" />
-            <Text style={styles.shortcutSquareText} numberOfLines={1}>Customers</Text>
+            <Ionicons name="people-circle" size={isPhone ? 26 : 18} color="#ffffff" />
+            <Text style={[styles.shortcutSquareText, isPhone && styles.shortcutSquareTextPhone]} numberOfLines={1}>Customers</Text>
           </TouchableOpacity>
-          <TouchableOpacity style={styles.shortcutSquare} onPress={() => navigation.navigate('Order Tracking')}>
+          <TouchableOpacity style={[styles.shortcutSquare, isPhone && styles.shortcutSquarePhone]} onPress={() => navigation.navigate('Order Tracking')}>
             <LinearGradient colors={['rgba(255,255,255,0.11)', 'rgba(255,255,255,0)']} start={{ x: 0, y: 0 }} end={{ x: 0, y: 1 }} style={StyleSheet.absoluteFill as any} />
-            <Ionicons name="cube" size={18} color="#ffffff" />
-            <Text style={styles.shortcutSquareText} numberOfLines={1}>Orders</Text>
+            <Ionicons name="cube" size={isPhone ? 26 : 18} color="#ffffff" />
+            <Text style={[styles.shortcutSquareText, isPhone && styles.shortcutSquareTextPhone]} numberOfLines={1}>Orders</Text>
           </TouchableOpacity>
-          <TouchableOpacity style={styles.shortcutSquare} onPress={() => navigation.navigate('Salestrack Customers')}>
+          <TouchableOpacity style={[styles.shortcutSquare, isPhone && styles.shortcutSquarePhone]} onPress={() => navigation.navigate('Salestrack Customers')}>
             <LinearGradient colors={['rgba(255,255,255,0.11)', 'rgba(255,255,255,0)']} start={{ x: 0, y: 0 }} end={{ x: 0, y: 1 }} style={StyleSheet.absoluteFill as any} />
-            <Ionicons name="car-sport" size={18} color="#ffffff" />
-            <Text style={styles.shortcutSquareText} numberOfLines={1}>Fleet</Text>
+            <Ionicons name="car-sport" size={isPhone ? 26 : 18} color="#ffffff" />
+            <Text style={[styles.shortcutSquareText, isPhone && styles.shortcutSquareTextPhone]} numberOfLines={1}>Fleet</Text>
           </TouchableOpacity>
-          <TouchableOpacity style={styles.shortcutSquare} onPress={() => navigation.navigate('Customer Enquiries')}>
+          <TouchableOpacity style={[styles.shortcutSquare, isPhone && styles.shortcutSquarePhone]} onPress={() => navigation.navigate('Customer Enquiries')}>
             <LinearGradient colors={['rgba(255,255,255,0.11)', 'rgba(255,255,255,0)']} start={{ x: 0, y: 0 }} end={{ x: 0, y: 1 }} style={StyleSheet.absoluteFill as any} />
-            <Ionicons name="clipboard" size={18} color="#ffffff" />
-            <Text style={styles.shortcutSquareText} numberOfLines={1}>Enquiries</Text>
+            <Ionicons name="clipboard" size={isPhone ? 26 : 18} color="#ffffff" />
+            <Text style={[styles.shortcutSquareText, isPhone && styles.shortcutSquareTextPhone]} numberOfLines={1}>Enquiries</Text>
           </TouchableOpacity>
-          <TouchableOpacity style={styles.shortcutSquare} onPress={() => navigation.navigate('Certificates')}>
+          <TouchableOpacity style={[styles.shortcutSquare, isPhone && styles.shortcutSquarePhone]} onPress={() => navigation.navigate('Certificates')}>
             <LinearGradient colors={['rgba(255,255,255,0.11)', 'rgba(255,255,255,0)']} start={{ x: 0, y: 0 }} end={{ x: 0, y: 1 }} style={StyleSheet.absoluteFill as any} />
-            <Ionicons name="school" size={18} color="#ffffff" />
-            <Text style={styles.shortcutSquareText} numberOfLines={1}>Certificates</Text>
+            <Ionicons name="school" size={isPhone ? 26 : 18} color="#ffffff" />
+            <Text style={[styles.shortcutSquareText, isPhone && styles.shortcutSquareTextPhone]} numberOfLines={1}>Certificates</Text>
           </TouchableOpacity>
-          <TouchableOpacity style={styles.shortcutSquare} onPress={() => navigation.navigate('Training Library')}>
+          <TouchableOpacity style={[styles.shortcutSquare, isPhone && styles.shortcutSquarePhone]} onPress={() => navigation.navigate('Training Library')}>
             <LinearGradient colors={['rgba(255,255,255,0.11)', 'rgba(255,255,255,0)']} start={{ x: 0, y: 0 }} end={{ x: 0, y: 1 }} style={StyleSheet.absoluteFill as any} />
-            <Ionicons name="book" size={18} color="#ffffff" />
-            <Text style={styles.shortcutSquareText} numberOfLines={1}>Library</Text>
+            <Ionicons name="book" size={isPhone ? 26 : 18} color="#ffffff" />
+            <Text style={[styles.shortcutSquareText, isPhone && styles.shortcutSquareTextPhone]} numberOfLines={1}>Library</Text>
           </TouchableOpacity>
-          <TouchableOpacity style={styles.shortcutSquare} onPress={() => navigation.navigate('Visit History')}>
+          <TouchableOpacity style={[styles.shortcutSquare, isPhone && styles.shortcutSquarePhone]} onPress={() => navigation.navigate('Visit History')}>
             <LinearGradient colors={['rgba(255,255,255,0.11)', 'rgba(255,255,255,0)']} start={{ x: 0, y: 0 }} end={{ x: 0, y: 1 }} style={StyleSheet.absoluteFill as any} />
-            <Ionicons name="time" size={18} color="#ffffff" />
-            <Text style={styles.shortcutSquareText} numberOfLines={1}>My Visits</Text>
+            <Ionicons name="time" size={isPhone ? 26 : 18} color="#ffffff" />
+            <Text style={[styles.shortcutSquareText, isPhone && styles.shortcutSquareTextPhone]} numberOfLines={1}>My Visits</Text>
           </TouchableOpacity>
-          <TouchableOpacity style={styles.shortcutSquare} onPress={() => navigation.navigate('Aftersales')}>
+          <TouchableOpacity style={[styles.shortcutSquare, isPhone && styles.shortcutSquarePhone]} onPress={() => navigation.navigate('Aftersales')}>
             <LinearGradient colors={['rgba(255,255,255,0.11)', 'rgba(255,255,255,0)']} start={{ x: 0, y: 0 }} end={{ x: 0, y: 1 }} style={StyleSheet.absoluteFill as any} />
-            <Ionicons name="clipboard-outline" size={18} color="#f59e0b" />
-            <Text style={styles.shortcutSquareText} numberOfLines={1}>Aftersales</Text>
+            <Ionicons name="clipboard-outline" size={isPhone ? 26 : 18} color="#f59e0b" />
+            <Text style={[styles.shortcutSquareText, isPhone && styles.shortcutSquareTextPhone]} numberOfLines={1}>Aftersales</Text>
           </TouchableOpacity>
         </View>
 
 
 
         {/* OEM Logos Footer */}
-        <View style={styles.footerLogosContainer}>
+        <View style={[styles.footerLogosContainer, isPhone && { marginBottom: 60 }]}>
           <ScrollView
             horizontal
             showsHorizontalScrollIndicator={false}
-            contentContainerStyle={styles.footerScrollContent}
+            contentContainerStyle={[styles.footerScrollContent, isPhone && { gap: 14 }]}
           >
-            <Image source={require('../../assets/landcross.jpg')} style={styles.footerLogoItem} />
-            <Image source={require('../../assets/fruehauf.png')} style={styles.footerLogoItem} />
-            <Image source={require('../../assets/shantui.png')} style={styles.footerLogoItem} />
-            <Image source={require('../../assets/foton.png')} style={styles.footerLogoItem} />
-            <Image source={require('../../assets/bobcat.png')} style={styles.footerLogoItem} />
-            <Image source={require('../../assets/wirtgen.png')} style={styles.wirtgenLogoItem} />
-            <Image source={require('../../assets/weichai.png')} style={styles.footerLogoItem} />
+            <Image source={require('../../assets/landcross.jpg')} style={[styles.footerLogoItem, isPhone && styles.footerLogoItemPhone]} />
+            <Image source={require('../../assets/fruehauf.png')} style={[styles.footerLogoItem, isPhone && styles.footerLogoItemPhone]} />
+            <Image source={require('../../assets/shantui.png')} style={[styles.footerLogoItem, isPhone && styles.footerLogoItemPhone]} />
+            <Image source={require('../../assets/foton.png')} style={[styles.footerLogoItem, isPhone && styles.footerLogoItemPhone]} />
+            <Image source={require('../../assets/bobcat.png')} style={[styles.footerLogoItem, isPhone && styles.footerLogoItemPhone]} />
+            <Image source={require('../../assets/wirtgen.png')} style={[styles.wirtgenLogoItem, isPhone && { height: 40, width: 50 }]} />
+            <Image source={require('../../assets/weichai.png')} style={[styles.footerLogoItem, isPhone && styles.footerLogoItemPhone]} />
           </ScrollView>
         </View>
 
         </ScrollView>
       </View>
 
-      {/* Floating Action Button */}
+      {/* Floating Action Button — centered on phones, right-aligned on tablets */}
       <TouchableOpacity 
-        style={[styles.fab, { bottom: Math.max(32, insets.bottom + 20) }]} 
+        style={[styles.fab, { bottom: Math.max(32, insets.bottom + 20) }, isPhone && { right: undefined, left: responsive.width / 2 - 32 }]} 
         onPress={() => navigation.navigate('Log Activity')}
       >
         <Ionicons name="add" size={32} color="#ffffff" />
@@ -648,6 +647,36 @@ const styles = StyleSheet.create({
     color: 'rgba(255,255,255,0.75)',
     fontWeight: '500',
     marginBottom: 12,
+  },
+  // Phone-specific overrides
+  perfCardPhone: {
+    minWidth: 0,
+    padding: 10,
+    paddingHorizontal: 12,
+    borderRadius: 12,
+  },
+  perfValuePhone: {
+    fontSize: 20,
+    lineHeight: 22,
+  },
+  shortcutsFlatPhone: {
+    gap: 8,
+    marginTop: 10,
+    marginBottom: 10,
+  },
+  shortcutSquarePhone: {
+    paddingVertical: 16,
+    borderRadius: 14,
+    minHeight: 72,
+  },
+  shortcutSquareTextPhone: {
+    fontSize: 11,
+    fontWeight: '700',
+    marginTop: 6,
+  },
+  footerLogoItemPhone: {
+    height: 40,
+    width: 80,
   },
   quickActionRow: {
     flexDirection: 'row',

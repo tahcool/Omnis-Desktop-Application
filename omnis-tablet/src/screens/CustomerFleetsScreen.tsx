@@ -583,7 +583,7 @@ const styles = StyleSheet.create({
   subtitle: { fontSize: 11, color: 'rgba(255,255,255,0.6)', marginTop: 1 },
 
   // Stats strip
-  statsStrip: { flexDirection: 'row', paddingHorizontal: 14, gap: 6, marginBottom: 10 },
+  statsStrip: { flexDirection: 'row', flexWrap: 'wrap', paddingHorizontal: 14, gap: 6, marginBottom: 10 },
   statChip: { flex: 1, backgroundColor: 'rgba(0,0,0,0.25)', borderRadius: 10, paddingVertical: 6, alignItems: 'center', borderWidth: 1, borderColor: 'rgba(255,255,255,0.1)' },
   statValue: { fontSize: 15, fontWeight: '900', color: '#fff' },
   statLabel: { fontSize: 8, color: 'rgba(255,255,255,0.55)', fontWeight: '600', textTransform: 'uppercase', marginTop: 1 },

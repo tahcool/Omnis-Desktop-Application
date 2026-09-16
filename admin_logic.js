@@ -46,26 +46,36 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   });
 
-  // System Switcher
-  const sysSwitcher = document.getElementById('sys-switcher');
+  // System Switcher (button-based)
+  const sysButtons = document.querySelectorAll('.sys-btn[data-system]');
   const btnCloseSystem = document.getElementById('btn-close-system');
   const systemFrame = document.getElementById('system-frame');
 
-  sysSwitcher.addEventListener('change', (e) => {
-    const url = e.target.value;
-    if (url) {
+  sysButtons.forEach(btn => {
+    btn.addEventListener('click', () => {
+      const url = btn.dataset.system;
+      // Toggle: if already active, close it
+      if (btn.classList.contains('active')) {
+        closeSystem();
+        return;
+      }
+      // Deactivate all, activate this one
+      sysButtons.forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
       systemFrame.src = url;
       frameWrapper.classList.add('active');
-      btnCloseSystem.style.display = 'inline-block';
-    }
+      btnCloseSystem.style.display = 'inline-flex';
+    });
   });
 
-  btnCloseSystem.addEventListener('click', () => {
+  function closeSystem() {
     frameWrapper.classList.remove('active');
     systemFrame.src = 'about:blank';
-    sysSwitcher.selectedIndex = 0;
+    sysButtons.forEach(b => b.classList.remove('active'));
     btnCloseSystem.style.display = 'none';
-  });
+  }
+
+  btnCloseSystem.addEventListener('click', closeSystem);
 
   // Logout
   document.getElementById('btn-logout').addEventListener('click', async () => {
@@ -84,9 +94,90 @@ document.addEventListener('DOMContentLoaded', () => {
   // User Management
   const btnRefresh = document.getElementById('btn-refresh-users');
   const tbody = document.getElementById('users-tbody');
+  const searchInput = document.getElementById('users-search');
+  const filterRole = document.getElementById('users-filter-role');
+  const filterSystem = document.getElementById('users-filter-system');
+  const btnClearFilters = document.getElementById('btn-clear-filters');
+  const usersCount = document.getElementById('users-count');
+  
+  function getFilteredUsers() {
+    if (!window.activeUsers) return [];
+    const query = (searchInput.value || '').toLowerCase().trim();
+    const role = filterRole.value;
+    const system = filterSystem.value;
+    
+    return window.activeUsers.filter(u => {
+      // Search filter
+      if (query && !(u.email || '').toLowerCase().includes(query)) return false;
+      // Role filter
+      if (role === 'admin' && !u.is_admin) return false;
+      if (role === 'standard' && u.is_admin) return false;
+      // System filter
+      if (system === 'none' && u.systems && u.systems.length > 0) return false;
+      if (system && system !== 'none' && (!u.systems || !u.systems.includes(system))) return false;
+      return true;
+    });
+  }
+  
+  function renderUsers(filtered) {
+    if (!window.activeUsers || window.activeUsers.length === 0) return;
+    
+    // Update counter
+    const total = window.activeUsers.length;
+    const shown = filtered.length;
+    usersCount.textContent = shown === total ? `${total} users` : `${shown} of ${total} users`;
+    
+    if (filtered.length === 0) {
+      tbody.innerHTML = '<tr><td colspan="4" style="text-align:center; padding:32px; color:var(--text-muted);"><i class="fas fa-filter" style="margin-right:6px;"></i>No users match the current filters.</td></tr>';
+      return;
+    }
+    
+    tbody.innerHTML = filtered.map(u => {
+      // Find original index for editUser
+      const index = window.activeUsers.indexOf(u);
+      const roleHtml = u.is_admin 
+        ? '<span class="pill admin">Admin</span>' 
+        : '<span class="pill">Standard</span>';
+      
+      const sysHtml = u.systems && u.systems.length > 0
+        ? u.systems.map(s => `<span class="pill">${s}</span>`).join('')
+        : '<span style="font-size:11px; color:#94a3b8;">No Access</span>';
+        
+      return `
+        <tr>
+          <td style="font-weight:600;">${u.email}</td>
+          <td>${roleHtml}</td>
+          <td>${sysHtml}</td>
+          <td>
+            <button class="btn secondary" style="padding:4px 8px; font-size:11px;" onclick="window.editUser(${index})">Edit</button>
+          </td>
+        </tr>
+      `;
+    }).join('');
+  }
+  
+  function applyFilters() {
+    renderUsers(getFilteredUsers());
+  }
+  
+  // Debounced search
+  let searchTimer;
+  searchInput.addEventListener('input', () => {
+    clearTimeout(searchTimer);
+    searchTimer = setTimeout(applyFilters, 150);
+  });
+  filterRole.addEventListener('change', applyFilters);
+  filterSystem.addEventListener('change', applyFilters);
+  btnClearFilters.addEventListener('click', () => {
+    searchInput.value = '';
+    filterRole.value = '';
+    filterSystem.value = '';
+    applyFilters();
+  });
   
   async function loadUsers() {
     tbody.innerHTML = '<tr><td colspan="4" style="text-align:center; padding:32px; color:var(--text-muted);">Loading users...</td></tr>';
+    usersCount.textContent = '';
     try {
       if (!window.electron || !window.electron.invoke) throw new Error("Electron bridge not available");
       const res = await window.electron.invoke('supabase:getUsers');
@@ -95,30 +186,12 @@ document.addEventListener('DOMContentLoaded', () => {
       
       if (res.users.length === 0) {
          tbody.innerHTML = '<tr><td colspan="4" style="text-align:center; padding:32px; color:var(--text-muted);">No users found.</td></tr>';
+         usersCount.textContent = '0 users';
          return;
       }
       
       window.activeUsers = res.users;
-      tbody.innerHTML = res.users.map((u, index) => {
-        const roleHtml = u.is_admin 
-          ? '<span class="pill admin">Admin</span>' 
-          : '<span class="pill">Standard</span>';
-        
-        const sysHtml = u.systems && u.systems.length > 0
-          ? u.systems.map(s => `<span class="pill">${s}</span>`).join('')
-          : '<span style="font-size:11px; color:#94a3b8;">No Access</span>';
-          
-        return `
-          <tr>
-            <td style="font-weight:600;">${u.email}</td>
-            <td>${roleHtml}</td>
-            <td>${sysHtml}</td>
-            <td>
-              <button class="btn secondary" style="padding:4px 8px; font-size:11px;" onclick="window.editUser(${index})">Edit</button>
-            </td>
-          </tr>
-        `;
-      }).join('');
+      applyFilters();
       
     } catch(err) {
       tbody.innerHTML = `<tr><td colspan="4" style="text-align:center; padding:32px; color:var(--primary);">Error: ${err.message}</td></tr>`;
@@ -179,9 +252,19 @@ document.addEventListener('DOMContentLoaded', () => {
   const btnSaveEdit = document.getElementById('btn-save-edit');
   const statusEdit = document.getElementById('edit-user-status');
   
+  const pwdStatus = document.getElementById('password-action-status');
+  const btnSendResetEmail = document.getElementById('btn-send-reset-email');
+  const btnSetPassword = document.getElementById('btn-set-password');
+  const btnTogglePwdVis = document.getElementById('btn-toggle-pwd-vis');
+  const newPwdInput = document.getElementById('edit-user-new-pwd');
+  
   function closeEditModal() {
     editModal.classList.remove('active');
     statusEdit.textContent = '';
+    pwdStatus.textContent = '';
+    newPwdInput.value = '';
+    newPwdInput.type = 'password';
+    btnTogglePwdVis.querySelector('i').className = 'fas fa-eye';
   }
 
   btnCloseEditModal.addEventListener('click', closeEditModal);
@@ -200,6 +283,8 @@ document.addEventListener('DOMContentLoaded', () => {
     });
     
     statusEdit.textContent = '';
+    pwdStatus.textContent = '';
+    newPwdInput.value = '';
     editModal.classList.add('active');
   };
 
@@ -231,6 +316,67 @@ document.addEventListener('DOMContentLoaded', () => {
       statusEdit.textContent = 'Error: ' + err.message;
     } finally {
       btnSaveEdit.disabled = false;
+    }
+  });
+
+  // Password visibility toggle
+  btnTogglePwdVis.addEventListener('click', () => {
+    const isHidden = newPwdInput.type === 'password';
+    newPwdInput.type = isHidden ? 'text' : 'password';
+    btnTogglePwdVis.querySelector('i').className = isHidden ? 'fas fa-eye-slash' : 'fas fa-eye';
+  });
+
+  // Send Password Reset Email
+  btnSendResetEmail.addEventListener('click', async () => {
+    const email = document.getElementById('edit-user-email').value;
+    if (!email) return;
+    
+    btnSendResetEmail.disabled = true;
+    pwdStatus.style.color = 'var(--text-muted)';
+    pwdStatus.textContent = 'Sending reset email...';
+    
+    try {
+      const res = await window.electron.invoke('supabase:resetUserPassword', { email });
+      if (!res.ok) throw new Error(res.error || 'Failed to send reset email');
+      
+      pwdStatus.style.color = '#10b981';
+      pwdStatus.innerHTML = '<i class="fas fa-check-circle"></i> Password reset email sent to ' + email;
+    } catch(err) {
+      pwdStatus.style.color = 'var(--primary)';
+      pwdStatus.textContent = 'Error: ' + err.message;
+    } finally {
+      btnSendResetEmail.disabled = false;
+    }
+  });
+
+  // Set Password Directly
+  btnSetPassword.addEventListener('click', async () => {
+    const userId = document.getElementById('edit-user-id').value;
+    const password = newPwdInput.value;
+    
+    if (!userId) return;
+    if (!password || password.length < 6) {
+      pwdStatus.style.color = 'var(--primary)';
+      pwdStatus.textContent = 'Password must be at least 6 characters.';
+      return;
+    }
+    
+    btnSetPassword.disabled = true;
+    pwdStatus.style.color = 'var(--text-muted)';
+    pwdStatus.textContent = 'Setting password...';
+    
+    try {
+      const res = await window.electron.invoke('supabase:setPasswordDirect', { userId, password });
+      if (!res.ok) throw new Error(res.error || 'Failed to set password');
+      
+      pwdStatus.style.color = '#10b981';
+      pwdStatus.innerHTML = '<i class="fas fa-check-circle"></i> Password updated successfully!';
+      newPwdInput.value = '';
+    } catch(err) {
+      pwdStatus.style.color = 'var(--primary)';
+      pwdStatus.textContent = 'Error: ' + err.message;
+    } finally {
+      btnSetPassword.disabled = false;
     }
   });
 

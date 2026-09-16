@@ -12,6 +12,7 @@
 export const SUPER_ADMIN_EMAILS: string[] = [
   "takunda@industrial-exchange.group",
   "zaranyika.rt@gmail.com",
+  "administrator@omnis.local",
 ];
 
 /**

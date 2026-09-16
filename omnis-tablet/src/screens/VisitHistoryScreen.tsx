@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import {
   View,
   Text,
@@ -21,6 +21,7 @@ import { supabase } from '../api/supabaseClient';
 import Constants from 'expo-constants';
 import { useNavigation } from '@react-navigation/native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { generateVisitEmailHtml } from '../utils/visitEmailHtml';
 
 const TYPE_FILTERS = ['All', 'CDV', 'PSV', 'FCDV'] as const;
 
@@ -34,6 +35,7 @@ export default function VisitHistoryScreen() {
   const [showSearch, setShowSearch] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [typeFilter, setTypeFilter]   = useState<string>('All');
+  const [sendingId, setSendingId]     = useState<string | null>(null);
 
   // Edit Modal State
   const [selectedVisit, setSelectedVisit]   = useState<any>(null);
@@ -110,10 +112,11 @@ export default function VisitHistoryScreen() {
   // ── Stats ───────────────────────────────────────────────────────────────────
 
   const stats = useMemo(() => ({
-    total:       visits.length,
-    cdvCount:    visits.filter(v => v.type === 'CDV').length,
-    psvCount:    visits.filter(v => v.type === 'PSV').length,
-    actionCount: visits.filter(v => v.action_required).length,
+    total:        visits.length,
+    cdvCount:     visits.filter(v => v.type === 'CDV').length,
+    psvCount:     visits.filter(v => v.type === 'PSV').length,
+    actionCount:  visits.filter(v => v.action_required).length,
+    emailPending: visits.filter(v => !v.email_sent).length,
   }), [visits]);
 
   // ── Filtered list ───────────────────────────────────────────────────────────
@@ -230,6 +233,108 @@ export default function VisitHistoryScreen() {
     }
   };
 
+  // ── Resend / Send Email ────────────────────────────────────────────────────
+
+  const handleResendEmail = useCallback(async (visit: any) => {
+    const toEmail = visit.customer_email_to || visit.email_to || '';
+    if (!toEmail) {
+      Alert.alert('No Recipient', 'This visit has no email address on file. Please edit the visit and add a customer email before sending.');
+      return;
+    }
+
+    const actionLabel = visit.email_sent ? 'Resend' : 'Send';
+    Alert.alert(
+      `${actionLabel} Email`,
+      `${actionLabel} the ${visit.type} visit report for "${visit.customer}" to ${toEmail}?`,
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: actionLabel,
+          onPress: async () => {
+            setSendingId(visit.id);
+            try {
+              const supabaseUrl = Constants.expoConfig?.extra?.supabaseUrl || 'https://pfqaeewmlwfayxbgmuaq.supabase.co';
+              const anonKey = Constants.expoConfig?.extra?.supabaseAnonKey || process.env.EXPO_PUBLIC_SUPABASE_ANON_KEY || '';
+              const { data: { session } } = await supabase.auth.getSession();
+              const { data: { user } } = await supabase.auth.getUser();
+              const authToken = session?.access_token || anonKey;
+
+              // Build the email HTML using the shared util
+              const machines = Array.isArray(visit.machines_inspected) ? visit.machines_inspected : [];
+              const visitImages = Array.isArray(visit.images) ? visit.images : [];
+
+              const htmlBody = generateVisitEmailHtml({
+                customerName: visit.customer || 'Customer',
+                visitType: visit.type || 'CDV',
+                visitDate: visit.visit_date || new Date().toISOString().split('T')[0],
+                salesperson: visit.salesperson || 'Representative',
+                topics: visit.type === 'PSV' ? (visit.findings || 'No findings') : (visit.topics_discussed || 'No topics discussed'),
+                opportunities: visit.type === 'PSV' ? (visit.action_notes || '') : (visit.opportunities || ''),
+                actionRequired: visit.action_required || false,
+                psvMachines: machines,
+                visitImages,
+              });
+
+              // Build CC list from the stored cc_emails
+              const ccEmails = visit.cc_emails || '';
+
+              // Insert into email queue
+              await supabase.from('omnis_email_queue').insert({
+                system: 'fleetrack',
+                to_email: toEmail,
+                cc_email: ccEmails || null,
+                subject: `${visit.type} Visit Report - ${visit.customer}`,
+                body_html: htmlBody,
+                related_doc: visit.customer,
+                related_type: visit.type.toLowerCase(),
+                created_by: user?.email || 'Mobile User',
+              });
+
+              // Trigger edge function for immediate sending
+              try {
+                const edgeRes = await fetch(`${supabaseUrl}/functions/v1/process-email-queue`, {
+                  method: 'POST',
+                  headers: {
+                    'Authorization': `Bearer ${authToken}`,
+                    'Content-Type': 'application/json',
+                  },
+                  body: JSON.stringify({}),
+                });
+
+                if (edgeRes.ok) {
+                  // Mark as sent on the visit record
+                  const table = visit.type === 'PSV' ? 'psv_logs' : 'cdv_logs';
+                  await fetch(`${supabaseUrl}/rest/v1/${table}?id=eq.${visit.id}`, {
+                    method: 'PATCH',
+                    headers: {
+                      'apikey': anonKey,
+                      'Authorization': `Bearer ${authToken}`,
+                      'Content-Type': 'application/json',
+                      'Prefer': 'return=minimal',
+                    },
+                    body: JSON.stringify({ email_sent: true }),
+                  });
+                  Alert.alert('Success', `Email ${actionLabel.toLowerCase() === 'resend' ? 're-sent' : 'sent'} successfully!`);
+                } else {
+                  Alert.alert('Queued', 'Email has been queued and will be sent shortly.');
+                }
+              } catch (e) {
+                console.log('Edge trigger silent catch:', e);
+                Alert.alert('Queued', 'Email has been queued and will be sent shortly.');
+              }
+
+              fetchVisits();
+            } catch (e: any) {
+              Alert.alert('Error', e.message || 'Failed to queue email.');
+            } finally {
+              setSendingId(null);
+            }
+          },
+        },
+      ]
+    );
+  }, []);
+
   // ── Render card ─────────────────────────────────────────────────────────────
 
   const renderVisitCard = (visit: any) => {
@@ -237,6 +342,7 @@ export default function VisitHistoryScreen() {
     const machines: any[] = Array.isArray(visit.machines_inspected) ? visit.machines_inspected : [];
     const depts: string[] = Array.isArray(visit.target_departments) ? visit.target_departments : [];
     const photos: string[] = Array.isArray(visit.images) ? visit.images : [];
+    const isSending = sendingId === visit.id;
 
     return (
       <View key={visit.id} style={styles.card}>
@@ -261,9 +367,15 @@ export default function VisitHistoryScreen() {
           <Text style={[styles.customerName, { marginBottom: 0, paddingLeft: 0, flexShrink: 1 }]} numberOfLines={1}>
             {visit.customer}
           </Text>
-          {visit.email_sent && (
-            <View style={{ backgroundColor: '#dcfce7', paddingHorizontal: 6, paddingVertical: 2, borderRadius: 4, marginLeft: 8 }}>
-              <Text style={{ color: '#15803d', fontSize: 9, fontWeight: 'bold' }}>Email Sent</Text>
+          {visit.email_sent ? (
+            <View style={styles.emailSentBadge}>
+              <Ionicons name="checkmark-circle" size={10} color="#15803d" />
+              <Text style={styles.emailSentText}>Email Sent</Text>
+            </View>
+          ) : (
+            <View style={styles.emailPendingBadge}>
+              <Ionicons name="time-outline" size={10} color="#92400e" />
+              <Text style={styles.emailPendingText}>Email Pending</Text>
             </View>
           )}
         </View>
@@ -315,6 +427,20 @@ export default function VisitHistoryScreen() {
         )}
 
         <View style={styles.actionsContainer}>
+          <TouchableOpacity
+            style={[styles.resendBtn, isSending && { opacity: 0.6 }]}
+            onPress={() => handleResendEmail(visit)}
+            disabled={isSending}
+          >
+            {isSending ? (
+              <ActivityIndicator size={12} color="#7c3aed" />
+            ) : (
+              <Ionicons name="mail-outline" size={14} color="#7c3aed" />
+            )}
+            <Text style={styles.resendBtnText}>
+              {visit.email_sent ? 'Resend Email' : 'Send Email'}
+            </Text>
+          </TouchableOpacity>
           <TouchableOpacity style={styles.deleteBtn} onPress={() => confirmDeleteVisit(visit)}>
             <Ionicons name="trash-outline" size={14} color="#ef4444" />
             <Text style={styles.deleteBtnText}>Delete</Text>
@@ -347,6 +473,9 @@ export default function VisitHistoryScreen() {
           </TouchableOpacity>
           <Text style={styles.headerTitle}>Visit History</Text>
           <View style={{ flexDirection: 'row', gap: 4 }}>
+            <TouchableOpacity onPress={() => navigation.navigate('Email Queue')} style={styles.iconBtn}>
+              <Ionicons name="mail-unread-outline" size={20} color="rgba(255,255,255,0.85)" />
+            </TouchableOpacity>
             <TouchableOpacity onPress={fetchVisits} style={styles.iconBtn}>
               <Ionicons name="refresh" size={20} color="rgba(255,255,255,0.85)" />
             </TouchableOpacity>
@@ -363,8 +492,9 @@ export default function VisitHistoryScreen() {
             { label: 'CDV',        value: stats.cdvCount },
             { label: 'PSV',        value: stats.psvCount },
             { label: 'Action Req', value: stats.actionCount },
+            { label: 'Email Pend', value: stats.emailPending, highlight: stats.emailPending > 0 },
           ].map((s, i) => (
-            <View key={i} style={styles.statChip}>
+            <View key={i} style={[styles.statChip, (s as any).highlight && styles.statChipHighlight]}>
               <Text style={styles.statValue}>{s.value}</Text>
               <Text style={styles.statLabel}>{s.label}</Text>
             </View>
@@ -573,8 +703,9 @@ const styles = StyleSheet.create({
 
   statsStrip: {
     flexDirection: 'row',
+    flexWrap: 'wrap',
     paddingHorizontal: 16,
-    gap: 8,
+    gap: 6,
     marginBottom: 10,
   },
   statChip: {
@@ -583,6 +714,11 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     paddingVertical: 6,
     alignItems: 'center',
+  },
+  statChipHighlight: {
+    backgroundColor: 'rgba(245,158,11,0.25)',
+    borderWidth: 1,
+    borderColor: 'rgba(245,158,11,0.5)',
   },
   statValue: { fontSize: 18, fontWeight: '800', color: '#fff' },
   statLabel: { fontSize: 9, fontWeight: '600', color: 'rgba(255,255,255,0.65)', marginTop: 1 },
@@ -652,6 +788,30 @@ const styles = StyleSheet.create({
   infoRow: { flexDirection: 'row', alignItems: 'flex-start', marginBottom: 3, paddingLeft: 8 },
   infoText: { fontSize: 12, color: '#475569', marginLeft: 6, flex: 1 },
 
+  // ── Email status badges ────────────────────────────────────────────────────
+  emailSentBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#dcfce7',
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    borderRadius: 4,
+    marginLeft: 8,
+    gap: 3,
+  },
+  emailSentText: { color: '#15803d', fontSize: 9, fontWeight: 'bold' },
+  emailPendingBadge: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#fef3c7',
+    paddingHorizontal: 6,
+    paddingVertical: 2,
+    borderRadius: 4,
+    marginLeft: 8,
+    gap: 3,
+  },
+  emailPendingText: { color: '#92400e', fontSize: 9, fontWeight: 'bold' },
+
   machineSummaryRow: { flexDirection: 'row', alignItems: 'center', gap: 6, marginLeft: 8, marginTop: 4, marginBottom: 4 },
   machineSummaryText: { fontSize: 11, fontWeight: '700', color: '#8b2219' },
   deptBadge: { backgroundColor: '#e0f2fe', paddingHorizontal: 6, paddingVertical: 2, borderRadius: 4 },
@@ -672,6 +832,15 @@ const styles = StyleSheet.create({
   actionFlagText: { fontSize: 10, fontWeight: '700', color: '#92400e' },
 
   actionsContainer: { flexDirection: 'row', justifyContent: 'flex-end', gap: 8, marginTop: 8, paddingTop: 8, borderTopWidth: 1, borderTopColor: '#f1f5f9' },
+  resendBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: '#f5f3ff',
+    paddingHorizontal: 10,
+    paddingVertical: 4,
+    borderRadius: 6,
+  },
+  resendBtnText: { fontSize: 12, fontWeight: '700', color: '#7c3aed', marginLeft: 4 },
   deleteBtn: {
     flexDirection: 'row',
     alignItems: 'center',

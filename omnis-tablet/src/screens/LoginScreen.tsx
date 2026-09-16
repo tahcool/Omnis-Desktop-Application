@@ -39,6 +39,23 @@ export default function LoginScreen({ navigation }: any) {
       if (error) {
         Alert.alert('Login Failed', error.message || 'Invalid credentials');
       } else if (data.user) {
+        // ── Gate: check omnis-tablet system access ─────────────
+        const { data: accessRows, error: accessErr } = await supabase
+          .from('user_system_access')
+          .select('system_name')
+          .eq('user_id', data.user.id)
+          .eq('system_name', 'omnis-tablet');
+
+        if (accessErr || !accessRows || accessRows.length === 0) {
+          // Not authorized for mobile — sign out and block
+          await supabase.auth.signOut();
+          Alert.alert(
+            'Access Denied',
+            'Your account does not have Omnis Tablet access. Please contact your administrator to request access.',
+          );
+          return;
+        }
+
         let targetScreen = 'MainApp';
         let screenParams = undefined;
 

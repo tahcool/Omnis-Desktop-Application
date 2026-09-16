@@ -23,7 +23,6 @@ const corsHeaders = {
 // Actions explicitly deferred — return clear error, not silent failure
 const DEFERRED_ACTIONS = new Set([
   "setPassword",
-  "setPasswordDirect",
   "setPasswordByEmail",
   "impersonate",
 ]);
@@ -41,6 +40,7 @@ const ADMIN_ACTIONS = new Set([
   "resetPassword",
   "inviteUser",
   "updateUserAccess",
+  "setPasswordDirect",
 ]);
 
 interface AuditEntry {
@@ -937,6 +937,58 @@ async function executeAction(
           ok: true,
           message: "Password reset email has been sent to the user.",
         },
+        status: 200,
+      };
+    }
+
+
+    // ── Set Password Directly (super-admin only) ─────────────
+    case "setPasswordDirect": {
+      const { userId, password } = params;
+      if (!userId || !password)
+        return {
+          body: { ok: false, error: "userId and password required" },
+          status: 400,
+        };
+      if (password.length < 6)
+        return {
+          body: { ok: false, error: "Password must be at least 6 characters" },
+          status: 400,
+        };
+
+      // Only super-admins can directly set passwords
+      if (!SUPER_ADMIN_EMAILS.includes(callerEmail)) {
+        await audit(admin, {
+          actor_id: callerId,
+          actor_email: callerEmail,
+          action,
+          target_id: userId,
+          result: "denied",
+          detail: "Only super-admins can set passwords directly",
+        });
+        return {
+          body: { ok: false, error: "Only super-admins can set passwords directly" },
+          status: 403,
+        };
+      }
+
+      const { error: pwErr } = await admin.auth.admin.updateUserById(userId, {
+        password,
+      });
+
+      if (pwErr) throw new Error(pwErr.message);
+
+      await audit(admin, {
+        actor_id: callerId,
+        actor_email: callerEmail,
+        action,
+        target_id: userId,
+        result: "success",
+        detail: "Password set directly by super-admin",
+      });
+
+      return {
+        body: { ok: true, message: "Password updated successfully." },
         status: 200,
       };
     }

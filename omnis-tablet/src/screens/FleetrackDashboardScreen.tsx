@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useRef } from 'react';
-import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Dimensions, Animated, ImageBackground, StatusBar, Image } from 'react-native';
+import { View, Text, StyleSheet, ScrollView, TouchableOpacity, Dimensions, Animated, ImageBackground, StatusBar, Image, useWindowDimensions } from 'react-native';
 import { supabase, getCurrentUserProfile } from '../api/supabaseClient';
 import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
@@ -7,11 +7,13 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { registerForPushNotificationsAsync } from '../services/NotificationService';
 import { getSyncQueue } from '../database/db';
 import { BlurView } from 'expo-blur';
-import * as ScreenOrientation from 'expo-screen-orientation';
 import { useFocusEffect } from '@react-navigation/native';
+import { useResponsive } from '../hooks/useResponsive';
 
 export default function FleetrackDashboardScreen({ navigation }: any) {
   const insets = useSafeAreaInsets();
+  const responsive = useResponsive();
+  const { isPhone, isPortrait, isSmallPhone, hp, showLogo, logoSize, cardColumns, shortcutColumns } = responsive;
   const [pendingSyncs, setPendingSyncs] = useState(0);
   const [userName, setUserName] = useState('Administrator');
   const [greeting, setGreeting] = useState('Good morning');
@@ -29,7 +31,7 @@ export default function FleetrackDashboardScreen({ navigation }: any) {
   const [overdueVisits, setOverdueVisits] = useState(0);
   const [alertDismissed, setAlertDismissed] = useState(false);
   const [fabModalVisible, setFabModalVisible] = useState(false);
-  const screenWidth = Dimensions.get('window').width;
+  const screenWidth = responsive.width;
 
   // Animated values for progress bars (0→1 on mount)
   const spDefectAnim = useRef(new Animated.Value(0)).current;
@@ -193,14 +195,10 @@ const { count: lateCount } = await supabase
     navigation.replace('Login');
   };
 
-  // Lock to landscape when this screen is focused, unlock when leaving
+  // Refresh counts when screen is focused (no longer locking orientation)
   useFocusEffect(
     React.useCallback(() => {
-      ScreenOrientation.lockAsync(ScreenOrientation.OrientationLock.LANDSCAPE);
-      fetchCounts(); // ← refresh Late Orders + Open Enquiries every time screen is focused
-      return () => {
-        ScreenOrientation.unlockAsync();
-      };
+      fetchCounts();
     }, [fetchCounts])
   );
 
@@ -284,14 +282,14 @@ const { count: lateCount } = await supabase
         <View style={{ position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, overflow: 'hidden' }} pointerEvents="none">
           {circuitPattern}
         </View>
-        <ScrollView style={{ flex: 1 }} contentContainerStyle={styles.content} bounces={false} scrollEnabled={false}>
+        <ScrollView style={{ flex: 1 }} contentContainerStyle={styles.content} bounces={false}>
 
         {/* Top Header Row: Red Profile Card + KPIs */}
         <LinearGradient
           colors={['#3d0b09', '#6d1612', '#52110d']}
           start={{ x: 0, y: 0 }}
           end={{ x: 1, y: 1 }}
-          style={[styles.headerCard, { paddingTop: insets.top + 10 }]}
+          style={[styles.headerCard, { paddingTop: insets.top + 10, paddingHorizontal: hp + 6 }]}
         >
           <ImageBackground
             source={require('../../assets/header_bg_earthmoving.jpg')}
@@ -312,7 +310,7 @@ const { count: lateCount } = await supabase
             </View>
           </View>
           
-          <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', width: '100%' }}>
+          <View style={{ flexDirection: isPhone && isPortrait ? 'column' : 'row', alignItems: isPhone && isPortrait ? 'flex-start' : 'center', justifyContent: 'space-between', width: '100%' }}>
             
             {/* Left Side: Profile Text & Actions */}
             <View style={[styles.profileSection, { justifyContent: 'flex-start', alignItems: 'flex-start', flex: 1 }]}>
@@ -350,40 +348,41 @@ const { count: lateCount } = await supabase
               </View>
             </View>
 
-            {/* Right Side: Omnis Logo — premium glow on letters only */}
-            <View style={{ justifyContent: 'center', alignItems: 'flex-end', minHeight: 75, marginLeft: 16, marginTop: 20 }}>
-              {/* Glow lives on the Image shadow, not a container */}
-              <View style={{
-                shadowColor: '#ffffff',
-                shadowOffset: { width: 0, height: 0 },
-                shadowOpacity: 0.35,
-                shadowRadius: 18,
-              }}>
-                <Image
-                  source={require('../../assets/omnis-logo-white.png')}
-                  style={{ width: 300, height: 75, resizeMode: 'contain' }}
-                />
+            {/* Right Side: Omnis Logo — hidden on phones */}
+            {showLogo && (
+              <View style={{ justifyContent: 'center', alignItems: 'flex-end', minHeight: logoSize.h, marginLeft: 16, marginTop: 20 }}>
+                <View style={{
+                  shadowColor: '#ffffff',
+                  shadowOffset: { width: 0, height: 0 },
+                  shadowOpacity: 0.35,
+                  shadowRadius: 18,
+                }}>
+                  <Image
+                    source={require('../../assets/omnis-logo-white.png')}
+                    style={{ width: logoSize.w, height: logoSize.h, resizeMode: 'contain' }}
+                  />
+                </View>
+                <Text style={{
+                  color: '#f8fafc',
+                  fontWeight: '800',
+                  letterSpacing: 2,
+                  fontSize: 10,
+                  marginTop: 8,
+                  opacity: 0.7,
+                  textTransform: 'uppercase',
+                }}>
+                  Unified Intelligence
+                </Text>
               </View>
-              <Text style={{
-                color: '#f8fafc',
-                fontWeight: '800',
-                letterSpacing: 2,
-                fontSize: 10,
-                marginTop: 8,
-                opacity: 0.7,
-                textTransform: 'uppercase',
-              }}>
-                Unified Intelligence
-              </Text>
-            </View>
+            )}
           </View>
 
         </LinearGradient>
 
-        <View style={styles.innerContent}>
+        <View style={[styles.innerContent, { paddingHorizontal: hp }]}>
 
           {/* Performance Cards Row */}
-          <View style={styles.performanceRow}>
+          <View style={[styles.performanceRow, cardColumns === 1 && { flexDirection: 'column' }]}>
 <LinearGradient
                 colors={['#4c110d', '#8b2219', '#6b1a14']}
                 start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }}
@@ -521,7 +520,7 @@ const { count: lateCount } = await supabase
           </View>
           
 {/* Quick Access Bar — single flat row of square buttons */}
-        <View style={styles.shortcutsFlat}>
+        <View style={[styles.shortcutsFlat, { paddingHorizontal: hp, flexWrap: isPhone && isPortrait ? 'wrap' : 'nowrap' }]}>
           <TouchableOpacity style={styles.shortcutSquare} onPress={() => navigation.navigate('Breakdowns')}>
             <LinearGradient colors={['rgba(255,255,255,0.11)', 'rgba(255,255,255,0)']} start={{ x: 0, y: 0 }} end={{ x: 0, y: 1 }} style={StyleSheet.absoluteFill as any} />
             <Ionicons name="warning" size={18} color="#ffffff" />
@@ -572,9 +571,9 @@ const { count: lateCount } = await supabase
         </ScrollView>
       </View>
 
-      {/* Floating Action Button */}
+      {/* Floating Action Button — centered on phones, right-aligned on tablets */}
       <TouchableOpacity 
-        style={[styles.fab, { bottom: Math.max(32, insets.bottom + 20) }]} 
+        style={[styles.fab, { bottom: Math.max(32, insets.bottom + 20) }, isPhone && { right: undefined, left: responsive.width / 2 - 32 }]} 
         onPress={() => setFabModalVisible(true)}
       >
         <Ionicons name="add" size={32} color="#ffffff" />
@@ -588,7 +587,7 @@ const { count: lateCount } = await supabase
           onPress={() => setFabModalVisible(false)}
         >
           <BlurView intensity={30} tint="dark" style={StyleSheet.absoluteFill as any}>
-            <View style={{ flex: 1, justifyContent: 'flex-end', alignItems: 'flex-end', paddingRight: 32, paddingBottom: Math.max(32, insets.bottom + 20) + 74 }}>
+            <View style={{ flex: 1, justifyContent: 'flex-end', alignItems: isPhone ? 'center' : 'flex-end', paddingRight: isPhone ? 0 : 32, paddingBottom: Math.max(32, insets.bottom + 20) + 74 }}>
               <View style={{ gap: 12, alignItems: 'flex-end' }}>
                 <TouchableOpacity style={styles.fabOptionItem} onPress={() => { setFabModalVisible(false); navigation.navigate('Breakdowns'); }}>
                   <Text style={styles.fabOptionText}>Add Breakdown</Text>

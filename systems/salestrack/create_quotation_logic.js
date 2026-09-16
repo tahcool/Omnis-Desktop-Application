@@ -82,6 +82,8 @@
                 <input type="text" class="form-input item-code" placeholder="Item Code" style="font-size:12px; width:100%;">
                 <div class="suggest-list hidden"></div>
             </td>
+            <td style="padding:6px;"><input type="text" class="form-input item-name" placeholder="Item Name" readonly style="font-size:12px; width:100%; background:#f9fafb; color:#374151;"></td>
+            <td style="padding:6px;"><textarea class="form-input item-desc" placeholder="Description" style="font-size:11px; width:100%; min-height:40px; resize:vertical; background:#f9fafb; color:#374151;"></textarea></td>
             <td style="padding:6px;"><input type="number" class="form-input item-qty" value="1" min="1" style="font-size:12px; width:60px;"></td>
             <td style="padding:6px;"><input type="number" class="form-input item-rate" placeholder="0.00" style="font-size:12px; width:100px;"></td>
             <td style="padding:6px;"><input type="text" class="form-input item-amount" readonly style="font-size:12px; width:100px; background:#f3f4f6;"></td>
@@ -89,27 +91,81 @@
         `;
         tbody.appendChild(row);
 
-        // Wire up Item Suggestions
+        // Wire up Item Suggestions (searches products table via Supabase)
         const codeInp = row.querySelector(".item-code");
         const suggestBox = row.querySelector(".suggest-list");
         setupSuggestions(codeInp, suggestBox, "search_item_for_omnis", async (val, item) => {
             codeInp.value = item.value;
-            // Fetch Details
-            try {
-                const res = await window.callFrappeSequenced(CURRENT_SYSTEM.baseUrl, "powerstar_salestrack.omnis_dashboard.get_item_details_for_omnis", { item_code: item.value });
-                const payload = res.message || res;
-                if (payload.ok) {
-                    row.querySelector(".item-rate").value = payload.rate || 0;
-                    calculateQuotationTotals();
-                }
-            } catch (e) { console.error("Item detail error", e); }
+            // Auto-fill item name
+            const nameInp = row.querySelector(".item-name");
+            if (nameInp) nameInp.value = item.description || item.value;
+            // Auto-fill description from the product's description column
+            const descInp = row.querySelector(".item-desc");
+            if (descInp) descInp.value = item.itemDescription || '';
+            // Use rate from the suggestion item (already fetched from products table)
+            if (item.rate) {
+                row.querySelector(".item-rate").value = item.rate;
+                calculateQuotationTotals();
+            }
         });
+    };
+
+    // --- CURRENCY HELPERS ---
+    const CURRENCY_SYMBOLS = { USD: '$', ZAR: 'R', BWP: 'P', ZMW: 'ZK', MZN: 'MT', EUR: '€', GBP: '£' };
+    window._qtnExchangeRate = 1.0;
+    window._qtnSelectedCurrency = 'USD';
+
+    window.fetchExchangeRate = async function () {
+        const currSelect = document.getElementById('qtn-currency');
+        const currency = currSelect ? currSelect.value : 'USD';
+        window._qtnSelectedCurrency = currency;
+
+        const rateInfo = document.getElementById('qtn-rate-info');
+        const rateDisplay = document.getElementById('qtn-rate-display');
+        const rateSource = document.getElementById('qtn-rate-source');
+        const fetchBtn = document.getElementById('qtn-fetch-rate-btn');
+
+        if (currency === 'USD') {
+            window._qtnExchangeRate = 1.0;
+            if (rateInfo) rateInfo.style.display = 'none';
+            window.calculateQuotationTotals();
+            return;
+        }
+
+        if (fetchBtn) fetchBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> ...';
+
+        try {
+            const resp = await fetch(`https://api.frankfurter.app/latest?from=USD&to=${currency}`);
+            const json = await resp.json();
+            const rate = json.rates && json.rates[currency];
+            if (rate) {
+                window._qtnExchangeRate = rate;
+                if (rateDisplay) rateDisplay.textContent = `1 USD = ${rate.toFixed(4)} ${currency}`;
+                if (rateSource) rateSource.textContent = '• ECB via Frankfurter (live)';
+                if (rateInfo) rateInfo.style.display = 'block';
+            } else {
+                throw new Error('Rate not found');
+            }
+        } catch (e) {
+            console.error('Exchange rate fetch error:', e);
+            if (rateDisplay) rateDisplay.textContent = `Rate unavailable for ${currency}`;
+            if (rateInfo) rateInfo.style.display = 'block';
+            window._qtnExchangeRate = 1.0;
+        } finally {
+            if (fetchBtn) fetchBtn.innerHTML = '<i class="fas fa-sync-alt"></i> Rate';
+        }
+
+        window.calculateQuotationTotals();
+    };
+
+    window.onQtnCurrencyChange = function () {
+        window.fetchExchangeRate();
     };
 
     window.calculateQuotationTotals = function () {
         const tbody = document.getElementById("qtn-items-body");
         let totalQty = 0;
-        let totalUSD = 0;
+        let totalAmount = 0;
 
         if (tbody) {
             Array.from(tbody.children).forEach(row => {
@@ -123,17 +179,34 @@
                 if (amountInp) amountInp.value = amount.toFixed(2);
 
                 totalQty += qty;
-                totalUSD += amount;
+                totalAmount += amount;
             });
         }
 
+        const currency = window._qtnSelectedCurrency || 'USD';
+        const sym = CURRENCY_SYMBOLS[currency] || currency;
+        const rate = window._qtnExchangeRate || 1.0;
+
         const qtyInp = document.getElementById("qtn-total-qty");
+        const totalLabel = document.getElementById("qtn-total-label");
         const usdInp = document.getElementById("qtn-total-usd");
-        const zarInp = document.getElementById("qtn-total-zar");
+        const convertedRow = document.getElementById("qtn-converted-row");
+        const convertedInp = document.getElementById("qtn-total-converted");
 
         if (qtyInp) qtyInp.value = totalQty;
-        if (usdInp) usdInp.value = "$ " + totalUSD.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-        if (zarInp) zarInp.value = "R " + (totalUSD * 18.5).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+        if (totalLabel) totalLabel.textContent = `Total (${currency})`;
+        if (usdInp) usdInp.value = sym + " " + totalAmount.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+
+        // Show converted amount if not USD
+        if (currency !== 'USD' && rate !== 1.0) {
+            const usdEquiv = totalAmount / rate;
+            if (convertedRow) { convertedRow.style.display = 'block'; convertedRow.innerHTML = `USD: <input style="background:transparent; border:none; width:120px; text-align:right;" readonly value="$ ${usdEquiv.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}">`;}
+        } else if (currency === 'USD') {
+            // Show ZAR conversion as secondary info (using stored rate if available)
+            if (convertedRow) { convertedRow.style.display = 'block'; convertedRow.innerHTML = `ZAR: <input style="background:transparent; border:none; width:120px; text-align:right;" readonly value="R ${(totalAmount * (window._zarRate || 18.5)).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}">`;}
+        } else {
+            if (convertedRow) convertedRow.style.display = 'none';
+        }
     };
 
     window.submitQuotation = async function () {
@@ -152,6 +225,7 @@
                 pfi_checked: document.getElementById("qtn-pfi")?.checked,
                 delivery: document.getElementById("qtn-delivery")?.value,
                 notes: document.getElementById("qtn-notes")?.value,
+                currency: document.getElementById("qtn-currency")?.value || 'USD',
                 items: []
             };
 
@@ -159,12 +233,16 @@
             if (tbody) {
                 Array.from(tbody.children).forEach(row => {
                     const itemCode = row.querySelector(".item-code")?.value;
+                    const itemName = row.querySelector(".item-name")?.value;
+                    const itemDesc = row.querySelector(".item-desc")?.value;
                     const qty = row.querySelector(".item-qty")?.value;
                     const rate = row.querySelector(".item-rate")?.value;
 
                     if (itemCode && qty) {
                         data.items.push({
                             item_code: itemCode,
+                            item_name: itemName || itemCode,
+                            description: itemDesc || '',
                             qty: parseFloat(qty),
                             rate: parseFloat(rate || 0)
                         });
@@ -201,6 +279,8 @@
             const itemPayloads = data.items.map(i => ({
                 quotation_id: dbQtnId,
                 item_code: i.item_code,
+                item_name: i.item_name || i.item_code,
+                description: i.description || '',
                 qty: i.qty,
                 rate: i.rate,
                 amount: i.qty * i.rate
@@ -373,38 +453,43 @@
         if (btn) btn.textContent = "Creating...";
 
         try {
+            const qqCurrency = document.getElementById('qq-currency')?.value || 'USD';
             const data = {
                 customer: customer,
                 company: "Machinery Exchange", // Default for quick create
                 sales_person: salesPerson,
                 notes: title,
                 delivery: leadTime,
+                currency: qqCurrency,
                 items: [{ item_code: itemCode, qty: 1, rate: parseFloat(price || 0) }]
             };
 
-            if (!window.supabase) throw new Error("Supabase client not found");
             const qtnId = "SAL-QTN-" + new Date().getFullYear().toString().slice(-2) + "-" + Math.floor(1000 + Math.random() * 9000);
             
-            // Insert parent
-            const qtnRes = await window.supabase.from("omnis_quotations").insert([{
-                name: qtnId,
-                customer_name: data.customer,
-                contact_person: data.contact_person,
-                transaction_date: data.transaction_date || new Date().toISOString().split('T')[0],
-                company: data.company,
-                currency: data.currency,
-                sales_person: data.sales_person,
-                bank_account: data.bank_account,
-                pfi_checked: data.pfi_checked,
-                delivery: data.delivery,
-                notes: data.notes
-            }]).select();
+            // Insert parent quotation via IPC proxy
+            const qtnRes = await window.electron.invoke('supabase:query', {
+                table: 'omnis_quotations',
+                method: 'insert',
+                data: [{
+                    name: qtnId,
+                    customer_name: data.customer,
+                    contact_person: data.contact_person,
+                    transaction_date: data.transaction_date || new Date().toISOString().split('T')[0],
+                    company: data.company,
+                    currency: data.currency,
+                    sales_person: data.sales_person,
+                    bank_account: data.bank_account,
+                    pfi_checked: data.pfi_checked,
+                    delivery: data.delivery,
+                    notes: data.notes
+                }]
+            });
             
-            if (qtnRes.error) throw qtnRes.error;
+            if (!qtnRes.ok) throw new Error(qtnRes.error || "Failed to create quotation");
             
             const dbQtnId = qtnRes.data[0].id;
             
-            // Insert children
+            // Insert line items via IPC proxy
             const itemPayloads = data.items.map(i => ({
                 quotation_id: dbQtnId,
                 item_code: i.item_code,
@@ -413,8 +498,12 @@
                 amount: i.qty * i.rate
             }));
             
-            const itemRes = await window.supabase.from("omnis_quotation_items").insert(itemPayloads);
-            if (itemRes.error) throw itemRes.error;
+            const itemRes = await window.electron.invoke('supabase:query', {
+                table: 'omnis_quotation_items',
+                method: 'insert',
+                data: itemPayloads
+            });
+            if (!itemRes.ok) throw new Error(itemRes.error || "Failed to add quotation items");
             
             const payload = { ok: true, name: qtnId };
 
@@ -435,7 +524,8 @@
                 }
 
                 document.getElementById("qq-customer").value = "";
-                document.getElementById("qq-title").value = "";
+                const qqTitle = document.getElementById("qq-title");
+                if (qqTitle) qqTitle.value = "";
                 document.getElementById("qq-item").value = "";
                 if (document.getElementById("qq-salesperson")) {
                     document.getElementById("qq-salesperson").value = "";
@@ -450,6 +540,7 @@
         } finally {
             if (btn) btn.textContent = originalText;
         }
+
     }
 
     // --- HELPER: Suggestions ---
@@ -465,14 +556,14 @@
                 table = "customers";
                 searchFields = "customer_name";
             } else if (methodName === "search_item_for_omnis") {
-                table = "stock_inventory";
-                searchFields = "model,brand";
+                table = "products";
+                searchFields = "item_name,item_code,brand_name";
             }
             
             if (table) {
                 // Adapt the onSelect to match the old expected signature (val, item)
                 const adaptedOnSelect = onSelect ? (mappedItem) => {
-                    // setupSupabaseSuggestions returns a mappedItem with value, description, etc.
+                    // setupSupabaseSuggestions returns a mappedItem with value, description, itemDescription, etc.
                     // We pass it to the original onSelect
                     onSelect(mappedItem.value, mappedItem);
                 } : null;
@@ -531,7 +622,8 @@
                 customer: { custom_primary_contact_name: qtnData.contact_person },
                 items: itemsRes.data.map(i => ({
                     item_code: i.item_code,
-                    item_name: i.item_code,
+                    item_name: i.item_name || i.item_code,
+                    description: i.description || '',
                     qty: i.qty,
                     rate: i.rate,
                     amount: i.amount
@@ -590,9 +682,10 @@
             return d.toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' });
         };
 
-        const isZAR = qtn.currency === 'ZAR' || (items[0] && items[0].rate > 100000); // Hack to detect ZAR
-        const currSym = isZAR ? 'R' : '$';
-        const currName = isZAR ? 'ZAR' : 'USD';
+        const currCode = qtn.currency || 'USD';
+        const currSymMap = { USD: '$', ZAR: 'R', BWP: 'P', ZMW: 'ZK', MZN: 'MT', EUR: '€', GBP: '£' };
+        const currSym = currSymMap[currCode] || '$';
+        const currName = currCode;
 
         let itemsHtml = "";
         items.forEach(row => {

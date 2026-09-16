@@ -1053,6 +1053,52 @@ ipcMain.handle('supabase:updateUserAccess', async (event, { user_id, is_admin, s
   }
 });
 
+// 🔐 Admin: Send password reset email — routed through Edge Function
+ipcMain.handle('supabase:resetUserPassword', async (event, { email }) => {
+  try {
+    const { data: sessionData } = await supabase.auth.getSession();
+    if (!sessionData?.session?.access_token) {
+      return { ok: false, error: 'Not authenticated' };
+    }
+
+    const { data: result, error } = await supabase.functions.invoke('admin-operations', {
+      body: { action: 'resetPassword', email },
+    });
+
+    if (error) {
+      const message = error?.context?.error || error?.message || 'Failed to send reset email';
+      return { ok: false, error: message };
+    }
+
+    return result || { ok: false, error: 'No response from server' };
+  } catch(e) {
+    return { ok: false, error: e.message };
+  }
+});
+
+// 🔐 Admin: Set password directly (super-admin only) — routed through Edge Function
+ipcMain.handle('supabase:setPasswordDirect', async (event, { userId, password }) => {
+  try {
+    const { data: sessionData } = await supabase.auth.getSession();
+    if (!sessionData?.session?.access_token) {
+      return { ok: false, error: 'Not authenticated' };
+    }
+
+    const { data: result, error } = await supabase.functions.invoke('admin-operations', {
+      body: { action: 'setPasswordDirect', userId, password },
+    });
+
+    if (error) {
+      const message = error?.context?.error || error?.message || 'Failed to set password';
+      return { ok: false, error: message };
+    }
+
+    return result || { ok: false, error: 'No response from server' };
+  } catch(e) {
+    return { ok: false, error: e.message };
+  }
+});
+
 ipcMain.handle('supabase:signOut', async () => {
   try {
     const { error } = await supabase.auth.signOut();
@@ -1495,27 +1541,89 @@ ipcMain.handle('print:openFile', async (event, filePath) => {
   }
 });
 
-// ✅ AI Image Generation Bridge
+// ✅ AI Image Generation Bridge (DALL-E 3 via ai-proxy Edge Function)
 if (ipcMain.removeHandler) ipcMain.removeHandler('generate-ai-image');
-ipcMain.handle('generate-ai-image', async (event, { prompt, name }) => {
+ipcMain.handle('generate-ai-image', async (event, { prompt, name, brand, category, description }) => {
   try {
-    console.log(`[AI Gen] Triggering image generation for: ${name}`);
-    
-    // Using a free, no-auth AI Image Generation API (Pollinations.ai) for prototyping
-    // This will dynamically generate a unique image based on the product name/prompt
-    const encodedPrompt = encodeURIComponent(prompt || name);
-    const imageUrl = `https://image.pollinations.ai/prompt/${encodedPrompt}?width=800&height=800&nologo=true`;
+    console.log(`[AI Gen] Generating DALL-E image for: ${name}`);
 
-    return { 
-      ok: true, 
-      url: imageUrl,
-      message: "AI Generation Successful" 
+    if (!supabase) {
+      return { ok: false, error: 'Supabase client not initialized' };
+    }
+
+    // 1. Get current session for auth
+    const { data: { session } } = await supabase.auth.getSession();
+    if (!session?.access_token) {
+      return { ok: false, error: 'Not authenticated. Please log in first.' };
+    }
+
+    // 2. Call the ai-proxy edge function with generate_product_image action
+    const edgeFnUrl = `${SUPABASE_URL}/functions/v1/ai-proxy`;
+    const response = await axios.post(edgeFnUrl, {
+      action: 'generate_product_image',
+      name: name || '',
+      brand: brand || '',
+      category: category || '',
+      description: description || '',
+    }, {
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': `Bearer ${session.access_token}`,
+        'apikey': SUPABASE_ANON_KEY,
+      },
+      timeout: 60000, // 60s — DALL-E can take 15-30s
+      maxContentLength: 50 * 1024 * 1024, // 50MB for base64 image
+    });
+
+    const body = response.data;
+    if (!body.ok || !body.result?.b64_json) {
+      throw new Error(body.error || 'No image data returned from AI');
+    }
+
+    const source = body.result.source || 'unknown';
+    const contentType = body.result.content_type || 'image/png';
+    const ext = contentType.includes('jpeg') || contentType.includes('jpg') ? 'jpg' : 'png';
+    console.log(`[AI Gen] Image received from ${source} (${Math.round(body.result.b64_json.length / 1024)}KB). Uploading to storage...`);
+
+    // 3. Upload the base64 image to Supabase Storage
+    const safeName = (name || 'product').replace(/[^a-z0-9]/gi, '_').toLowerCase();
+    const fileName = `ai_${safeName}_${Date.now()}.${ext}`;
+    const storagePath = `products/images/${fileName}`;
+    const buffer = Buffer.from(body.result.b64_json, 'base64');
+
+    const { data: uploadData, error: uploadError } = await supabase.storage
+      .from('product-assets')
+      .upload(storagePath, buffer, {
+        contentType: contentType,
+        upsert: true,
+      });
+
+    if (uploadError) {
+      console.error('[AI Gen] Storage upload error:', uploadError);
+      throw new Error(`Image upload failed: ${uploadError.message}`);
+    }
+
+    // 4. Get the permanent public URL
+    const { data: urlData } = supabase.storage
+      .from('product-assets')
+      .getPublicUrl(storagePath);
+
+    const publicUrl = urlData.publicUrl;
+    console.log(`[AI Gen] Image uploaded (source: ${source}): ${publicUrl}`);
+
+    return {
+      ok: true,
+      url: publicUrl,
+      revised_prompt: body.result.revised_prompt || '',
+      message: 'AI image generated and uploaded successfully',
     };
   } catch (error) {
-    console.error('[AI Gen Error]:', error);
-    return { ok: false, error: error.message };
+    console.error('[AI Gen Error]:', error?.response?.data || error.message || error);
+    const errMsg = error?.response?.data?.error || error.message || 'Unknown error';
+    return { ok: false, error: errMsg };
   }
 });
+
 
 // ------------------------------------------------------------
 //  Electron window setup

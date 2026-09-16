@@ -571,12 +571,18 @@ export default function AfterSalesScreen() {
             <View style={{ flex: 1, marginLeft: 12 }}>
               <View style={styles.cardTitleRow}>
                 <Text style={styles.cardCompany} numberOfLines={1}>{item.company || 'Unknown Company'}</Text>
-                {item.email_sent && (
-                  <View style={{ backgroundColor: '#dcfce7', paddingHorizontal: 6, paddingVertical: 2, borderRadius: 4, marginLeft: 6 }}>
+                {item.email_sent ? (
+                  <View style={{ flexDirection: 'row', alignItems: 'center', backgroundColor: '#dcfce7', paddingHorizontal: 6, paddingVertical: 2, borderRadius: 4, marginLeft: 6, gap: 3 }}>
+                    <Ionicons name="checkmark-circle" size={10} color="#15803d" />
                     <Text style={{ color: '#15803d', fontSize: 9, fontWeight: 'bold' }}>Email Sent</Text>
                   </View>
+                ) : (
+                  <View style={{ flexDirection: 'row', alignItems: 'center', backgroundColor: '#fef3c7', paddingHorizontal: 6, paddingVertical: 2, borderRadius: 4, marginLeft: 6, gap: 3 }}>
+                    <Ionicons name="time-outline" size={10} color="#92400e" />
+                    <Text style={{ color: '#92400e', fontSize: 9, fontWeight: 'bold' }}>Email Pending</Text>
+                  </View>
                 )}
-                <View style={[styles.statusBadge, { backgroundColor: sc.bg, borderColor: sc.border, marginLeft: item.email_sent ? 6 : 0 }]}>
+                <View style={[styles.statusBadge, { backgroundColor: sc.bg, borderColor: sc.border, marginLeft: 6 }]}>
                   <Text style={[styles.statusText, { color: sc.text }]}>{item.status || 'Pending'}</Text>
                 </View>
               </View>
@@ -628,7 +634,7 @@ export default function AfterSalesScreen() {
               <View style={styles.actionRow}>
                 <TouchableOpacity style={styles.actionBtn} onPress={() => handleSendEmail(item)}>
                   <Ionicons name="mail-outline" size={14} color="#3b82f6" />
-                  <Text style={[styles.actionBtnText, { color: '#3b82f6' }]}>Email</Text>
+                  <Text style={[styles.actionBtnText, { color: '#3b82f6' }]}>{item.email_sent ? 'Resend Email' : 'Send Email'}</Text>
                 </TouchableOpacity>
                 <TouchableOpacity style={styles.actionBtn} onPress={() => openEdit(item)}>
                   <Ionicons name="create-outline" size={14} color="#8b5cf6" />

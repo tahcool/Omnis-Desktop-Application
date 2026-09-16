@@ -120,6 +120,8 @@ CREATE TABLE IF NOT EXISTS products (
     rate NUMERIC DEFAULT 0,
     image_url TEXT,
     spec_sheet_url TEXT,
+    description TEXT,
+    warranty TEXT,
     options_offered TEXT,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP

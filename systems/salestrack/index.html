@@ -3726,8 +3726,8 @@
 
     /* ✅ NEW: tiny table button */
     .btn-mini {
-      padding: 7px 10px;
-      font-size: 11px;
+      padding: 10px 18px;
+      font-size: 13px;
       font-weight: 900;
     }
 
@@ -5584,8 +5584,8 @@
 
     .q-quick-form {
       display: grid;
-      grid-template-columns: 1fr 1fr 1fr auto;
-      grid-template-rows: auto auto;
+      grid-template-columns: 1fr 1fr 1fr 120px 140px 120px auto;
+      grid-template-rows: auto;
       gap: 16px;
       align-items: flex-end;
     }
@@ -5641,8 +5641,8 @@
       transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
       box-shadow: 0 4px 15px rgba(139, 34, 25, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.2);
       text-shadow: 0 1px 2px rgba(0,0,0,0.3);
-      grid-column: 4;
-      grid-row: 1 / span 2;
+      grid-column: -1;
+      grid-row: 1;
       height: 100%;
       position: relative;
       overflow: hidden;
@@ -7229,13 +7229,7 @@
                   </button>
               </div>
 
-              <!-- AI INSIGHTS BAR -->
-              <div id="qq-intelligence-bar" style="display: none; background: #fff1f2; border-left: 4px solid var(--accent-maroon); border-radius: 8px; padding: 12px 16px; font-size: 13px; color: #475569; line-height: 1.4;">
-                  <div style="display: flex; gap: 12px; align-items: flex-start;">
-                      <i class="fas fa-robot" style="color: var(--accent-maroon); margin-top: 2px; font-size: 14px;"></i>
-                      <div id="qq-intelligence-content" style="flex: 1;"></div>
-                  </div>
-              </div>
+
 
               <div class="q-quick-form">
                 <div class="q-quick-input-group">
@@ -7252,11 +7246,7 @@
                     <div id="qq-salesperson-suggest" class="suggest-list hidden"></div>
                   </div>
                 </div>
-                <div class="q-quick-input-group">
-                  <label class="q-quick-label">Quotation Title</label>
-                  <input type="text" id="qq-title" class="q-quick-input"
-                    placeholder="e.g. Hitachi ZX130 - Customer Name" />
-                </div>
+
                 <div class="q-quick-input-group">
                   <label class="q-quick-label">Initial Item (Optional)</label>
                   <div class="suggest-container">
@@ -7267,6 +7257,18 @@
                 <div class="q-quick-input-group">
                   <label class="q-quick-label">Price (Optional)</label>
                   <input type="number" id="qq-price" class="q-quick-input" placeholder="0.00" min="0" step="0.01" />
+                </div>
+                <div class="q-quick-input-group">
+                  <label class="q-quick-label">Currency</label>
+                  <select id="qq-currency" class="q-quick-input" style="appearance:auto; cursor:pointer;">
+                    <option value="USD" selected>USD — US Dollar</option>
+                    <option value="ZAR">ZAR — South African Rand</option>
+                    <option value="BWP">BWP — Botswana Pula</option>
+                    <option value="ZMW">ZMW — Zambian Kwacha</option>
+                    <option value="MZN">MZN — Mozambican Metical</option>
+                    <option value="EUR">EUR — Euro</option>
+                    <option value="GBP">GBP — British Pound</option>
+                  </select>
                 </div>
                 <div class="q-quick-input-group">
                   <label class="q-quick-label">Lead Time</label>
@@ -8913,6 +8915,10 @@
             style="padding:0 20px; border-radius:10px; font-weight:800; height: 42px; font-size: 12px; text-transform:uppercase; letter-spacing:0.02em; cursor:pointer;">
             <i class="fas fa-sync-alt"></i>
           </button>
+          <button id="bulk-ai-gen-btn" onclick="window.bulkGenerateMissingImages()" 
+            style="padding:0 16px; border-radius:10px; font-weight:800; height: 42px; font-size: 10px; text-transform:uppercase; letter-spacing:0.02em; cursor:pointer; background:linear-gradient(135deg, #7c3aed, #6d28d9); color:white; border:none; display:flex; align-items:center; gap:6px; white-space:nowrap;">
+            <i class="fas fa-robot"></i> <span id="bulk-ai-gen-label">AI Images</span>
+          </button>
         </div>
       </div>
 
@@ -9287,22 +9293,22 @@
           </div>
 
           <button id="ol-str-report-btn" class="btn-primary" onclick="if(window.openSTRReport) window.openSTRReport();"
-            style="padding:0 20px; border-radius:10px; font-weight:800; height: 42px; font-size: 12px; text-transform:uppercase; letter-spacing:0.02em; margin-right:8px; background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%); color: #fff; border:none; box-shadow: 0 4px 12px rgba(37,99,235,0.2);">
-            <i class="fas fa-chart-line" style="margin-right:8px;"></i> STR Report
+            style="padding:0 100px; border-radius:16px; font-weight:800; height: 170px; font-size: 32px; text-transform:uppercase; letter-spacing:0.02em; margin-right:10px; background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%); color: #fff; border:none; box-shadow: 0 4px 12px rgba(37,99,235,0.2);">
+            <i class="fas fa-chart-line" style="margin-right:10px; font-size:32px;"></i> STR Report
           </button>
           
           <button id="ol-add-tracking-btn" class="btn-primary" onclick="if(window.openAddTrackingModal) window.openAddTrackingModal();"
-            style="padding:0 20px; border-radius:10px; font-weight:800; height: 42px; font-size: 12px; text-transform:uppercase; letter-spacing:0.02em; margin-right:8px; background:#800000; color:#fff; border:none; box-shadow: 0 4px 12px rgba(128,0,0,0.2);">
-            <i class="fas fa-plus" style="margin-right:8px;"></i> Add Tracking
+            style="padding:0 100px; border-radius:16px; font-weight:800; height: 170px; font-size: 32px; text-transform:uppercase; letter-spacing:0.02em; margin-right:10px; background:#800000; color:#fff; border:none; box-shadow: 0 4px 12px rgba(128,0,0,0.2);">
+            <i class="fas fa-plus" style="margin-right:10px; font-size:32px;"></i> Add Tracking
           </button>
           <button id="ol-print-report-btn" class="btn-secondary" onclick="if(window.printMainOrdersReport) window.printMainOrdersReport();"
-            style="padding:0 20px; border-radius:10px; font-weight:800; height: 42px; font-size: 12px; text-transform:uppercase; letter-spacing:0.02em; margin-right:8px; background:#f8fafc; color:#334155; border:1px solid #cbd5e1;">
-            <i class="fas fa-print" style="margin-right:8px;"></i> Print
+            style="padding:0 100px; border-radius:16px; font-weight:800; height: 170px; font-size: 32px; text-transform:uppercase; letter-spacing:0.02em; margin-right:10px; background:#f8fafc; color:#334155; border:1px solid #cbd5e1;">
+            <i class="fas fa-print" style="margin-right:10px; font-size:32px;"></i> Print
           </button>
 
           <button id="ol-refresh-btn" class="btn-secondary"
-            style="padding:0 20px; border-radius:10px; font-weight:800; height: 42px; font-size: 12px; text-transform:uppercase; letter-spacing:0.02em;">
-            <i class="fas fa-sync-alt" style="margin-right:8px;"></i> Refresh
+            style="padding:0 100px; border-radius:16px; font-weight:800; height: 170px; font-size: 32px; text-transform:uppercase; letter-spacing:0.02em;">
+            <i class="fas fa-sync-alt" style="margin-right:10px; font-size:32px;"></i> Refresh
           </button>
         </div>
       </div>
@@ -11561,6 +11567,29 @@
                 <input type="text" id="qtn-bank" class="form-input" placeholder="Bank Account Link...">
               </div>
 
+              <div class="form-row">
+                <label class="form-label">Currency</label>
+                <div style="display:flex; gap:8px; align-items:center;">
+                  <select id="qtn-currency" class="form-input" style="flex:1;" onchange="window.onQtnCurrencyChange()">
+                    <option value="USD">USD — US Dollar</option>
+                    <option value="ZAR">ZAR — South African Rand</option>
+                    <option value="BWP">BWP — Botswana Pula</option>
+                    <option value="ZMW">ZMW — Zambian Kwacha</option>
+                    <option value="MZN">MZN — Mozambican Metical</option>
+                    <option value="EUR">EUR — Euro</option>
+                    <option value="GBP">GBP — British Pound</option>
+                  </select>
+                  <button type="button" id="qtn-fetch-rate-btn" onclick="window.fetchExchangeRate()" style="padding:6px 12px; background:#3b82f6; color:white; border:none; border-radius:6px; font-size:11px; font-weight:700; cursor:pointer; white-space:nowrap; box-shadow:0 2px 4px rgba(59,130,246,0.3);">
+                    <i class="fas fa-sync-alt"></i> Rate
+                  </button>
+                </div>
+                <div id="qtn-rate-info" style="font-size:10px; color:#6b7280; margin-top:4px; display:none;">
+                  <i class="fas fa-chart-line" style="color:#10b981;"></i>
+                  <span id="qtn-rate-display">1 USD = 1.00 USD</span>
+                  <span id="qtn-rate-source" style="margin-left:4px; color:#94a3b8;">• Frankfurter ECB</span>
+                </div>
+              </div>
+
               <div class="form-row" style="margin-top:10px;">
                 <div style="display:flex; align-items:center;">
                   <input type="checkbox" id="qtn-pfi" style="width:16px; height:16px; margin-right:8px; accent-color:var(--omnis-red);">
@@ -11592,11 +11621,13 @@
             <table id="qtn-items-table" style="width:100%; font-size:13px; border-collapse:collapse;">
               <thead>
                 <tr style="text-align:left; color:#4b5563; font-weight:700; border-bottom:2px solid #e5e7eb; text-transform:uppercase; font-size:11px;">
-                  <th style="padding:10px 8px;">Code</th>
-                  <th style="padding:10px 8px;">Qty</th>
-                  <th style="padding:10px 8px;">Rate</th>
-                  <th style="padding:10px 8px;">Amount</th>
-                  <th style="padding:10px 8px; width:40px;"></th>
+                  <th style="padding:10px 8px; width:22%;">Code</th>
+                  <th style="padding:10px 8px; width:20%;">Item Name</th>
+                  <th style="padding:10px 8px; width:25%;">Description</th>
+                  <th style="padding:10px 8px; width:7%;">Qty</th>
+                  <th style="padding:10px 8px; width:11%;">Rate</th>
+                  <th style="padding:10px 8px; width:11%;">Amount</th>
+                  <th style="padding:10px 8px; width:4%;"></th>
                 </tr>
               </thead>
               <tbody id="qtn-items-body"></tbody>
@@ -11614,14 +11645,14 @@
                 readonly value="0">
             </div>
             <div style="text-align:right;">
-              <label
+              <label id="qtn-total-label"
                 style="display:block; font-size:11px; color:#6b7280; font-weight:700; text-transform:uppercase;">Total
                 (USD)</label>
               <input type="text" id="qtn-total-usd"
                 style="background:transparent; border:none; font-weight:800; font-size:20px; text-align:right; width:100%; outline:none;"
                 readonly value="$ 0.00">
-              <div style="font-size:12px; color:#6b7280; margin-top:4px;">ZAR: <input id="qtn-total-zar"
-                  style="background:transparent; border:none; width:80px; text-align:right;" readonly value="R 0.00">
+              <div id="qtn-converted-row" style="font-size:12px; color:#6b7280; margin-top:4px;">ZAR: <input id="qtn-total-converted"
+                  style="background:transparent; border:none; width:120px; text-align:right;" readonly value="R 0.00">
               </div>
             </div>
           </div>
@@ -13308,7 +13339,8 @@
 
         const btn = document.createElement("button");
         btn.type = "button";
-        btn.className = "btn-secondary btn-mini order-update-btn";
+        btn.className = "btn-secondary order-update-btn";
+        btn.style.cssText = "padding:18px 48px; font-size:20px; font-weight:600; border-radius:10px; cursor:pointer; min-width:140px;";
         btn.textContent = "Update";
         btn.dataset.fmb = fmb;
         btn.dataset.customer = customer;
@@ -14402,7 +14434,7 @@
             omnisLog("Quick Quote Created: " + newDoc.name);
             custInput.value = "";
             if (spInput) spInput.value = "";
-            titleInput.value = "";
+            if (titleInput) titleInput.value = "";
             if (itemInput) itemInput.value = "";
             if (priceInput) priceInput.value = "";
             if (leadTimeInput) leadTimeInput.value = "TBD";
@@ -16778,6 +16810,28 @@
                     if (res && res.ok) results = res.data;
                 }
 
+                // 3. IPC Fallback: If no results yet AND electron IPC is available,
+                //    query Supabase through the main-process proxy
+                if ((!results || results.length === 0) && window.electron && typeof window.electron.invoke === 'function') {
+                    try {
+                        const orFilter = searchFields.split(',').map(f => `${f.trim()}.ilike.%${val}%`).join(',');
+                        const ipcRes = await window.electron.invoke('supabase:query', {
+                            table: table,
+                            method: 'select',
+                            params: { columns: '*', or: orFilter, limit: 15 }
+                        });
+                        if (ipcRes && ipcRes.ok && ipcRes.data && ipcRes.data.length > 0) {
+                            results = ipcRes.data;
+                            // Backfill local cache for faster future searches
+                            if (window.cacheAPI && typeof window.cacheAPI.search === 'function') {
+                                window.electron.invoke('cache:set', { table: table, data: results }).catch(() => {});
+                            }
+                        }
+                    } catch (ipcErr) {
+                        console.warn('[Suggest] IPC fallback search failed:', ipcErr);
+                    }
+                }
+
                 list.innerHTML = '';
                 if (results && results.length > 0) {
                     list.innerHTML = results.map(item => {
@@ -16807,6 +16861,7 @@
                             const mappedItem = {
                                 value: item.model || item.item_code || item.name || item.customer_name || item.frappe_id,
                                 description: item.item_name || item.model || item.name || item.item_code || item.customer_name,
+                                itemDescription: item.description || "",
                                 customer_name: item.customer_name || "",
                                 brand: item.brand || item.brand_name || "",
                                 details: item.item_code || item.company || "",
@@ -20429,12 +20484,28 @@ thead th { padding:11px 12px; font-size:10px; font-weight:800; color:#fff; text-
         grid.innerHTML = data.map(p => {
             const img = p.image_url || 'https://placehold.co/400x300/f8fafc/94a3b8?text=No+Image';
             const rate = p.rate ? new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' }).format(p.rate) : 'POA';
+            const safeId = (p.id || '').replace(/'/g, "\\'");
+            const safeName = (p.item_name || '').replace(/'/g, "\\'");
+            const safeBrand = (p.brand_name || '').replace(/'/g, "\\'");
+            const safeFrappe = (p.frappe_id || '').replace(/'/g, "\\'");
+            
+            // Build asset badges
+            const hasSpec = !!p.spec_sheet_url;
+            const hasWarranty = !!p.warranty;
+            const hasDesc = !!p.description;
+            let badges = '';
+            if (hasSpec) badges += `<span onclick="event.stopPropagation(); window.open('${p.spec_sheet_url}', '_blank')" style="font-size:9px; font-weight:700; color:#dc2626; background:#fef2f2; padding:3px 6px; border-radius:4px; cursor:pointer; display:inline-flex; align-items:center; gap:3px;" title="View Spec Sheet PDF"><i class="fas fa-file-pdf"></i> SPEC</span>`;
+            if (hasWarranty) badges += `<span style="font-size:9px; font-weight:700; color:#059669; background:#ecfdf5; padding:3px 6px; border-radius:4px; display:inline-flex; align-items:center; gap:3px;" title="${(p.warranty || '').replace(/"/g, '&quot;')}"><i class="fas fa-shield-alt"></i> WTY</span>`;
+            if (hasDesc) badges += `<span style="font-size:9px; font-weight:700; color:#2563eb; background:#eff6ff; padding:3px 6px; border-radius:4px; display:inline-flex; align-items:center; gap:3px;"><i class="fas fa-align-left"></i> INFO</span>`;
+            
+            // Truncated description preview
+            const descPreview = p.description ? (p.description.length > 80 ? p.description.substring(0, 80) + '…' : p.description) : '';
             
             return `
-                <div class="product-card" onclick="window.editProduct('${p.id}')" style="background:white; border-radius:16px; border:1px solid #e2e8f0; overflow:hidden; transition:all 0.3s; display:flex; flex-direction:column; position:relative; box-shadow:0 4px 6px -1px rgba(0,0,0,0.05); cursor:pointer;">
+                <div class="product-card" onclick="window.editProduct('${safeId}')" style="background:white; border-radius:16px; border:1px solid #e2e8f0; overflow:hidden; transition:all 0.3s; display:flex; flex-direction:column; position:relative; box-shadow:0 4px 6px -1px rgba(0,0,0,0.05); cursor:pointer;">
                     <div style="position:absolute; top:12px; right:12px; display:flex; gap:6px; z-index:5;">
-                        <button onclick="event.stopPropagation(); window.openProductPricing('${p.id}', '${p.item_name}', '${p.brand_name}', '${p.frappe_id}')" style="background:rgba(255,255,255,0.9); border:none; width:32px; height:32px; border-radius:8px; color:#10b981; cursor:pointer; box-shadow:0 4px 6px rgba(0,0,0,0.1);" title="Pricing Calculator"><i class="fas fa-dollar-sign"></i></button>
-                        <button onclick="event.stopPropagation(); window.deleteProductFromSupabase('${p.id}')" style="background:rgba(255,255,255,0.9); border:none; width:32px; height:32px; border-radius:8px; color:#ef4444; cursor:pointer; box-shadow:0 4px 6px rgba(0,0,0,0.1);"><i class="fas fa-trash-alt"></i></button>
+                        <button onclick="event.stopPropagation(); window.openProductPricing('${safeId}', '${safeName}', '${safeBrand}', '${safeFrappe}')" style="background:rgba(255,255,255,0.9); border:none; width:32px; height:32px; border-radius:8px; color:#10b981; cursor:pointer; box-shadow:0 4px 6px rgba(0,0,0,0.1);" title="Pricing Calculator"><i class="fas fa-dollar-sign"></i></button>
+                        <button onclick="event.stopPropagation(); window.deleteProductFromSupabase('${safeId}')" style="background:rgba(255,255,255,0.9); border:none; width:32px; height:32px; border-radius:8px; color:#ef4444; cursor:pointer; box-shadow:0 4px 6px rgba(0,0,0,0.1);"><i class="fas fa-trash-alt"></i></button>
                     </div>
                     <div style="height:180px; background:#f8fafc; display:flex; align-items:center; justify-content:center; overflow:hidden; border-bottom:1px solid #f1f5f9;">
                         <img src="${img}" style="width:100%; height:100%; object-fit:contain; padding:20px;" onerror="this.src='https://placehold.co/400x300/f8fafc/94a3b8?text=Image+Error'">
@@ -20444,7 +20515,9 @@ thead th { padding:11px 12px; font-size:10px; font-weight:800; color:#fff; text-
                             <div style="font-size:10px; font-weight:800; color:#ef4444; text-transform:uppercase; letter-spacing:0.05em;">${p.brand_name || 'Generic'}</div>
                             <div style="font-size:14px; font-weight:800; color:#0f172a;">${rate}</div>
                         </div>
-                        <h3 style="font-size:15px; font-weight:700; color:#1e293b; margin:0 0 12px 0; line-height:1.4;">${p.item_name}</h3>
+                        <h3 style="font-size:15px; font-weight:700; color:#1e293b; margin:0 0 6px 0; line-height:1.4;">${p.item_name}</h3>
+                        ${descPreview ? `<div style="font-size:11px; color:#64748b; line-height:1.4; margin-bottom:8px; overflow:hidden;">${descPreview}</div>` : ''}
+                        ${badges ? `<div style="display:flex; flex-wrap:wrap; gap:4px; margin-bottom:8px;">${badges}</div>` : ''}
                         <div style="margin-top:auto; padding-top:12px; border-top:1px dashed #e2e8f0; display:flex; justify-content:space-between; align-items:center;">
                             <span style="font-size:11px; font-weight:600; color:#64748b; background:#f1f5f9; padding:4px 8px; border-radius:6px;">${p.item_code}</span>
                             <span style="font-size:11px; font-weight:600; color:#64748b;">${p.item_group_name || 'Category'}</span>
@@ -20470,6 +20543,7 @@ thead th { padding:11px 12px; font-size:10px; font-weight:800; color:#fff; text-
         window._editingProductId = null;
         document.getElementById('product-form-overlay').classList.remove('hidden');
         document.getElementById('prod-modal-title').innerText = "Add New Product";
+        initProductCatalogSuggestions();
         
         // Reset fields
         document.getElementById('prod-code').value = "";
@@ -20480,6 +20554,12 @@ thead th { padding:11px 12px; font-size:10px; font-weight:800; color:#fff; text-
         document.getElementById('prod-image').value = "";
         document.getElementById('prod-spec-url').value = "";
         document.getElementById('prod-options').value = "";
+        document.getElementById('prod-description').value = "";
+        document.getElementById('prod-warranty').value = "";
+
+        // Hide View Spec Sheet button for new products
+        const specViewRow = document.getElementById('prod-spec-view-row');
+        if (specViewRow) specViewRow.style.display = 'none';
         
         // Reset buttons
         const imgBtn = document.getElementById('prod-image-btn');
@@ -20506,6 +20586,7 @@ thead th { padding:11px 12px; font-size:10px; font-weight:800; color:#fff; text-
         window._editingProductId = id;
         document.getElementById('product-form-overlay').classList.remove('hidden');
         document.getElementById('prod-modal-title').innerText = "Edit Product";
+        initProductCatalogSuggestions();
 
         document.getElementById('prod-code').value = p.item_code || "";
         document.getElementById('prod-name').value = p.item_name || "";
@@ -20515,6 +20596,8 @@ thead th { padding:11px 12px; font-size:10px; font-weight:800; color:#fff; text-
         document.getElementById('prod-image').value = p.image_url || "";
         document.getElementById('prod-spec-url').value = p.spec_sheet_url || "";
         document.getElementById('prod-options').value = p.options_offered || "";
+        document.getElementById('prod-description').value = p.description || "";
+        document.getElementById('prod-warranty').value = p.warranty || "";
 
         // Update button states
         const imgBtn = document.getElementById('prod-image-btn');
@@ -20528,6 +20611,19 @@ thead th { padding:11px 12px; font-size:10px; font-weight:800; color:#fff; text-
             specBtn.innerHTML = '<i class="fas fa-check"></i> PDF Set';
             specBtn.style.borderColor = '#3b82f6';
             specBtn.style.color = '#3b82f6';
+        }
+
+        // Show/hide the View Spec Sheet button
+        const specViewRow = document.getElementById('prod-spec-view-row');
+        const specViewLink = document.getElementById('prod-spec-view-link');
+        if (specViewRow && specViewLink) {
+            if (p.spec_sheet_url) {
+                specViewRow.style.display = 'block';
+                specViewLink.href = p.spec_sheet_url;
+            } else {
+                specViewRow.style.display = 'none';
+                specViewLink.href = '#';
+            }
         }
     };
 
@@ -20550,6 +20646,8 @@ thead th { padding:11px 12px; font-size:10px; font-weight:800; color:#fff; text-
             image_url: document.getElementById('prod-image').value,
             spec_sheet_url: document.getElementById('prod-spec-url').value,
             options_offered: document.getElementById('prod-options').value,
+            description: document.getElementById('prod-description').value,
+            warranty: document.getElementById('prod-warranty').value,
             uom: document.getElementById('prod-uom').value,
             updated_at: new Date().toISOString()
         };
@@ -20575,6 +20673,38 @@ thead th { padding:11px 12px; font-size:10px; font-weight:800; color:#fff; text-
             window.loadProductsFromSupabase(); // Refresh local list
             
             if (window.omnisLog) window.omnisLog(`Product ${isUpdate ? 'updated' : 'saved'} to local cache. Syncing...`, "success");
+
+            // 3. Auto-generate AI image if no image was provided
+            if (!payload.image_url && payload.item_name && window.electron && typeof window.electron.invoke === 'function') {
+                // Run in background — don't block the save flow
+                setTimeout(async () => {
+                    try {
+                        if (window.omnisLog) window.omnisLog(`Auto-generating AI image for "${payload.item_name}"...`, "info");
+                        const res = await window.electron.invoke('generate-ai-image', {
+                            name: payload.item_name,
+                            brand: payload.brand_name || '',
+                            category: payload.item_group_name || '',
+                            description: payload.description || ''
+                        });
+                        if (res && res.ok) {
+                            // Update the product with the generated image
+                            await window.syncAPI.queue('products', payload.id, 'update', { image_url: res.url });
+                            if (window._fullCatalog) {
+                                const idx = window._fullCatalog.findIndex(p => p.id === payload.id);
+                                if (idx >= 0) {
+                                    window._fullCatalog[idx].image_url = res.url;
+                                    renderProductsGrid(window._fullCatalog);
+                                }
+                            }
+                            if (window.omnisLog) window.omnisLog(`AI image auto-generated for "${payload.item_name}"`, "success");
+                        } else {
+                            console.warn('[Auto AI Gen] Failed:', res?.error);
+                        }
+                    } catch (aiErr) {
+                        console.warn('[Auto AI Gen] Error:', aiErr);
+                    }
+                }, 500);
+            }
         } catch(e) {
             console.error("Save Error:", e);
             alert("Error saving: " + e.message);
@@ -20642,10 +20772,11 @@ thead th { padding:11px 12px; font-size:10px; font-weight:800; color:#fff; text-
         }
     };
 
-    window.generateAIProductImage = async function() {
+    window.generateAIProductImage = async function(productId) {
         const name = document.getElementById('prod-name').value;
         const brand = document.getElementById('prod-brand').value;
         const group = document.getElementById('prod-group').value;
+        const description = document.getElementById('prod-description').value;
 
         if (!name) {
             alert("Please enter a product name first!");
@@ -20655,19 +20786,17 @@ thead th { padding:11px 12px; font-size:10px; font-weight:800; color:#fff; text-
         const btn = document.getElementById('prod-ai-gen-btn');
         const originalHtml = btn.innerHTML;
         btn.disabled = true;
-        btn.innerHTML = `<i class="fas fa-robot fa-spin"></i> Generating...`;
+        btn.innerHTML = `<i class="fas fa-robot fa-spin"></i> Generating (~15s)...`;
 
         try {
-            // Construct the prompt for the AI agent
-            const prompt = `Professional studio product photography of ${brand ? brand + ' ' : ''}${name} ${group ? '(' + group + ')' : ''}, centered, full view, on a pure white background, high resolution, industrial equipment style.`;
-            
-            if (window.omnisLog) window.omnisLog(`AI Agent: Generating image for "${name}"...`, "info");
+            if (window.omnisLog) window.omnisLog(`AI Agent: Generating DALL-E image for "${name}"...`, "info");
 
-            // We call the main process to trigger the AI generation tool
-            // The main process will return a base64 or a temporary URL
+            // Call main process → edge function → DALL-E 3 → Supabase Storage
             const res = await window.electron.invoke('generate-ai-image', {
-                prompt: prompt,
-                name: name.replace(/[^a-z0-9]/gi, '_').toLowerCase()
+                name: name,
+                brand: brand || '',
+                category: group || '',
+                description: description || ''
             });
 
             if (res && res.ok) {
@@ -20678,12 +20807,30 @@ thead th { padding:11px 12px; font-size:10px; font-weight:800; color:#fff; text-
                     imgBtn.style.borderColor = '#3b82f6';
                     imgBtn.style.color = '#3b82f6';
                 }
-                if (window.omnisLog) window.omnisLog("AI Image generated and linked successfully.", "success");
+
+                // Auto-update the product record if we're editing an existing product
+                const targetId = productId || window._editingProductId;
+                if (targetId) {
+                    try {
+                        await window.syncAPI.queue('products', targetId, 'update', { image_url: res.url });
+                        // Update local cache too
+                        if (window._fullCatalog) {
+                            const idx = window._fullCatalog.findIndex(p => p.id === targetId);
+                            if (idx >= 0) window._fullCatalog[idx].image_url = res.url;
+                            renderProductsGrid(window._fullCatalog);
+                        }
+                    } catch (syncErr) {
+                        console.warn('[AI Gen] Auto-sync failed, image URL set in form:', syncErr);
+                    }
+                }
+
+                if (window.omnisLog) window.omnisLog(`AI Image generated: ${res.url.substring(0, 80)}...`, "success");
             } else {
                 throw new Error(res ? res.error : "AI Generation failed");
             }
         } catch (e) {
             console.error("AI Gen Error:", e);
+            if (window.omnisLog) window.omnisLog("AI Image generation failed: " + e.message, "error");
             alert("AI Generation failed: " + e.message);
         } finally {
             btn.disabled = false;
@@ -20691,24 +20838,158 @@ thead th { padding:11px 12px; font-size:10px; font-weight:800; color:#fff; text-
         }
     };
 
-    // --- PRODUCT CATALOG SUGGESTIONS ---
-    function initProductCatalogSuggestions() {
-        if (typeof window.setupSupabaseSuggestions === 'function') {
-            const brandInput = document.getElementById('prod-brand');
-            const brandSuggest = document.getElementById('prod-brand-suggest');
-            const groupInput = document.getElementById('prod-group');
-            const groupSuggest = document.getElementById('prod-group-suggest');
-            
-            if (brandInput && brandSuggest) {
-                window.setupSupabaseSuggestions(brandInput, brandSuggest, "brands", "name");
+
+    // --- BULK AI IMAGE GENERATION ---
+    window.bulkGenerateMissingImages = async function() {
+        if (!window._fullCatalog || !window._fullCatalog.length) {
+            alert("No products in catalog. Load products first.");
+            return;
+        }
+
+        const missing = window._fullCatalog.filter(p => !p.image_url && p.item_name);
+        if (missing.length === 0) {
+            alert("All products already have images!");
+            return;
+        }
+
+        if (!confirm(`Generate AI images for ${missing.length} product${missing.length > 1 ? 's' : ''} without images?\n\nThis uses DALL-E 3 (~$0.04 per image, ~$${(missing.length * 0.04).toFixed(2)} total).\nEach image takes ~15-20 seconds.`)) {
+            return;
+        }
+
+        const btn = document.getElementById('bulk-ai-gen-btn');
+        const label = document.getElementById('bulk-ai-gen-label');
+        const originalLabel = label ? label.textContent : 'AI Images';
+        if (btn) btn.disabled = true;
+
+        let success = 0;
+        let failed = 0;
+
+        for (let i = 0; i < missing.length; i++) {
+            const product = missing[i];
+            if (label) label.textContent = `${i + 1}/${missing.length}...`;
+
+            try {
+                if (window.omnisLog) window.omnisLog(`[Bulk AI] (${i + 1}/${missing.length}) Generating image for "${product.item_name}"...`, "info");
+
+                const res = await window.electron.invoke('generate-ai-image', {
+                    name: product.item_name || '',
+                    brand: product.brand_name || '',
+                    category: product.item_group_name || '',
+                    description: product.description || ''
+                });
+
+                if (res && res.ok) {
+                    // Update Supabase + local cache
+                    await window.syncAPI.queue('products', product.id, 'update', { image_url: res.url });
+                    const idx = window._fullCatalog.findIndex(p => p.id === product.id);
+                    if (idx >= 0) window._fullCatalog[idx].image_url = res.url;
+                    renderProductsGrid(window._fullCatalog);
+                    success++;
+                    if (window.omnisLog) window.omnisLog(`[Bulk AI] ✓ "${product.item_name}" done`, "success");
+                } else {
+                    failed++;
+                    console.warn(`[Bulk AI] Failed for "${product.item_name}":`, res?.error);
+                    if (window.omnisLog) window.omnisLog(`[Bulk AI] ✗ "${product.item_name}": ${res?.error || 'Unknown error'}`, "error");
+                }
+            } catch (err) {
+                failed++;
+                console.error(`[Bulk AI] Error for "${product.item_name}":`, err);
+                if (window.omnisLog) window.omnisLog(`[Bulk AI] ✗ "${product.item_name}": ${err.message}`, "error");
             }
-            if (groupInput && groupSuggest) {
-                window.setupSupabaseSuggestions(groupInput, groupSuggest, "item_groups", "name");
+
+            // Small delay between requests to avoid rate limiting
+            if (i < missing.length - 1) {
+                await new Promise(r => setTimeout(r, 2000));
             }
         }
+
+        if (btn) btn.disabled = false;
+        if (label) label.textContent = originalLabel;
+
+        const msg = `Bulk AI Image Generation Complete!\n\n✓ Success: ${success}\n✗ Failed: ${failed}\nTotal: ${missing.length}`;
+        if (window.omnisLog) window.omnisLog(msg.replace(/\n/g, ' '), success > 0 ? "success" : "error");
+        alert(msg);
+    };
+
+    // --- PRODUCT CATALOG SUGGESTIONS (local catalog-driven) ---
+    function initProductCatalogSuggestions() {
+        const brandInput = document.getElementById('prod-brand');
+        const brandSuggest = document.getElementById('prod-brand-suggest');
+        const groupInput = document.getElementById('prod-group');
+        const groupSuggest = document.getElementById('prod-group-suggest');
+
+        // Extract distinct brands & categories from the already-loaded catalog
+        function getDistinct(field) {
+            if (!window._fullCatalog) return [];
+            const set = new Set();
+            window._fullCatalog.forEach(p => {
+                const v = (p[field] || '').trim();
+                if (v && v !== '.') set.add(v);
+            });
+            return [...set].sort((a, b) => a.localeCompare(b, undefined, { sensitivity: 'base' }));
+        }
+
+        function wireLocalSuggest(input, list, field) {
+            if (!input || !list) return;
+
+            // Remove old listeners by replacing node
+            const fresh = input.cloneNode(true);
+            input.parentNode.replaceChild(fresh, input);
+
+            const renderList = (query) => {
+                const all = getDistinct(field);
+                const q = (query || '').toLowerCase();
+                const filtered = q.length ? all.filter(v => v.toLowerCase().includes(q)) : all;
+
+                if (!filtered.length) {
+                    list.innerHTML = `<div style="padding:10px; color:#94a3b8; font-size:12px; text-align:center;">No matches</div>`;
+                    list.classList.remove('hidden');
+                    return;
+                }
+
+                list.innerHTML = filtered.map(v => `
+                    <div class="suggest-item" data-val="${v.replace(/"/g, '&quot;')}"
+                         style="padding:9px 14px; border-bottom:1px solid #f1f5f9; cursor:pointer; font-size:13px; font-weight:600; color:#1e293b; transition:background 0.15s;"
+                         onmouseover="this.style.background='#f1f5f9'" onmouseout="this.style.background='white'">
+                        ${v}
+                    </div>
+                `).join('');
+                list.classList.remove('hidden');
+
+                list.querySelectorAll('.suggest-item').forEach(el => {
+                    el.onclick = (e) => {
+                        e.stopPropagation();
+                        fresh.value = el.getAttribute('data-val');
+                        list.classList.add('hidden');
+                    };
+                });
+            };
+
+            let debounceTimer;
+            fresh.addEventListener('input', () => {
+                clearTimeout(debounceTimer);
+                debounceTimer = setTimeout(() => renderList(fresh.value), 150);
+            });
+            fresh.addEventListener('focus', () => renderList(fresh.value));
+            fresh.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter') {
+                    const first = list.querySelector('.suggest-item');
+                    if (first && !list.classList.contains('hidden')) {
+                        e.preventDefault();
+                        first.click();
+                    }
+                }
+            });
+            document.addEventListener('click', (e) => {
+                if (e.target !== fresh && !list.contains(e.target)) {
+                    list.classList.add('hidden');
+                }
+            });
+        }
+
+        wireLocalSuggest(brandInput, brandSuggest, 'brand_name');
+        wireLocalSuggest(groupInput, groupSuggest, 'item_group_name');
     }
-    // Initialize after a delay to ensure DOM is ready
-    setTimeout(initProductCatalogSuggestions, 500);
 
     function init() {
         E.root = document.getElementById('mxg-root');
@@ -22919,12 +23200,12 @@ thead th { padding:11px 12px; font-size:10px; font-weight:800; color:#fff; text-
 
   <!-- ✅ ADD PRODUCT MODAL -->
   <div id="product-form-overlay" class="hidden" style="position:fixed; inset:0; background:rgba(0,0,0,0.4); backdrop-filter:blur(4px); z-index:12000; display:flex; align-items:center; justify-content:center;">
-    <div style="background:white; width:90%; max-width:500px; border-radius:16px; overflow:hidden; box-shadow:0 25px 50px -12px rgba(0,0,0,0.5); animation:popIn 0.3s ease-out;">
-      <div style="background:#0f172a; padding:20px 24px; display:flex; justify-content:space-between; align-items:center;">
+    <div style="background:white; width:90%; max-width:560px; border-radius:16px; overflow:hidden; box-shadow:0 25px 50px -12px rgba(0,0,0,0.5); animation:popIn 0.3s ease-out; max-height:90vh; display:flex; flex-direction:column;">
+      <div style="background:#0f172a; padding:20px 24px; display:flex; justify-content:space-between; align-items:center; flex-shrink:0;">
         <h3 id="prod-modal-title" style="color:white; margin:0; font-size:18px; font-weight:800; text-transform:uppercase; letter-spacing:0.05em;">Add New Product</h3>
         <button onclick="window.closeProductForm()" style="background:transparent; border:none; color:white; cursor:pointer; font-size:20px; opacity:0.7;"><i class="fas fa-times"></i></button>
       </div>
-      <div style="padding:24px; display:flex; flex-direction:column; gap:16px;">
+      <div style="padding:24px; display:flex; flex-direction:column; gap:16px; overflow-y:auto; flex:1;">
         <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px;">
            <div class="form-group">
              <label style="display:block; font-size:11px; font-weight:800; color:#64748b; text-transform:uppercase; margin-bottom:6px;">Item Code</label>
@@ -22955,6 +23236,21 @@ thead th { padding:11px 12px; font-size:10px; font-weight:800; color:#fff; text-
            <label style="display:block; font-size:11px; font-weight:800; color:#64748b; text-transform:uppercase; margin-bottom:6px;">Price (USD)</label>
            <input id="prod-rate" type="number" value="0" style="width:100%; height:40px; border-radius:8px; border:1px solid #e2e8f0; padding:0 12px; font-size:13px; font-weight:600;">
         </div>
+
+        <!-- Description -->
+        <div class="form-group">
+           <label style="display:block; font-size:11px; font-weight:800; color:#64748b; text-transform:uppercase; margin-bottom:6px;">Description</label>
+           <textarea id="prod-description" placeholder="Detailed product description, specifications, features..." style="width:100%; height:80px; border-radius:8px; border:1px solid #e2e8f0; padding:10px 12px; font-size:13px; font-weight:600; resize:vertical; font-family:inherit;"></textarea>
+        </div>
+
+        <!-- Warranty -->
+        <div class="form-group">
+           <label style="display:block; font-size:11px; font-weight:800; color:#64748b; text-transform:uppercase; margin-bottom:6px;">
+             <i class="fas fa-shield-alt" style="color:#10b981; margin-right:4px;"></i> Warranty
+           </label>
+           <input id="prod-warranty" type="text" placeholder="e.g. 2000 Hours or 1 Year Parts Warranty" style="width:100%; height:40px; border-radius:8px; border:1px solid #e2e8f0; padding:0 12px; font-size:13px; font-weight:600;">
+        </div>
+
         <!-- Image Upload -->
         <div class="form-group">
            <label style="display:block; font-size:11px; font-weight:800; color:#64748b; text-transform:uppercase; margin-bottom:6px; display:flex; justify-content:space-between; align-items:center;">
@@ -22970,6 +23266,14 @@ thead th { padding:11px 12px; font-size:10px; font-weight:800; color:#fff; text-
                </button>
                <input id="prod-image" type="text" placeholder="Or paste URL..." style="flex:2; height:40px; border-radius:8px; border:1px solid #e2e8f0; padding:0 12px; font-size:13px; font-weight:600;">
            </div>
+        </div>
+
+        <!-- View Spec Sheet Button -->
+        <div id="prod-spec-view-row" class="form-group" style="display:none;">
+           <a id="prod-spec-view-link" href="#" target="_blank" rel="noopener noreferrer" onclick="event.stopPropagation();"
+              style="display:flex; align-items:center; justify-content:center; gap:10px; width:100%; height:48px; border-radius:10px; background:linear-gradient(135deg, #dc2626, #b91c1c); color:white; font-size:13px; font-weight:800; text-decoration:none; text-transform:uppercase; letter-spacing:0.05em; box-shadow:0 4px 12px rgba(220,38,38,0.3); transition:all 0.2s;">
+              <i class="fas fa-file-pdf" style="font-size:16px;"></i> VIEW SPEC SHEET
+           </a>
         </div>
 
         <!-- Spec Sheet Upload -->
@@ -22996,6 +23300,7 @@ thead th { padding:11px 12px; font-size:10px; font-weight:800; color:#fff; text-
       </div>
     </div>
   </div>
+
 
   </main>
   </div>

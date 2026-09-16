@@ -24,7 +24,7 @@ interface ActionDef {
   requiredFields: string[];
   /** Optional input fields */
   optionalFields?: string[];
-  /** Build the system + user prompts */
+  /** Build the system + user prompts (for chat completions) */
   buildPrompt: (input: Record<string, unknown>) => {
     system: string;
     user: string;
@@ -33,6 +33,10 @@ interface ActionDef {
   };
   /** Admin-only action? */
   adminOnly?: boolean;
+  /** If true, uses DALL-E image generation instead of chat completions */
+  isImageAction?: boolean;
+  /** Build the DALL-E prompt (required when isImageAction is true) */
+  buildImagePrompt?: (input: Record<string, unknown>) => string;
 }
 
 const ACTIONS: Record<string, ActionDef> = {
@@ -120,6 +124,28 @@ Return a JSON object with:
       model: "gpt-4o-mini",
       jsonMode: true,
     }),
+  },
+
+  // ── Product Image Generation (DALL-E 3) ──
+  generate_product_image: {
+    requiredFields: ["name"],
+    optionalFields: ["brand", "category", "description"],
+    isImageAction: true,
+    buildImagePrompt: ({ name, brand, category, description }) => {
+      // Build a highly specific prompt for accurate product imagery
+      let prompt = `Professional commercial product photography of a ${brand ? brand + " " : ""}${name}`;
+      if (category) prompt += ` (${category})`;
+      prompt += ".";
+      if (description) {
+        // Use first 300 chars of description to keep prompt focused
+        const descSnippet = String(description).substring(0, 300);
+        prompt += ` Technical details: ${descSnippet}.`;
+      }
+      prompt += " Studio-lit, centered on pure white background, no text, no watermark, no human hands, high resolution commercial product photography, photorealistic, detailed accurate representation of this specific product.";
+      return prompt;
+    },
+    // buildPrompt is required by the interface but unused for image actions
+    buildPrompt: () => ({ system: "", user: "" }),
   },
 };
 
@@ -209,7 +235,190 @@ Deno.serve(async (req) => {
       );
     }
 
-    // 6. Build prompt and call OpenAI
+    const openaiBaseUrl = Deno.env.get("OPENAI_BASE_URL") || "https://api.openai.com";
+
+    // ── 6a. Product Image path (Search-first, DALL-E fallback) ──
+    if (actionDef.isImageAction && actionDef.buildImagePrompt) {
+      const { name, brand, category, description } = input as Record<string, string>;
+
+      // --- Strategy 1: Search for real product photos via SerpAPI ---
+      const SERPAPI_KEY = Deno.env.get("SERPAPI_KEY");
+      if (SERPAPI_KEY) {
+        // Helper: search SerpAPI, download best candidate, return base64 Response or null
+        const tryImageSearch = async (query: string, tbs: string): Promise<Response | null> => {
+          console.log(`[ai-proxy] Image search: "${query}" (filter: ${tbs})`);
+
+          const serpUrl = new URL("https://serpapi.com/search.json");
+          serpUrl.searchParams.set("q", query);
+          serpUrl.searchParams.set("tbm", "isch");
+          serpUrl.searchParams.set("ijn", "0");
+          serpUrl.searchParams.set("api_key", SERPAPI_KEY);
+          serpUrl.searchParams.set("tbs", tbs);
+
+          const serpRes = await fetch(serpUrl.toString());
+          const serpData = await serpRes.json();
+
+          if (!serpData.images_results || serpData.images_results.length === 0) {
+            console.log(`[ai-proxy] No results for "${query}"`);
+            return null;
+          }
+
+          // Filter for usable images
+          const candidates = serpData.images_results
+            .filter((img: Record<string, unknown>) => {
+              const w = Number(img.original_width || 0);
+              const h = Number(img.original_height || 0);
+              const url = String(img.original || "");
+              return w >= 300 && h >= 200
+                && !url.includes('.gif')
+                && !url.includes('.svg')
+                && !url.includes('tracking')
+                && !url.includes('pixel');
+            })
+            .slice(0, 5);
+
+          if (candidates.length === 0) {
+            console.log(`[ai-proxy] No suitable candidates from "${query}"`);
+            return null;
+          }
+
+          // Try downloading each candidate
+          for (const candidate of candidates) {
+            const imageUrl = String(candidate.original);
+            try {
+              const imgRes = await fetch(imageUrl, {
+                headers: {
+                  "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36",
+                  "Accept": "image/*",
+                },
+                redirect: "follow",
+              });
+
+              if (imgRes.ok) {
+                const contentType = imgRes.headers.get("content-type") || "image/jpeg";
+                if (contentType.startsWith("image/")) {
+                  const arrayBuffer = await imgRes.arrayBuffer();
+                  const bytes = new Uint8Array(arrayBuffer);
+
+                  if (bytes.length > 5000) {
+                    let binary = "";
+                    for (let i = 0; i < bytes.length; i++) {
+                      binary += String.fromCharCode(bytes[i]);
+                    }
+                    const b64 = btoa(binary);
+                    console.log(`[ai-proxy] ✓ Found image (${Math.round(bytes.length / 1024)}KB) from: ${imageUrl.substring(0, 100)}`);
+
+                    return new Response(
+                      JSON.stringify({
+                        ok: true,
+                        action,
+                        result: {
+                          b64_json: b64,
+                          content_type: contentType,
+                          source: "web_search",
+                          source_url: imageUrl,
+                          revised_prompt: `Web search: "${query}"`,
+                        },
+                      }),
+                      { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+                    );
+                  }
+                }
+              }
+            } catch (dlErr) {
+              console.warn(`[ai-proxy] Download failed: ${imageUrl.substring(0, 80)}: ${dlErr.message}`);
+              continue;
+            }
+          }
+
+          console.log(`[ai-proxy] All ${candidates.length} candidates failed to download`);
+          return null;
+        };
+
+        try {
+          const baseName = `${brand ? brand + " " : ""}${name} ${category ? category : ""}`.trim();
+
+          // Pass 1: Search for transparent/white background PNG images
+          let result = await tryImageSearch(`${baseName} PNG white background`, "isz:m,ic:trans");
+
+          // Pass 2: Broader search — just add "white background" to query, no transparency filter
+          if (!result) {
+            result = await tryImageSearch(`${baseName} product photo white background`, "isz:m");
+          }
+
+          // Pass 3: Broadest — just find any decent product photo
+          if (!result) {
+            result = await tryImageSearch(`${baseName} product photo`, "isz:m");
+          }
+
+          if (result) return result;
+
+          console.log(`[ai-proxy] All 3 search passes found nothing, falling back to DALL-E`);
+        } catch (searchErr) {
+          console.warn(`[ai-proxy] SerpAPI search failed, falling back to DALL-E:`, searchErr.message);
+        }
+
+      } else {
+        console.log(`[ai-proxy] SERPAPI_KEY not set, using DALL-E directly`);
+      }
+
+      // --- Strategy 2: DALL-E fallback (generates an approximation) ---
+      const imagePrompt = actionDef.buildImagePrompt!(input);
+      console.log(`[ai-proxy] DALL-E fallback prompt: ${imagePrompt.substring(0, 120)}...`);
+
+      const dalleBody = {
+        model: "dall-e-3",
+        prompt: imagePrompt,
+        n: 1,
+        size: "1024x1024",
+        quality: "standard",
+        response_format: "b64_json",
+      };
+
+      const dalleRes = await fetch(`${openaiBaseUrl}/v1/images/generations`, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${OPENAI_API_KEY}`,
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(dalleBody),
+      });
+
+      const dalleData = await dalleRes.json();
+
+      if (dalleData.error) {
+        console.error(`[ai-proxy] DALL-E error:`, dalleData.error);
+        return new Response(
+          JSON.stringify({ error: `Image generation failed: ${dalleData.error.message || "Unknown error"}` }),
+          { status: 502, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
+
+      const imageData = dalleData.data?.[0];
+      if (!imageData?.b64_json) {
+        return new Response(
+          JSON.stringify({ error: "No image data returned from AI service" }),
+          { status: 502, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
+
+      return new Response(
+        JSON.stringify({
+          ok: true,
+          action,
+          result: {
+            b64_json: imageData.b64_json,
+            content_type: "image/png",
+            source: "dall-e-3",
+            revised_prompt: imageData.revised_prompt || imagePrompt,
+          },
+        }),
+        { status: 200, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+
+    // ── 6b. Chat Completions path (default) ──
     const promptConfig = actionDef.buildPrompt(input);
     const openaiBody: Record<string, unknown> = {
       model: promptConfig.model || "gpt-4o-mini",
@@ -222,7 +431,6 @@ Deno.serve(async (req) => {
       openaiBody.response_format = { type: "json_object" };
     }
 
-    const openaiBaseUrl = Deno.env.get("OPENAI_BASE_URL") || "https://api.openai.com";
     const openaiRes = await fetch(`${openaiBaseUrl}/v1/chat/completions`, {
       method: "POST",
       headers: {
