@@ -11765,19 +11765,19 @@
             </button>
           </div>
 
-          <div style="border:1px solid #e2e8f0; border-radius:10px; overflow:hidden; margin-bottom:16px; box-shadow: 0 1px 3px rgba(0,0,0,0.04);">
-            <table id="qtn-items-table" style="width:100%; font-size:13px; border-collapse:collapse;">
+          <div style="border:1px solid var(--border); border-radius:8px; overflow:hidden; margin-bottom:16px; box-shadow: var(--shadow-sm);">
+            <table id="qtn-items-table" class="table-wrapper" style="width:100%; font-size:13px; border-collapse:collapse;">
               <thead>
-                <tr style="background: linear-gradient(135deg, #1e293b 0%, #334155 100%); color:#fff; text-align:left; font-weight:700; text-transform:uppercase; font-size:10px; letter-spacing:0.06em;">
-                  <th style="padding:10px 10px; width:13%;">Code</th>
-                  <th style="padding:10px 8px; width:13%;">Item Name</th>
-                  <th style="padding:10px 8px; width:20%;">Description</th>
-                  <th style="padding:10px 8px; width:5%; text-align:center;">Qty</th>
-                  <th style="padding:10px 8px; width:9%; text-align:right;">Rate</th>
-                  <th style="padding:10px 8px; width:10%;">Lead Time</th>
-                  <th style="padding:10px 8px; width:10%;">Delivery</th>
-                  <th style="padding:10px 8px; width:10%; text-align:right;">Amount</th>
-                  <th style="padding:10px 6px; width:3%;"></th>
+                <tr>
+                  <th style="padding:0 12px; width:13%;">Code</th>
+                  <th style="padding:0 8px; width:13%;">Item Name</th>
+                  <th style="padding:0 8px; width:20%;">Description</th>
+                  <th style="padding:0 8px; width:5%; text-align:center;">Qty</th>
+                  <th style="padding:0 8px; width:9%; text-align:right;">Rate</th>
+                  <th style="padding:0 8px; width:10%;">Lead Time</th>
+                  <th style="padding:0 8px; width:10%;">Delivery</th>
+                  <th style="padding:0 8px; width:10%; text-align:right;">Amount</th>
+                  <th style="padding:0 6px; width:3%;"></th>
                 </tr>
               </thead>
               <tbody id="qtn-items-body"></tbody>
@@ -11785,14 +11785,14 @@
           </div>
 
           <!-- Totals -->
-          <div style="background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%); padding:14px 20px; border-radius:10px; display:flex; justify-content:space-between; align-items:center; border:1px solid #e2e8f0;">
+          <div style="background: var(--page-bg); padding:14px 20px; border-radius:8px; display:flex; justify-content:space-between; align-items:center; border:1px solid var(--border);">
             <div>
-              <label style="display:block; font-size:10px; color:#94a3b8; font-weight:700; text-transform:uppercase; letter-spacing:0.05em;">Total Qty</label>
-              <div id="qtn-total-qty" style="font-size:18px; font-weight:800; color:#1e293b; margin-top:2px;">0</div>
+              <label style="display:block; font-size:10px; color:var(--text-muted); font-weight:700; text-transform:uppercase; letter-spacing:0.05em;">Total Qty</label>
+              <div id="qtn-total-qty" style="font-size:18px; font-weight:800; color:var(--text-dark); margin-top:2px;">0</div>
             </div>
             <div style="text-align:right;">
-              <label id="qtn-total-label" style="display:block; font-size:10px; color:#94a3b8; font-weight:700; text-transform:uppercase; letter-spacing:0.05em;">Total (USD)</label>
-              <div id="qtn-total-usd" style="font-size:22px; font-weight:800; color:#1e293b; margin-top:2px;">$ 0.00</div>
+              <label id="qtn-total-label" style="display:block; font-size:10px; color:var(--text-muted); font-weight:700; text-transform:uppercase; letter-spacing:0.05em;">Total (USD)</label>
+              <div id="qtn-total-usd" style="font-size:22px; font-weight:800; color:var(--accent-maroon); margin-top:2px;">$ 0.00</div>
             </div>
           </div>
 
