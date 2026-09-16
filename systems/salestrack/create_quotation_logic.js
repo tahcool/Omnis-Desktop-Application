@@ -79,35 +79,35 @@
         const row = document.createElement("tr");
         row.innerHTML = `
             <td style="padding:6px; position:relative;">
-                <input type="text" class="form-input item-code" placeholder="Item Code" style="font-size:12px; width:100%;">
+                <input type="text" class="form-input item-code" placeholder="Search product..." style="font-size:12px; width:100%;">
                 <div class="suggest-list hidden"></div>
             </td>
             <td style="padding:6px;"><input type="text" class="form-input item-name" placeholder="Item Name" readonly style="font-size:12px; width:100%; background:#f9fafb; color:#374151;"></td>
             <td style="padding:6px;"><textarea class="form-input item-desc" placeholder="Description" style="font-size:11px; width:100%; min-height:40px; resize:vertical; background:#f9fafb; color:#374151;"></textarea></td>
             <td style="padding:6px;"><input type="number" class="form-input item-qty" value="1" min="1" style="font-size:12px; width:60px;"></td>
             <td style="padding:6px;"><input type="number" class="form-input item-rate" placeholder="0.00" style="font-size:12px; width:100px;"></td>
+            <td style="padding:6px;"><input type="text" class="form-input item-lead-time" placeholder="e.g. 2 Weeks" style="font-size:12px; width:100%;"></td>
             <td style="padding:6px;"><input type="text" class="form-input item-amount" readonly style="font-size:12px; width:100px; background:#f3f4f6;"></td>
             <td style="padding:6px; text-align:center;"><button type="button" class="btn-text-action text-red-600" onclick="this.closest('tr').remove(); calculateQuotationTotals();" style="font-size:18px;">&times;</button></td>
         `;
         tbody.appendChild(row);
 
-        // Wire up Item Suggestions (searches products table via Supabase)
+        // Wire up Item Suggestions via Supabase (same as quick quotes)
         const codeInp = row.querySelector(".item-code");
         const suggestBox = row.querySelector(".suggest-list");
-        setupSuggestions(codeInp, suggestBox, "search_item_for_omnis", async (val, item) => {
-            codeInp.value = item.value;
-            // Auto-fill item name
-            const nameInp = row.querySelector(".item-name");
-            if (nameInp) nameInp.value = item.description || item.value;
-            // Auto-fill description from the product's description column
-            const descInp = row.querySelector(".item-desc");
-            if (descInp) descInp.value = item.itemDescription || '';
-            // Use rate from the suggestion item (already fetched from products table)
-            if (item.rate) {
-                row.querySelector(".item-rate").value = item.rate;
-                calculateQuotationTotals();
-            }
-        });
+        if (window.setupSupabaseSuggestions) {
+            window.setupSupabaseSuggestions(codeInp, suggestBox, 'stock_inventory', 'model,brand', (item) => {
+                codeInp.value = item.value;
+                const nameInp = row.querySelector(".item-name");
+                if (nameInp) nameInp.value = item.description || item.value;
+                const descInp = row.querySelector(".item-desc");
+                if (descInp) descInp.value = item.itemDescription || '';
+                if (item.rate) {
+                    row.querySelector(".item-rate").value = item.rate;
+                    calculateQuotationTotals();
+                }
+            });
+        }
     };
 
     // --- CURRENCY HELPERS ---
@@ -237,6 +237,7 @@
                     const itemDesc = row.querySelector(".item-desc")?.value;
                     const qty = row.querySelector(".item-qty")?.value;
                     const rate = row.querySelector(".item-rate")?.value;
+                    const leadTime = row.querySelector(".item-lead-time")?.value?.trim() || '';
 
                     if (itemCode && qty) {
                         data.items.push({
@@ -244,7 +245,8 @@
                             item_name: itemName || itemCode,
                             description: itemDesc || '',
                             qty: parseFloat(qty),
-                            rate: parseFloat(rate || 0)
+                            rate: parseFloat(rate || 0),
+                            custom_lead_time: leadTime
                         });
                     }
                 });
@@ -283,7 +285,8 @@
                 description: i.description || '',
                 qty: i.qty,
                 rate: i.rate,
-                amount: i.qty * i.rate
+                amount: i.qty * i.rate,
+                custom_lead_time: i.custom_lead_time || ''
             }));
             
             const itemRes = await window.supabase.from("omnis_quotation_items").insert(itemPayloads);
