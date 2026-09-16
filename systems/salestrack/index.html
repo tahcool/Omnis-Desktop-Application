@@ -17260,7 +17260,9 @@
 
         // EVENT DELEGATION: listen on document for any .item-code inside #qtn-items-body
         document.addEventListener('input', (e) => {
+            console.log('[QtnItemSearch] INPUT event on:', e.target.tagName, e.target.className, 'closest qtn-items-body:', !!e.target.closest('#qtn-items-body'));
             if (e.target.classList.contains('item-code') && e.target.closest('#qtn-items-body')) {
+                console.log('[QtnItemSearch] MATCH! Scheduling search for:', e.target.value, 'supabase:', !!window.supabase, 'electron:', !!window.electron);
                 clearTimeout(_qtnSearchTimer);
                 _qtnSearchTimer = setTimeout(() => doQtnItemSearch(e.target), 300);
             }
