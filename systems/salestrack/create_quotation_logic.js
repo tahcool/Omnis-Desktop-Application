@@ -257,7 +257,11 @@
                 notes: data.notes
             }]).select();
             
-            if (qtnRes.error) throw qtnRes.error;
+            console.log("[QtnSave] Insert parent result:", JSON.stringify(qtnRes));
+            
+            // Handle both real Supabase response {data, error} and IPC proxy response {ok, data, error}
+            if (qtnRes.error) throw new Error(typeof qtnRes.error === 'string' ? qtnRes.error : (qtnRes.error.message || JSON.stringify(qtnRes.error)));
+            if (!qtnRes.data || !qtnRes.data.length) throw new Error("Insert succeeded but no data returned. Check RLS policies on omnis_quotations.");
             
             const dbQtnId = qtnRes.data[0].id;
             
@@ -273,8 +277,9 @@
                 custom_lead_time: i.custom_lead_time || ''
             }));
             
-            const itemRes = await window.supabase.from("omnis_quotation_items").insert(itemPayloads);
-            if (itemRes.error) throw itemRes.error;
+            const itemRes = await window.supabase.from("omnis_quotation_items").insert(itemPayloads).select();
+            console.log("[QtnSave] Insert items result:", JSON.stringify(itemRes));
+            if (itemRes.error) throw new Error(typeof itemRes.error === 'string' ? itemRes.error : (itemRes.error.message || JSON.stringify(itemRes.error)));
             
             const payload = { ok: true, name: qtnId };
 
@@ -288,7 +293,8 @@
             }
 
         } catch (e) {
-            alert("Error: " + e.message);
+            console.error("[QtnSave] Error:", e);
+            alert("Error: " + (e.message || e || "Unknown error"));
         } finally {
             if (submitBtn) submitBtn.innerHTML = originalText;
         }
