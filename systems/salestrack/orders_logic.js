@@ -2176,6 +2176,12 @@ window.printMainOrdersReport = function() {
                 e.stopPropagation();
                 inputEl.value = name;
                 listEl.style.display = 'none';
+                // Load contacts when customer is selected in tracking modal
+                if (type === 'customer' && window.loadCustomerContacts) {
+                    const trackSection = document.getElementById('track-contacts-section');
+                    if (trackSection) trackSection.style.display = '';
+                    window.loadCustomerContacts(name, 'track-contacts-chips', 'track-contacts-warning', 'track-contacts-warning-text');
+                }
             };
             listEl.appendChild(div);
         });
@@ -2192,6 +2198,12 @@ window.printMainOrdersReport = function() {
                 listEl.style.display = 'none';
                 if (type === 'customer' && _customerCache) _customerCache.push(query);
                 if (type === 'machine' && _productCache) _productCache.push(query);
+                // Load contacts for new customer name too
+                if (type === 'customer' && window.loadCustomerContacts) {
+                    const trackSection = document.getElementById('track-contacts-section');
+                    if (trackSection) trackSection.style.display = '';
+                    window.loadCustomerContacts(query, 'track-contacts-chips', 'track-contacts-warning', 'track-contacts-warning-text');
+                }
             };
             listEl.appendChild(addDiv);
         }
@@ -2257,6 +2269,13 @@ window.openAddTrackingModal = function() {
         document.getElementById('track-target').value = '';
         document.getElementById('track-company').value = 'Unassigned';
         document.getElementById('track-notes').value = '';
+        // Reset contacts section
+        const trackContactsSection = document.getElementById('track-contacts-section');
+        if (trackContactsSection) trackContactsSection.style.display = 'none';
+        const trackContactsChips = document.getElementById('track-contacts-chips');
+        if (trackContactsChips) trackContactsChips.innerHTML = '<div style="color:#94a3b8; font-size:11px; padding:4px 0;">No contacts yet.</div>';
+        const trackContactForm = document.getElementById('track-contact-form');
+        if (trackContactForm) trackContactForm.style.display = 'none';
         // Hide any open suggestion dropdowns
         const custSug = document.getElementById('track-customer-suggestions');
         const machSug = document.getElementById('track-machine-suggestions');
@@ -2657,4 +2676,70 @@ window.openSTRReport = async function() {
     
     // Pass 1500px to match efficiency report width
     window.salestrack.openListModal(headerTitle, html, "1500px");
+};
+
+/* ═══════════════════════════════════════════════════════════════════
+   TRACKING ORDER — CUSTOMER CONTACTS HELPERS
+   Reuses the shared loadCustomerContacts / togglePrimaryContact /
+   deleteCustomerContact from create_quotation_logic.js
+═══════════════════════════════════════════════════════════════════ */
+
+/** Toggle the add-contact form in the tracking modal */
+window.toggleTrackContactForm = function (show) {
+    const form = document.getElementById('track-contact-form');
+    if (!form) return;
+    const isVisible = form.style.display !== 'none';
+    if (show === false || (show === undefined && isVisible)) {
+        form.style.display = 'none';
+        ['track-cc-name', 'track-cc-email', 'track-cc-whatsapp'].forEach(id => {
+            const el = document.getElementById(id);
+            if (el) el.value = '';
+        });
+    } else {
+        form.style.display = '';
+        document.getElementById('track-cc-name')?.focus();
+    }
+};
+
+/** Save a new contact from the tracking modal */
+window.saveTrackContact = async function () {
+    const customerName = window._qtnContactsCustomerName || document.getElementById('track-customer')?.value?.trim();
+    if (!customerName) {
+        if (window.showToast) window.showToast('Please select a customer first.', 'warning');
+        return;
+    }
+
+    const contactName = document.getElementById('track-cc-name')?.value?.trim() || '';
+    const email = document.getElementById('track-cc-email')?.value?.trim() || '';
+    const whatsapp = document.getElementById('track-cc-whatsapp')?.value?.trim() || '';
+
+    if (!contactName) {
+        if (window.showToast) window.showToast('Contact name is required.', 'warning');
+        return;
+    }
+
+    try {
+        const sp = (window.salestrack && window.salestrack.supabase) || window.supabase || null;
+        if (!sp) throw new Error('Supabase not available');
+
+        const contacts = window._qtnCustomerContacts || [];
+        const isPrimary = contacts.length === 0;
+
+        const { data, error } = await sp.from('omnis_customer_contacts').insert([{
+            customer_name: customerName,
+            contact_name: contactName,
+            email: email || null,
+            whatsapp_number: whatsapp || null,
+            is_primary: isPrimary
+        }]).select();
+
+        if (error) throw new Error(error.message || JSON.stringify(error));
+
+        if (window.showToast) window.showToast('Contact saved', 'success');
+        window.toggleTrackContactForm(false);
+        await window.loadCustomerContacts(customerName, 'track-contacts-chips', 'track-contacts-warning', 'track-contacts-warning-text');
+    } catch (e) {
+        console.error('[CC-Track] Save error:', e);
+        if (window.showToast) window.showToast('Error saving contact: ' + e.message, 'error');
+    }
 };

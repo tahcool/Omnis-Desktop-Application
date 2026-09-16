@@ -9723,6 +9723,56 @@
           <textarea id="track-notes" class="form-input" style="width: 100%; border: 1px solid #cbd5e1; border-radius: 8px; padding: 10px; font-size: 14px; min-height: 80px;" placeholder="Tracking details..."></textarea>
         </div>
 
+        <!-- Customer Contacts for Tracking -->
+        <div id="track-contacts-section" style="display:none;">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
+            <label style="display:block; font-size:12px; font-weight:700; color:#475569;">Customer Contacts</label>
+            <button type="button" onclick="window.toggleTrackContactForm()"
+              style="font-size:10px; padding:3px 10px; font-weight:700; border-radius:6px; background:#f1f5f9; border:1px solid #e2e8f0; color:#475569; cursor:pointer;">
+              <i class="fas fa-plus" style="margin-right:3px;"></i> Add
+            </button>
+          </div>
+
+          <div id="track-contacts-warning" style="display:none; background:#fffbeb; border:1px solid #fde68a; border-radius:6px; padding:6px 10px; margin-bottom:6px; font-size:10px; color:#92400e; font-weight:600;">
+            <i class="fas fa-exclamation-triangle" style="margin-right:4px; color:#f59e0b;"></i>
+            <span id="track-contacts-warning-text"></span>
+          </div>
+
+          <div id="track-contacts-chips" style="display:flex; flex-wrap:wrap; gap:6px; min-height:28px;">
+            <div style="color:#94a3b8; font-size:11px; padding:4px 0;">No contacts yet.</div>
+          </div>
+
+          <div id="track-contact-form" style="display:none; margin-top:8px; background:#f8fafc; border:1px solid #e2e8f0; border-radius:8px; padding:10px;">
+            <div style="display:flex; gap:8px; flex-wrap:wrap; align-items:flex-end;">
+              <div style="flex:1; min-width:120px;">
+                <label style="display:block; font-size:10px; font-weight:700; color:#64748b; margin-bottom:3px; text-transform:uppercase;">Name</label>
+                <input type="text" id="track-cc-name" placeholder="Contact name"
+                  style="padding:6px 8px; font-size:11px; border:1px solid #cbd5e1; border-radius:6px; width:100%;">
+              </div>
+              <div style="flex:1; min-width:130px;">
+                <label style="display:block; font-size:10px; font-weight:700; color:#64748b; margin-bottom:3px; text-transform:uppercase;">Email</label>
+                <input type="email" id="track-cc-email" placeholder="email@company.com"
+                  style="padding:6px 8px; font-size:11px; border:1px solid #cbd5e1; border-radius:6px; width:100%;">
+              </div>
+              <div style="flex:1; min-width:120px;">
+                <label style="display:block; font-size:10px; font-weight:700; color:#64748b; margin-bottom:3px; text-transform:uppercase;">WhatsApp</label>
+                <input type="text" id="track-cc-whatsapp" placeholder="+263 77..."
+                  style="padding:6px 8px; font-size:11px; border:1px solid #cbd5e1; border-radius:6px; width:100%;">
+              </div>
+              <div style="display:flex; gap:4px;">
+                <button type="button" onclick="window.saveTrackContact()"
+                  style="padding:6px 12px; font-size:10px; font-weight:800; background:#800000; color:#fff; border:none; border-radius:6px; cursor:pointer;">
+                  <i class="fas fa-check" style="margin-right:3px;"></i> Save
+                </button>
+                <button type="button" onclick="window.toggleTrackContactForm(false)"
+                  style="padding:6px 10px; font-size:10px; font-weight:700; background:#f1f5f9; color:#475569; border:1px solid #e2e8f0; border-radius:6px; cursor:pointer;">
+                  Cancel
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+
         <button onclick="saveTrackingOrder()" style="background: #f59e0b; color: #fff; border: none; padding: 12px; border-radius: 8px; font-size: 14px; font-weight: 800; cursor: pointer; margin-top: 10px;">
           <i class="fas fa-save" style="margin-right: 6px;"></i> Save Tracking Order
         </button>
@@ -11803,6 +11853,59 @@
 
           </div>
 
+          <!-- Customer Contacts Section -->
+          <div id="qtn-contacts-section" style="margin-top:12px; margin-bottom:16px; display:none;">
+            <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
+              <div class="section-label" style="margin:0; font-size:12px;">Customer Contacts</div>
+              <button type="button" id="qtn-add-contact-btn" onclick="window.toggleQtnContactForm()"
+                style="font-size:11px; padding:4px 12px; font-weight:700; border-radius:6px; background:#f1f5f9; border:1px solid #e2e8f0; color:#475569; cursor:pointer;">
+                <i class="fas fa-plus" style="margin-right:4px;"></i> Add Contact
+              </button>
+            </div>
+
+            <!-- Warning banner for missing contact data -->
+            <div id="qtn-contacts-warning" style="display:none; background:#fffbeb; border:1px solid #fde68a; border-radius:8px; padding:8px 12px; margin-bottom:8px; font-size:11px; color:#92400e; font-weight:600;">
+              <i class="fas fa-exclamation-triangle" style="margin-right:6px; color:#f59e0b;"></i>
+              <span id="qtn-contacts-warning-text"></span>
+            </div>
+
+            <!-- Chips container -->
+            <div id="qtn-contacts-chips" style="display:flex; flex-wrap:wrap; gap:8px; min-height:32px;">
+              <div style="color:#94a3b8; font-size:12px; padding:6px 0;">No contacts yet — add one below.</div>
+            </div>
+
+            <!-- Inline Add Contact Form (hidden by default) -->
+            <div id="qtn-contact-form" style="display:none; margin-top:10px; background:#f8fafc; border:1px solid #e2e8f0; border-radius:10px; padding:14px;">
+              <div style="display:flex; gap:10px; flex-wrap:wrap; align-items:flex-end;">
+                <div style="flex:1; min-width:140px;">
+                  <label style="display:block; font-size:10px; font-weight:700; color:#64748b; margin-bottom:4px; text-transform:uppercase;">Contact Name</label>
+                  <input type="text" id="qtn-cc-name" class="form-input" placeholder="e.g. John Moyo"
+                    style="padding:7px 10px; font-size:12px; border:1px solid #cbd5e1; border-radius:6px; width:100%;">
+                </div>
+                <div style="flex:1; min-width:160px;">
+                  <label style="display:block; font-size:10px; font-weight:700; color:#64748b; margin-bottom:4px; text-transform:uppercase;">Email</label>
+                  <input type="email" id="qtn-cc-email" class="form-input" placeholder="john@company.com"
+                    style="padding:7px 10px; font-size:12px; border:1px solid #cbd5e1; border-radius:6px; width:100%;">
+                </div>
+                <div style="flex:1; min-width:140px;">
+                  <label style="display:block; font-size:10px; font-weight:700; color:#64748b; margin-bottom:4px; text-transform:uppercase;">WhatsApp Number</label>
+                  <input type="text" id="qtn-cc-whatsapp" class="form-input" placeholder="+263 77..."
+                    style="padding:7px 10px; font-size:12px; border:1px solid #cbd5e1; border-radius:6px; width:100%;">
+                </div>
+                <div style="display:flex; gap:6px;">
+                  <button type="button" onclick="window.saveQtnContact()"
+                    style="padding:7px 14px; font-size:11px; font-weight:800; background:#800000; color:#fff; border:none; border-radius:6px; cursor:pointer;">
+                    <i class="fas fa-check" style="margin-right:4px;"></i> Save
+                  </button>
+                  <button type="button" onclick="window.toggleQtnContactForm(false)"
+                    style="padding:7px 14px; font-size:11px; font-weight:700; background:#f1f5f9; color:#475569; border:1px solid #e2e8f0; border-radius:6px; cursor:pointer;">
+                    Cancel
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+
           <!-- Items Table -->
           <div style="display:flex; justify-content:space-between; align-items:center; margin-top:20px; margin-bottom:8px;">
             <div class="section-label" style="margin:0;">Items</div>
@@ -13318,6 +13421,23 @@
     }
 
     async function fetchCustomerComm(customerLabel) {
+      // 1. Try Supabase centralised contacts first
+      try {
+        if (window.getPrimaryCustomerContact) {
+          const cc = await window.getPrimaryCustomerContact(customerLabel);
+          if (cc && (cc.email || cc.whatsapp_number)) {
+            const phoneRaw = cc.whatsapp_number || '';
+            const waDigits = normalizePhoneToWaDigits(phoneRaw);
+            return {
+              email: String(cc.email || "").trim(),
+              phoneRaw: String(phoneRaw).trim(),
+              waDigits
+            };
+          }
+        }
+      } catch (e) { console.warn('[CC] Supabase contact lookup failed, falling back to Frappe:', e); }
+
+      // 2. Fallback to Frappe
       if (!CURRENT_SYSTEM) return { email: "", phoneRaw: "", waDigits: "" };
       const base = CURRENT_SYSTEM.baseUrl.replace(/\/$/, "");
       const customerName = await resolveCustomerDocname(customerLabel);

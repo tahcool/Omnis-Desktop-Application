@@ -718,3 +718,5 @@
   Files: systems/salestrack/index.html,
 - `0b8a9a5` 2026-09-16 [feature/admin-service-key-separation] UI: resize Order Tracking buttons to match Pipeline compact style (42px, 12px, 10px radius)
   Files: systems/salestrack/index.html,
+- `e100871` 2026-09-16 [feature/admin-service-key-separation] [checkpoint] Restore point: Pipeline perf fixes, styled delete modal, OT button resize
+  Files: .mcp/knowledge/_shared/commit_log.md,

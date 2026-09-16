@@ -25,6 +25,18 @@
         // Add one empty row and calc
         if (window.addQuotationItemRow) window.addQuotationItemRow();
         if (window.calculateQuotationTotals) window.calculateQuotationTotals();
+
+        // Reset customer contacts section
+        window._qtnCustomerContacts = [];
+        window._qtnContactsCustomerName = '';
+        const ccSection = document.getElementById('qtn-contacts-section');
+        if (ccSection) ccSection.style.display = 'none';
+        const ccChips = document.getElementById('qtn-contacts-chips');
+        if (ccChips) ccChips.innerHTML = '<div style="color:#94a3b8; font-size:12px; padding:6px 0;">No contacts yet — add one below.</div>';
+        const ccForm = document.getElementById('qtn-contact-form');
+        if (ccForm) ccForm.style.display = 'none';
+        const ccWarn = document.getElementById('qtn-contacts-warning');
+        if (ccWarn) ccWarn.style.display = 'none';
     };
 
 
@@ -100,6 +112,11 @@
 
             const notesArea = document.getElementById("qtn-notes");
             if (notesArea) notesArea.value = qtn.notes || '';
+
+            // Load customer contacts
+            if (window.loadCustomerContacts && qtn.customer_name) {
+                window.loadCustomerContacts(qtn.customer_name);
+            }
 
             // Populate item rows
             const tbody = document.getElementById("qtn-items-body");
@@ -286,6 +303,10 @@
                 document.getElementById("qtn-customer").value = item.value;
                 const nameInp = document.getElementById("qtn-customer-name");
                 if (nameInp) nameInp.value = item.description;
+                // Load customer contacts from Supabase
+                if (window.loadCustomerContacts) {
+                    window.loadCustomerContacts(item.value);
+                }
             }
         );
 
@@ -440,6 +461,10 @@
                 currency: document.getElementById("qtn-currency")?.value || 'USD',
                 items: []
             };
+
+            // Set contact_person from primary Supabase contact (or fallback to Customer Name field)
+            const primaryC = (window._qtnCustomerContacts || []).find(c => c.is_primary);
+            data.contact_person = (primaryC && primaryC.contact_name) || document.getElementById("qtn-customer-name")?.value || '';
 
             const tbody = document.getElementById("qtn-items-body");
             if (tbody) {
@@ -927,11 +952,21 @@
                 });
             }
 
+            // Fetch primary contact from centralised contacts table
+            let primaryContact = null;
+            if (window.getPrimaryCustomerContact) {
+                primaryContact = await window.getPrimaryCustomerContact(qtnData.customer_name);
+            }
+
             // Map to expected shape
             const data = {
                 ok: true,
                 quotation: qtnData,
-                customer: { custom_primary_contact_name: qtnData.contact_person },
+                customer: {
+                    custom_primary_contact_name: (primaryContact && primaryContact.contact_name) || qtnData.contact_person || '',
+                    mobile_no: (primaryContact && primaryContact.whatsapp_number) || '',
+                    email_id: (primaryContact && primaryContact.email) || ''
+                },
                 items: enrichedItems
             };
 
@@ -1305,5 +1340,264 @@
             }
         });
     });
+
+    /* ═══════════════════════════════════════════════════════════════════
+       CUSTOMER CONTACTS MANAGEMENT
+       Centralised contacts (email / WhatsApp) stored per customer_name
+       in omnis_customer_contacts. Shared across Quotation & Order Tracking.
+    ═══════════════════════════════════════════════════════════════════ */
+
+    // In-memory cache for the currently loaded contacts
+    window._qtnCustomerContacts = [];
+    window._qtnContactsCustomerName = '';
+
+    /** Get Supabase client */
+    function _ccGetSp() {
+        return (window.salestrack && window.salestrack.supabase) || window.supabase || null;
+    }
+
+    /** Load contacts from omnis_customer_contacts for a customer name */
+    window.loadCustomerContacts = async function (customerName, targetChipsId, targetWarningId, targetWarningTextId) {
+        if (!customerName) return [];
+        const chipsId = targetChipsId || 'qtn-contacts-chips';
+        const warnId = targetWarningId || 'qtn-contacts-warning';
+        const warnTextId = targetWarningTextId || 'qtn-contacts-warning-text';
+
+        const section = document.getElementById('qtn-contacts-section');
+        if (section) section.style.display = '';
+
+        try {
+            const sp = _ccGetSp();
+            if (!sp) return [];
+
+            const { data, error } = await sp.from('omnis_customer_contacts')
+                .select('*')
+                .eq('customer_name', customerName)
+                .order('is_primary', { ascending: false })
+                .order('created_at', { ascending: true });
+
+            if (error) { console.error('[CC] Load error:', error); return []; }
+
+            window._qtnCustomerContacts = data || [];
+            window._qtnContactsCustomerName = customerName;
+
+            renderContactChips(chipsId, warnId, warnTextId);
+            return data || [];
+        } catch (e) {
+            console.error('[CC] Load contacts error:', e);
+            return [];
+        }
+    };
+
+    /** Render contact chips + warnings */
+    function renderContactChips(chipsId, warnId, warnTextId) {
+        const container = document.getElementById(chipsId || 'qtn-contacts-chips');
+        const warningEl = document.getElementById(warnId || 'qtn-contacts-warning');
+        const warningTextEl = document.getElementById(warnTextId || 'qtn-contacts-warning-text');
+        if (!container) return;
+
+        const contacts = window._qtnCustomerContacts || [];
+
+        if (contacts.length === 0) {
+            container.innerHTML = '<div style="color:#94a3b8; font-size:12px; padding:6px 0;">No contacts yet — add one using the button above.</div>';
+            if (warningEl) {
+                warningEl.style.display = '';
+                if (warningTextEl) warningTextEl.textContent = 'No contacts found for this customer. Add at least one contact with an email or WhatsApp number.';
+            }
+            return;
+        }
+
+        // Build warnings for missing data
+        const missingParts = [];
+        const noEmail = contacts.filter(c => !c.email);
+        const noWhatsApp = contacts.filter(c => !c.whatsapp_number);
+        const noPrimary = !contacts.some(c => c.is_primary);
+
+        if (noEmail.length > 0) missingParts.push(`${noEmail.length} contact(s) missing email`);
+        if (noWhatsApp.length > 0) missingParts.push(`${noWhatsApp.length} contact(s) missing WhatsApp`);
+        if (noPrimary && contacts.length > 1) missingParts.push('No primary contact set — click the ★ to set one');
+
+        if (warningEl) {
+            if (missingParts.length > 0) {
+                warningEl.style.display = '';
+                if (warningTextEl) warningTextEl.textContent = missingParts.join(' · ');
+            } else {
+                warningEl.style.display = 'none';
+            }
+        }
+
+        // Auto-set primary if only one contact
+        if (contacts.length === 1 && !contacts[0].is_primary) {
+            togglePrimaryContact(contacts[0].id, true);
+            return; // re-renders via recursive call
+        }
+
+        container.innerHTML = contacts.map((c, idx) => {
+            const isPrimary = c.is_primary;
+            const starColor = isPrimary ? '#f59e0b' : '#cbd5e1';
+            const starTitle = isPrimary ? 'Primary contact (shown on print)' : 'Set as primary';
+            const borderColor = isPrimary ? '#fde68a' : '#e2e8f0';
+            const bgColor = isPrimary ? '#fffbeb' : '#f8fafc';
+
+            const emailBadge = c.email
+                ? `<span style="font-size:10px; color:#3b82f6; background:#eff6ff; padding:2px 6px; border-radius:4px;"><i class="fas fa-envelope" style="margin-right:3px;"></i>${c.email}</span>`
+                : `<span style="font-size:10px; color:#f59e0b; background:#fffbeb; padding:2px 6px; border-radius:4px;"><i class="fas fa-exclamation-circle" style="margin-right:3px;"></i>No email</span>`;
+
+            const waBadge = c.whatsapp_number
+                ? `<span style="font-size:10px; color:#25d366; background:#f0fdf4; padding:2px 6px; border-radius:4px;"><i class="fab fa-whatsapp" style="margin-right:3px;"></i>${c.whatsapp_number}</span>`
+                : `<span style="font-size:10px; color:#f59e0b; background:#fffbeb; padding:2px 6px; border-radius:4px;"><i class="fas fa-exclamation-circle" style="margin-right:3px;"></i>No WhatsApp</span>`;
+
+            return `
+              <div style="display:flex; align-items:center; gap:8px; background:${bgColor}; border:1px solid ${borderColor}; border-radius:8px; padding:6px 10px; animation: slideInRight 0.2s ease;">
+                <button type="button" onclick="window.togglePrimaryContact('${c.id}')" title="${starTitle}"
+                  style="background:none; border:none; cursor:pointer; font-size:14px; color:${starColor}; padding:0;">
+                  <i class="fas fa-star"></i>
+                </button>
+                <div style="flex:1;">
+                  <div style="font-weight:700; font-size:12px; color:#1e293b;">${c.contact_name || 'Unnamed'}${isPrimary ? ' <span style="font-size:9px; color:#f59e0b; font-weight:800; text-transform:uppercase;">(Primary)</span>' : ''}</div>
+                  <div style="display:flex; gap:6px; margin-top:3px; flex-wrap:wrap;">
+                    ${emailBadge}
+                    ${waBadge}
+                  </div>
+                </div>
+                <button type="button" onclick="window.deleteCustomerContact('${c.id}')" title="Remove contact"
+                  style="background:none; border:none; cursor:pointer; color:#ef4444; font-size:12px; padding:2px;">
+                  <i class="fas fa-times-circle"></i>
+                </button>
+              </div>`;
+        }).join('');
+    }
+
+    /** Toggle add-contact form visibility */
+    window.toggleQtnContactForm = function (show) {
+        const form = document.getElementById('qtn-contact-form');
+        if (!form) return;
+        const isVisible = form.style.display !== 'none';
+        if (show === false || (show === undefined && isVisible)) {
+            form.style.display = 'none';
+            // Clear fields
+            ['qtn-cc-name', 'qtn-cc-email', 'qtn-cc-whatsapp'].forEach(id => {
+                const el = document.getElementById(id);
+                if (el) el.value = '';
+            });
+        } else {
+            form.style.display = '';
+            document.getElementById('qtn-cc-name')?.focus();
+        }
+    };
+
+    /** Save a new contact */
+    window.saveQtnContact = async function () {
+        const customerName = window._qtnContactsCustomerName || document.getElementById('qtn-customer')?.value?.trim();
+        if (!customerName) {
+            if (window.showToast) window.showToast('Please select a customer first.', 'warning');
+            return;
+        }
+
+        const contactName = document.getElementById('qtn-cc-name')?.value?.trim() || '';
+        const email = document.getElementById('qtn-cc-email')?.value?.trim() || '';
+        const whatsapp = document.getElementById('qtn-cc-whatsapp')?.value?.trim() || '';
+
+        if (!contactName) {
+            if (window.showToast) window.showToast('Contact name is required.', 'warning');
+            return;
+        }
+
+        try {
+            const sp = _ccGetSp();
+            if (!sp) throw new Error('Supabase not available');
+
+            const contacts = window._qtnCustomerContacts || [];
+            const isPrimary = contacts.length === 0; // First contact is auto-primary
+
+            const { data, error } = await sp.from('omnis_customer_contacts').insert([{
+                customer_name: customerName,
+                contact_name: contactName,
+                email: email || null,
+                whatsapp_number: whatsapp || null,
+                is_primary: isPrimary
+            }]).select();
+
+            if (error) throw new Error(error.message || JSON.stringify(error));
+
+            if (window.showToast) window.showToast('Contact saved', 'success');
+            window.toggleQtnContactForm(false);
+            await window.loadCustomerContacts(customerName);
+        } catch (e) {
+            console.error('[CC] Save error:', e);
+            if (window.showToast) window.showToast('Error saving contact: ' + e.message, 'error');
+        }
+    };
+
+    /** Toggle primary status */
+    window.togglePrimaryContact = async function (contactId, silent) {
+        try {
+            const sp = _ccGetSp();
+            if (!sp) return;
+            const customerName = window._qtnContactsCustomerName;
+            if (!customerName) return;
+
+            // Unset all primary for this customer
+            await sp.from('omnis_customer_contacts')
+                .update({ is_primary: false, updated_at: new Date().toISOString() })
+                .eq('customer_name', customerName);
+
+            // Set the clicked one as primary
+            await sp.from('omnis_customer_contacts')
+                .update({ is_primary: true, updated_at: new Date().toISOString() })
+                .eq('id', contactId);
+
+            if (!silent && window.showToast) window.showToast('Primary contact updated', 'success');
+            await window.loadCustomerContacts(customerName);
+        } catch (e) {
+            console.error('[CC] Toggle primary error:', e);
+        }
+    };
+
+    /** Delete a contact */
+    window.deleteCustomerContact = async function (contactId) {
+        if (!confirm('Remove this contact?')) return;
+        try {
+            const sp = _ccGetSp();
+            if (!sp) return;
+
+            await sp.from('omnis_customer_contacts').delete().eq('id', contactId);
+
+            if (window.showToast) window.showToast('Contact removed', 'success');
+            await window.loadCustomerContacts(window._qtnContactsCustomerName);
+        } catch (e) {
+            console.error('[CC] Delete error:', e);
+            if (window.showToast) window.showToast('Error removing contact: ' + e.message, 'error');
+        }
+    };
+
+    /** Get primary contact for a customer (used by print & Order Tracking) */
+    window.getPrimaryCustomerContact = async function (customerName) {
+        if (!customerName) return null;
+        try {
+            const sp = _ccGetSp();
+            if (!sp) return null;
+
+            const { data, error } = await sp.from('omnis_customer_contacts')
+                .select('*')
+                .eq('customer_name', customerName)
+                .eq('is_primary', true)
+                .limit(1);
+
+            if (error || !data || data.length === 0) {
+                // Fallback: get any contact for this customer
+                const { data: any } = await sp.from('omnis_customer_contacts')
+                    .select('*')
+                    .eq('customer_name', customerName)
+                    .order('created_at', { ascending: true })
+                    .limit(1);
+                return (any && any[0]) || null;
+            }
+            return data[0];
+        } catch (e) {
+            console.error('[CC] Get primary error:', e);
+            return null;
+        }
+    };
 
 })();
