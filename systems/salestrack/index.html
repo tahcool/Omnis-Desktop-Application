@@ -3714,6 +3714,43 @@
       letter-spacing: 0.03em;
     }
 
+    /* Quotation Items Table — solid maroon header bar like Pipeline */
+    #qtn-items-table thead th {
+      background: linear-gradient(135deg, #4c110d 0%, #8b2219 55%, #6b1a14 100%) !important;
+      color: #ffffff !important;
+      font-weight: 700 !important;
+      font-size: 11px !important;
+      text-transform: uppercase !important;
+      letter-spacing: 0.08em !important;
+      padding: 0 18px !important;
+      height: 44px !important;
+      line-height: 44px !important;
+      border: none !important;
+      white-space: nowrap;
+    }
+    #qtn-items-table thead tr th:first-child {
+      border-top-left-radius: 12px !important;
+    }
+    #qtn-items-table thead tr th:last-child {
+      border-top-right-radius: 12px !important;
+    }
+    #qtn-items-table tbody td {
+      border-right: none !important;
+      padding: 10px 8px !important;
+      vertical-align: middle;
+      white-space: normal;
+    }
+    #qtn-items-table tbody tr {
+      border-bottom: 1px solid #f1f5f9;
+      transition: background 0.15s;
+    }
+    #qtn-items-table tbody tr:hover {
+      background: #faf5f5;
+    }
+    #qtn-items-table tbody tr:last-child {
+      border-bottom: none;
+    }
+
     .btn-secondary {
       padding: 9px 14px;
       border-radius: 999px;
@@ -11765,7 +11802,7 @@
             </button>
           </div>
 
-          <div class="table-wrapper" style="border:1px solid var(--border); border-radius:8px; overflow:hidden; margin-bottom:16px; box-shadow: var(--shadow-sm);">
+          <div class="table-wrapper" style="border-radius:12px; overflow:hidden; margin-bottom:16px; box-shadow: 0 4px 12px rgba(139, 34, 25, 0.1);">
             <table id="qtn-items-table" style="width:100%; font-size:13px; border-collapse:collapse;">
               <thead>
                 <tr>
