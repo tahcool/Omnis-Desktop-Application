@@ -127,6 +127,12 @@
 
                     const deliveryInp = lastRow.querySelector('.item-delivery');
                     if (deliveryInp) deliveryInp.value = item.delivery || '';
+
+                    // Set product ID for edit button
+                    if (window._fullCatalog && item.item_code) {
+                        const prod = window._fullCatalog.find(p => p.item_code === item.item_code || p.item_name === item.item_code);
+                        if (prod && prod.id) lastRow.setAttribute('data-product-id', prod.id);
+                    }
                 });
             } else {
                 // Add one empty row if no items
@@ -211,7 +217,10 @@
         const row = document.createElement("tr");
         row.innerHTML = `
             <td style="padding:6px; position:relative;">
-                <input type="text" class="form-input item-code" placeholder="Search product..." style="font-size:12px; width:100%;">
+                <div style="display:flex; align-items:center; gap:4px;">
+                    <input type="text" class="form-input item-code" placeholder="Search product..." style="font-size:12px; flex:1;">
+                    <button type="button" class="btn-edit-product" title="Edit product data" style="background:none; border:none; cursor:pointer; color:#94a3b8; font-size:14px; padding:2px 4px; flex-shrink:0; transition:color 0.2s;" onmouseenter="this.style.color='#3b82f6'" onmouseleave="this.style.color='#94a3b8'"><i class="fas fa-pencil-alt"></i></button>
+                </div>
                 <div class="suggest-list hidden" style="position:absolute; top:100%; left:6px; right:6px; z-index:9999; background:#fff; border:1px solid #e2e8f0; border-radius:8px; max-height:250px; overflow-y:auto; box-shadow:0 8px 25px rgba(0,0,0,0.15);"></div>
             </td>
             <td style="padding:6px;"><input type="text" class="form-input item-name" placeholder="Item Name" readonly style="font-size:12px; width:100%; background:#f9fafb; color:#374151;"></td>

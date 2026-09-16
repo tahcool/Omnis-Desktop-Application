@@ -17296,6 +17296,30 @@
 
                             dd.style.display = 'none';
 
+                            // --- DATA QUALITY WARNINGS ---
+                            const warnings = [];
+                            if (!raw.warranty) warnings.push('⚠️ WARRANTY is missing');
+                            if (!raw.spec_sheet_url) warnings.push('📄 SPEC SHEET is not attached');
+                            if (!raw.description) warnings.push('📝 DESCRIPTION is empty');
+
+                            if (warnings.length > 0) {
+                                // Show inline warning banner on the row
+                                const existingBanner = row.querySelector('.item-data-warning');
+                                if (existingBanner) existingBanner.remove();
+                                const banner = document.createElement('tr');
+                                banner.className = 'item-data-warning';
+                                banner.innerHTML = `<td colspan="10" style="padding:6px 12px; background:#fef3c7; border-left:3px solid #f59e0b; font-size:11px; color:#92400e;">
+                                    <i class="fas fa-exclamation-triangle" style="color:#f59e0b; margin-right:6px;"></i>
+                                    <strong>Product data incomplete:</strong> ${warnings.join(' · ')}
+                                    <button type="button" onclick="window.editProductFromQtnRow(this.closest('tr').previousElementSibling)" style="margin-left:10px; padding:2px 10px; font-size:10px; font-weight:700; background:#3b82f6; color:white; border:none; border-radius:4px; cursor:pointer;">Fix Now</button>
+                                    <button type="button" onclick="this.closest('tr').remove()" style="margin-left:4px; padding:2px 10px; font-size:10px; font-weight:700; background:#e5e7eb; color:#374151; border:none; border-radius:4px; cursor:pointer;">Dismiss</button>
+                                </td>`;
+                                row.after(banner);
+                            }
+
+                            // Store the product ID on the row for the edit button
+                            if (raw.id) row.setAttribute('data-product-id', raw.id);
+
                             // Lookup last quotation for this item to get rate + lead time
                             if (itemCode) {
                                 try {
@@ -17361,6 +17385,42 @@
 
         console.log('[QtnItemSearch] Event delegation wired for quotation item product search.');
     })();
+
+    // --- EDIT PRODUCT FROM QUOTATION ROW ---
+    window.editProductFromQtnRow = function (itemRow) {
+        if (!itemRow) return;
+        const itemCode = itemRow.querySelector('.item-code')?.value?.trim();
+        const productId = itemRow.getAttribute('data-product-id');
+        
+        if (productId && window.editProduct) {
+            window.editProduct(productId);
+            return;
+        }
+        
+        // Fallback: search _fullCatalog by item_code
+        if (itemCode && window._fullCatalog) {
+            const match = window._fullCatalog.find(p => 
+                p.item_code === itemCode || p.item_name === itemCode
+            );
+            if (match && match.id) {
+                window.editProduct(match.id);
+                return;
+            }
+        }
+        
+        alert('Product not found in catalog. Please search for it in the Product Catalog first.');
+    };
+
+    // Edit button click delegation
+    document.addEventListener('click', (e) => {
+        const editBtn = e.target.closest('.btn-edit-product');
+        if (editBtn && editBtn.closest('#qtn-items-body')) {
+            e.preventDefault();
+            e.stopPropagation();
+            const row = editBtn.closest('tr');
+            window.editProductFromQtnRow(row);
+        }
+    }, true);
 
     window.triggerCatalogSync = async function (btn) {
         if (!btn) return;
