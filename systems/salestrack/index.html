@@ -17166,30 +17166,39 @@
 
     // --- QUOTATION ITEMS: Product search via event delegation ---
     // Uses the exact same Supabase search as Quick Quotes (stock_inventory, model+brand)
+    // Dropdown is appended to document.body to avoid overflow clipping from table cells
     (function wireQtnItemSearch() {
         let _qtnSearchTimer = null;
+        let _activeDropdown = null; // Single shared dropdown element
+
+        function getOrCreateDropdown() {
+            if (_activeDropdown) return _activeDropdown;
+            _activeDropdown = document.createElement('div');
+            _activeDropdown.id = 'qtn-item-search-dropdown';
+            _activeDropdown.style.cssText = 'position:fixed; z-index:99999; background:#fff; border:1px solid #e2e8f0; border-radius:8px; max-height:250px; overflow-y:auto; box-shadow:0 8px 25px rgba(0,0,0,0.15); display:none; min-width:200px;';
+            document.body.appendChild(_activeDropdown);
+            return _activeDropdown;
+        }
+
+        function positionDropdown(input) {
+            const dd = getOrCreateDropdown();
+            const rect = input.getBoundingClientRect();
+            dd.style.left = rect.left + 'px';
+            dd.style.top = (rect.bottom + 2) + 'px';
+            dd.style.width = Math.max(rect.width, 280) + 'px';
+        }
 
         const doQtnItemSearch = async (input) => {
             const val = (input.value || "").trim();
             const row = input.closest('tr');
-            if (!row) { console.log('[QtnItemSearch] No row found'); return; }
-            let suggestBox = row.querySelector('.suggest-list');
-            console.log('[QtnItemSearch] doSearch called, val:', val, 'row:', !!row, 'suggestBox:', !!suggestBox);
-            if (!suggestBox) {
-                // Create suggest box if missing
-                suggestBox = document.createElement('div');
-                suggestBox.className = 'suggest-list';
-                suggestBox.style.cssText = 'position:absolute; top:100%; left:0; right:0; z-index:9999; background:#fff; border:1px solid #e2e8f0; border-radius:8px; max-height:250px; overflow-y:auto; box-shadow:0 8px 25px rgba(0,0,0,0.15);';
-                input.parentElement.appendChild(suggestBox);
-                console.log('[QtnItemSearch] Created new suggestBox');
-            }
+            if (!row) return;
+            const dd = getOrCreateDropdown();
 
-            if (val.length < 1) { suggestBox.classList.add('hidden'); return; }
+            if (val.length < 1) { dd.style.display = 'none'; return; }
 
-            suggestBox.innerHTML = '<div style="padding:8px; color:#64748b; font-size:11px; text-align:center;"><i class="fa fa-spinner fa-spin"></i> Searching...</div>';
-            suggestBox.classList.remove('hidden');
-            suggestBox.style.display = 'block';  // Force display
-            console.log('[QtnItemSearch] Showing Searching... indicator. suggestBox visible:', !suggestBox.classList.contains('hidden'), 'display:', suggestBox.style.display);
+            positionDropdown(input);
+            dd.innerHTML = '<div style="padding:8px; color:#64748b; font-size:11px; text-align:center;"><i class="fa fa-spinner fa-spin"></i> Searching...</div>';
+            dd.style.display = 'block';
 
             try {
                 let results = [];
@@ -17197,11 +17206,8 @@
 
                 // Try Supabase preload proxy first (same as quick quotes)
                 const sp = (window.salestrack && window.salestrack.supabase) || window.supabase || null;
-                console.log('[QtnItemSearch] sp:', !!sp, 'sp.from:', !!(sp && sp.from));
                 if (sp && sp.from) {
-                    console.log('[QtnItemSearch] Querying stock_inventory with filter:', orFilter);
                     const { data, error } = await sp.from('stock_inventory').select('*').or(orFilter).limit(15);
-                    console.log('[QtnItemSearch] Supabase result - data:', data ? data.length : 'null', 'error:', error);
                     if (!error && data) results = data;
                 }
 
@@ -17214,19 +17220,13 @@
                     if (ipcRes && ipcRes.ok && ipcRes.data) results = ipcRes.data;
                 }
 
-                // Cache fallback
-                if (results.length === 0 && window.cacheAPI && typeof window.cacheAPI.search === 'function') {
-                    const cacheRes = await window.cacheAPI.search('stock_inventory', val, 'model,brand');
-                    if (cacheRes && cacheRes.ok) results = cacheRes.data || [];
-                }
-
-                suggestBox.innerHTML = '';
+                dd.innerHTML = '';
                 if (results.length > 0) {
-                    suggestBox.innerHTML = results.map((item, idx) => {
+                    dd.innerHTML = results.map((item, idx) => {
                         const title = item.item_name || item.model || item.name || item.item_code || '';
                         const sub = item.item_code || item.brand || '';
                         const details = item.brand ? `Brand: ${item.brand}` : (item.brand_name ? `Brand: ${item.brand_name}` : '');
-                        return `<div class="suggest-item" data-idx="${idx}" style="padding:10px 14px; border-bottom:1px solid #f1f5f9; cursor:pointer;">
+                        return `<div class="suggest-item" data-idx="${idx}" style="padding:10px 14px; border-bottom:1px solid #f1f5f9; cursor:pointer; transition: background 0.15s;">
                             <div style="font-weight:700; color:#1e293b; font-size:13.5px;">${title}</div>
                             <div style="display:flex; justify-content:space-between; align-items:center; margin-top:2px;">
                                <div style="font-size:11px; color:#64748b; font-weight:500;">${sub}</div>
@@ -17234,9 +17234,11 @@
                             </div>
                         </div>`;
                     }).join('');
-                    suggestBox.classList.remove('hidden');
+                    dd.style.display = 'block';
 
-                    suggestBox.querySelectorAll('.suggest-item').forEach(el => {
+                    dd.querySelectorAll('.suggest-item').forEach(el => {
+                        el.onmouseenter = () => { el.style.background = '#f1f5f9'; };
+                        el.onmouseleave = () => { el.style.background = ''; };
                         el.onclick = (e) => {
                             e.stopPropagation();
                             const idx = parseInt(el.getAttribute('data-idx'), 10);
@@ -17252,35 +17254,32 @@
                                 if (rateInp) rateInp.value = raw.rate;
                                 if (window.calculateQuotationTotals) window.calculateQuotationTotals();
                             }
-                            suggestBox.classList.add('hidden');
+                            dd.style.display = 'none';
                         };
                     });
                 } else {
-                    suggestBox.innerHTML = '<div style="padding:12px; color:#64748b; font-size:12px; text-align:center;">No matches found</div>';
-                    suggestBox.classList.remove('hidden');
+                    dd.innerHTML = '<div style="padding:12px; color:#64748b; font-size:12px; text-align:center;">No matches found</div>';
+                    dd.style.display = 'block';
                 }
             } catch (e) {
                 console.error("[QtnItemSearch] Error:", e);
-                suggestBox.classList.add('hidden');
+                dd.style.display = 'none';
             }
         };
 
         // EVENT DELEGATION: listen on document for any .item-code inside #qtn-items-body
         document.addEventListener('input', (e) => {
-            console.log('[QtnItemSearch] INPUT event on:', e.target.tagName, e.target.className, 'closest qtn-items-body:', !!e.target.closest('#qtn-items-body'));
             if (e.target.classList.contains('item-code') && e.target.closest('#qtn-items-body')) {
-                console.log('[QtnItemSearch] MATCH! Scheduling search for:', e.target.value, 'supabase:', !!window.supabase, 'electron:', !!window.electron);
                 clearTimeout(_qtnSearchTimer);
                 _qtnSearchTimer = setTimeout(() => doQtnItemSearch(e.target), 300);
             }
         }, true);
 
-        // Hide suggest boxes on outside click
+        // Hide dropdown on outside click
         document.addEventListener('click', (e) => {
-            if (!e.target.classList.contains('item-code')) {
-                document.querySelectorAll('#qtn-items-body .suggest-list').forEach(box => {
-                    if (!box.contains(e.target)) box.classList.add('hidden');
-                });
+            const dd = document.getElementById('qtn-item-search-dropdown');
+            if (dd && !e.target.classList.contains('item-code') && !dd.contains(e.target)) {
+                dd.style.display = 'none';
             }
         }, true);
 
