@@ -688,3 +688,15 @@
   Files: systems/salestrack/create_quotation_logic.js,systems/salestrack/index.html,
 - `74ff728` 2026-09-16 [feature/admin-service-key-separation] Fix: replace all alert() with showToast() to prevent Electron freeze + async product lookup for edit button
   Files: systems/salestrack/create_quotation_logic.js,systems/salestrack/index.html,
+- `c5f6551` 2026-09-16 [feature/admin-service-key-separation] [checkpoint] Restore point: edit pencil button working, all alerts replaced with toasts
+  Files: .mcp/knowledge/_shared/commit_log.md,
+- `7301f00` 2026-09-16 [feature/admin-service-key-separation] Feature: data quality warnings shown when opening existing quotation - checks warranty and spec sheet per item
+  Files: systems/salestrack/create_quotation_logic.js,
+- `85907fb` 2026-09-16 [feature/admin-service-key-separation] Fix: editProduct now fetches from Supabase when _fullCatalog is not loaded - fixes pencil button and Fix Now from quotation form
+  Files: systems/salestrack/index.html,
+- `845bd81` 2026-09-16 [feature/admin-service-key-separation] Feature: compact header layout, Customer-SAL title format, print button, stay on page after save
+  Files: systems/salestrack/create_quotation_logic.js,systems/salestrack/index.html,
+- `f186d8d` 2026-09-16 [feature/admin-service-key-separation] UI: compact form layout - remove Bank Account and PFI, Company+SalesPerson side by side under Customer
+  Files: systems/salestrack/index.html,
+- `a74a135` 2026-09-16 [feature/admin-service-key-separation] UI: Currency + Delivery side by side in Transaction Details, rename to Delivery
+  Files: systems/salestrack/index.html,
