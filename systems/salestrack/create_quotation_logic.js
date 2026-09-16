@@ -947,7 +947,7 @@
                     ${specContent}
                     ${specLink}
                 </td>
-                <td style="border: 1px solid #000; padding: 8px; text-align: center;">${qtn.delivery || 'TBD'}</td>
+                <td style="border: 1px solid #000; padding: 8px; text-align: center;">${row.custom_lead_time || 'TBD'}</td>
                 <td style="border: 1px solid #000; padding: 8px; text-align: right; white-space: nowrap;">${fmtPrice(row.rate)}</td>
                 <td style="border: 1px solid #000; padding: 8px; text-align: right; font-weight: bold; white-space: nowrap;">${fmtPrice(row.amount)}</td>
             </tr>`;
