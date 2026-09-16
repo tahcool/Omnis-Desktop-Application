@@ -147,6 +147,69 @@
             if (mainTitle) mainTitle.textContent = "Edit Quotation";
 
             console.log("[QtnEdit] Loaded quotation:", qtn.name, "with", items.length, "items");
+
+            // --- DATA QUALITY CHECK on loaded items (async, non-blocking) ---
+            setTimeout(async () => {
+                const sp = (window.salestrack && window.salestrack.supabase) || window.supabase || null;
+                const tbody2 = document.getElementById("qtn-items-body");
+                if (!tbody2) return;
+                const rows = Array.from(tbody2.querySelectorAll('tr:not(.item-data-warning)'));
+                
+                for (const row of rows) {
+                    const itemCode = row.querySelector('.item-code')?.value?.trim();
+                    if (!itemCode) continue;
+                    
+                    let product = null;
+                    
+                    // Check _fullCatalog first
+                    if (window._fullCatalog) {
+                        product = window._fullCatalog.find(p => p.item_code === itemCode || p.item_name === itemCode);
+                    }
+                    
+                    // Fallback to DB query
+                    if (!product) {
+                        try {
+                            if (sp && sp.from) {
+                                const { data } = await sp.from('products')
+                                    .select('id,warranty,spec_sheet_url,description')
+                                    .or(`item_code.eq.${itemCode},item_name.eq.${itemCode}`)
+                                    .limit(1);
+                                if (data && data.length > 0) product = data[0];
+                            }
+                            if (!product && window.electron) {
+                                const res = await window.electron.invoke('supabase:query', {
+                                    table: 'products', method: 'select',
+                                    params: { columns: 'id,warranty,spec_sheet_url,description', or: `item_code.eq.${itemCode},item_name.eq.${itemCode}`, limit: 1 }
+                                });
+                                if (res?.ok && res.data?.length > 0) product = res.data[0];
+                            }
+                        } catch (err) {
+                            console.warn('[QtnEdit] Product quality check failed for:', itemCode, err);
+                        }
+                    }
+                    
+                    if (!product) continue;
+                    
+                    // Store product ID for edit button
+                    if (product.id) row.setAttribute('data-product-id', product.id);
+                    
+                    const warnings = [];
+                    if (!product.warranty) warnings.push('⚠️ WARRANTY is missing');
+                    if (!product.spec_sheet_url) warnings.push('📄 SPEC SHEET is not attached');
+                    
+                    if (warnings.length > 0) {
+                        const banner = document.createElement('tr');
+                        banner.className = 'item-data-warning';
+                        banner.innerHTML = `<td colspan="10" style="padding:6px 12px; background:#fef3c7; border-left:3px solid #f59e0b; font-size:11px; color:#92400e;">
+                            <i class="fas fa-exclamation-triangle" style="color:#f59e0b; margin-right:6px;"></i>
+                            <strong>${itemCode}:</strong> ${warnings.join(' · ')}
+                            <button type="button" onclick="window.editProductFromQtnRow(this.closest('tr').previousElementSibling)" style="margin-left:10px; padding:2px 10px; font-size:10px; font-weight:700; background:#3b82f6; color:white; border:none; border-radius:4px; cursor:pointer;">Fix Now</button>
+                            <button type="button" onclick="this.closest('tr').remove()" style="margin-left:4px; padding:2px 10px; font-size:10px; font-weight:700; background:#e5e7eb; color:#374151; border:none; border-radius:4px; cursor:pointer;">Dismiss</button>
+                        </td>`;
+                        row.after(banner);
+                    }
+                }
+            }, 500); // Slight delay to let the UI render first
         } catch (e) {
             console.error("[QtnEdit] Error:", e);
             if (window.showToast) window.showToast('Error opening quotation: ' + (e.message || e), 'error');
