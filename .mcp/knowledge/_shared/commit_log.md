@@ -652,3 +652,7 @@
   Files: systems/salestrack/index.html,
 - `ec33bcd` 2026-09-16 [feature/admin-service-key-separation] Feature: auto-fill description, last rate & lead time from previous quotations when selecting item
   Files: systems/salestrack/index.html,
+- `363cdfc` 2026-09-16 [feature/admin-service-key-separation] [checkpoint] Restore point: quotation item search working with body-level dropdown, auto-fill rate/description/lead time from last quotation
+  Files: .mcp/knowledge/_shared/commit_log.md,
+- `2107000` 2026-09-16 [feature/admin-service-key-separation] Fix: search products table instead of stock_inventory for quotation item search - matches Product Catalog data
+  Files: systems/salestrack/index.html,
