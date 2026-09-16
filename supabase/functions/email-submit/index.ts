@@ -152,18 +152,9 @@ Deno.serve(async (req) => {
           );
         }
 
-        // Validate system scope — all users must have system access
-        // (admins are scoped to their systems, super-admins bypass)
-        const effectiveSystem = system || "fleetrack";
-        if (!hasSystemAccess(callerSystems, callerEmail, effectiveSystem)) {
-          return jsonResponse(
-            {
-              ok: false,
-              error: `You do not have access to the '${effectiveSystem}' system`,
-            },
-            403
-          );
-        }
+        // System is metadata for categorisation, not an access gate.
+        // Any authenticated user can queue an email.
+        const effectiveSystem = system || "salestrack";
 
         // ── Idempotency handling ───────────────────────────────
         if (idempotencyKey) {

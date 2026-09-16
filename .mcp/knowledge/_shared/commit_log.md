@@ -722,3 +722,5 @@
   Files: .mcp/knowledge/_shared/commit_log.md,
 - `c532259` 2026-09-16 [feature/admin-service-key-separation] [checkpoint] feat(salestrack): centralised customer contacts system
   Files: .mcp/knowledge/_shared/commit_log.md,supabase/migrations/20260916000002_customer_contacts.sql,systems/salestrack/create_quotation_logic.js,systems/salestrack/index.html,systems/salestrack/orders_logic.js,
+- `7b1138e` 2026-09-16 [feature/admin-service-key-separation] [checkpoint] chore: bump version to 4.4.0
+  Files: .mcp/knowledge/_shared/commit_log.md,package.json,

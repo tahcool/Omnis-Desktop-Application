@@ -7427,14 +7427,7 @@
                 <button class="btn-text-action" style="color: var(--accent-maroon); background: #fff1f2; padding: 6px 12px; border-radius: 6px; border: 1px solid #fecdd3;" onclick="switchToView('view-create-quotation')" onmouseover="this.style.background='#ffe4e6'" onmouseout="this.style.background='#fff1f2'">Advanced Form &rarr;</button>
               </div>
 
-              <!-- MAGIC FILL -->
-              <div style="margin-top: 4px; margin-bottom: 8px; background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 12px; padding: 12px 16px; display: flex; align-items: center; gap: 12px;">
-                  <i class="fas fa-magic" style="color: var(--accent-maroon); font-size: 16px;"></i>
-                  <input type="text" id="qq-magic-fill" placeholder="E.g. Quote 3 Hitachis for Takunda at $120k, 2 weeks lead time..." style="flex: 1; background: transparent; border: none; color: #0f172a; font-size: 14px; outline: none; font-weight: 500;">
-                  <button id="btn-qq-magic" onclick="window.performMagicFill()" style="background: var(--accent-maroon); color: #ffffff; padding: 6px 16px; border-radius: 8px; font-weight: 800; font-size: 12px; border: none; cursor: pointer; display: flex; align-items: center; gap: 6px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); transition: all 0.2s;" onmouseover="this.style.opacity='0.9'" onmouseout="this.style.opacity='1'">
-                      <i class="fas fa-bolt"></i> Auto-Fill
-                  </button>
-              </div>
+
 
 
 
@@ -7467,14 +7460,15 @@
                 </div>
                 <div class="q-quick-input-group">
                   <label class="q-quick-label">Currency</label>
-                  <select id="qq-currency" class="q-quick-input" style="appearance:auto; cursor:pointer;">
-                    <option value="USD" selected>USD — US Dollar</option>
-                    <option value="ZAR">ZAR — South African Rand</option>
-                    <option value="BWP">BWP — Botswana Pula</option>
-                    <option value="ZMW">ZMW — Zambian Kwacha</option>
-                    <option value="MZN">MZN — Mozambican Metical</option>
-                    <option value="EUR">EUR — Euro</option>
-                    <option value="GBP">GBP — British Pound</option>
+                  <select id="qq-currency" class="q-quick-input currency-abbrev-select" style="appearance:auto; cursor:pointer;"
+                    onfocus="window._currSelectExpand(this)" onblur="window._currSelectCollapse(this)" onchange="window._currSelectCollapse(this)">
+                    <option value="USD" data-full="USD — US Dollar" selected>USD</option>
+                    <option value="ZAR" data-full="ZAR — South African Rand">ZAR — South African Rand</option>
+                    <option value="BWP" data-full="BWP — Botswana Pula">BWP — Botswana Pula</option>
+                    <option value="ZMW" data-full="ZMW — Zambian Kwacha">ZMW — Zambian Kwacha</option>
+                    <option value="MZN" data-full="MZN — Mozambican Metical">MZN — Mozambican Metical</option>
+                    <option value="EUR" data-full="EUR — Euro">EUR — Euro</option>
+                    <option value="GBP" data-full="GBP — British Pound">GBP — British Pound</option>
                   </select>
                 </div>
                 <div class="q-quick-input-group">
@@ -11814,14 +11808,15 @@
                 <div class="form-row">
                   <label class="form-label">Currency</label>
                   <div style="display:flex; gap:6px; align-items:center;">
-                    <select id="qtn-currency" class="form-input" style="flex:1;" onchange="window.onQtnCurrencyChange()">
-                      <option value="USD">USD — US Dollar</option>
-                      <option value="ZAR">ZAR — South African Rand</option>
-                      <option value="BWP">BWP — Botswana Pula</option>
-                      <option value="ZMW">ZMW — Zambian Kwacha</option>
-                      <option value="MZN">MZN — Mozambican Metical</option>
-                      <option value="EUR">EUR — Euro</option>
-                      <option value="GBP">GBP — British Pound</option>
+                    <select id="qtn-currency" class="form-input currency-abbrev-select" style="flex:1;"
+                      onfocus="window._currSelectExpand(this)" onblur="window._currSelectCollapse(this)" onchange="window._currSelectCollapse(this); window.onQtnCurrencyChange()">
+                      <option value="USD" data-full="USD — US Dollar">USD</option>
+                      <option value="ZAR" data-full="ZAR — South African Rand">ZAR — South African Rand</option>
+                      <option value="BWP" data-full="BWP — Botswana Pula">BWP — Botswana Pula</option>
+                      <option value="ZMW" data-full="ZMW — Zambian Kwacha">ZMW — Zambian Kwacha</option>
+                      <option value="MZN" data-full="MZN — Mozambican Metical">MZN — Mozambican Metical</option>
+                      <option value="EUR" data-full="EUR — Euro">EUR — Euro</option>
+                      <option value="GBP" data-full="GBP — British Pound">GBP — British Pound</option>
                     </select>
                     <button type="button" id="qtn-fetch-rate-btn" onclick="window.fetchExchangeRate()" style="padding:6px 10px; background:#3b82f6; color:white; border:none; border-radius:6px; font-size:11px; font-weight:700; cursor:pointer; white-space:nowrap; box-shadow:0 2px 4px rgba(59,130,246,0.3);">
                       <i class="fas fa-sync-alt"></i> Rate
@@ -14414,7 +14409,15 @@
         item.className = "ai-order-row ai-quotations-grid";
         item.style.borderRadius = "12px";
         
-        if (isRedFlag) {
+        const isOrdered = String(row.status || '').toLowerCase() === 'ordered';
+
+        if (isOrdered) {
+            item.style.borderLeft = "4px solid #16a34a";
+            item.style.background = "#f0fdf4";
+            item.style.borderTop = "1px solid #bbf7d0";
+            item.style.borderRight = "1px solid #bbf7d0";
+            item.style.borderBottom = "1px solid #bbf7d0";
+        } else if (isRedFlag) {
             item.style.border = "3px solid #ef4444";
             item.style.background = "#fef2f2";
             item.style.boxShadow = "0 0 10px rgba(239, 68, 68, 0.5)";
@@ -14537,6 +14540,10 @@
               </div>
               <div class="qrow-dropdown-item" onclick="event.stopPropagation(); window.closeQRowMenus(); window.previewWhatsAppReminder('${row.name}')">
                 <i class="fab fa-whatsapp" style="color:#16a34a;"></i> WhatsApp Reminder
+              </div>
+              <div class="qrow-dropdown-sep"></div>
+              <div class="qrow-dropdown-item" onclick="event.stopPropagation(); window.closeQRowMenus(); window.markQuotationAsSale('${row.name}')" style="font-weight:700;">
+                <i class="fas fa-check-circle" style="color:#16a34a;"></i> Mark as Sale
               </div>
               <div class="qrow-dropdown-sep"></div>
               <div class="qrow-dropdown-item danger" onclick="event.stopPropagation(); window.closeQRowMenus(); window.deleteQuotation('${row.name}', '${escapeHtml(row.customer_name || '')}')">
@@ -14744,6 +14751,565 @@
         overlay.onclick = (e) => { if (e.target === overlay) dismiss(); };
         document.addEventListener('keydown', onKey);
       });
+    };
+
+    /* ═══════════════════════════════════════════════════════════════════
+       MARK QUOTATION AS SALE
+       Converts a quotation into confirmed sale records and sends
+       a thank-you email to the customer with the team CC'd.
+     ═══════════════════════════════════════════════════════════════════ */
+    window.markQuotationAsSale = async function(quoteId) {
+      if (!window.electron) return;
+
+      // ── 1. Fetch quotation + items ───────────────────────────────
+      try {
+        const qRes = await window.electron.invoke('supabase:query', {
+          table: 'omnis_quotations',
+          method: 'select',
+          params: {
+            columns: 'id, name, customer_name, company, sales_person, currency, delivery, status, title, transaction_date',
+            filters: { name: quoteId }
+          }
+        });
+        if (!qRes.ok || !qRes.data || qRes.data.length === 0) {
+          if (window.showToast) window.showToast('Quotation not found: ' + quoteId, 'error');
+          return;
+        }
+        const qtn = qRes.data[0];
+
+        const iRes = await window.electron.invoke('supabase:query', {
+          table: 'omnis_quotation_items',
+          method: 'select',
+          params: { filters: { quotation_id: qtn.id } }
+        });
+        const items = (iRes.ok && iRes.data) ? iRes.data : [];
+
+        if (items.length === 0) {
+          if (window.showToast) window.showToast('This quotation has no items to convert.', 'warning');
+          return;
+        }
+
+        // ── 2. Show confirmation modal ──────────────────────────────
+        const existing = document.getElementById('omnis-sale-modal');
+        if (existing) existing.remove();
+
+        const overlay = document.createElement('div');
+        overlay.id = 'omnis-sale-modal';
+        overlay.style.cssText = 'position:fixed; inset:0; z-index:99999; display:flex; align-items:center; justify-content:center; background:rgba(0,0,0,0.5); backdrop-filter:blur(4px); animation:fadeIn 0.15s ease;';
+
+        const todayStr = new Date().toISOString().split('T')[0];
+        const currencyFmt = (v) => new Intl.NumberFormat('en-US', { style: 'currency', currency: qtn.currency || 'USD', minimumFractionDigits: 0, maximumFractionDigits: 0 }).format(v || 0);
+
+        const itemRowsHtml = items.map((item, idx) => `
+          <tr style="border-bottom:1px solid #f1f5f9;">
+            <td style="padding:10px 12px; text-align:center;">
+              <input type="checkbox" id="sale-item-${idx}" checked
+                style="width:18px; height:18px; accent-color:#16a34a; cursor:pointer;" />
+            </td>
+            <td style="padding:10px 12px; font-weight:700; color:#0f172a;">${escapeHtml(item.item_code || item.item_name || 'Unknown')}</td>
+            <td style="padding:10px 12px; text-align:center;">
+              <input type="number" id="sale-qty-${idx}" value="${item.qty || 1}" min="1"
+                style="width:60px; padding:4px 6px; border:1px solid #e2e8f0; border-radius:6px; font-size:13px; font-weight:700; color:#991b1b; text-align:center; font-family:inherit;" />
+            </td>
+            <td style="padding:10px 12px; text-align:right; font-weight:700; color:#065f46;">${item.rate ? currencyFmt(item.rate) : '—'}</td>
+            <td style="padding:10px 12px; text-align:center;">
+              <input type="text" id="sale-lead-${idx}" value="${escapeHtml(item.custom_lead_time || qtn.delivery || '')}" placeholder="e.g. 16 Weeks"
+                style="width:100px; padding:4px 6px; border:1px solid #e2e8f0; border-radius:6px; font-size:12px; font-weight:600; color:#0f172a; text-align:center; font-family:inherit;" />
+            </td>
+          </tr>
+        `).join('');
+
+        overlay.innerHTML = `
+          <div style="background:#fff; border-radius:16px; width:620px; max-width:95vw; max-height:90vh; box-shadow:0 20px 60px rgba(0,0,0,0.3); overflow:hidden; animation:slideUp 0.2s ease; display:flex; flex-direction:column;">
+            <!-- Header -->
+            <div style="background:linear-gradient(135deg, #064e3b 0%, #166534 55%, #15803d 100%); padding:18px 24px; display:flex; align-items:center; gap:12px; flex-shrink:0;">
+              <div style="width:40px; height:40px; background:rgba(255,255,255,0.15); border-radius:10px; display:flex; align-items:center; justify-content:center;">
+                <i class="fas fa-check-circle" style="color:#86efac; font-size:18px;"></i>
+              </div>
+              <div>
+                <div style="font-size:16px; font-weight:800; color:#fff; letter-spacing:0.02em;">Mark as Sale</div>
+                <div style="font-size:11px; color:rgba(255,255,255,0.7); margin-top:2px;">Convert this quotation into a confirmed sale</div>
+              </div>
+            </div>
+            <!-- Body -->
+            <div style="padding:24px; overflow-y:auto; flex:1;">
+              <!-- Customer Info -->
+              <div style="background:#f0fdf4; border:1px solid #bbf7d0; border-radius:10px; padding:14px 16px; margin-bottom:18px;">
+                <div style="font-size:14px; color:#166534; font-weight:700; margin-bottom:4px;">
+                  <i class="fas fa-user" style="margin-right:6px; opacity:0.7;"></i>${escapeHtml(qtn.customer_name || 'Unknown Customer')}
+                </div>
+                <div style="font-size:12px; color:#15803d; font-weight:600; display:flex; gap:16px; flex-wrap:wrap; margin-top:4px;">
+                  <span><i class="fas fa-building" style="margin-right:4px; opacity:0.6;"></i>${escapeHtml(qtn.company || 'Unassigned')}</span>
+                  <span><i class="fas fa-user-tie" style="margin-right:4px; opacity:0.6;"></i>${escapeHtml(qtn.sales_person || 'N/A')}</span>
+                  <span style="font-family:monospace; opacity:0.7;"><i class="fas fa-file-alt" style="margin-right:4px;"></i>${escapeHtml(quoteId)}</span>
+                </div>
+              </div>
+
+              <!-- Select items label -->
+              <div style="font-size:13px; font-weight:800; color:#334155; margin-bottom:8px; display:flex; align-items:center; gap:8px;">
+                <i class="fas fa-shopping-cart" style="color:#16a34a;"></i>
+                Select items the customer is purchasing:
+                <button onclick="document.querySelectorAll('[id^=sale-item-]').forEach(c=>c.checked=true)" style="font-size:11px; background:#f0fdf4; border:1px solid #bbf7d0; color:#166534; border-radius:4px; padding:2px 8px; cursor:pointer; font-weight:700;">All</button>
+                <button onclick="document.querySelectorAll('[id^=sale-item-]').forEach(c=>c.checked=false)" style="font-size:11px; background:#fef2f2; border:1px solid #fecaca; color:#991b1b; border-radius:4px; padding:2px 8px; cursor:pointer; font-weight:700;">None</button>
+              </div>
+
+              <!-- Items table -->
+              <div style="border:1px solid #e2e8f0; border-radius:10px; overflow:hidden; margin-bottom:18px;">
+                <table style="width:100%; border-collapse:collapse; font-size:13px;">
+                  <thead style="background:#f8fafc;">
+                    <tr style="border-bottom:1px solid #e2e8f0;">
+                      <th style="padding:10px 12px; width:40px;"></th>
+                      <th style="padding:10px 12px; text-align:left; font-weight:800; color:#475569;">ITEM</th>
+                      <th style="padding:10px 12px; text-align:center; font-weight:800; color:#475569;">QTY</th>
+                      <th style="padding:10px 12px; text-align:right; font-weight:800; color:#475569;">PRICE</th>
+                      <th style="padding:10px 12px; text-align:center; font-weight:800; color:#475569;">LEAD TIME</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    ${itemRowsHtml}
+                  </tbody>
+                </table>
+              </div>
+
+              <!-- Order Date -->
+              <div style="display:flex; gap:16px; flex-wrap:wrap;">
+                <div style="flex:1; min-width:200px;">
+                  <label style="font-size:12px; font-weight:700; color:#475569; display:block; margin-bottom:4px;">
+                    <i class="fas fa-calendar-alt" style="margin-right:4px;"></i>Order Date
+                  </label>
+                  <input type="date" id="sale-order-date" value="${todayStr}"
+                    style="width:100%; padding:8px 12px; border:1px solid #e2e8f0; border-radius:8px; font-size:13px; font-weight:600; color:#0f172a; font-family:inherit;" />
+                </div>
+              </div>
+
+              <!-- Email notification -->
+              <div style="background:#eff6ff; border:1px solid #bfdbfe; border-radius:10px; padding:12px 16px; margin-top:16px;">
+                <label style="display:flex; align-items:center; gap:8px; cursor:pointer;">
+                  <input type="checkbox" id="sale-send-email" checked style="width:16px; height:16px; accent-color:#2563eb;" />
+                  <span style="font-size:13px; font-weight:700; color:#1e40af;">
+                    <i class="fas fa-envelope" style="margin-right:4px;"></i>Send "Thank You" email to customer
+                  </span>
+                </label>
+                <div style="font-size:11px; color:#3b82f6; margin-top:4px; margin-left:24px;">
+                  Email will be sent to the customer's primary contact, with the ${escapeHtml(qtn.company || 'company')} team CC'd.
+                </div>
+              </div>
+            </div>
+            <!-- Footer -->
+            <div style="padding:16px 24px; border-top:1px solid #f1f5f9; display:flex; justify-content:flex-end; gap:10px; flex-shrink:0; background:#fafafa;">
+              <button id="sale-cancel-btn" style="padding:10px 24px; border-radius:8px; border:1px solid #e2e8f0; background:#fff; color:#475569; font-weight:700; font-size:13px; cursor:pointer; transition:all 0.15s;">
+                Cancel
+              </button>
+              <button id="sale-confirm-btn" style="padding:10px 28px; border-radius:8px; border:none; background:linear-gradient(135deg, #16a34a, #15803d); color:#fff; font-weight:700; font-size:13px; cursor:pointer; box-shadow:0 2px 8px rgba(22,163,74,0.3); transition:all 0.15s;">
+                <i class="fas fa-check" style="margin-right:6px;"></i>Confirm Sale
+              </button>
+            </div>
+          </div>
+        `;
+
+        document.body.appendChild(overlay);
+
+        // Hover effects
+        const cancelBtn = document.getElementById('sale-cancel-btn');
+        const confirmBtn = document.getElementById('sale-confirm-btn');
+        cancelBtn.onmouseenter = () => { cancelBtn.style.background = '#f8fafc'; cancelBtn.style.borderColor = '#cbd5e1'; };
+        cancelBtn.onmouseleave = () => { cancelBtn.style.background = '#fff'; cancelBtn.style.borderColor = '#e2e8f0'; };
+        confirmBtn.onmouseenter = () => { confirmBtn.style.transform = 'translateY(-1px)'; confirmBtn.style.boxShadow = '0 4px 12px rgba(22,163,74,0.4)'; };
+        confirmBtn.onmouseleave = () => { confirmBtn.style.transform = 'none'; confirmBtn.style.boxShadow = '0 2px 8px rgba(22,163,74,0.3)'; };
+
+        function dismiss() {
+          overlay.style.opacity = '0';
+          setTimeout(() => overlay.remove(), 150);
+          document.removeEventListener('keydown', onKey);
+        }
+
+        function onKey(e) {
+          if (e.key === 'Escape') dismiss();
+        }
+        document.addEventListener('keydown', onKey);
+        cancelBtn.onclick = dismiss;
+        overlay.onclick = (e) => { if (e.target === overlay) dismiss(); };
+
+        // ── 3. Confirm handler ──────────────────────────────────────
+        confirmBtn.onclick = async () => {
+          // Collect selected items
+          const selectedItems = items.filter((_, idx) => {
+            const cb = document.getElementById('sale-item-' + idx);
+            return cb && cb.checked;
+          });
+
+          if (selectedItems.length === 0) {
+            if (window.showToast) window.showToast('Please select at least one item.', 'warning');
+            return;
+          }
+
+          // ── Validate per-item lead times ──
+          // (no global lead time field — each item has its own)
+
+          // Validate qty for each selected item
+          const selectedIndices = items.map((_, idx) => idx).filter(idx => {
+            const cb = document.getElementById('sale-item-' + idx);
+            return cb && cb.checked;
+          });
+          for (const idx of selectedIndices) {
+            const qtyInput = document.getElementById('sale-qty-' + idx);
+            const qtyVal = parseInt(qtyInput.value);
+            if (!qtyVal || qtyVal < 1) {
+              qtyInput.style.borderColor = '#ef4444';
+              qtyInput.style.boxShadow = '0 0 0 3px rgba(239,68,68,0.15)';
+              qtyInput.focus();
+              if (window.showToast) window.showToast('Quantity must be at least 1 for all selected items.', 'warning');
+              return;
+            }
+            qtyInput.style.borderColor = '#e2e8f0';
+            qtyInput.style.boxShadow = 'none';
+          }
+
+          // Override qty and read per-item lead time from inputs
+          selectedItems.forEach((item, i) => {
+            const idx = selectedIndices[i];
+            const qtyInput = document.getElementById('sale-qty-' + idx);
+            const leadInput = document.getElementById('sale-lead-' + idx);
+            item.qty = parseInt(qtyInput.value) || 1;
+            item._leadTime = (leadInput ? leadInput.value : '').trim() || item.custom_lead_time || '';
+          });
+
+          confirmBtn.disabled = true;
+          confirmBtn.innerHTML = '<i class="fas fa-spinner fa-spin" style="margin-right:6px;"></i>Processing...';
+
+          const orderDate = document.getElementById('sale-order-date').value || todayStr;
+          const sendEmail = document.getElementById('sale-send-email').checked;
+
+          // Brand detection helper — match known OEM prefixes from item_code
+          const BRAND_PREFIXES = [
+            { pattern: /shantui/i, brand: 'Shantui' },
+            { pattern: /sinotruk|sinotruck|sino\s/i, brand: 'Sinotruk' },
+            { pattern: /howo/i, brand: 'HOWO' },
+            { pattern: /powerstar/i, brand: 'Powerstar' },
+            { pattern: /foton/i, brand: 'Foton' },
+            { pattern: /sdlg/i, brand: 'SDLG' },
+            { pattern: /xcmg/i, brand: 'XCMG' },
+            { pattern: /lgmg/i, brand: 'LGMG' },
+            { pattern: /lonking/i, brand: 'Lonking' },
+            { pattern: /liugong/i, brand: 'Liugong' },
+            { pattern: /zoomlion/i, brand: 'Zoomlion' },
+            { pattern: /sany/i, brand: 'SANY' },
+            { pattern: /dongfeng/i, brand: 'Dongfeng' },
+            { pattern: /faw/i, brand: 'FAW' },
+            { pattern: /chery/i, brand: 'Chery' },
+            { pattern: /jac\b/i, brand: 'JAC' },
+          ];
+
+          function detectBrand(itemCode) {
+            const code = (itemCode || '').trim();
+            for (const bp of BRAND_PREFIXES) {
+              if (bp.pattern.test(code)) return { brand: bp.brand, model: code };
+            }
+            // Fallback: first word is brand, rest is model
+            const parts = code.split(/\s+/);
+            if (parts.length >= 2) {
+              return { brand: parts[0], model: parts.slice(1).join(' ') };
+            }
+            return { brand: code, model: code };
+          }
+
+          // Calculate target handover from lead time (weeks)
+          function calcTarget(dateStr, lt) {
+            const m = (lt || '').match(/(\d+)/);
+            if (!m) return null;
+            const weeks = parseInt(m[1]);
+            const d = new Date(dateStr + 'T00:00:00');
+            d.setDate(d.getDate() + (weeks * 7));
+            return d.toISOString().split('T')[0];
+          }
+
+          try {
+            const createdSaleIds = [];
+
+            // ── 3a. Insert into group_sales ─────────────────────────
+            for (const item of selectedItems) {
+              const { brand, model } = detectBrand(item.item_code || item.item_name);
+              const saleId = `QS-${Date.now()}-${Math.random().toString(36).substr(2, 4)}`;
+
+              const gsPayload = {
+                frappe_id: saleId,
+                customer: (qtn.customer_name || '').trim(),
+                oem: brand,
+                model: model,
+                qty: item.qty || 1,
+                order_date: orderDate,
+                salesperson: qtn.sales_person || '',
+                company: qtn.company || '',
+                committed_lead_time: item._leadTime || '',
+                customer_status: 'Ordered',
+                sector: '',
+                machine_condition: 'New'
+              };
+
+              const gsRes = await window.electron.invoke('supabase:query', {
+                table: 'group_sales',
+                method: 'insert',
+                data: gsPayload
+              });
+              if (gsRes.error) console.error('[MarkAsSale] group_sales insert error:', gsRes.error);
+
+              createdSaleIds.push(saleId);
+
+              // ── 3b. Insert into omnis_tracking_orders ─────────────
+              const trackPayload = {
+                customer: (qtn.customer_name || '').trim(),
+                machine: (item.item_code || item.item_name || '').trim(),
+                brand: brand,
+                model: model,
+                qty: item.qty || 1,
+                status: 'New Sale',
+                order_date: orderDate,
+                company: qtn.company || '',
+                committed_lead_time: item._leadTime || '',
+                target_handover: calcTarget(orderDate, item._leadTime),
+                linked_sale_name: saleId,
+                notes: `From Quotation ${quoteId}`
+              };
+
+              const trRes = await window.electron.invoke('supabase:query', {
+                table: 'omnis_tracking_orders',
+                method: 'insert',
+                data: trackPayload
+              });
+              if (trRes.error) console.error('[MarkAsSale] tracking insert error:', trRes.error);
+            }
+
+            // ── 3c. Update quotation status to Ordered ──────────────
+            await window.electron.invoke('supabase:query', {
+              table: 'omnis_quotations',
+              method: 'update',
+              data: { status: 'Ordered' },
+              params: { match: { name: quoteId } }
+            });
+
+            // ── 3d. Send Thank You email ────────────────────────────
+            if (sendEmail) {
+              try {
+                await window._sendSaleThankYouEmail(qtn, selectedItems, orderDate, null);
+              } catch (emailErr) {
+                console.error('[MarkAsSale] Email error:', emailErr);
+                if (window.showToast) window.showToast('Sale confirmed but email failed: ' + emailErr.message, 'warning');
+              }
+            }
+
+            dismiss();
+            if (window.showToast) window.showToast(`Sale confirmed! ${selectedItems.length} item(s) added to Sales & Tracking.`, 'success');
+            loadQuotationList(true);
+
+          } catch (e) {
+            console.error('[MarkAsSale] Error:', e);
+            confirmBtn.disabled = false;
+            confirmBtn.innerHTML = '<i class="fas fa-check" style="margin-right:6px;"></i>Confirm Sale';
+            if (window.showToast) window.showToast('Failed: ' + (e.message || e), 'error');
+          }
+        };
+
+      } catch (err) {
+        console.error('[MarkAsSale] Init error:', err);
+        if (window.showToast) window.showToast('Error loading quotation: ' + err.message, 'error');
+      }
+    };
+
+    /* ── THANK YOU EMAIL HELPER ───────────────────────────────────── */
+    window._sendSaleThankYouEmail = async function(qtn, items, orderDate, leadTime) {
+      const sp = (window.salestrack && window.salestrack.supabase) || window.supabase;
+      if (!sp) throw new Error('No Supabase client available');
+
+      // 1. Get customer primary contact
+      const { data: contacts } = await sp.from('omnis_customer_contacts')
+        .select('contact_name, email')
+        .eq('customer_name', (qtn.customer_name || '').trim())
+        .order('is_primary', { ascending: false })
+        .limit(5);
+
+      const primaryContact = (contacts || []).find(c => c.email) || null;
+      if (!primaryContact || !primaryContact.email) {
+        if (window.showToast) window.showToast('No customer email found — email skipped.', 'warning');
+        return;
+      }
+
+      // 2. Determine CC list from company
+      const companyLower = (qtn.company || '').toLowerCase();
+      const isMxg = companyLower.includes('machinery');
+      const companyKey = isMxg ? 'mxg' : 'spz';
+
+      // Use the same email recipients config as Order Update Emails
+      let recipientConfig;
+      if (window.ordersDashboard && window.ordersDashboard._defaultEmailRecipients) {
+        recipientConfig = window.ordersDashboard._defaultEmailRecipients();
+      } else {
+        recipientConfig = {
+          mxg: {
+            cc: ['takunda@industrial-exchange.group', 'antony@industrial-exchange.group',
+                 'isaac@machinery-exchange.com', 'mathew@industrial-exchange.group',
+                 'barry@industrial-exchange.group', 'nolan@industrial-exchange.group',
+                 'brendan@industrial-exchange.group'],
+            contactName: 'Chetan Samji', contactTitle: 'Commercial Manager',
+            contactEmail: 'chetan.samji@machinery-exchange.com', contactPhone: '+263772949515'
+          },
+          spz: {
+            cc: ['takunda@industrial-exchange.group', 'antony@industrial-exchange.group',
+                 'logistics@sinopower.co.zw', 'brett@sinopower.co.zw', 'trucks@sinopower.co.zw',
+                 'rutendo@industrial-exchange.group', 'louis@industrial-exchange.group',
+                 'mathew@industrial-exchange.group', 'barry@industrial-exchange.group',
+                 'brendan@industrial-exchange.group'],
+            contactName: 'Brett Berry', contactTitle: 'Commercial Manager',
+            contactEmail: 'brett@sinopower.co.zw', contactPhone: '+263775553862'
+          }
+        };
+      }
+
+      const teamCfg = recipientConfig[companyKey] || recipientConfig.mxg;
+      const ccList = teamCfg.cc.join(', ');
+
+      // 3. Build formatted date
+      const fmtDate = new Date(orderDate + 'T00:00:00').toLocaleDateString('en-GB', { day: '2-digit', month: 'long', year: 'numeric' });
+
+      // 4. Build items table
+      const currency = qtn.currency || 'USD';
+      const currFmt = (v) => new Intl.NumberFormat('en-US', { style: 'currency', currency, minimumFractionDigits: 0, maximumFractionDigits: 0 }).format(v || 0);
+      const grandTotal = items.reduce((sum, i) => sum + ((i.rate || 0) * (i.qty || 1)), 0);
+
+      // Company branding — matches order tracking email template
+      const companyName = isMxg ? 'Machinery Exchange (Pvt) Ltd' : 'Sinopower Zimbabwe (Pvt) Ltd';
+      const brandColour = isMxg ? '#c92222' : '#7b1515';
+      const logoUrl = isMxg
+        ? 'https://pfqaeewmlwfayxbgmuaq.supabase.co/storage/v1/object/public/public-assets/logos/mxg-logo.png'
+        : 'https://pfqaeewmlwfayxbgmuaq.supabase.co/storage/v1/object/public/public-assets/logos/spz-logo.png';
+      const brandName = isMxg ? 'Machinery Exchange' : 'Sinopower';
+
+      // Build order detail rows (same style as New Sale Logged)
+      const detailRows = [
+        ['Customer', (qtn.customer_name || '—').replace(/</g, '&lt;')],
+        ['Items Ordered', items.map(i => `${(i.item_code || i.item_name || 'Item').replace(/</g, '&lt;')} (x${i.qty || 1}) — ${(i._leadTime || i.custom_lead_time || 'TBD').replace(/</g, '&lt;')}`).join('<br>')],
+        ['Order Date', fmtDate],
+        ['Sales Person', (qtn.sales_person || 'N/A').replace(/</g, '&lt;')],
+        ['Reference', (qtn.name || '—').replace(/</g, '&lt;')],
+        ['Account Manager', `${teamCfg.contactName} — ${teamCfg.contactEmail}`]
+      ];
+
+      const detailTableRows = detailRows.map(([label, val]) => `
+        <tr>
+          <td style="padding:16px 20px;text-align:left;font-size:15px;color:#334155;vertical-align:top;border-bottom:1px solid #e2e8f0;font-weight:bold;width:40%;background:#f8fafc;">${label}</td>
+          <td style="padding:16px 20px;text-align:left;font-size:15px;color:#334155;vertical-align:top;border-bottom:1px solid #e2e8f0;">${val}</td>
+        </tr>`).join('');
+
+      // Build items summary rows for the order table
+      const itemSummaryRows = items.map(item => `
+        <tr>
+          <td style="padding:12px 20px;text-align:left;font-size:14px;color:#334155;border-bottom:1px solid #e2e8f0;font-weight:600;">${(item.item_code || item.item_name || 'Item').replace(/</g, '&lt;')}</td>
+          <td style="padding:12px 20px;text-align:center;font-size:14px;color:#991b1b;border-bottom:1px solid #e2e8f0;font-weight:700;">${item.qty || 1}</td>
+          <td style="padding:12px 20px;text-align:right;font-size:14px;color:#065f46;border-bottom:1px solid #e2e8f0;font-weight:700;">${item.rate ? currFmt(item.rate) : '—'}</td>
+          <td style="padding:12px 20px;text-align:center;font-size:13px;color:#475569;border-bottom:1px solid #e2e8f0;font-weight:600;">${(item._leadTime || item.custom_lead_time || 'TBD').replace(/</g, '&lt;')}</td>
+        </tr>`).join('');
+
+      // 5. Build HTML email — matches New Sale Logged template style
+      const html = `
+      <!DOCTYPE html><html><head><meta charset="utf-8"></head>
+      <body style="margin:0;padding:24px;font-family:Arial,'Helvetica Neue',sans-serif;background:#f0f4f8;">
+      <div style="max-width:920px;margin:0 auto;background:#fff;border-radius:12px;overflow:hidden;box-shadow:0 8px 30px rgba(0,0,0,0.12);">
+          <!-- Header with Logo -->
+          <table style="width:100%;border-collapse:collapse;background:${brandColour};" cellpadding="0" cellspacing="0"><tr>
+              <td style="padding:24px 32px;vertical-align:middle;width:45%;">
+              <img src="${logoUrl}" alt="${brandName}" style="display:block;height:125px;width:auto;max-width:300px;filter:drop-shadow(0 2px 4px rgba(0,0,0,0.2));">
+              </td>
+              <td style="padding:24px 32px;vertical-align:middle;text-align:right;width:55%;">
+              <div style="font-size:24px;font-weight:800;color:#fff;letter-spacing:-0.5px;">${brandName}</div>
+              <div style="font-size:13px;color:rgba(255,255,255,.8);margin-top:6px;text-transform:uppercase;letter-spacing:.08em;font-weight:700;">Thank You for Your Order</div>
+              <div style="font-size:13px;color:rgba(255,255,255,.8);margin-top:4px;">Date: ${fmtDate}</div>
+              </td>
+          </tr></table>
+
+          <!-- Greeting -->
+          <div style="padding:32px 32px 16px;">
+              <p style="margin:0;font-size:16px;color:#0f172a;line-height:1.7;">
+                  Dear <strong>${(primaryContact.contact_name || qtn.customer_name || 'Valued Customer').replace(/</g, '&lt;')}</strong>,
+              </p>
+              <p style="margin:16px 0 0;font-size:15px;color:#334155;line-height:1.7;">
+                  Thank you for placing your order with <strong>${companyName}</strong>. We truly appreciate your business and are committed to delivering an exceptional experience.
+              </p>
+          </div>
+
+          <!-- Order Summary Table -->
+          <div style="padding:16px 32px 8px;overflow-x:auto;">
+              <table style="width:100%;border-collapse:separate;border-spacing:0;font-size:14px;border:1px solid #cbd5e1;border-radius:8px;overflow:hidden;box-shadow:0 4px 6px -1px rgba(0,0,0,0.05);" cellpadding="0" cellspacing="0">
+                  <thead>
+                      <tr style="background:${brandColour};">
+                          <th style="padding:14px 20px;text-align:left;color:white;font-size:14px;font-weight:800;text-transform:uppercase;letter-spacing:.05em;border-bottom:2px solid rgba(0,0,0,0.1);">Item</th>
+                          <th style="padding:14px 20px;text-align:center;color:white;font-size:14px;font-weight:800;text-transform:uppercase;letter-spacing:.05em;border-bottom:2px solid rgba(0,0,0,0.1);">Qty</th>
+                          <th style="padding:14px 20px;text-align:right;color:white;font-size:14px;font-weight:800;text-transform:uppercase;letter-spacing:.05em;border-bottom:2px solid rgba(0,0,0,0.1);">Price</th>
+                          <th style="padding:14px 20px;text-align:center;color:white;font-size:14px;font-weight:800;text-transform:uppercase;letter-spacing:.05em;border-bottom:2px solid rgba(0,0,0,0.1);">Lead Time</th>
+                      </tr>
+                  </thead>
+                  <tbody>
+                      ${itemSummaryRows}
+                  </tbody>
+              </table>
+              ${grandTotal > 0 ? `
+              <div style="text-align:right;padding:12px 4px 0;font-size:17px;font-weight:800;color:${brandColour};">
+                  Total: ${currFmt(grandTotal)}
+              </div>` : ''}
+          </div>
+
+          <!-- Order Details Table -->
+          <div style="padding:16px 32px 36px;overflow-x:auto;">
+              <table style="width:100%;border-collapse:separate;border-spacing:0;font-size:15px;border:1px solid #cbd5e1;border-radius:8px;overflow:hidden;box-shadow:0 4px 6px -1px rgba(0,0,0,0.05);" cellpadding="0" cellspacing="0">
+                  <thead>
+                      <tr style="background:${brandColour};">
+                          <th colspan="2" style="padding:16px 20px;text-align:left;color:white;font-size:14px;font-weight:800;text-transform:uppercase;letter-spacing:.05em;border-bottom:2px solid rgba(0,0,0,0.1);">Order Details</th>
+                      </tr>
+                  </thead>
+                  <tbody>
+                      ${detailTableRows}
+                  </tbody>
+              </table>
+          </div>
+
+          <!-- Closing -->
+          <div style="padding:0 32px 32px;">
+              <p style="margin:0;font-size:15px;color:#334155;line-height:1.7;">
+                  Our team will keep you updated on the progress of your order. Should you have any questions, please don't hesitate to reach out to your account manager.
+              </p>
+              <p style="font-size:14px;color:#64748b;line-height:1.6;margin-top:24px;">
+                  Warm regards,<br>
+                  <strong>The ${companyName} Team</strong>
+              </p>
+          </div>
+
+          <!-- Footer -->
+          <div style="background:#f8fafc;border-top:1px solid #e2e8f0;padding:12px 28px;font-size:11px;color:#94a3b8;text-align:center;">
+              This is an automated notification from <strong>Omnis SalesTrack</strong>.<br>
+              Please do not reply to this email. &copy; ${brandName} &mdash; Omnis Order Management System
+          </div>
+      </div>
+      </body>
+      </html>
+      `;
+
+      // 6. Send via email:send IPC (routes through EmailManager → email-submit Edge Function)
+      if (!window.electron) throw new Error('Email service not available');
+
+      const res = await window.electron.invoke('email:send', {
+        to: primaryContact.email,
+        toName: primaryContact.contact_name || qtn.customer_name,
+        cc: ccList,
+        subject: `Thank You for Your Order — ${(qtn.customer_name || 'Customer').trim()}`,
+        html: html,
+        relatedDoc: qtn.name,
+        relatedType: 'sale_confirmation',
+        system: 'salestrack'
+      });
+
+      if (!res || !res.ok) {
+        throw new Error((res && res.error) || 'Email submission failed');
+      }
+
+      if (window.showToast) window.showToast('Thank you email queued successfully!', 'success');
     };
 
     async function loadQuotationsKPI() {
@@ -29188,7 +29754,7 @@ Commercial Team`);
                 text: body,
                 relatedDoc: psvId,
                 relatedType: 'psv_customer',
-                system: 'fleetrack',
+                system: 'salestrack',
                 createdBy: (window.CURRENT_SYSTEM && window.CURRENT_SYSTEM.user) ? window.CURRENT_SYSTEM.user.email : null
             });
 

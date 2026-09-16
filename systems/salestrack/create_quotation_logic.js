@@ -40,6 +40,25 @@
     };
 
 
+    /* ── Currency select: abbreviation display, full dropdown ── */
+    window._currSelectExpand = function (sel) {
+        Array.from(sel.options).forEach(opt => {
+            if (opt.dataset.full) opt.textContent = opt.dataset.full;
+        });
+    };
+    window._currSelectCollapse = function (sel) {
+        Array.from(sel.options).forEach(opt => {
+            if (opt.dataset.full) {
+                opt.textContent = opt.selected ? opt.value : opt.dataset.full;
+            }
+        });
+    };
+    // Collapse all currency selects on page load
+    document.addEventListener('DOMContentLoaded', () => {
+        document.querySelectorAll('select.currency-abbrev-select').forEach(sel => {
+            window._currSelectCollapse(sel);
+        });
+    });
 
     // --- OPEN EXISTING QUOTATION FOR EDITING ---
     window.openQuotationForEdit = async function (qtnName) {
@@ -1599,5 +1618,121 @@
             return null;
         }
     };
+
+    /* ═══════════════════════════════════════════════════════════════════
+       ONE-TIME MIGRATION: order_contacts → omnis_customer_contacts
+       Copies contacts from Order Tracking into the centralised table so
+       they appear on the Quotation form when the same customer is selected.
+     ═══════════════════════════════════════════════════════════════════ */
+    window.migrateOrderContacts = async function () {
+        const FLAG = 'omnis_oc_migration_done';
+        const sp = _ccGetSp();
+        if (!sp) { console.warn('[OC-Migration] No Supabase client'); return; }
+
+        console.log('[OC-Migration] Starting order_contacts → omnis_customer_contacts migration...');
+
+        try {
+            // 1. Fetch all fmb_reports with their order_contacts
+            const { data: reports, error: rErr } = await sp
+                .from('fmb_reports')
+                .select('customer_id, order_contacts(salutation, name, phone, email)');
+
+            if (rErr) { console.error('[OC-Migration] fmb_reports fetch error:', rErr); return; }
+            if (!reports || reports.length === 0) {
+                console.log('[OC-Migration] No fmb_reports found, nothing to migrate.');
+                localStorage.setItem(FLAG, 'true');
+                return;
+            }
+
+            // 2. Deduplicate by customer + contact name
+            const contactMap = new Map();
+            for (const report of reports) {
+                const customer = (report.customer_id || '').trim();
+                if (!customer) continue;
+                for (const c of (report.order_contacts || [])) {
+                    const name = (c.name || '').trim();
+                    if (!name || (name.length === 36 && name.includes('-'))) continue; // skip UUIDs
+                    const key = `${customer}|${name}`.toLowerCase();
+                    if (!contactMap.has(key)) {
+                        contactMap.set(key, {
+                            customer_name: customer,
+                            contact_name: name,
+                            email: (c.email || '').trim() || null,
+                            whatsapp_number: (c.phone || '').trim() || null,
+                            is_primary: false
+                        });
+                    } else {
+                        const existing = contactMap.get(key);
+                        if (!existing.email && c.email) existing.email = c.email.trim();
+                        if (!existing.whatsapp_number && c.phone) existing.whatsapp_number = c.phone.trim();
+                    }
+                }
+            }
+
+            if (contactMap.size === 0) {
+                console.log('[OC-Migration] No contacts found in order_contacts.');
+                localStorage.setItem(FLAG, 'true');
+                return;
+            }
+
+            // 3. Fetch existing omnis_customer_contacts to avoid duplicates
+            const { data: existing } = await sp
+                .from('omnis_customer_contacts')
+                .select('customer_name, contact_name');
+
+            const existingKeys = new Set((existing || []).map(
+                e => `${e.customer_name}|${e.contact_name}`.toLowerCase()
+            ));
+            const existingCustomers = new Set((existing || []).map(
+                e => e.customer_name.toLowerCase()
+            ));
+
+            const toInsert = [...contactMap.values()].filter(c =>
+                !existingKeys.has(`${c.customer_name}|${c.contact_name}`.toLowerCase())
+            );
+
+            if (toInsert.length === 0) {
+                console.log('[OC-Migration] All contacts already exist. Migration complete.');
+                localStorage.setItem(FLAG, 'true');
+                return;
+            }
+
+            // 4. Set first contact per customer as primary (if customer has no existing contacts)
+            const primarySet = new Set();
+            for (const c of toInsert) {
+                const ck = c.customer_name.toLowerCase();
+                if (!primarySet.has(ck) && !existingCustomers.has(ck)) {
+                    c.is_primary = true;
+                    primarySet.add(ck);
+                }
+            }
+
+            // 5. Insert in batches
+            let inserted = 0;
+            for (let i = 0; i < toInsert.length; i += 50) {
+                const batch = toInsert.slice(i, i + 50);
+                const { error: iErr } = await sp.from('omnis_customer_contacts').insert(batch);
+                if (iErr) {
+                    console.error(`[OC-Migration] Insert error (batch ${i}):`, iErr);
+                } else {
+                    inserted += batch.length;
+                }
+            }
+
+            const customers = new Set(toInsert.map(c => c.customer_name));
+            console.log(`[OC-Migration] ✅ Migrated ${inserted} contacts for ${customers.size} customers.`);
+            localStorage.setItem(FLAG, 'true');
+
+        } catch (e) {
+            console.error('[OC-Migration] Error:', e);
+        }
+    };
+
+    // Auto-run migration once on load
+    document.addEventListener('DOMContentLoaded', () => {
+        if (!localStorage.getItem('omnis_oc_migration_done')) {
+            setTimeout(() => window.migrateOrderContacts(), 3000); // delay to let auth settle
+        }
+    });
 
 })();
