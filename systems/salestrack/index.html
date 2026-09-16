@@ -11824,7 +11824,7 @@
 
     <!-- Scripts -->
     <script src="create_ce_logic.js?v=202609072015"></script>
-    <script src="create_quotation_logic.js?v=202609161216"></script>
+    <script src="create_quotation_logic.js?v=202609161229"></script>
 
     <!-- Tutorial Logic -->
     <script src="tutorial_logic.js?v=202609072015"></script>
@@ -17172,20 +17172,24 @@
         const doQtnItemSearch = async (input) => {
             const val = (input.value || "").trim();
             const row = input.closest('tr');
-            if (!row) return;
+            if (!row) { console.log('[QtnItemSearch] No row found'); return; }
             let suggestBox = row.querySelector('.suggest-list');
+            console.log('[QtnItemSearch] doSearch called, val:', val, 'row:', !!row, 'suggestBox:', !!suggestBox);
             if (!suggestBox) {
                 // Create suggest box if missing
                 suggestBox = document.createElement('div');
-                suggestBox.className = 'suggest-list hidden';
+                suggestBox.className = 'suggest-list';
                 suggestBox.style.cssText = 'position:absolute; top:100%; left:0; right:0; z-index:9999; background:#fff; border:1px solid #e2e8f0; border-radius:8px; max-height:250px; overflow-y:auto; box-shadow:0 8px 25px rgba(0,0,0,0.15);';
                 input.parentElement.appendChild(suggestBox);
+                console.log('[QtnItemSearch] Created new suggestBox');
             }
 
             if (val.length < 1) { suggestBox.classList.add('hidden'); return; }
 
             suggestBox.innerHTML = '<div style="padding:8px; color:#64748b; font-size:11px; text-align:center;"><i class="fa fa-spinner fa-spin"></i> Searching...</div>';
             suggestBox.classList.remove('hidden');
+            suggestBox.style.display = 'block';  // Force display
+            console.log('[QtnItemSearch] Showing Searching... indicator. suggestBox visible:', !suggestBox.classList.contains('hidden'), 'display:', suggestBox.style.display);
 
             try {
                 let results = [];
@@ -17193,8 +17197,11 @@
 
                 // Try Supabase preload proxy first (same as quick quotes)
                 const sp = (window.salestrack && window.salestrack.supabase) || window.supabase || null;
+                console.log('[QtnItemSearch] sp:', !!sp, 'sp.from:', !!(sp && sp.from));
                 if (sp && sp.from) {
+                    console.log('[QtnItemSearch] Querying stock_inventory with filter:', orFilter);
                     const { data, error } = await sp.from('stock_inventory').select('*').or(orFilter).limit(15);
+                    console.log('[QtnItemSearch] Supabase result - data:', data ? data.length : 'null', 'error:', error);
                     if (!error && data) results = data;
                 }
 
