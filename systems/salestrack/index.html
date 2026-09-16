@@ -11662,7 +11662,7 @@
 
           <div class="grid-3-col" style="gap: 24px; margin-bottom: 16px; align-items: start;">
             
-            <!-- Column 1: Customer Details -->
+            <!-- Column 1: Customer & Company Details -->
             <div class="qtn-section-col">
               <div class="section-label" style="margin-top:0;">Customer Details</div>
               
@@ -11680,12 +11680,21 @@
                 </div>
               </div>
 
-              <div class="form-row">
-                <label class="form-label">Company <span class="asterisk">*</span></label>
-                <select id="qtn-company" class="form-input">
-                  <option value="Sinopower">Sinopower</option>
-                  <option value="Machinery Exchange">Machinery Exchange</option>
-                </select>
+              <div class="grid-2-col">
+                <div class="form-row">
+                  <label class="form-label">Company <span class="asterisk">*</span></label>
+                  <select id="qtn-company" class="form-input">
+                    <option value="Sinopower">Sinopower</option>
+                    <option value="Machinery Exchange">Machinery Exchange</option>
+                  </select>
+                </div>
+                <div class="form-row">
+                  <label class="form-label">Sales Person</label>
+                  <div class="suggest-container">
+                    <input type="text" id="qtn-sales-person" class="form-input" placeholder="Search Sales Person...">
+                    <div id="qtn-salesperson-suggest" class="suggest-list hidden"></div>
+                  </div>
+                </div>
               </div>
 
               <div class="form-row">
@@ -11713,19 +11722,6 @@
               </div>
 
               <div class="form-row">
-                <label class="form-label">Sales Person</label>
-                <div class="suggest-container">
-                  <input type="text" id="qtn-sales-person" class="form-input" placeholder="Search Sales Person...">
-                  <div id="qtn-salesperson-suggest" class="suggest-list hidden"></div>
-                </div>
-              </div>
-
-              <div class="form-row">
-                <label class="form-label">Bank Account</label>
-                <input type="text" id="qtn-bank" class="form-input" placeholder="Bank Account Link...">
-              </div>
-
-              <div class="form-row">
                 <label class="form-label">Currency</label>
                 <div style="display:flex; gap:8px; align-items:center;">
                   <select id="qtn-currency" class="form-input" style="flex:1;" onchange="window.onQtnCurrencyChange()">
@@ -11745,13 +11741,6 @@
                   <i class="fas fa-chart-line" style="color:#10b981;"></i>
                   <span id="qtn-rate-display">1 USD = 1.00 USD</span>
                   <span id="qtn-rate-source" style="margin-left:4px; color:#94a3b8;">• Frankfurter ECB</span>
-                </div>
-              </div>
-
-              <div class="form-row" style="margin-top:10px;">
-                <div style="display:flex; align-items:center;">
-                  <input type="checkbox" id="qtn-pfi" style="width:16px; height:16px; margin-right:8px; accent-color:var(--omnis-red);">
-                  <label for="qtn-pfi" style="font-size:13px; font-weight:600; color:var(--text-dark);">PFI Checked</label>
                 </div>
               </div>
             </div>
