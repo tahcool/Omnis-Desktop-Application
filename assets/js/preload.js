@@ -94,8 +94,9 @@ const ALLOWED_INVOKE_CHANNELS = new Set([
   'email:send', 'email:getHistory', 'email:getConfig', 'email:saveConfig',
   'email:cancelScheduled', 'email:retryFailed', 'email:test',
   // WhatsApp
-  'whatsapp:send-msg', 'whatsapp:getStatus', 'whatsapp:getQR',
-  'whatsapp:disconnect', 'whatsapp:connect',
+  'whatsapp:send-msg', 'whatsapp:get-status', 'whatsapp:getStatus', 'whatsapp:getQR',
+  'whatsapp:disconnect', 'whatsapp:connect', 'whatsapp:logout', 'whatsapp:reconnect',
+  'whatsapp:send-media', 'whatsapp:send-to-group',
   // Print & PDF
   'print:toPDF', 'print:openFile',
   // AI
@@ -163,9 +164,19 @@ contextBridge.exposeInMainWorld("supabase", {
           order:   (column, opts) => { params.order = { column, ...(opts || {}) }; return chain; },
           range:   (from, to) => { params.range = { from, to }; return chain; },
           limit:   (n) => { params.limit = n; return chain; },
+          match:   (m) => { if (m) Object.entries(m).forEach(([c,v]) => { if (!params.filters) params.filters = {}; params.filters[c] = v; }); return chain; },
           or:      (val) => { params.or = val; return chain; },
+          single:  () => { params._single = true; return chain; },
+          maybeSingle: () => { params._maybeSingle = true; return chain; },
           then:    (onSuccess, onError) => {
             return ipcRenderer.invoke('supabase:query', { table, method: 'select', params })
+              .then(res => {
+                if (params._single || params._maybeSingle) {
+                  const row = res.data && res.data.length > 0 ? res.data[0] : null;
+                  return { data: row, error: res.error ? { message: res.error } : null };
+                }
+                return res;
+              })
               .then(onSuccess, onError);
           }
         };
@@ -184,8 +195,17 @@ contextBridge.exposeInMainWorld("supabase", {
       insert:  (data) => {
         const p = { data, returning: false };
         const chain = {
-          select: () => { p.returning = true; return chain; },
-          then: (onOk, onErr) => ipcRenderer.invoke('supabase:query', { table, method: 'insert', params: p }).then(onOk, onErr)
+          select: (cols) => { p.returning = true; if (cols) p.returnColumns = cols; return chain; },
+          single: () => { p._single = true; return chain; },
+          then: (onOk, onErr) => ipcRenderer.invoke('supabase:query', { table, method: 'insert', params: p })
+            .then(res => {
+              if (p._single) {
+                const row = res.data && res.data.length > 0 ? res.data[0] : null;
+                return { data: row, error: res.error ? { message: res.error } : null };
+              }
+              return res;
+            })
+            .then(onOk, onErr)
         };
         return chain;
       },

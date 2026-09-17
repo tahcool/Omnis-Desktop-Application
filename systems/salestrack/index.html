@@ -421,17 +421,22 @@
 
     /* GLOBALLY FORCE MODALS TO TOP — explicit list only (no wildcards) */
     .omnis-modal, .modal-overlay, .task-modal-overlay, .insight-modal-overlay, .gs-form-overlay,
-    #dash-generic-modal, #omnis-confirm-overlay, #omnis-confirm-modal,
-    #tracking-order-modal, #sync-sales-modal, #ftq-log-modal,
+    #dash-generic-modal, #tracking-order-modal, #sync-sales-modal, #ftq-log-modal,
     #rf-machine-modal, #rd-view-modal, #rd-add-modal,
     #mkt-dispatch-modal, #cdv-log-modal, #psv-log-modal, #psv-email-modal,
     #ct-new-deal-modal, #ct-manage-deal-modal,
     #gift-list-overlay, #product-pricing-overlay, #product-form-overlay,
     #aftersales-form-overlay, #customerModal, #sp-form-overlay,
-    #whatsapp-scan-overlay, #whatsapp-preview-overlay, #qtn-opts-overlay,
-    #profile-crop-modal, #defects-modal-overlay, #help-modal,
-    #inactivity-warning-overlay {
+    #profile-crop-modal {
       z-index: 999999 !important;
+    }
+
+    /* Overlays that must stack ABOVE the order/generic modal */
+    #whatsapp-scan-overlay, #whatsapp-preview-overlay, #qtn-opts-overlay,
+    #omnis-confirm-overlay, #omnis-confirm-modal,
+    #defects-modal-overlay, #help-modal,
+    #inactivity-warning-overlay {
+      z-index: 1000001 !important;
     }
 
     /* GROUP SALES FORM STYLES */
@@ -15350,7 +15355,7 @@
               });
               if (trRes.error) console.error('[MarkAsSale] tracking insert error:', trRes.error);
 
-              // ── 3b-ii. Auto-copy contacts to order_contacts via fmb_reports ──
+              // ── 3b-ii. Auto-copy contacts + machine to order tracking via fmb_reports ──
               try {
                 const sp = (window.salestrack && window.salestrack.supabase) || window.supabase;
                 if (sp) {
@@ -15366,13 +15371,26 @@
                       customer_id: customerName,
                       customer_name: customerName,
                       status: 'In Progress',
-                      company: qtn.company || ''
+                      company: qtn.company || '',
+                      order_date: orderDate || new Date().toISOString().split('T')[0]
                     }).select('id').single();
                     fmbId = newReport ? newReport.id : null;
                   }
 
                   if (fmbId) {
-                    // Fetch customer contacts from centralised table
+                    // ── Insert order_machine for this item ──
+                    const targetDate = calcTarget(orderDate, item._leadTime);
+                    const machinePayload = {
+                      order_id: fmbId,
+                      item_code: (item.item_code || item.item_name || '').trim(),
+                      quantity: item.qty || 1,
+                      target_date: targetDate || null,
+                      notes: ''
+                    };
+                    await sp.from('order_machines').insert(machinePayload);
+                    console.log('[MarkAsSale] Inserted order_machine:', machinePayload.item_code);
+
+                    // ── Fetch customer contacts from centralised table ──
                     const { data: custContacts } = await sp.from('omnis_customer_contacts')
                       .select('salutation, contact_name, email, whatsapp_number')
                       .eq('customer_name', customerName);
@@ -15391,7 +15409,7 @@
                   }
                 }
               } catch (contactErr) {
-                console.warn('[MarkAsSale] Contact copy warning:', contactErr);
+                console.warn('[MarkAsSale] Contact/machine copy warning:', contactErr);
               }
             }
 

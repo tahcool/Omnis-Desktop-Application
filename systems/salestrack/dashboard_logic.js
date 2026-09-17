@@ -8893,7 +8893,7 @@ window.OmnisDashboardV6 = class OmnisDashboardV6 {
 
             document.body.insertAdjacentHTML('beforeend', `
             <div id="wa-preview-modal" style="
-                position:fixed; inset:0; background:rgba(0,0,0,0.6); z-index:20000;
+                position:fixed; inset:0; background:rgba(0,0,0,0.6); z-index:1000001;
                 display:flex; align-items:center; justify-content:center;
                 backdrop-filter:blur(6px); animation:fadeIn 0.2s ease;
             ">
@@ -9518,7 +9518,7 @@ window.OmnisDashboardV6 = class OmnisDashboardV6 {
 
         document.body.insertAdjacentHTML('beforeend', `
         <div id="email-preview-modal" style="
-            position:fixed; inset:0; background:rgba(15,23,42,0.7); z-index:20000;
+            position:fixed; inset:0; background:rgba(15,23,42,0.7); z-index:1000001;
             display:flex; align-items:center; justify-content:center;
             backdrop-filter:blur(8px); animation:fadeIn 0.2s ease; padding:20px;
         ">

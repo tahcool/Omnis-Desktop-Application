@@ -561,7 +561,7 @@
                 if (updRes.error) throw new Error(typeof updRes.error === 'string' ? updRes.error : (updRes.error.message || JSON.stringify(updRes.error)));
 
                 // Delete old items and re-insert
-                await sp.from("omnis_quotation_items").delete({ match: { quotation_id: dbQtnId } });
+                await sp.from("omnis_quotation_items").delete().match({ quotation_id: dbQtnId });
 
             } else {
                 // --- CREATE new quotation ---
