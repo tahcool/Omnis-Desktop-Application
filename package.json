@@ -41,6 +41,12 @@
       ],
       "icon": "assets/images/omnis-notification-icon.png"
     },
+    "extraFiles": [
+      {
+        "from": ".env",
+        "to": ".env"
+      }
+    ],
     "nsis": {
       "oneClick": false,
       "allowToChangeInstallationDirectory": true,
