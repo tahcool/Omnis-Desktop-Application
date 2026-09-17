@@ -749,3 +749,5 @@
   Files: .mcp/knowledge/_shared/commit_log.md,systems/salestrack/index.html,
 - `79f8a32` 2026-09-17 [feature/admin-service-key-separation] fix: viewport-aware suggestion dropdown — flips upward when near screen bottom to avoid taskbar cutoff
   Files: .mcp/knowledge/_shared/commit_log.md,systems/salestrack/index.html,
+- `ff34c2a` 2026-09-17 [feature/admin-service-key-separation] fix: switch suggestion dropdown to position:fixed to escape overflow:hidden parent clipping
+  Files: .mcp/knowledge/_shared/commit_log.md,systems/salestrack/index.html,
