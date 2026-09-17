@@ -8829,7 +8829,12 @@ window.OmnisDashboardV6 = class OmnisDashboardV6 {
                 ? `${previewContact.salutation} ${previewContact.name}`
                 : previewContact.name;
 
-            const company = (this._currentFullDoc?.company || "").toLowerCase();
+            // Resolve company: prefer Supabase-assigned company, then Frappe, then olOrdersData
+            let company = (this._currentFullDoc?.db_company || this._currentFullDoc?.company || "").toLowerCase();
+            if (!company && window.olOrdersData) {
+                const correctedOrder = window.olOrdersData.find(o => o.report_id === (this._currentFullDoc?.name || ''));
+                if (correctedOrder && correctedOrder.company) company = correctedOrder.company.toLowerCase();
+            }
             const owner = (this._currentFullDoc?.owner || "").toLowerCase();
             const isSinopower = company.includes("sinopower") || owner.includes("sinopower");
             const isIEG = company.includes("industrial equipment") || owner.includes("industrial equipment");
@@ -8982,12 +8987,17 @@ window.OmnisDashboardV6 = class OmnisDashboardV6 {
         if (btn) { btn.disabled = true; btn.innerHTML = `<i class="fas fa-spinner fa-spin"></i> Sending...`; }
 
         try {
-            const company = (this._currentFullDoc?.company || "").toLowerCase();
+            // Resolve company: prefer Supabase-assigned company, then Frappe, then olOrdersData
+            let company = (this._currentFullDoc?.db_company || this._currentFullDoc?.company || "").toLowerCase();
+            if (!company && window.olOrdersData) {
+                const correctedOrder = window.olOrdersData.find(o => o.report_id === (this._currentFullDoc?.name || ''));
+                if (correctedOrder && correctedOrder.company) company = correctedOrder.company.toLowerCase();
+            }
             const owner = (this._currentFullDoc?.owner || "").toLowerCase();
             const isSinopower = company.includes("sinopower") || owner.includes("sinopower");
             const isIEG = company.includes("industrial equipment") || owner.includes("industrial equipment");
 
-            const config = this._getRecipients(this._currentFullDoc?.company || '');
+            const config = this._getRecipients(this._currentFullDoc?.db_company || this._currentFullDoc?.company || '');
             const defs = this._defaultEmailRecipients();
             const companyDefs = isSinopower ? defs.spz : defs.mxg;
             let contactPerson = config.contactName || companyDefs.contactName;
