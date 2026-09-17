@@ -1198,12 +1198,14 @@ function renderOrdersList() {
             </div>
 
             <div class="ai-order-cell" 
-                 title="${r.is_tracking_only && r.pipeline_status ? r.pipeline_status.text : 'Double-click to edit notes'}"
-                 ${!(r.is_tracking_only && r.pipeline_status) ? `ondblclick="editOrderField(this, '${safeMachineId}', 'notes', '${escapeJs(r.notes)}')"` : ''}>
+                 title="Double-click to edit notes"
+                 ondblclick="editOrderField(this, '${safeMachineId}', 'notes', '${escapeJs(r.notes)}')">
               <span class="cell-label">Status</span>
-              ${r.is_tracking_only && r.pipeline_status ? 
-                `<div><span style="display:inline-flex; align-items:center; gap:4px; padding:4px 10px; border-radius:99px; font-size:10px; font-weight:800; text-transform:uppercase; color:${r.pipeline_status.color}; background:${r.pipeline_status.color}12; border:1px solid ${r.pipeline_status.color}30;"><i class="fas ${r.pipeline_status.icon}"></i> ${r.pipeline_status.text}</span></div>` :
-                `<div style="font-size:14px; color:#000000; font-weight:500; line-height:1.4; word-break:break-word;">${r.notes || "—"}</div>`
+              ${r.notes ? 
+                `<div style="font-size:14px; color:#000000; font-weight:500; line-height:1.4; word-break:break-word;">${r.notes}</div>` :
+                (r.is_tracking_only && r.pipeline_status ? 
+                  `<div><span style="display:inline-flex; align-items:center; gap:4px; padding:4px 10px; border-radius:99px; font-size:10px; font-weight:800; text-transform:uppercase; color:${r.pipeline_status.color}; background:${r.pipeline_status.color}12; border:1px solid ${r.pipeline_status.color}30;"><i class="fas ${r.pipeline_status.icon}"></i> ${r.pipeline_status.text}</span></div>` :
+                  `<div style="font-size:14px; color:#000000; font-weight:500; line-height:1.4; word-break:break-word;">—</div>`)
               }
             </div>
 
