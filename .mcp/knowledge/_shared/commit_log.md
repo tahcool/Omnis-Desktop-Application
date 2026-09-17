@@ -745,3 +745,5 @@
   Files: .mcp/knowledge/_shared/commit_log.md,scripts/add_company_to_fmb_reports.sql,
 - `b34bba8` 2026-09-17 [feature/admin-service-key-separation] chore: bump version to 4.6.0
   Files: .mcp/knowledge/_shared/commit_log.md,package.json,
+- `a71975c` 2026-09-17 [feature/admin-service-key-separation] fix: prevent quotation from being marked as sale twice — UI disables button + server-side guard
+  Files: .mcp/knowledge/_shared/commit_log.md,systems/salestrack/index.html,
