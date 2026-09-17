@@ -741,3 +741,5 @@
   Files: .mcp/knowledge/_shared/commit_log.md,assets/js/preload.js,main.js,omnis-web-deploy/assets/js/preload.js,omnis-web-deploy/supabase-web-bridge.js,systems/salestrack/create_quotation_logic.js,systems/salestrack/index.html,web-deploy/assets/js/preload.js,web-deploy/supabase-web-bridge.js,
 - `6dc2847` 2026-09-17 [feature/admin-service-key-separation] [checkpoint] Fix: quotation item duplication on contact edit, add machine+date to Mark-as-Sale order tracking, whitelist WhatsApp IPC channels, fix modal z-index stacking
   Files: .mcp/knowledge/_shared/commit_log.md,assets/js/preload.js,systems/salestrack/create_quotation_logic.js,systems/salestrack/dashboard_logic.js,systems/salestrack/index.html,
+- `4397c5b` 2026-09-17 [feature/admin-service-key-separation] [checkpoint] Before company filter, mandatory fields, and user-company assignment changes
+  Files: .mcp/knowledge/_shared/commit_log.md,scripts/add_company_to_fmb_reports.sql,
