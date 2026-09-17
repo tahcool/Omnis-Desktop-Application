@@ -7072,7 +7072,33 @@ window.OmnisDashboardV6 = class OmnisDashboardV6 {
         }
 
         // Prepare Contacts
-        const contacts = fullDoc ? (fullDoc.contacts || []) : [];
+        let contacts = fullDoc ? (fullDoc.contacts || []) : [];
+
+        // For tracking-only orders, auto-load customer contacts from omnis_customer_contacts
+        if (contacts.length === 0 && reportId && reportId.startsWith('TRACK-') && order && order.customer) {
+            try {
+                const ccRes = await window.electron.invoke('supabase:query', {
+                    table: 'omnis_customer_contacts',
+                    method: 'select',
+                    params: {
+                        columns: 'id, salutation, name, phone, whatsapp_number, email, is_primary',
+                        filters: { customer_name: order.customer }
+                    }
+                });
+                if (ccRes.ok && ccRes.data && ccRes.data.length > 0) {
+                    contacts = ccRes.data.map(c => ({
+                        name: c.id,
+                        name1: c.name || '',
+                        salutation: c.salutation || '',
+                        phone_number: c.phone || c.whatsapp_number || '',
+                        email_address: c.email || ''
+                    }));
+                }
+            } catch (ccErr) {
+                console.warn('[OrderModal] Could not fetch customer contacts for tracking order:', ccErr);
+            }
+        }
+
         this._tempContacts = [...contacts]; // Spread to clone
         this._tempDeletedMachines = [];
         this._currentFullDoc = fullDoc;
