@@ -739,3 +739,5 @@
   Files: .mcp/knowledge/_shared/commit_log.md,supabase/migrations/20260917000001_add_salutation_to_contacts.sql,systems/salestrack/create_quotation_logic.js,systems/salestrack/dashboard_logic.js,systems/salestrack/index.html,systems/salestrack/orders_logic.js,
 - `cf244ae` 2026-09-17 [feature/admin-service-key-separation] fix: contact delete proxy, salutation validation, fix-salutation flow
   Files: .mcp/knowledge/_shared/commit_log.md,assets/js/preload.js,main.js,omnis-web-deploy/assets/js/preload.js,omnis-web-deploy/supabase-web-bridge.js,systems/salestrack/create_quotation_logic.js,systems/salestrack/index.html,web-deploy/assets/js/preload.js,web-deploy/supabase-web-bridge.js,
+- `6dc2847` 2026-09-17 [feature/admin-service-key-separation] [checkpoint] Fix: quotation item duplication on contact edit, add machine+date to Mark-as-Sale order tracking, whitelist WhatsApp IPC channels, fix modal z-index stacking
+  Files: .mcp/knowledge/_shared/commit_log.md,assets/js/preload.js,systems/salestrack/create_quotation_logic.js,systems/salestrack/dashboard_logic.js,systems/salestrack/index.html,
