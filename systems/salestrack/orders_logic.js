@@ -358,7 +358,7 @@ async function loadOrdersList(force = false) {
                     ordersList.push({
                         report_id: rid,
                         supabase_id: t.id,
-                        machine_id: t.id,
+                        machine_id: `TRACK-M-${t.id}`,
                         customer: t.customer,
                         machine: t.machine || `${t.brand || ''} ${t.model || ''}`.trim(),
                         brand: t.brand || '',
