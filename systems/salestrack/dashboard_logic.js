@@ -8835,9 +8835,11 @@ window.OmnisDashboardV6 = class OmnisDashboardV6 {
             const isIEG = company.includes("industrial equipment") || owner.includes("industrial equipment");
 
             const config = this._getRecipients(company);
-            let contactPerson = config.contactName || "Chetan Samji";
-            let contactTitle = config.contactTitle || "Commercial Manager";
-            let contactPhone = config.contactPhone || "+263772949515";
+            const defs = this._defaultEmailRecipients();
+            const companyDefs = isSinopower ? defs.spz : defs.mxg;
+            let contactPerson = config.contactName || companyDefs.contactName;
+            let contactTitle = config.contactTitle || companyDefs.contactTitle;
+            let contactPhone = config.contactPhone || companyDefs.contactPhone;
             let companyName = "Machinery Exchange";
             let signOff = `*The ${companyName} Team*`;
 
@@ -8986,9 +8988,11 @@ window.OmnisDashboardV6 = class OmnisDashboardV6 {
             const isIEG = company.includes("industrial equipment") || owner.includes("industrial equipment");
 
             const config = this._getRecipients(this._currentFullDoc?.company || '');
-            let contactPerson = config.contactName || "Chetan Samji";
-            let contactTitle = config.contactTitle || "Commercial Manager";
-            let contactPhone = config.contactPhone || "+263772949515";
+            const defs = this._defaultEmailRecipients();
+            const companyDefs = isSinopower ? defs.spz : defs.mxg;
+            let contactPerson = config.contactName || companyDefs.contactName;
+            let contactTitle = config.contactTitle || companyDefs.contactTitle;
+            let contactPhone = config.contactPhone || companyDefs.contactPhone;
             let companyName = "Machinery Exchange";
             let signOff = `*The ${companyName} Team*`;
 
@@ -9263,7 +9267,7 @@ window.OmnisDashboardV6 = class OmnisDashboardV6 {
         const mxgData = Array.isArray(saved.mxg) ? { cc: saved.mxg, contactName: defs.mxg.contactName, contactTitle: defs.mxg.contactTitle, contactEmail: defs.mxg.contactEmail, contactPhone: defs.mxg.contactPhone } : (saved.mxg || defs.mxg);
         const spzData = Array.isArray(saved.spz) ? { cc: saved.spz, contactName: defs.spz.contactName, contactTitle: defs.spz.contactTitle, contactEmail: defs.spz.contactEmail, contactPhone: defs.spz.contactPhone } : (saved.spz || defs.spz);
 
-        if (company && company.includes('Sinopower'))
+        if (company && company.toLowerCase().includes('sinopower'))
             return { label: 'Sinopower',          emails: spzData.cc, contactName: spzData.contactName, contactTitle: spzData.contactTitle, contactEmail: spzData.contactEmail, contactPhone: spzData.contactPhone };
         return     { label: 'Machinery Exchange', emails: mxgData.cc, contactName: mxgData.contactName, contactTitle: mxgData.contactTitle, contactEmail: mxgData.contactEmail, contactPhone: mxgData.contactPhone };
     }

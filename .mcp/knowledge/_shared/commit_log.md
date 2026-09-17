@@ -755,3 +755,5 @@
   Files: .mcp/knowledge/_shared/commit_log.md,systems/salestrack/index.html,
 - `c6ec725` 2026-09-17 [feature/admin-service-key-separation] fix: force item search dropdown to always open upward above the input field
   Files: .mcp/knowledge/_shared/commit_log.md,systems/salestrack/index.html,
+- `4154ad2` 2026-09-17 [feature/admin-service-key-separation] fix: use top-based positioning for item search dropdown, remove dead inline suggest-list from row template
+  Files: .mcp/knowledge/_shared/commit_log.md,systems/salestrack/create_quotation_logic.js,systems/salestrack/index.html,
