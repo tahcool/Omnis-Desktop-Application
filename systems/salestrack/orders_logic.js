@@ -1056,12 +1056,12 @@ function renderOrdersList() {
         let riskIcon = "fa-check-circle";
         let riskColor = "#10b981";
 
-        // Tracking-only: override risk to show "TRACKING ONLY" in purple
+        // Tracking-only: hide the risk label row (the badge already shows it)
         if (r.is_tracking_only) {
             riskClass = "";
-            riskLabel = "TRACKING ONLY";
-            riskIcon = "fa-eye";
-            riskColor = "#7c3aed";
+            riskLabel = "";
+            riskIcon = "";
+            riskColor = "transparent";
         } else {
             const daysVal = parseFloat(r.days_left);
             const isValidDays = !isNaN(daysVal);
@@ -1096,7 +1096,12 @@ function renderOrdersList() {
         const safeMachineId = escapeJs(r.machine_id);
 
         const optStyle = `background:#ffffff; color:#334155; font-weight:600; font-size:12px;`;
-        const statusBadge = `<select 
+        let statusBadge;
+        // For tracking-only with a linked stock item, show pipeline status as a static badge
+        if (r.is_tracking_only && r.pipeline_status) {
+            statusBadge = `<span style="display:inline-flex; align-items:center; gap:4px; padding:4px 10px; border-radius:99px; font-size:10px; font-weight:800; text-transform:uppercase; color:${r.pipeline_status.color}; background:${r.pipeline_status.color}12; border:1px solid ${r.pipeline_status.color}30;"><i class="fas ${r.pipeline_status.icon}"></i> ${r.pipeline_status.text}</span>`;
+        } else {
+            statusBadge = `<select 
             style="appearance:none; padding:4px 10px; border-radius:99px; font-size:10px; font-weight:800; text-transform:uppercase; cursor:pointer; outline:none; text-align:center; transition:0.2s; border:1px solid transparent; max-width:100%; overflow:hidden; text-overflow:ellipsis; ${statusStyle}"
             onchange="window.setOrderStatusInline('${safeReportId}', '${safeMachineId}', this.value, this)"
             onclick="event.stopPropagation();"
@@ -1110,6 +1115,7 @@ function renderOrdersList() {
             <option style="${optStyle}" value="Delivered" ${r.status === 'Delivered' ? 'selected' : ''}>Delivered</option>
             <option style="${optStyle}" value="Final Inspection" ${r.status === 'Final Inspection' ? 'selected' : ''}>Final Inspection</option>
         </select>`;
+        }
         const companyColors = {
             'Sinopower':          { bg: '#fef3c7', color: '#92400e', border: '#fde68a' },
             'Machinery Exchange': { bg: '#dbeafe', color: '#1e40af', border: '#bfdbfe' },
@@ -1169,14 +1175,14 @@ function renderOrdersList() {
               <div style="flex:1;" onclick="window.dashManager.openOrderModal('${safeReportId}', '${safeMachineId}')">
                 <span class="cell-label">Customer / Risk</span>
                 <div style="font-weight:700; font-size:15px; color:#000000; margin-bottom:4px; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden;" title="${(r.customer || '').replace(/\"/g, '')}">${(r.customer || "-").replace(/\"/g, '')}</div>
-                ${r.is_tracking_only ? `<div style="margin-bottom:6px; display:flex; flex-wrap:wrap; gap:4px; align-items:center;"><span style="background:linear-gradient(135deg,#7c3aed,#a855f7); color:#fff; font-size:10px; font-weight:800; padding:3px 8px; border-radius:4px; letter-spacing:0.04em; display:inline-flex; align-items:center; gap:4px; box-shadow:0 2px 6px rgba(124,58,237,0.35); animation:trackPulse 2s infinite;"><i class="fas fa-eye"></i> TRACKING ONLY</span>${r.pipeline_status ? `<span style="display:inline-flex; align-items:center; gap:3px; font-size:9px; font-weight:800; color:${r.pipeline_status.color}; background:${r.pipeline_status.color}12; padding:2px 7px; border-radius:4px; border:1px solid ${r.pipeline_status.color}30;"><i class="fas ${r.pipeline_status.icon}"></i> ${r.pipeline_status.text}</span>` : ''}</div>` : ''}
-                <div style="display:flex; align-items:center; gap:6px; font-size:11px; font-weight:800; color:${riskColor}">
+                ${r.is_tracking_only ? `<div style="margin-bottom:6px; display:flex; flex-wrap:wrap; gap:4px; align-items:center;"><span style="background:linear-gradient(135deg,#7c3aed,#a855f7); color:#fff; font-size:10px; font-weight:800; padding:3px 8px; border-radius:4px; letter-spacing:0.04em; display:inline-flex; align-items:center; gap:4px; box-shadow:0 2px 6px rgba(124,58,237,0.35); animation:trackPulse 2s infinite;"><i class="fas fa-eye"></i> TRACKING ONLY</span></div>` : ''}
+                ${!r.is_tracking_only ? `<div style="display:flex; align-items:center; gap:6px; font-size:11px; font-weight:800; color:${riskColor}">
                   <i class="fas ${riskIcon}"></i> ${riskLabel}
                   <div style="margin-left:auto; display:flex; gap:6px;">
                      <i id="notified_wa_icon_${r.report_id}" class="fab fa-whatsapp" style="color:#25d366; font-size:13px; display:${localStorage.getItem('notified_wa_'+r.report_id) ? 'inline-block' : 'none'};" title="WhatsApp Update Sent"></i>
                      <i id="notified_email_icon_${r.report_id}" class="fas fa-envelope" style="color:#0284c7; font-size:13px; display:${localStorage.getItem('notified_email_'+r.report_id) ? 'inline-block' : 'none'};" title="Email Update Sent"></i>
                   </div>
-                </div>
+                </div>` : `<div style="display:flex; align-items:center; gap:6px;"><div style="margin-left:auto; display:flex; gap:6px;"><i id="notified_wa_icon_${r.report_id}" class="fab fa-whatsapp" style="color:#25d366; font-size:13px; display:${localStorage.getItem('notified_wa_'+r.report_id) ? 'inline-block' : 'none'};" title="WhatsApp Update Sent"></i><i id="notified_email_icon_${r.report_id}" class="fas fa-envelope" style="color:#0284c7; font-size:13px; display:${localStorage.getItem('notified_email_'+r.report_id) ? 'inline-block' : 'none'};" title="Email Update Sent"></i></div></div>`}
               </div>
             </div>
 
