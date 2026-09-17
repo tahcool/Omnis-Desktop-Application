@@ -747,3 +747,5 @@
   Files: .mcp/knowledge/_shared/commit_log.md,package.json,
 - `a71975c` 2026-09-17 [feature/admin-service-key-separation] fix: prevent quotation from being marked as sale twice — UI disables button + server-side guard
   Files: .mcp/knowledge/_shared/commit_log.md,systems/salestrack/index.html,
+- `79f8a32` 2026-09-17 [feature/admin-service-key-separation] fix: viewport-aware suggestion dropdown — flips upward when near screen bottom to avoid taskbar cutoff
+  Files: .mcp/knowledge/_shared/commit_log.md,systems/salestrack/index.html,

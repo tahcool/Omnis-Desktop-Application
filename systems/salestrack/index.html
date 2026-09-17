@@ -18201,6 +18201,49 @@
         if (input.hasAttribute('data-sb-suggest')) return;
         input.setAttribute('data-sb-suggest', table);
 
+        // Convert the suggest-list to fixed positioning so it escapes overflow:hidden parents
+        list.style.position = 'fixed';
+        list.style.top = '0';
+        list.style.left = '0';
+        list.style.width = 'auto';
+
+        // Helper: position the fixed dropdown relative to the input's screen coordinates
+        function positionDropdown() {
+            if (list.classList.contains('hidden')) return;
+            const rect = input.getBoundingClientRect();
+            const listHeight = list.scrollHeight || list.offsetHeight || 250;
+            const viewportH = window.innerHeight;
+            const spaceBelow = viewportH - rect.bottom;
+            const spaceAbove = rect.top;
+
+            list.style.left = rect.left + 'px';
+            list.style.width = rect.width + 'px';
+
+            if (spaceBelow < listHeight + 10 && spaceAbove > spaceBelow) {
+                // Open upward
+                const maxH = Math.min(250, spaceAbove - 10);
+                list.style.top = 'auto';
+                list.style.bottom = (viewportH - rect.top) + 'px';
+                list.style.maxHeight = maxH + 'px';
+                list.style.borderRadius = '8px 8px 4px 4px';
+            } else {
+                // Open downward
+                const maxH = Math.min(250, spaceBelow - 10);
+                list.style.top = rect.bottom + 'px';
+                list.style.bottom = 'auto';
+                list.style.maxHeight = maxH + 'px';
+                list.style.borderRadius = '4px 4px 8px 8px';
+            }
+        }
+
+        // Hide dropdown on scroll (any scrollable ancestor)
+        function onAncestorScroll(e) {
+            if (!list.classList.contains('hidden') && e.target !== list) {
+                list.classList.add('hidden');
+            }
+        }
+        window.addEventListener('scroll', onAncestorScroll, true);
+
         let lastVal = "";
         const debounce = (func, wait) => {
             let timeout;
@@ -18221,29 +18264,7 @@
             
             list.innerHTML = `<div style="padding:8px; color:#64748b; font-size:11px; font-style:italic; text-align:center;"><i class="fa fa-bolt" style="color:#fbbf24;"></i> Turbo Search (${now})...</div>`;
             list.classList.remove('hidden');
-
-            // Viewport-aware positioning: flip dropdown upward if it would overflow the screen
-            requestAnimationFrame(() => {
-                const inputRect = input.getBoundingClientRect();
-                const listHeight = list.offsetHeight || 250;
-                const viewportHeight = window.innerHeight;
-                const spaceBelow = viewportHeight - inputRect.bottom;
-                const spaceAbove = inputRect.top;
-
-                if (spaceBelow < listHeight + 20 && spaceAbove > spaceBelow) {
-                    // Open upward
-                    list.style.top = 'auto';
-                    list.style.bottom = '100%';
-                    list.style.maxHeight = Math.min(250, spaceAbove - 20) + 'px';
-                    list.style.borderRadius = '8px 8px 4px 4px';
-                } else {
-                    // Open downward (default)
-                    list.style.top = '100%';
-                    list.style.bottom = 'auto';
-                    list.style.maxHeight = Math.min(250, spaceBelow - 20) + 'px';
-                    list.style.borderRadius = '4px 4px 8px 8px';
-                }
-            });
+            requestAnimationFrame(positionDropdown);
 
             try {
                 let results = [];
@@ -18344,26 +18365,7 @@
             } catch(e) { console.error("Search Suggest Error:", e); }
 
             // Re-position after results render (dropdown height may have changed)
-            requestAnimationFrame(() => {
-                if (list.classList.contains('hidden')) return;
-                const inputRect = input.getBoundingClientRect();
-                const listHeight = list.scrollHeight || list.offsetHeight;
-                const viewportHeight = window.innerHeight;
-                const spaceBelow = viewportHeight - inputRect.bottom;
-                const spaceAbove = inputRect.top;
-
-                if (spaceBelow < listHeight + 20 && spaceAbove > spaceBelow) {
-                    list.style.top = 'auto';
-                    list.style.bottom = '100%';
-                    list.style.maxHeight = Math.min(250, spaceAbove - 20) + 'px';
-                    list.style.borderRadius = '8px 8px 4px 4px';
-                } else {
-                    list.style.top = '100%';
-                    list.style.bottom = 'auto';
-                    list.style.maxHeight = Math.min(250, spaceBelow - 20) + 'px';
-                    list.style.borderRadius = '4px 4px 8px 8px';
-                }
-            });
+            requestAnimationFrame(positionDropdown);
         };
 
         input.addEventListener('input', debounce((e) => fetchSuggestions(e.target.value), 200));
