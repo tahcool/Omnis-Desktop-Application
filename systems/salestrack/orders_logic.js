@@ -340,7 +340,7 @@ async function loadOrdersList(force = false) {
                         brand: t.brand || '',
                         model: t.model || '',
                         qty: t.qty,
-                        status: t.status || 'Internal Tracking',
+                        status: t.status || 'In Progress',
                         notes: t.notes,
                         internal_notes: t.internal_notes,
                         target_handover: t.target_handover,
@@ -832,7 +832,8 @@ function renderOrdersList() {
             style.id = 'track-only-styles';
             style.textContent = `
                 @keyframes trackPulse { 0%,100%{opacity:1} 50%{opacity:0.75} }
-                .ai-order-row.is-tracking-only { border-left:4px solid #7c3aed !important; background:linear-gradient(90deg, rgba(124,58,237,0.04) 0%, transparent 40%) !important; }
+                .ai-order-row.is-tracking-only { border-left:4px solid #7c3aed !important; background:linear-gradient(135deg, rgba(124,58,237,0.10) 0%, rgba(168,85,247,0.06) 50%, rgba(124,58,237,0.10) 100%) !important; border:1px solid rgba(124,58,237,0.25) !important; border-left:4px solid #7c3aed !important; }
+                .ai-order-row.is-tracking-only:hover { background:linear-gradient(135deg, rgba(124,58,237,0.16) 0%, rgba(168,85,247,0.10) 50%, rgba(124,58,237,0.16) 100%) !important; }
             `;
             document.head.appendChild(style);
         }
@@ -1026,20 +1027,28 @@ function renderOrdersList() {
         let riskIcon = "fa-check-circle";
         let riskColor = "#10b981";
 
-        const daysVal = parseFloat(r.days_left);
-        const isValidDays = !isNaN(daysVal);
+        // Tracking-only: override risk to show "TRACKING ONLY" in purple
+        if (r.is_tracking_only) {
+            riskClass = "";
+            riskLabel = "TRACKING ONLY";
+            riskIcon = "fa-eye";
+            riskColor = "#7c3aed";
+        } else {
+            const daysVal = parseFloat(r.days_left);
+            const isValidDays = !isNaN(daysVal);
 
-        if (isValidDays) {
-            if (daysVal < 0) {
-                riskClass = "risk-high";
-                riskLabel = "LATE";
-                riskIcon = "fa-triangle-exclamation";
-                riskColor = "#ef4444";
-            } else if (daysVal <= 5) {
-                riskClass = "risk-medium";
-                riskLabel = "POTENTIALLY LATE";
-                riskIcon = "fa-clock";
-                riskColor = "#f59e0b";
+            if (isValidDays) {
+                if (daysVal < 0) {
+                    riskClass = "risk-high";
+                    riskLabel = "LATE";
+                    riskIcon = "fa-triangle-exclamation";
+                    riskColor = "#ef4444";
+                } else if (daysVal <= 5) {
+                    riskClass = "risk-medium";
+                    riskLabel = "POTENTIALLY LATE";
+                    riskIcon = "fa-clock";
+                    riskColor = "#f59e0b";
+                }
             }
         }
 
@@ -1131,7 +1140,7 @@ function renderOrdersList() {
               <div style="flex:1;" onclick="window.dashManager.openOrderModal('${safeReportId}', '${safeMachineId}')">
                 <span class="cell-label">Customer / Risk</span>
                 <div style="font-weight:700; font-size:15px; color:#000000; margin-bottom:4px; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden;" title="${(r.customer || '').replace(/\"/g, '')}">${(r.customer || "-").replace(/\"/g, '')}</div>
-                ${r.is_tracking_only ? `<div style="margin-bottom:6px;"><span style="background:linear-gradient(135deg,#7c3aed,#a855f7); color:#fff; font-size:10px; font-weight:800; padding:3px 8px; border-radius:4px; letter-spacing:0.04em; display:inline-flex; align-items:center; gap:4px; box-shadow:0 2px 6px rgba(124,58,237,0.35); animation:trackPulse 2s infinite;"><i class="fas fa-eye"></i> TRACKING ONLY — NOT PURCHASED</span></div>` : ''}
+                ${r.is_tracking_only ? `<div style="margin-bottom:6px;"><span style="background:linear-gradient(135deg,#7c3aed,#a855f7); color:#fff; font-size:10px; font-weight:800; padding:3px 8px; border-radius:4px; letter-spacing:0.04em; display:inline-flex; align-items:center; gap:4px; box-shadow:0 2px 6px rgba(124,58,237,0.35); animation:trackPulse 2s infinite;"><i class="fas fa-eye"></i> TRACKING ONLY</span></div>` : ''}
                 <div style="display:flex; align-items:center; gap:6px; font-size:11px; font-weight:800; color:${riskColor}">
                   <i class="fas ${riskIcon}"></i> ${riskLabel}
                   <div style="margin-left:auto; display:flex; gap:6px;">
