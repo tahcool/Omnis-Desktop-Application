@@ -22177,31 +22177,18 @@ thead th { padding:11px 12px; font-size:10px; font-weight:800; color:#fff; text-
                 params: { data: { [dbField]: newVal }, id: dbId }
               });
           } else {
-            const baseUrl = window.CURRENT_SYSTEM ? window.CURRENT_SYSTEM.baseUrl : "https://salestrack.powerstar.co.zw";
-            let rawRes = await window.callFrappeSequenced(baseUrl, "powerstar_salestrack.omnis_dashboard.update_fmb_machine_field", {
-              machine_id: machineId,
-              field: field,
-              value: newVal
-            });
-            let payload = rawRes.message || rawRes;
-            res = { ok: payload && payload.ok, error: payload?.error };
+            // Save directly to Supabase order_machines
+            let dbField = field;
+            if (field === 'revised_handover_date') dbField = 'revised_date';
 
-            if (res.ok) {
-                try {
-                    let dbField = field;
-                    if (field === 'revised_handover_date') dbField = 'revised_date';
-                    await window.electron.invoke('supabase:query', {
-                        table: 'order_machines',
-                        method: 'update',
-                        params: { 
-                            data: { [dbField]: newVal },
-                            match: { frappe_row_id: machineId }
-                        }
-                    });
-                } catch(e) {
-                    console.error("Failed to mirror update to Supabase:", e);
+            res = await window.electron.invoke('supabase:query', {
+                table: 'order_machines',
+                method: 'update',
+                params: { 
+                    data: { [dbField]: newVal },
+                    match: { frappe_row_id: machineId }
                 }
-            }
+            });
           }
 
           if (res && res.ok !== false) {
