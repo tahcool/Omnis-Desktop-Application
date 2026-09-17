@@ -18438,16 +18438,21 @@
         function positionDropdown(input) {
             const dd = getOrCreateDropdown();
             const rect = input.getBoundingClientRect();
-            const viewportH = window.innerHeight;
             const spaceAbove = rect.top;
+            const maxH = Math.min(250, spaceAbove - 10);
 
             dd.style.left = rect.left + 'px';
             dd.style.width = Math.max(rect.width, 280) + 'px';
-            // Always open upward above the field
-            dd.style.top = 'auto';
-            dd.style.bottom = (viewportH - rect.top + 2) + 'px';
-            dd.style.maxHeight = Math.min(250, spaceAbove - 10) + 'px';
+            dd.style.maxHeight = maxH + 'px';
             dd.style.borderRadius = '8px 8px 4px 4px';
+
+            // Always open upward: place the dropdown's bottom edge at the input's top edge
+            // Use top = rect.top - ddActualHeight (measure after rendering)
+            dd.style.bottom = 'auto';
+            const ddActualH = dd.scrollHeight || dd.offsetHeight || maxH;
+            const finalH = Math.min(ddActualH, maxH);
+            dd.style.top = (rect.top - finalH - 2) + 'px';
+            console.log('[positionDropdown] UPWARD — top:', dd.style.top, 'rect.top:', rect.top, 'ddH:', finalH, 'dd.id:', dd.id);
         }
 
         const doQtnItemSearch = async (input) => {

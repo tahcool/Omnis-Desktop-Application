@@ -346,12 +346,11 @@
         row.onmouseenter = function() { this.style.background = '#f8fafc'; };
         row.onmouseleave = function() { this.style.background = ''; };
         row.innerHTML = `
-            <td style="padding:8px 10px; position:relative;">
+            <td style="padding:8px 10px;">
                 <div style="display:flex; align-items:center; gap:4px;">
                     <input type="text" class="form-input item-code" placeholder="Search product..." style="font-size:12px; flex:1;">
                     <button type="button" class="btn-edit-product" title="Edit product data" style="background:none; border:none; cursor:pointer; color:#94a3b8; font-size:14px; padding:2px 4px; flex-shrink:0; transition:color 0.2s;" onmouseenter="this.style.color='#3b82f6'" onmouseleave="this.style.color='#94a3b8'"><i class="fas fa-pencil-alt"></i></button>
                 </div>
-                <div class="suggest-list hidden" style="position:absolute; top:100%; left:6px; right:6px; z-index:9999; background:#fff; border:1px solid #e2e8f0; border-radius:8px; max-height:250px; overflow-y:auto; box-shadow:0 8px 25px rgba(0,0,0,0.15);"></div>
             </td>
             <td style="padding:8px 6px;"><input type="text" class="form-input item-name" placeholder="Item Name" readonly style="font-size:12px; width:100%; background:#f9fafb; color:#374151;"></td>
             <td style="padding:8px 6px;"><textarea class="form-input item-desc" placeholder="Description" style="font-size:11px; width:100%; min-height:36px; resize:vertical; background:#f9fafb; color:#374151;"></textarea></td>

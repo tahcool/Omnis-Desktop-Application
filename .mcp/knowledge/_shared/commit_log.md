@@ -753,3 +753,5 @@
   Files: .mcp/knowledge/_shared/commit_log.md,systems/salestrack/index.html,
 - `4f73bba` 2026-09-17 [feature/admin-service-key-separation] fix: viewport-aware positioning for item search dropdown (wireQtnItemSearch) — flips upward near screen bottom
   Files: .mcp/knowledge/_shared/commit_log.md,systems/salestrack/index.html,
+- `c6ec725` 2026-09-17 [feature/admin-service-key-separation] fix: force item search dropdown to always open upward above the input field
+  Files: .mcp/knowledge/_shared/commit_log.md,systems/salestrack/index.html,
