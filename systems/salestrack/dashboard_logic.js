@@ -7183,7 +7183,6 @@ window.OmnisDashboardV6 = class OmnisDashboardV6 {
                     <div id="edit-order-status-section" style="width:220px;">
                        <label style="font-size:11px; font-weight:700; color:#64748b; display:block; margin-bottom:6px; text-transform:uppercase; letter-spacing:0.5px;">Order Status</label>
                        <select id="edit-order-status" style="width:100%; padding:10px; border:1px solid #cbd5e1; border-radius:4px; font-size:14px; background:white; font-weight:600; color:#334155; cursor:pointer;">
-                            <option value="New Sale" ${order && order.status === 'New Sale' ? 'selected' : ''}>New Sale</option>
                             <option value="In Progress" ${order && order.status === 'In Progress' ? 'selected' : ''}>In Progress</option>
                             <option value="On Hold" ${order && order.status === 'On Hold' ? 'selected' : ''}>On Hold</option>
                             <option value="Customer To Collect" ${order && order.status === 'Customer To Collect' ? 'selected' : ''}>Customer To Collect</option>
@@ -7471,17 +7470,28 @@ window.OmnisDashboardV6 = class OmnisDashboardV6 {
 
         tbody.innerHTML = this._tempContacts.length === 0
             ? '<tr><td colspan="5" style="text-align:center; padding:16px; color:#94a3b8; font-style:italic;">No contacts added.</td></tr>'
-            : this._tempContacts.map((c, i) => `
+            : this._tempContacts.map((c, i) => {
+                const salVal = (c.salutation || '').trim();
+                const presetSalutations = ['Mr', 'Mrs', 'Ms', 'Miss', 'Dr', 'Prof', 'Eng', 'Hon'];
+                const isCustom = salVal && !presetSalutations.includes(salVal);
+                const salOptions = presetSalutations.map(s => `<option value="${s}" ${salVal === s ? 'selected' : ''}>${s}</option>`).join('');
+                return `
                 <tr style="background:${i % 2 === 0 ? '#ffffff' : '#f8fafc'}; border-bottom:1px solid #e2e8f0;">
-                    <td style="padding:8px;"><input type="text" data-idx="${i}" data-field="salutation" value="${c.salutation || ''}" placeholder="Title" style="width:100%; padding:8px; border:1px solid #e2e8f0; border-radius:4px; font-size:13px; background:white;"></td>
+                    <td style="padding:8px;">
+                        ${isCustom ? `<input type="text" data-idx="${i}" data-field="salutation" value="${salVal}" placeholder="Title" style="width:100%; padding:8px; border:1px solid #e2e8f0; border-radius:4px; font-size:13px; background:white;">` : `<select data-idx="${i}" data-field="salutation" onchange="if(this.value==='__custom__'){this.outerHTML='<input type=\\'text\\' data-idx=\\'${i}\\' data-field=\\'salutation\\' placeholder=\\'Type title\\' style=\\'width:100%; padding:8px; border:1px solid #e2e8f0; border-radius:4px; font-size:13px; background:white;\\'>'; const inp=document.querySelector('input[data-idx=\\'${i}\\'][data-field=\\'salutation\\']'); if(inp){inp.focus(); inp.oninput=function(e){if(salestrack._tempContacts[${i}])salestrack._tempContacts[${i}].salutation=e.target.value;};} }" style="width:100%; padding:8px; border:1px solid #e2e8f0; border-radius:4px; font-size:13px; background:white; cursor:pointer;">
+                            <option value="">—</option>
+                            ${salOptions}
+                            <option value="__custom__">Custom…</option>
+                        </select>`}
+                    </td>
                     <td style="padding:8px;"><input type="text" data-idx="${i}" data-field="name1" value="${c.name1 || ''}" placeholder="Name" style="width:100%; padding:8px; border:1px solid #e2e8f0; border-radius:4px; font-size:13px; background:white;"></td>
                     <td style="padding:8px;"><input type="text" data-idx="${i}" data-field="phone_number" value="${c.phone_number || ''}" placeholder="Phone" style="width:100%; padding:8px; border:1px solid #e2e8f0; border-radius:4px; font-size:13px; background:white;"></td>
                     <td style="padding:8px;"><input type="text" data-idx="${i}" data-field="email_address" value="${c.email_address || ''}" placeholder="Email" style="width:100%; padding:8px; border:1px solid #e2e8f0; border-radius:4px; font-size:13px; background:white;"></td>
                     <td style="text-align:center;">
                         <button onclick="salestrack.removeContactRow(${i})" style="color:#94a3b8; background:none; border:none; cursor:pointer; font-weight:bold; padding:8px; font-size:14px; transition:color 0.2s; hover:text-red-500;">&times;</button>
                     </td>
-                </tr>
-            `).join('');
+                </tr>`;
+            }).join('');
 
         // Bind Listeners
         tbody.querySelectorAll('input').forEach(input => {
@@ -7490,6 +7500,15 @@ window.OmnisDashboardV6 = class OmnisDashboardV6 {
                 const field = e.target.dataset.field;
                 if (this._tempContacts[idx]) {
                     this._tempContacts[idx][field] = e.target.value;
+                }
+            };
+        });
+        // Bind salutation select dropdowns
+        tbody.querySelectorAll('select[data-field="salutation"]').forEach(sel => {
+            sel.onchange = (e) => {
+                const idx = parseInt(e.target.dataset.idx);
+                if (e.target.value !== '__custom__' && this._tempContacts[idx]) {
+                    this._tempContacts[idx].salutation = e.target.value;
                 }
             };
         });

@@ -514,6 +514,16 @@
             if (!data.sales_person) throw new Error("Sales Person is required");
             if (data.items.length === 0) throw new Error("At least one item is required");
 
+            // Validate contacts — require at least one with email or WhatsApp
+            const custContacts = window._qtnCustomerContacts || [];
+            if (custContacts.length === 0) {
+                throw new Error("At least one contact is required. Add a contact using the Contacts section above.");
+            }
+            const hasUsable = custContacts.some(c => c.email || c.whatsapp_number);
+            if (!hasUsable) {
+                throw new Error("At least one contact must have an email address or WhatsApp number.");
+            }
+
             const sp = (window.salestrack && window.salestrack.supabase) || window.supabase || null;
             if (!sp) throw new Error("Supabase client not found");
 
@@ -1494,7 +1504,7 @@
                   <i class="fas fa-star"></i>
                 </button>
                 <div style="flex:1;">
-                  <div style="font-weight:700; font-size:12px; color:#1e293b;">${c.contact_name || 'Unnamed'}${isPrimary ? ' <span style="font-size:9px; color:#f59e0b; font-weight:800; text-transform:uppercase;">(Primary)</span>' : ''}</div>
+                  <div style="font-weight:700; font-size:12px; color:#1e293b;">${c.salutation ? c.salutation + ' ' : ''}${c.contact_name || 'Unnamed'}${isPrimary ? ' <span style="font-size:9px; color:#f59e0b; font-weight:800; text-transform:uppercase;">(Primary)</span>' : ''}</div>
                   <div style="display:flex; gap:6px; margin-top:3px; flex-wrap:wrap;">
                     ${emailBadge}
                     ${waBadge}
@@ -1516,10 +1526,15 @@
         if (show === false || (show === undefined && isVisible)) {
             form.style.display = 'none';
             // Clear fields
-            ['qtn-cc-name', 'qtn-cc-email', 'qtn-cc-whatsapp'].forEach(id => {
+            ['qtn-cc-name', 'qtn-cc-email', 'qtn-cc-whatsapp', 'qtn-cc-salutation-custom'].forEach(id => {
                 const el = document.getElementById(id);
                 if (el) el.value = '';
             });
+            // Reset salutation dropdown
+            const salSel = document.getElementById('qtn-cc-salutation');
+            if (salSel) { salSel.value = ''; salSel.style.display = ''; }
+            const salCustom = document.getElementById('qtn-cc-salutation-custom');
+            if (salCustom) salCustom.style.display = 'none';
         } else {
             form.style.display = '';
             document.getElementById('qtn-cc-name')?.focus();
@@ -1538,6 +1553,16 @@
         const email = document.getElementById('qtn-cc-email')?.value?.trim() || '';
         const whatsapp = document.getElementById('qtn-cc-whatsapp')?.value?.trim() || '';
 
+        // Read salutation — prefer custom input if visible, otherwise dropdown
+        const salCustomEl = document.getElementById('qtn-cc-salutation-custom');
+        const salSelEl = document.getElementById('qtn-cc-salutation');
+        let salutation = '';
+        if (salCustomEl && salCustomEl.style.display !== 'none') {
+            salutation = salCustomEl.value.trim();
+        } else if (salSelEl && salSelEl.value && salSelEl.value !== '__custom__') {
+            salutation = salSelEl.value;
+        }
+
         if (!contactName) {
             if (window.showToast) window.showToast('Contact name is required.', 'warning');
             return;
@@ -1552,6 +1577,7 @@
 
             const { data, error } = await sp.from('omnis_customer_contacts').insert([{
                 customer_name: customerName,
+                salutation: salutation || null,
                 contact_name: contactName,
                 email: email || null,
                 whatsapp_number: whatsapp || null,

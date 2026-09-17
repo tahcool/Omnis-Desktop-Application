@@ -732,3 +732,6 @@
   Files: .mcp/knowledge/_shared/commit_log.md,supabase/functions/process-email-queue/index.ts,supabase/functions_original/process-email-queue/index.ts,supabase/migrations/20260916_sales_persons_profile_fields.sql,systems/salestrack/create_quotation_logic.js,systems/salestrack/dashboard_logic.js,systems/salestrack/index.html,
 - `61138cd` 2026-09-16 [feature/admin-service-key-separation] chore: bump version to 4.5.0
   Files: .mcp/knowledge/_shared/commit_log.md,RELEASE_NOTES.md,package.json,systems/fleetrack/index.html,systems/powertrack/dashboard.html,systems/powertrack/powertrack_index.html,systems/salestrack/dashboard_logic.js,systems/salestrack/index.html,version.json,
+\n## 2026-09-17
+- `8b41cd2` 2026-09-17 [feature/admin-service-key-separation] fix: include .env in build, replace uuid with crypto.randomUUID()
+  Files: .mcp/knowledge/_shared/commit_log.md,lib/email-manager.js,package.json,

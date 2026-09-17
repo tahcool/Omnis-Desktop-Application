@@ -539,7 +539,7 @@ window.syncMissingSales = async function() {
                     model: sale.model || "",
                     machine: `${sale.oem || ''} ${sale.model || ''}`.trim() || "Unknown Machine",
                     qty: sale.qty || 1,
-                    status: "New Sale",
+                    status: "In Progress",
                     order_date: sale.order_date,
                     target_handover: targetHandover,
                     committed_lead_time: sale.committed_lead_time || "",
@@ -1064,7 +1064,6 @@ function renderOrdersList() {
             onclick="event.stopPropagation();"
             title="Click to change Phase/Status"
         >
-            <option style="${optStyle}" value="New Sale" ${r.status === 'New Sale' ? 'selected' : ''}>New Sale</option>
             <option style="${optStyle}" value="In Progress" ${r.status === 'In Progress' ? 'selected' : ''}>In Progress</option>
             <option style="${optStyle}" value="Awaiting Customer" ${r.status === 'Awaiting Customer' ? 'selected' : ''}>Awaiting Customer</option>
             <option style="${optStyle}" value="On Hold" ${r.status === 'On Hold' ? 'selected' : ''}>On Hold</option>

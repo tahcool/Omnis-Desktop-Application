@@ -12035,6 +12035,25 @@
             <!-- Inline Add Contact Form (hidden by default) -->
             <div id="qtn-contact-form" style="display:none; margin-top:10px; background:#f8fafc; border:1px solid #e2e8f0; border-radius:10px; padding:14px;">
               <div style="display:flex; gap:10px; flex-wrap:wrap; align-items:flex-end;">
+                <div style="min-width:100px; width:100px;">
+                  <label style="display:block; font-size:10px; font-weight:700; color:#64748b; margin-bottom:4px; text-transform:uppercase;">Salutation</label>
+                  <select id="qtn-cc-salutation" class="form-input"
+                    onchange="if(this.value==='__custom__'){this.style.display='none'; const ci=document.getElementById('qtn-cc-salutation-custom'); ci.style.display=''; ci.focus();}"
+                    style="padding:7px 10px; font-size:12px; border:1px solid #cbd5e1; border-radius:6px; width:100%; cursor:pointer;">
+                    <option value="">—</option>
+                    <option value="Mr">Mr</option>
+                    <option value="Mrs">Mrs</option>
+                    <option value="Ms">Ms</option>
+                    <option value="Miss">Miss</option>
+                    <option value="Dr">Dr</option>
+                    <option value="Prof">Prof</option>
+                    <option value="Eng">Eng</option>
+                    <option value="Hon">Hon</option>
+                    <option value="__custom__">Custom…</option>
+                  </select>
+                  <input type="text" id="qtn-cc-salutation-custom" class="form-input" placeholder="Type title"
+                    style="display:none; padding:7px 10px; font-size:12px; border:1px solid #cbd5e1; border-radius:6px; width:100%;">
+                </div>
                 <div style="flex:1; min-width:140px;">
                   <label style="display:block; font-size:10px; font-weight:700; color:#64748b; margin-bottom:4px; text-transform:uppercase;">Contact Name</label>
                   <input type="text" id="qtn-cc-name" class="form-input" placeholder="e.g. John Moyo"
@@ -15304,7 +15323,7 @@
                 brand: brand,
                 model: model,
                 qty: item.qty || 1,
-                status: 'New Sale',
+                status: 'In Progress',
                 order_date: orderDate,
                 company: qtn.company || '',
                 committed_lead_time: item._leadTime || '',
@@ -15319,6 +15338,50 @@
                 data: trackPayload
               });
               if (trRes.error) console.error('[MarkAsSale] tracking insert error:', trRes.error);
+
+              // ── 3b-ii. Auto-copy contacts to order_contacts via fmb_reports ──
+              try {
+                const sp = (window.salestrack && window.salestrack.supabase) || window.supabase;
+                if (sp) {
+                  // Create/find fmb_reports record for this order
+                  const customerName = (qtn.customer_name || '').trim();
+                  const reportFrappeId = saleId;
+                  const { data: existingReport } = await sp.from('fmb_reports')
+                    .select('id').eq('frappe_id', reportFrappeId).maybeSingle();
+                  let fmbId = existingReport ? existingReport.id : null;
+                  if (!fmbId) {
+                    const { data: newReport } = await sp.from('fmb_reports').insert({
+                      frappe_id: reportFrappeId,
+                      customer_id: customerName,
+                      customer_name: customerName,
+                      status: 'In Progress',
+                      company: qtn.company || ''
+                    }).select('id').single();
+                    fmbId = newReport ? newReport.id : null;
+                  }
+
+                  if (fmbId) {
+                    // Fetch customer contacts from centralised table
+                    const { data: custContacts } = await sp.from('omnis_customer_contacts')
+                      .select('salutation, contact_name, email, whatsapp_number')
+                      .eq('customer_name', customerName);
+
+                    if (custContacts && custContacts.length > 0) {
+                      const contactPayloads = custContacts.map(c => ({
+                        order_id: fmbId,
+                        salutation: c.salutation || '',
+                        name: c.contact_name || '',
+                        phone: c.whatsapp_number || '',
+                        email: c.email || ''
+                      }));
+                      await sp.from('order_contacts').insert(contactPayloads);
+                      console.log('[MarkAsSale] Auto-copied', contactPayloads.length, 'contacts to order_contacts');
+                    }
+                  }
+                }
+              } catch (contactErr) {
+                console.warn('[MarkAsSale] Contact copy warning:', contactErr);
+              }
             }
 
             // ── 3c. Update quotation status to Ordered ──────────────
@@ -15364,7 +15427,7 @@
 
       // 1. Get customer primary contact
       const { data: contacts } = await sp.from('omnis_customer_contacts')
-        .select('contact_name, email')
+        .select('salutation, contact_name, email')
         .eq('customer_name', (qtn.customer_name || '').trim())
         .order('is_primary', { ascending: false })
         .limit(5);
@@ -15471,7 +15534,7 @@
           <!-- Greeting -->
           <div style="padding:32px 32px 16px;">
               <p style="margin:0;font-size:16px;color:#0f172a;line-height:1.7;">
-                  Dear <strong>${(primaryContact.contact_name || qtn.customer_name || 'Valued Customer').replace(/</g, '&lt;')}</strong>,
+                  Dear <strong>${((primaryContact.salutation ? primaryContact.salutation + ' ' : '') + (primaryContact.contact_name || qtn.customer_name || 'Valued Customer')).replace(/</g, '&lt;')}</strong>,
               </p>
               <p style="margin:16px 0 0;font-size:15px;color:#334155;line-height:1.7;">
                   Thank you for placing your order with <strong>${companyName}</strong>. We truly appreciate your business and are committed to delivering an exceptional experience.
