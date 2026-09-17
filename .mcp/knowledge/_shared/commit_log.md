@@ -761,3 +761,5 @@
   Files: .mcp/knowledge/_shared/commit_log.md,systems/salestrack/dashboard_logic.js,
 - `f9b348b` 2026-09-17 [feature/admin-service-key-separation] fix: WhatsApp template uses Supabase assigned company (db_company) instead of missing Frappe company field - Sinopower orders now correctly use Sinopower template
   Files: .mcp/knowledge/_shared/commit_log.md,systems/salestrack/dashboard_logic.js,
+- `4c21213` 2026-09-17 [feature/admin-service-key-separation] feat: restyle Tracking Only orders - full purple card, remove NOT PURCHASED text, show as In Progress, replace ON TRACK with TRACKING ONLY label
+  Files: .mcp/knowledge/_shared/commit_log.md,systems/salestrack/orders_logic.js,

@@ -865,6 +865,8 @@ function renderOrdersList() {
             const term = olOrdersFilter[k];
             if (!term) continue;
             let val = String(d[k] || "").toLowerCase();
+            // Tracking-only orders are always treated as "In Progress" for status filtering
+            if (k === 'status' && d.is_tracking_only && term === 'in progress') continue;
             if (!val.includes(term)) return false;
         }
         return true;
