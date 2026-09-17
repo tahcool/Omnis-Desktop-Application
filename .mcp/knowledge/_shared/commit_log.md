@@ -743,3 +743,5 @@
   Files: .mcp/knowledge/_shared/commit_log.md,assets/js/preload.js,systems/salestrack/create_quotation_logic.js,systems/salestrack/dashboard_logic.js,systems/salestrack/index.html,
 - `4397c5b` 2026-09-17 [feature/admin-service-key-separation] [checkpoint] Before company filter, mandatory fields, and user-company assignment changes
   Files: .mcp/knowledge/_shared/commit_log.md,scripts/add_company_to_fmb_reports.sql,
+- `b34bba8` 2026-09-17 [feature/admin-service-key-separation] chore: bump version to 4.6.0
+  Files: .mcp/knowledge/_shared/commit_log.md,package.json,

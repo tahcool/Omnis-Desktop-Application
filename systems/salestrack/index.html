@@ -14808,9 +14808,15 @@
                 <i class="fab fa-whatsapp" style="color:#16a34a;"></i> WhatsApp Reminder
               </div>
               <div class="qrow-dropdown-sep"></div>
+              ${(row.status || '').toLowerCase() === 'ordered' ? `
+              <div class="qrow-dropdown-item" style="font-weight:700; opacity:0.4; cursor:not-allowed; pointer-events:none;">
+                <i class="fas fa-check-double" style="color:#64748b;"></i> Already Sold
+              </div>
+              ` : `
               <div class="qrow-dropdown-item" onclick="event.stopPropagation(); window.closeQRowMenus(); window.markQuotationAsSale('${row.name}')" style="font-weight:700;">
                 <i class="fas fa-check-circle" style="color:#16a34a;"></i> Mark as Sale
               </div>
+              `}
               <div class="qrow-dropdown-sep"></div>
               <div class="qrow-dropdown-item danger" onclick="event.stopPropagation(); window.closeQRowMenus(); window.deleteQuotation('${row.name}', '${escapeHtml(row.customer_name || '')}')">
                 <i class="fas fa-trash-alt"></i> Delete
@@ -15026,6 +15032,23 @@
      ═══════════════════════════════════════════════════════════════════ */
     window.markQuotationAsSale = async function(quoteId) {
       if (!window.electron) return;
+
+      // ── Guard: prevent re-marking an already-ordered quotation ──
+      try {
+        const guardRes = await window.electron.invoke('supabase:query', {
+          table: 'omnis_quotations', method: 'select',
+          params: { columns: 'status', filters: { name: quoteId } }
+        });
+        if (guardRes.ok && guardRes.data && guardRes.data.length > 0) {
+          const currentStatus = (guardRes.data[0].status || '').toLowerCase();
+          if (currentStatus === 'ordered') {
+            if (window.showToast) window.showToast('This quotation has already been marked as a sale. It cannot be converted again.', 'error');
+            return;
+          }
+        }
+      } catch (guardErr) {
+        console.warn('[MarkAsSale] Guard check failed, proceeding anyway:', guardErr);
+      }
 
       // ── 1. Fetch quotation + items ───────────────────────────────
       try {
