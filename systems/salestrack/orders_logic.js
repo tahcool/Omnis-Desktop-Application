@@ -1096,12 +1096,7 @@ function renderOrdersList() {
         const safeMachineId = escapeJs(r.machine_id);
 
         const optStyle = `background:#ffffff; color:#334155; font-weight:600; font-size:12px;`;
-        let statusBadge;
-        // For tracking-only with a linked stock item, show pipeline status as a static badge
-        if (r.is_tracking_only && r.pipeline_status) {
-            statusBadge = `<span style="display:inline-flex; align-items:center; gap:4px; padding:4px 10px; border-radius:99px; font-size:10px; font-weight:800; text-transform:uppercase; color:${r.pipeline_status.color}; background:${r.pipeline_status.color}12; border:1px solid ${r.pipeline_status.color}30;"><i class="fas ${r.pipeline_status.icon}"></i> ${r.pipeline_status.text}</span>`;
-        } else {
-            statusBadge = `<select 
+        const statusBadge = `<select 
             style="appearance:none; padding:4px 10px; border-radius:99px; font-size:10px; font-weight:800; text-transform:uppercase; cursor:pointer; outline:none; text-align:center; transition:0.2s; border:1px solid transparent; max-width:100%; overflow:hidden; text-overflow:ellipsis; ${statusStyle}"
             onchange="window.setOrderStatusInline('${safeReportId}', '${safeMachineId}', this.value, this)"
             onclick="event.stopPropagation();"
@@ -1115,7 +1110,6 @@ function renderOrdersList() {
             <option style="${optStyle}" value="Delivered" ${r.status === 'Delivered' ? 'selected' : ''}>Delivered</option>
             <option style="${optStyle}" value="Final Inspection" ${r.status === 'Final Inspection' ? 'selected' : ''}>Final Inspection</option>
         </select>`;
-        }
         const companyColors = {
             'Sinopower':          { bg: '#fef3c7', color: '#92400e', border: '#fde68a' },
             'Machinery Exchange': { bg: '#dbeafe', color: '#1e40af', border: '#bfdbfe' },
@@ -1204,10 +1198,13 @@ function renderOrdersList() {
             </div>
 
             <div class="ai-order-cell" 
-                 title="Double-click to edit notes"
-                 ondblclick="editOrderField(this, '${safeMachineId}', 'notes', '${escapeJs(r.notes)}')">
-              <span class="cell-label">Notes</span>
-              <div style="font-size:14px; color:#000000; font-weight:500; line-height:1.4; word-break:break-word;">${r.notes || "—"}</div>
+                 title="${r.is_tracking_only && r.pipeline_status ? r.pipeline_status.text : 'Double-click to edit notes'}"
+                 ${!(r.is_tracking_only && r.pipeline_status) ? `ondblclick="editOrderField(this, '${safeMachineId}', 'notes', '${escapeJs(r.notes)}')"` : ''}>
+              <span class="cell-label">Status</span>
+              ${r.is_tracking_only && r.pipeline_status ? 
+                `<div><span style="display:inline-flex; align-items:center; gap:4px; padding:4px 10px; border-radius:99px; font-size:10px; font-weight:800; text-transform:uppercase; color:${r.pipeline_status.color}; background:${r.pipeline_status.color}12; border:1px solid ${r.pipeline_status.color}30;"><i class="fas ${r.pipeline_status.icon}"></i> ${r.pipeline_status.text}</span></div>` :
+                `<div style="font-size:14px; color:#000000; font-weight:500; line-height:1.4; word-break:break-word;">${r.notes || "—"}</div>`
+              }
             </div>
 
             <div class="ai-order-cell" 
