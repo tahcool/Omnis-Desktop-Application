@@ -523,6 +523,12 @@
             if (!hasUsable) {
                 throw new Error("At least one contact must have an email address or WhatsApp number.");
             }
+            // Validate salutations — every contact must have one
+            const missingSal = custContacts.filter(c => !c.salutation);
+            if (missingSal.length > 0) {
+                const names = missingSal.map(c => c.contact_name || 'Unnamed').join(', ');
+                throw new Error(`The following contact(s) are missing a salutation (title): ${names}. Please update them before saving.`);
+            }
 
             const sp = (window.salestrack && window.salestrack.supabase) || window.supabase || null;
             if (!sp) throw new Error("Supabase client not found");
@@ -1462,9 +1468,11 @@
         const noEmail = contacts.filter(c => !c.email);
         const noWhatsApp = contacts.filter(c => !c.whatsapp_number);
         const noPrimary = !contacts.some(c => c.is_primary);
+        const noSalutation = contacts.filter(c => !c.salutation);
 
         if (noEmail.length > 0) missingParts.push(`${noEmail.length} contact(s) missing email`);
         if (noWhatsApp.length > 0) missingParts.push(`${noWhatsApp.length} contact(s) missing WhatsApp`);
+        if (noSalutation.length > 0) missingParts.push(`${noSalutation.length} contact(s) missing salutation — click the ⚠ badge to fix`);
         if (noPrimary && contacts.length > 1) missingParts.push('No primary contact set — click the ★ to set one');
 
         if (warningEl) {
@@ -1497,6 +1505,10 @@
                 ? `<span style="font-size:10px; color:#25d366; background:#f0fdf4; padding:2px 6px; border-radius:4px;"><i class="fab fa-whatsapp" style="margin-right:3px;"></i>${c.whatsapp_number}</span>`
                 : `<span style="font-size:10px; color:#f59e0b; background:#fffbeb; padding:2px 6px; border-radius:4px;"><i class="fas fa-exclamation-circle" style="margin-right:3px;"></i>No WhatsApp</span>`;
 
+            const salBadge = c.salutation
+                ? `<span style="font-size:10px; color:#6366f1; background:#eef2ff; padding:2px 6px; border-radius:4px;"><i class="fas fa-user-tag" style="margin-right:3px;"></i>${c.salutation}</span>`
+                : `<span onclick="window.fixContactSalutation('${c.id}', '${(c.contact_name || 'Unnamed').replace(/'/g, '\\&#39;')}')" style="font-size:10px; color:#ef4444; background:#fef2f2; padding:2px 6px; border-radius:4px; cursor:pointer;" title="Click to set salutation"><i class="fas fa-exclamation-triangle" style="margin-right:3px;"></i>No salutation</span>`;
+
             return `
               <div style="display:flex; align-items:center; gap:8px; background:${bgColor}; border:1px solid ${borderColor}; border-radius:8px; padding:6px 10px; animation: slideInRight 0.2s ease;">
                 <button type="button" onclick="window.togglePrimaryContact('${c.id}')" title="${starTitle}"
@@ -1506,6 +1518,7 @@
                 <div style="flex:1;">
                   <div style="font-weight:700; font-size:12px; color:#1e293b;">${c.salutation ? c.salutation + ' ' : ''}${c.contact_name || 'Unnamed'}${isPrimary ? ' <span style="font-size:9px; color:#f59e0b; font-weight:800; text-transform:uppercase;">(Primary)</span>' : ''}</div>
                   <div style="display:flex; gap:6px; margin-top:3px; flex-wrap:wrap;">
+                    ${salBadge}
                     ${emailBadge}
                     ${waBadge}
                   </div>
@@ -1634,6 +1647,31 @@
         } catch (e) {
             console.error('[CC] Delete error:', e);
             if (window.showToast) window.showToast('Error removing contact: ' + e.message, 'error');
+        }
+    };
+
+    /** Quick-fix: set salutation on an existing contact via prompt */
+    window.fixContactSalutation = async function (contactId, contactName) {
+        const salOptions = ['Mr', 'Mrs', 'Ms', 'Miss', 'Dr', 'Prof', 'Eng', 'Hon'];
+        const chosen = prompt(
+            `Set salutation for ${contactName}:\n\nCommon options: ${salOptions.join(', ')}\n\nType a salutation below:`,
+            'Mr'
+        );
+        if (!chosen || !chosen.trim()) return;
+
+        try {
+            const sp = _ccGetSp();
+            if (!sp) return;
+
+            await sp.from('omnis_customer_contacts')
+                .update({ salutation: chosen.trim(), updated_at: new Date().toISOString() })
+                .eq('id', contactId);
+
+            if (window.showToast) window.showToast(`Salutation set to "${chosen.trim()}" for ${contactName}`, 'success');
+            await window.loadCustomerContacts(window._qtnContactsCustomerName);
+        } catch (e) {
+            console.error('[CC] Fix salutation error:', e);
+            if (window.showToast) window.showToast('Error updating salutation: ' + e.message, 'error');
         }
     };
 

@@ -88,6 +88,12 @@ async function _webSupabaseQuery({ table, method, params, data }) {
     if (params.name)  query = query.eq('name', params.name);
     else if (params.id) query = query.eq('id', params.id);
     else if (params.match) query = query.match(params.match);
+    // Support chainable .eq() filters from preload proxy
+    if (params.filters && typeof params.filters === 'object') {
+      for (const [col, val] of Object.entries(params.filters)) {
+        if (val !== undefined && val !== null) query = query.eq(col, val);
+      }
+    }
   }
 
   const result = await query;

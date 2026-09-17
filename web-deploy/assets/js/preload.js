@@ -95,7 +95,15 @@ contextBridge.exposeInMainWorld("supabase", {
       },
       upsert: (data) => ipcRenderer.invoke('supabase:query', { table, method: 'upsert', data }),
       insert: (data) => ipcRenderer.invoke('supabase:query', { table, method: 'insert', data }),
-      delete: (match) => ipcRenderer.invoke('supabase:query', { table, method: 'delete', params: { match } })
+      delete: () => {
+        const p = { returning: false };
+        const chain = {
+          eq:     (col, val) => { if (!p.filters) p.filters = {}; p.filters[col] = val; return chain; },
+          match:  (m) => { p.match = m; return chain; },
+          then: (onOk, onErr) => ipcRenderer.invoke('supabase:query', { table, method: 'delete', params: p }).then(onOk, onErr)
+        };
+        return chain;
+      }
     };
   }
 });

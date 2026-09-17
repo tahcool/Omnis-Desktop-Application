@@ -15238,6 +15238,17 @@
           confirmBtn.disabled = true;
           confirmBtn.innerHTML = '<i class="fas fa-spinner fa-spin" style="margin-right:6px;"></i>Processing...';
 
+          // ── Validate contacts have salutations before proceeding ──
+          const _masContacts = window._qtnCustomerContacts || [];
+          const _masMissingSal = _masContacts.filter(c => !c.salutation);
+          if (_masMissingSal.length > 0) {
+            const names = _masMissingSal.map(c => c.contact_name || 'Unnamed').join(', ');
+            if (window.showToast) window.showToast(`Cannot mark as sale: the following contact(s) are missing a salutation: ${names}. Please update them on the quotation first.`, 'error');
+            confirmBtn.disabled = false;
+            confirmBtn.innerHTML = '<i class="fas fa-check-double" style="margin-right:6px;"></i>Confirm Sale';
+            return;
+          }
+
           const orderDate = document.getElementById('sale-order-date').value || todayStr;
           const sendEmail = document.getElementById('sale-send-email').checked;
 

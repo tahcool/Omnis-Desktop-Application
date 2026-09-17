@@ -199,7 +199,15 @@ contextBridge.exposeInMainWorld("supabase", {
         };
         return chain;
       },
-      delete:  (params) => ipcRenderer.invoke('supabase:query', { table, method: 'delete', params })
+      delete:  () => {
+        const p = { returning: false };
+        const chain = {
+          eq:     (col, val) => { if (!p.filters) p.filters = {}; p.filters[col] = val; return chain; },
+          match:  (m) => { p.match = m; return chain; },
+          then: (onOk, onErr) => ipcRenderer.invoke('supabase:query', { table, method: 'delete', params: p }).then(onOk, onErr)
+        };
+        return chain;
+      }
     };
   },
   // Convenience: rpc call via edge function path

@@ -735,3 +735,5 @@
 \n## 2026-09-17
 - `8b41cd2` 2026-09-17 [feature/admin-service-key-separation] fix: include .env in build, replace uuid with crypto.randomUUID()
   Files: .mcp/knowledge/_shared/commit_log.md,lib/email-manager.js,package.json,
+- `fa7d711` 2026-09-17 [feature/admin-service-key-separation] feat(salestrack): salutation dropdowns, remove New Sale status, auto-copy contacts, mandatory contact validation
+  Files: .mcp/knowledge/_shared/commit_log.md,supabase/migrations/20260917000001_add_salutation_to_contacts.sql,systems/salestrack/create_quotation_logic.js,systems/salestrack/dashboard_logic.js,systems/salestrack/index.html,systems/salestrack/orders_logic.js,
