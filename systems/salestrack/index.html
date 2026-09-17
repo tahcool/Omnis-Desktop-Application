@@ -9853,11 +9853,14 @@
         </div>
         
         <div style="position: relative;">
-          <label style="display: block; font-size: 12px; font-weight: 700; color: #475569; margin-bottom: 6px;">Machine / Product</label>
+          <label style="display: block; font-size: 12px; font-weight: 700; color: #475569; margin-bottom: 6px;">Machine / Stock Item</label>
           <input type="text" id="track-machine" class="form-input" autocomplete="off"
             style="width: 100%; border: 1px solid #cbd5e1; border-radius: 8px; padding: 10px; font-size: 14px;"
-            placeholder="Search products..." oninput="window._trackAutocomplete('machine', this.value)" onfocus="window._trackAutocomplete('machine', this.value)">
+            placeholder="Search stock pipeline..." oninput="window._trackAutocomplete('machine', this.value)" onfocus="window._trackAutocomplete('machine', this.value)">
           <div id="track-machine-suggestions" class="track-autocomplete-list" style="display:none; position:absolute; top:100%; left:0; right:0; z-index:10000; background:#fff; border:1px solid #e2e8f0; border-radius:0 0 8px 8px; max-height:200px; overflow-y:auto; box-shadow:0 8px 24px rgba(0,0,0,0.12);"></div>
+          <input type="hidden" id="track-stock-id" value="">
+          <input type="hidden" id="track-brand" value="">
+          <input type="hidden" id="track-model" value="">
         </div>
 
         <div style="display: flex; gap: 16px;">

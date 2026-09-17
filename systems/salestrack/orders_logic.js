@@ -317,11 +317,30 @@ async function loadOrdersList(force = false) {
             const trackRes = await window.electron.invoke('supabase:query', {
                 table: 'omnis_tracking_orders',
                 method: 'select',
-                params: { columns: '*' }
+                params: { columns: '*, stock_inventory(id, brand, model, actual_qty, prod_date, ship_date, eta_durban, eta_beira, eta_harare)' }
             });
             if (trackRes.ok && trackRes.data) {
                 const existingIds = new Set(ordersList.map(o => o.report_id));
                 const todayMs = new Date(); todayMs.setHours(0,0,0,0);
+
+                // Helper to compute pipeline status from stock dates
+                const _computeStatus = (s) => {
+                    if (!s) return null;
+                    const parseD = (d) => { if (!d || d === '-' || d === '0000-00-00') return null; const dt = new Date(d); return isNaN(dt.getTime()) ? null : dt; };
+                    const dProd = parseD(s.prod_date);
+                    const dShip = parseD(s.ship_date);
+                    const dDurban = parseD(s.eta_durban);
+                    const dBeira = parseD(s.eta_beira);
+                    const dHarare = parseD(s.eta_harare);
+                    if (dHarare && dHarare <= todayMs) return { text: 'STOCK ON HAND', icon: 'fa-warehouse', color: '#f59e0b' };
+                    if (dBeira && dBeira <= todayMs && (!dHarare || dHarare > todayMs)) return { text: 'EN ROUTE FROM BEIRA', icon: 'fa-truck-moving', color: '#0284c7' };
+                    if (dDurban && dDurban <= todayMs && (!dBeira || dBeira > todayMs)) return { text: 'EN ROUTE FROM DURBAN', icon: 'fa-ship', color: '#0284c7' };
+                    if (dShip && dShip <= todayMs && ((dBeira && dBeira > todayMs) || (dDurban && dDurban > todayMs))) return { text: 'IN TRANSIT', icon: 'fa-water', color: '#2563eb' };
+                    if (dShip && dShip > todayMs) return { text: 'ARRANGING SHIPPING', icon: 'fa-boxes', color: '#8b5cf6' };
+                    if (dProd && dProd > todayMs) return { text: 'IN PRODUCTION', icon: 'fa-hammer', color: '#ea580c' };
+                    return { text: 'PIPELINE', icon: 'fa-circle-info', color: '#64748b' };
+                };
+
                 trackRes.data.forEach(t => {
                     const rid = t.linked_sale_name || ('TRACK-' + t.id);
                     if (existingIds.has(rid)) return; // already loaded from fmb_reports
@@ -331,6 +350,11 @@ async function loadOrdersList(force = false) {
                         target.setHours(0,0,0,0);
                         days_left = Math.ceil((target - todayMs) / 86400000);
                     }
+                    // Resolve linked stock data
+                    const linkedStock = t.stock_inventory || null;
+                    const pipelineStatus = _computeStatus(linkedStock);
+                    const etaHarare = linkedStock ? linkedStock.eta_harare : null;
+
                     ordersList.push({
                         report_id: rid,
                         supabase_id: t.id,
@@ -351,7 +375,10 @@ async function loadOrdersList(force = false) {
                         is_payment_terms: t.is_payment_terms || false,
                         is_tracking_only: !t.linked_sale_name,
                         days_left: days_left,
-                        committed_lead_time: t.committed_lead_time
+                        committed_lead_time: t.committed_lead_time,
+                        linked_stock_id: t.linked_stock_id || null,
+                        pipeline_status: pipelineStatus,
+                        eta_harare: etaHarare
                     });
                 });
             }
@@ -1142,7 +1169,7 @@ function renderOrdersList() {
               <div style="flex:1;" onclick="window.dashManager.openOrderModal('${safeReportId}', '${safeMachineId}')">
                 <span class="cell-label">Customer / Risk</span>
                 <div style="font-weight:700; font-size:15px; color:#000000; margin-bottom:4px; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden;" title="${(r.customer || '').replace(/\"/g, '')}">${(r.customer || "-").replace(/\"/g, '')}</div>
-                ${r.is_tracking_only ? `<div style="margin-bottom:6px;"><span style="background:linear-gradient(135deg,#7c3aed,#a855f7); color:#fff; font-size:10px; font-weight:800; padding:3px 8px; border-radius:4px; letter-spacing:0.04em; display:inline-flex; align-items:center; gap:4px; box-shadow:0 2px 6px rgba(124,58,237,0.35); animation:trackPulse 2s infinite;"><i class="fas fa-eye"></i> TRACKING ONLY</span></div>` : ''}
+                ${r.is_tracking_only ? `<div style="margin-bottom:6px; display:flex; flex-wrap:wrap; gap:4px; align-items:center;"><span style="background:linear-gradient(135deg,#7c3aed,#a855f7); color:#fff; font-size:10px; font-weight:800; padding:3px 8px; border-radius:4px; letter-spacing:0.04em; display:inline-flex; align-items:center; gap:4px; box-shadow:0 2px 6px rgba(124,58,237,0.35); animation:trackPulse 2s infinite;"><i class="fas fa-eye"></i> TRACKING ONLY</span>${r.pipeline_status ? `<span style="display:inline-flex; align-items:center; gap:3px; font-size:9px; font-weight:800; color:${r.pipeline_status.color}; background:${r.pipeline_status.color}12; padding:2px 7px; border-radius:4px; border:1px solid ${r.pipeline_status.color}30;"><i class="fas ${r.pipeline_status.icon}"></i> ${r.pipeline_status.text}</span>` : ''}</div>` : ''}
                 <div style="display:flex; align-items:center; gap:6px; font-size:11px; font-weight:800; color:${riskColor}">
                   <i class="fas ${riskIcon}"></i> ${riskLabel}
                   <div style="margin-left:auto; display:flex; gap:6px;">
@@ -2106,7 +2133,7 @@ window.printMainOrdersReport = function() {
    ========================================= */
 (function() {
     let _customerCache = null;
-    let _productCache = null;
+    let _stockCache = null; // Now stores rich stock objects, not just strings
     let _debounceTimer = null;
 
     async function fetchCustomers() {
@@ -2135,33 +2162,53 @@ window.printMainOrdersReport = function() {
         }
     }
 
-    async function fetchProducts() {
-        if (_productCache) return _productCache;
+    // Compute pipeline status from dates (mirrors stock tab logic)
+    function computePipelineStatus(r) {
+        const today = new Date(); today.setHours(0,0,0,0);
+        const parseDate = (d) => { if (!d || d === '-' || d === '0000-00-00') return null; const dt = new Date(d); return isNaN(dt.getTime()) ? null : dt; };
+        const dProd = parseDate(r.prod_date);
+        const dShip = parseDate(r.ship_date);
+        const dDurban = parseDate(r.eta_durban);
+        const dBeira = parseDate(r.eta_beira);
+        const dHarare = parseDate(r.eta_harare);
+
+        if (dHarare && dHarare <= today) return { text: 'STOCK ON HAND', icon: 'fa-warehouse', color: '#f59e0b' };
+        if (dBeira && dBeira <= today && (!dHarare || dHarare > today)) return { text: 'EN ROUTE FROM BEIRA', icon: 'fa-truck-moving', color: '#0284c7' };
+        if (dDurban && dDurban <= today && (!dBeira || dBeira > today)) return { text: 'EN ROUTE FROM DURBAN', icon: 'fa-ship', color: '#0284c7' };
+        if (dShip && dShip <= today && ((dBeira && dBeira > today) || (dDurban && dDurban > today))) return { text: 'IN TRANSIT', icon: 'fa-water', color: '#2563eb' };
+        if (dShip && dShip > today) return { text: 'ARRANGING SHIPPING', icon: 'fa-boxes', color: '#8b5cf6' };
+        if (dProd && dProd > today) return { text: 'IN PRODUCTION', icon: 'fa-hammer', color: '#ea580c' };
+        return { text: 'PIPELINE', icon: 'fa-circle-info', color: '#64748b' };
+    }
+
+    async function fetchStockItems() {
+        if (_stockCache) return _stockCache;
         try {
-            const allItems = [];
-            let page = 0;
-            const PAGE_SIZE = 1000;
-            while (true) {
-                const res = await window.electron.invoke('supabase:query', {
-                    table: 'omnis_quotation_items',
-                    method: 'select',
-                    params: { columns: 'item_code', range: { from: page * PAGE_SIZE, to: (page + 1) * PAGE_SIZE - 1 } }
-                });
-                const data = (res && res.data) || [];
-                allItems.push(...data);
-                if (data.length < PAGE_SIZE) break;
-                page++;
+            const res = await window.electron.invoke('supabase:query', {
+                table: 'stock_inventory',
+                method: 'select',
+                params: { columns: 'id, brand, model, actual_qty, prod_date, ship_date, eta_durban, eta_beira, eta_harare' }
+            });
+            if (res && res.ok && res.data) {
+                _stockCache = res.data.map(r => ({
+                    id: r.id,
+                    brand: r.brand || '',
+                    model: r.model || '',
+                    qty: parseInt(r.actual_qty) || 0,
+                    label: `${r.model || ''}${r.brand ? ' — ' + r.brand : ''}`,
+                    status: computePipelineStatus(r),
+                    eta_harare: r.eta_harare || null
+                }));
+                return _stockCache;
             }
-            const unique = [...new Set(allItems.map(d => d.item_code).filter(Boolean))].sort();
-            _productCache = unique;
-            return unique;
+            return [];
         } catch (e) {
-            console.error('Fetch products error:', e);
+            console.error('Fetch stock items error:', e);
             return [];
         }
     }
 
-    function renderSuggestions(listEl, inputEl, matches, query, type) {
+    function renderCustomerSuggestions(listEl, inputEl, matches, query) {
         listEl.innerHTML = '';
         if (!query && matches.length > 20) matches = matches.slice(0, 20);
 
@@ -2186,8 +2233,7 @@ window.printMainOrdersReport = function() {
                 e.stopPropagation();
                 inputEl.value = name;
                 listEl.style.display = 'none';
-                // Load contacts when customer is selected in tracking modal
-                if (type === 'customer' && window.loadCustomerContacts) {
+                if (window.loadCustomerContacts) {
                     const trackSection = document.getElementById('track-contacts-section');
                     if (trackSection) trackSection.style.display = '';
                     window.loadCustomerContacts(name, 'track-contacts-chips', 'track-contacts-warning', 'track-contacts-warning-text');
@@ -2206,10 +2252,8 @@ window.printMainOrdersReport = function() {
                 e.stopPropagation();
                 inputEl.value = query;
                 listEl.style.display = 'none';
-                if (type === 'customer' && _customerCache) _customerCache.push(query);
-                if (type === 'machine' && _productCache) _productCache.push(query);
-                // Load contacts for new customer name too
-                if (type === 'customer' && window.loadCustomerContacts) {
+                if (_customerCache) _customerCache.push(query);
+                if (window.loadCustomerContacts) {
                     const trackSection = document.getElementById('track-contacts-section');
                     if (trackSection) trackSection.style.display = '';
                     window.loadCustomerContacts(query, 'track-contacts-chips', 'track-contacts-warning', 'track-contacts-warning-text');
@@ -2221,7 +2265,75 @@ window.printMainOrdersReport = function() {
         if (query && matches.length === 0) {
             const noDiv = document.createElement('div');
             noDiv.style.cssText = 'padding:10px 12px; font-size:12px; color:#94a3b8; text-align:center;';
-            noDiv.textContent = 'No existing ' + (type === 'customer' ? 'customers' : 'products') + ' match';
+            noDiv.textContent = 'No existing customers match';
+            listEl.insertBefore(noDiv, listEl.firstChild);
+        }
+
+        listEl.style.display = listEl.children.length > 0 ? 'block' : 'none';
+    }
+
+    function renderStockSuggestions(listEl, inputEl, matches, query) {
+        listEl.innerHTML = '';
+        if (!query && matches.length > 15) matches = matches.slice(0, 15);
+
+        const stockIdEl = document.getElementById('track-stock-id');
+
+        matches.forEach(item => {
+            const div = document.createElement('div');
+            div.style.cssText = 'padding:10px 12px; cursor:pointer; border-bottom:1px solid #f1f5f9; transition:background 0.1s;';
+
+            const etaStr = item.eta_harare ? new Date(item.eta_harare).toLocaleDateString('en-GB', { day:'numeric', month:'short', year:'numeric' }) : '';
+            
+            div.innerHTML = `
+                <div style="display:flex; align-items:center; gap:8px; justify-content:space-between;">
+                    <div>
+                        <div style="font-size:13px; font-weight:700; color:#0f172a;">${item.model || 'Unknown'}</div>
+                        <div style="font-size:11px; color:#64748b; font-weight:500;">${item.brand}${item.qty ? ' · Qty: ' + item.qty : ''}</div>
+                    </div>
+                    <div style="text-align:right;">
+                        <div style="display:inline-flex; align-items:center; gap:4px; font-size:9px; font-weight:800; color:${item.status.color}; background:${item.status.color}15; padding:2px 6px; border-radius:4px; border:1px solid ${item.status.color}30;">
+                            <i class="fas ${item.status.icon}"></i> ${item.status.text}
+                        </div>
+                        ${etaStr ? `<div style="font-size:10px; color:#94a3b8; margin-top:2px;">ETA: ${etaStr}</div>` : ''}
+                    </div>
+                </div>`;
+
+            div.onmouseenter = () => div.style.background = '#f8fafc';
+            div.onmouseleave = () => div.style.background = '';
+            div.onclick = (e) => {
+                e.stopPropagation();
+                inputEl.value = item.label;
+                if (stockIdEl) stockIdEl.value = item.id;
+                // Auto-fill brand/model hidden fields if they exist
+                const brandEl = document.getElementById('track-brand');
+                const modelEl = document.getElementById('track-model');
+                if (brandEl) brandEl.value = item.brand;
+                if (modelEl) modelEl.value = item.model;
+                listEl.style.display = 'none';
+            };
+            listEl.appendChild(div);
+        });
+
+        // "Add New" fallback for items not in stock pipeline
+        if (query && !matches.some(m => m.label.toLowerCase() === query.toLowerCase())) {
+            const addDiv = document.createElement('div');
+            addDiv.style.cssText = 'padding:10px 12px; cursor:pointer; font-size:13px; color:#f59e0b; font-weight:700; border-top:2px solid #fef3c7; display:flex; align-items:center; gap:8px; background:#fffbeb;';
+            addDiv.innerHTML = '<i class="fas fa-plus-circle"></i> Add Custom: <span style="color:#1e293b; font-weight:600;">' + query + '</span>';
+            addDiv.onmouseenter = () => addDiv.style.background = '#fef9c3';
+            addDiv.onmouseleave = () => addDiv.style.background = '#fffbeb';
+            addDiv.onclick = (e) => {
+                e.stopPropagation();
+                inputEl.value = query;
+                if (stockIdEl) stockIdEl.value = ''; // No stock link for custom entries
+                listEl.style.display = 'none';
+            };
+            listEl.appendChild(addDiv);
+        }
+
+        if (query && matches.length === 0) {
+            const noDiv = document.createElement('div');
+            noDiv.style.cssText = 'padding:10px 12px; font-size:12px; color:#94a3b8; text-align:center;';
+            noDiv.textContent = 'No stock pipeline items match';
             listEl.insertBefore(noDiv, listEl.firstChild);
         }
 
@@ -2235,19 +2347,39 @@ window.printMainOrdersReport = function() {
             const listEl = document.getElementById(type === 'customer' ? 'track-customer-suggestions' : 'track-machine-suggestions');
             if (!inputEl || !listEl) return;
 
-            const items = type === 'customer' ? await fetchCustomers() : await fetchProducts();
             const q = (query || '').trim();
 
-            let matches;
-            if (!q) {
-                matches = items.slice(0, 20);
+            if (type === 'customer') {
+                const items = await fetchCustomers();
+                let matches;
+                if (!q) {
+                    matches = items.slice(0, 20);
+                } else {
+                    const startsWith = items.filter(i => i.toLowerCase().startsWith(q.toLowerCase()));
+                    const contains = items.filter(i => !i.toLowerCase().startsWith(q.toLowerCase()) && i.toLowerCase().includes(q.toLowerCase()));
+                    matches = [...startsWith, ...contains].slice(0, 30);
+                }
+                renderCustomerSuggestions(listEl, inputEl, matches, q);
             } else {
-                const startsWith = items.filter(i => i.toLowerCase().startsWith(q.toLowerCase()));
-                const contains = items.filter(i => !i.toLowerCase().startsWith(q.toLowerCase()) && i.toLowerCase().includes(q.toLowerCase()));
-                matches = [...startsWith, ...contains].slice(0, 30);
+                // Machine: search stock_inventory
+                const stockItems = await fetchStockItems();
+                let matches;
+                if (!q) {
+                    matches = stockItems.slice(0, 15);
+                } else {
+                    const ql = q.toLowerCase();
+                    const startsWith = stockItems.filter(i => i.model.toLowerCase().startsWith(ql) || i.brand.toLowerCase().startsWith(ql));
+                    const contains = stockItems.filter(i => {
+                        const searchStr = `${i.model} ${i.brand} ${i.label}`.toLowerCase();
+                        return searchStr.includes(ql) && !startsWith.includes(i);
+                    });
+                    matches = [...startsWith, ...contains].slice(0, 20);
+                }
+                renderStockSuggestions(listEl, inputEl, matches, q);
+                // Clear stock ID when user types (they may be changing selection)
+                const stockIdEl = document.getElementById('track-stock-id');
+                if (stockIdEl && q) stockIdEl.value = '';
             }
-
-            renderSuggestions(listEl, inputEl, matches, q, type);
         }, 150);
     };
 
@@ -2262,7 +2394,7 @@ window.printMainOrdersReport = function() {
 
     window._trackClearCaches = function() {
         _customerCache = null;
-        _productCache = null;
+        _stockCache = null;
     };
 })();
 
@@ -2302,6 +2434,13 @@ window.openAddTrackingModal = function() {
 window.closeAddTrackingModal = function() {
     const modal = document.getElementById('tracking-order-modal');
     if (modal) modal.style.display = 'none';
+    // Reset hidden stock link fields
+    const stockId = document.getElementById('track-stock-id');
+    const brand = document.getElementById('track-brand');
+    const model = document.getElementById('track-model');
+    if (stockId) stockId.value = '';
+    if (brand) brand.value = '';
+    if (model) model.value = '';
 };
 
 window.saveTrackingOrder = async function() {
@@ -2311,9 +2450,12 @@ window.saveTrackingOrder = async function() {
     const target = document.getElementById('track-target').value;
     const company = document.getElementById('track-company').value;
     const notes = document.getElementById('track-notes').value.trim();
+    const linkedStockId = (document.getElementById('track-stock-id') || {}).value || null;
+    const stockBrand = (document.getElementById('track-brand') || {}).value || null;
+    const stockModel = (document.getElementById('track-model') || {}).value || null;
 
     if (!customer || !machine) {
-        alert("Please enter Customer Name and Machine/Product.");
+        alert("Please enter Customer Name and Machine/Stock Item.");
         return;
     }
 
@@ -2329,6 +2471,14 @@ window.saveTrackingOrder = async function() {
             internal_notes: 'Tracking Only'
         };
 
+        // Link to stock pipeline item if one was selected
+        if (linkedStockId) {
+            payload.linked_stock_id = linkedStockId;
+        }
+        // Store brand/model from selected stock item
+        if (stockBrand) payload.brand = stockBrand;
+        if (stockModel) payload.model = stockModel;
+
         const res = await window.electron.invoke('supabase:query', {
             table: 'omnis_tracking_orders',
             method: 'insert',
@@ -2338,6 +2488,8 @@ window.saveTrackingOrder = async function() {
         if (res && res.ok !== false) {
             window.closeAddTrackingModal();
             if (window.showToast) window.showToast("Tracking Order Added", "success");
+            // Clear stock caches so new data is fetched
+            if (window._trackClearCaches) window._trackClearCaches();
             // Reload the list to fetch the new record
             if (window.loadOrdersList) window.loadOrdersList(true);
         } else {
